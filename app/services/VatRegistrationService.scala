@@ -18,16 +18,16 @@ package services
 
 import javax.inject.Inject
 
-import common.exceptions.GenericServiceException
-import connectors.{BusinessRegistrationConnector, BusinessRegistrationSuccessResponse}
-import models.VatScheme
+import common.exceptions.{ForbiddenException, GenericServiceException, NotFoundException, UpdateFailed}
+import connectors._
+import models.{VatChoice, VatScheme}
 import repositories.RegistrationRepository
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.Future
 
 trait RegistrationService {
-
+  def updateVatChoice(registrationId: String, vatChoice: VatChoice)(implicit headerCarrier: HeaderCarrier): Future[ServiceResult[VatChoice]]
   def createNewRegistration(implicit headerCarrier: HeaderCarrier): Future[ServiceResult[VatScheme]]
 
 }
@@ -38,12 +38,24 @@ class VatRegistrationService @Inject()(brConnector: BusinessRegistrationConnecto
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  override def createNewRegistration(implicit headerCarrier: HeaderCarrier): Future[ServiceResult[VatScheme]] = {
-    (for {
-      BusinessRegistrationSuccessResponse(profile) <- brConnector.retrieveCurrentProfile
-      registration <- registrationRepository.createNewRegistration(profile.registrationID)
-    } yield Right(registration)) recover {
+  override def updateVatChoice(registrationId: String, vatChoice: VatChoice)(implicit headerCarrier: HeaderCarrier): Future[ServiceResult[VatChoice]] = {
+    (registrationRepository.updateVatChoice(registrationId, vatChoice) flatMap (vatChoice =>  Future.successful(Right(vatChoice)))).recover {
       case t: Throwable => Left(GenericServiceException(t))
+    }
+  }
+
+  override def createNewRegistration(implicit headerCarrier: HeaderCarrier): Future[ServiceResult[VatScheme]] = {
+    brConnector.retrieveCurrentProfile flatMap {
+      case BusinessRegistrationSuccessResponse(profile) =>
+        registrationRepository.retrieveVatScheme(profile.registrationID) flatMap {
+          case Some(registration) => Future.successful(Right(registration))
+          case None => (registrationRepository.createNewVatScheme(profile.registrationID) map (vatScheme => Right(vatScheme))).recover {
+            case t: Throwable => Left(GenericServiceException(t))
+          }
+        }
+      case BusinessRegistrationForbiddenResponse => Future.successful(Left(ForbiddenException))
+      case BusinessRegistrationNotFoundResponse => Future.successful(Left(NotFoundException))
+      case BusinessRegistrationErrorResponse(err) => Future.successful(Left(GenericServiceException(err)))
     }
   }
 

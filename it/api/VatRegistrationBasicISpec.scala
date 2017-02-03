@@ -21,6 +21,7 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WS
 import play.api.test.FakeApplication
 import play.api.test.Helpers._
+import play.api.test._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class VatRegistrationBasicISpec extends IntegrationSpecBase {

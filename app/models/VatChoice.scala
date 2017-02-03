@@ -16,6 +16,7 @@
 
 package models
 
+import common.Now
 import org.joda.time.DateTime
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -26,18 +27,11 @@ case class VatChoice(
                     )
 
 object VatChoice {
+  def blank(startDate: DateTime) : VatChoice = VatChoice(startDate, "false")
 
-  val r =
-    (__ \ "start-date").read[DateTime] and
-      (__ \ "necessity").read[String]
 
-  val w =
-    (__ \ "start-date").write[DateTime] and
-      (__ \ "necessity").write[String]
-
-  val apiReads: Reads[VatChoice] = r(VatChoice.apply _)
-  val apiWrites: Writes[VatChoice] = w(unlift(VatChoice.unapply))
-
-  implicit val format = Format(apiReads, apiWrites)
+  implicit val format = (
+    (__ \ "start-date").format[DateTime] and
+      (__ \ "necessity").format[String]) (VatChoice.apply, unlift(VatChoice.unapply))
 
 }

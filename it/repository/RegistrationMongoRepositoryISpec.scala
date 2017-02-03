@@ -16,8 +16,9 @@
 
 package repository
 
+import common.Now
 import common.exceptions.InsertFailed
-import models.{VatChoice, VatScheme, VatTradingDetails}
+import models.{VatChoice, VatScheme}
 import org.joda.time.DateTime
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
@@ -30,9 +31,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class RegistrationMongoRepositoryISpec
   extends UnitSpec with MongoSpecSupport with BeforeAndAfterEach with ScalaFutures with Eventually with WithFakeApplication {
 
-  val fixedDate = new DateTime(2017, 1, 31, 13, 53)
-  private val internalId = "internalId"
-  private val reg = VatScheme(id = "AC123456", tradingDetails = VatTradingDetails("trading name"), VatChoice(fixedDate, "necessity"))
+  private val fixedDate = Now(new DateTime(2017, 1, 31, 13, 53))
+  private val regId = "AC234321"
+  private val vatScheme: VatScheme = VatScheme.blank(regId)(fixedDate)
+  private val vatChoice: VatChoice = VatChoice.blank(new DateTime())
 
   class Setup {
     val repository = new RegistrationMongoRepository(new MongoDBProvider(), "integration-testing")
@@ -40,30 +42,40 @@ class RegistrationMongoRepositoryISpec
     await(repository.ensureIndexes)
   }
 
-  "Calling createNewRegistration" should {
+  "Calling createNewVatScheme" should {
 
-    "create a new, blank VatRegistration with the correct ID" in new Setup {
-      val actual = await(repository.createNewRegistration("AC234321"))
-      actual.id shouldBe "AC234321"
+    "create a new, blank VatScheme with the correct ID" in new Setup {
+      val actual = await(repository.createNewVatScheme(regId)(fixedDate))
+      actual shouldBe vatScheme
     }
 
-    "throw an Insert Failed exception when creating a new VAT reg when one already exists" in new Setup {
-      await(repository.createNewRegistration(reg.id))
-      an[InsertFailed] shouldBe thrownBy(await(repository.createNewRegistration(reg.id)))
+    "throw an InsertFailed exception when creating a new VAT scheme when one already exists" in new Setup {
+      await(repository.createNewVatScheme(vatScheme.id)(fixedDate))
+      an[InsertFailed] shouldBe thrownBy(await(repository.createNewVatScheme(vatScheme.id)))
     }
   }
 
-  "Calling retrieveRegistration" should {
+  "Calling retrieveVatScheme" should {
 
-    "retrieve a registration object" in new Setup {
-      await(repository.insert(reg))
-      val actual = await(repository.retrieveRegistration(reg.id))
-      actual shouldBe Some(reg)
+    "retrieve a VatScheme object" in new Setup {
+      await(repository.insert(vatScheme))
+      val actual = await(repository.retrieveVatScheme(vatScheme.id))
+      actual shouldBe Some(vatScheme)
     }
 
-    "return a None when there is no corresponding registration object" in new Setup {
-      await(repository.insert(reg))
-      await(repository.retrieveRegistration("NOT_THERE")) shouldBe None
+    "return a None when there is no corresponding VatScheme object" in new Setup {
+      await(repository.insert(vatScheme))
+      await(repository.retrieveVatScheme("NOT_THERE")) shouldBe None
+    }
+  }
+
+
+  "Calling updateVatChoice" should {
+
+    "should update to VatChoice success" in new Setup {
+      await(repository.insert(vatScheme))
+      val result = await(repository.updateVatChoice(regId, vatChoice))
+      result shouldBe vatChoice
     }
   }
 

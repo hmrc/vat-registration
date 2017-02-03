@@ -26,4 +26,5 @@ abstract class VatRegSpec extends UnitSpec with WithFakeApplication with Inside 
 
   protected def testAuthority(userId: String): Authority = Authority(userId, userId, userId, UserIds(userId, userId))
 
+
 }

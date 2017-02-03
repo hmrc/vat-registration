@@ -1,3 +1,4 @@
 # microservice specific routes
 
-POST    /new                    controllers.VatRegistrationController.newVatRegistration
+POST    /new                         controllers.VatRegistrationController.newVatRegistration
+PATCH   /:regID/vat-choice           controllers.VatRegistrationController.updateVatChoice(regID)

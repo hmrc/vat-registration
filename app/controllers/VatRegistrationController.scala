@@ -20,8 +20,9 @@ import javax.inject.Inject
 
 import common.exceptions.GenericServiceException
 import connectors.AuthConnector
+import models.VatChoice
 import play.api.Logger
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
 import services.RegistrationService
 
@@ -37,6 +38,21 @@ class VatRegistrationController @Inject()(val auth: AuthConnector, vatRegistrati
           case Left(GenericServiceException(t)) =>
             Logger.warn("Exception in service call", t)
             ServiceUnavailable
+        }
+      }
+  }
+
+
+    def updateVatChoice(registrationId: String) : Action[JsValue] = Action.async(parse.json) {
+    implicit request =>
+      authenticated { user =>
+        withJsonBody[VatChoice] { vatChoice =>
+          vatRegistrationService.updateVatChoice(registrationId, vatChoice) map {
+            case Right(vatChoice) => Created(Json.toJson(vatChoice))
+            case Left(GenericServiceException(t)) =>
+              Logger.warn("Exception in service call", t)
+              ServiceUnavailable
+          }
         }
       }
   }

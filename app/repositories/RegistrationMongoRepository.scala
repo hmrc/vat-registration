@@ -18,9 +18,10 @@ package repositories
 
 import javax.inject.{Inject, Named}
 
-import auth.AuthorisationResource
-import common.exceptions.{InsertFailed, RetrieveFailed}
+import common.Now
+import common.exceptions.{InsertFailed, RetrieveFailed, UpdateFailed}
 import models._
+import org.joda.time.DateTime
 import play.api.Logger
 import play.modules.reactivemongo.MongoDbConnection
 import reactivemongo.api.DB
@@ -33,12 +34,15 @@ import scala.concurrent.Future
 
 trait RegistrationRepository {
 
-  def createNewRegistration(registrationId: String): Future[VatScheme]
 
-  def retrieveRegistration(registrationId: String): Future[Option[VatScheme]]
+  def createNewVatScheme(registrationId: String)(implicit now:Now[DateTime]): Future[VatScheme]
 
+  def retrieveVatScheme(registrationId: String): Future[Option[VatScheme]]
+
+  def updateVatChoice(registrationId: String, vatChoice: VatChoice) : Future[VatChoice]
 }
 
+// this is here for Guice dependency injection of `() => DB`
 class MongoDBProvider extends Function0[DB] with MongoDbConnection {
   def apply: DB = db()
 }
@@ -48,8 +52,9 @@ class RegistrationMongoRepository @Inject()(mongoProvider: Function0[DB], @Named
     collectionName = collectionName,
     mongo = mongoProvider,
     domainFormat = VatScheme.format
-  ) with RegistrationRepository
-    with AuthorisationResource[String] {
+  ) with RegistrationRepository {
+
+  private[repositories] def registrationIdSelector(registrationID: String) = BSONDocument("ID" -> BSONString(registrationID))
 
   override def indexes: Seq[Index] = Seq(
     Index(
@@ -59,32 +64,42 @@ class RegistrationMongoRepository @Inject()(mongoProvider: Function0[DB], @Named
     )
   )
 
-  private[repositories] def registrationIdSelector(registrationID: String) = BSONDocument("ID" -> BSONString(registrationID))
-
-  override def createNewRegistration(registrationId: String): Future[VatScheme] = {
+  override def createNewVatScheme(registrationId: String)(implicit now:Now[DateTime]): Future[VatScheme] = {
     val newReg = VatScheme.blank(registrationId)
     collection.insert(newReg) map {
       _ => newReg
     } recover {
       case e =>
-        Logger.warn(s"Unable to insert new VAT Registration for registration ID $registrationId, Error: ${e.getMessage}")
+        Logger.error(s"Unable to insert new VAT Scheme for registration ID $registrationId, Error: ${e.getMessage}")
         throw InsertFailed(registrationId, "VatScheme")
     }
   }
 
-  override def getInternalId(id: String): Future[Option[(String, String)]] = retrieveRegistration(id) map {
-    case Some(vatScheme) => Some(id -> vatScheme.id)
-    case None => None
-  }
-
-
-  override def retrieveRegistration(registrationId: String): Future[Option[VatScheme]] = {
+  override def retrieveVatScheme(registrationId: String): Future[Option[VatScheme]] = {
     val selector = registrationIdSelector(registrationId)
     collection.find(selector).one[VatScheme] recover {
       case e: Exception =>
-        Logger.error(s"Unable to retrieve VAT Registration for registration ID $registrationId, Error: ${e.getMessage}")
+        // $COVERAGE-OFF$
+        Logger.error(s"Unable to retrieve VAT Scheme for registration ID $registrationId, Error: ${e.getMessage}")
         throw RetrieveFailed(registrationId)
+      // $COVERAGE-ON$
     }
   }
 
+  override def updateVatChoice(registrationId: String, vatChoice: VatChoice): Future[VatChoice] = {
+    val selector = registrationIdSelector(registrationId)
+    retrieveVatScheme(registrationId) flatMap {
+      case Some(vatScheme) =>
+        collection.update(selector, vatScheme.copy(vatChoice = vatChoice)) map {
+          res => vatChoice
+        } recover {
+          case e: Exception =>
+            // $COVERAGE-OFF$
+            Logger.error(s"Unable to update VatChoice for registration ID $registrationId, Error: ${e.getMessage}")
+            throw UpdateFailed(registrationId, "VatChoice")
+          // $COVERAGE-ON$
+        }
+
+    }
+  }
 }

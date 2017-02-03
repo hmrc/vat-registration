@@ -20,10 +20,12 @@ import java.time.format.DateTimeFormatter
 
 object DateTimeHelpers {
 
+// $COVERAGE-OFF$
   val format: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
   implicit class DateTimeOps(dateTime: java.time.LocalDateTime) {
     def toIsoTimestamp: String = format.format(dateTime)
   }
+// $COVERAGE-ON$
 
 }

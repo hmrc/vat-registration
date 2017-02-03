@@ -18,4 +18,6 @@ package common.exceptions
 
 sealed trait ServiceException
 
+case object ForbiddenException extends ServiceException
+case object NotFoundException extends ServiceException
 final case class GenericServiceException(throwable: Throwable) extends ServiceException

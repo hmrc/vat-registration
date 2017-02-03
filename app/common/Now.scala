@@ -21,13 +21,18 @@ import java.util.Date
 
 import org.joda.time.DateTime
 
+
+trait Now[T] {
+  def apply(): T
+}
+
 object Now {
 
-  trait Now[T] {
-    def apply(): T
-  }
+  // $COVERAGE-OFF$
 
-  def apply[T](implicit nowInstance: Now[T]): Now[T] = nowInstance
+  def apply[T](value: => T): Now[T] = new Now[T] {
+    override def apply(): T = value
+  }
 
   implicit object DateNow extends Now[Date] {
     override def apply(): Date = new Date()
@@ -44,5 +49,7 @@ object Now {
   implicit object LocalDateTimeNow extends Now[LocalDateTime] {
     override def apply(): LocalDateTime = LocalDateTime.now()
   }
+
+  // $COVERAGE-ON$
 
 }

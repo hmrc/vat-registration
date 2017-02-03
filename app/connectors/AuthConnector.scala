@@ -33,13 +33,9 @@ object UserIds {
   implicit val format = Json.format[UserIds]
 }
 
-case class Authority(uri: String, gatewayId: String, userDetailsLink: String, ids: UserIds) {
-  def internalId: String = ids.internalId
-
-}
+case class Authority(uri: String, gatewayId: String, userDetailsLink: String, ids: UserIds)
 
 object Authority {
-
   implicit val format = Json.format[Authority]
 }
 
