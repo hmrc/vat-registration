@@ -24,6 +24,8 @@ import play.api.libs.json._
 trait Validation {
   protected def readToFmt(rds: Reads[String])(implicit wts: Writes[String]): Format[String] = Format(rds, wts)
 
+  println("sdfhud")
+
   protected def acceptOnly(validStrings: String*)(implicit wts: Writes[String]): Format[String] =
     readToFmt(pattern(validStrings.map(Pattern.quote).mkString("^(?:", "|", ")$").r))
 }
