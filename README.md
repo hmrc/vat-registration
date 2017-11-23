@@ -40,7 +40,7 @@ sbt run
 The service will come to life  @
 http://localhost:9896/
 
-# Further Documentation
+## Further Documentation
 
 [Documentation of TEST endpoints](test-endpoints.md)
 
