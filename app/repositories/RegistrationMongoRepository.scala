@@ -16,6 +16,7 @@
 
 package repositories
 
+import java.time.LocalDate
 import javax.inject.{Inject, Named}
 
 import cats.data.OptionT
@@ -23,9 +24,9 @@ import common.exceptions._
 import common.{LogicalGroup, RegistrationId}
 import enums.VatRegStatus
 import models._
-import models.api.{TradingDetails, VatBankAccountMongoFormat, VatFinancials, VatScheme}
+import models.api.{Eligibility, Threshold, TradingDetails, VatBankAccountMongoFormat, VatFinancials, VatScheme}
 import play.api.Logger
-import play.api.libs.json.{Json, OFormat, Writes}
+import play.api.libs.json.{JsObject, JsValue, Json, OFormat, Writes}
 import play.modules.reactivemongo.{MongoDbConnection, ReactiveMongoComponent}
 import reactivemongo.api.DB
 import reactivemongo.api.commands.UpdateWriteResult
@@ -38,6 +39,7 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class RegistrationMongo @Inject()(mongo: ReactiveMongoComponent) extends ReactiveMongoFormats {
   lazy val store = new RegistrationMongoRepository(mongo.mongoConnector.db)
@@ -182,6 +184,48 @@ class RegistrationMongoRepository (mongo: () => DB)
     collection.update(selector, update) map { updateResult =>
       Logger.info(s"[TradingDetails] updating trading details for regId : $regId - documents modified : ${updateResult.nModified}")
       tradingDetails
+    }
+  }
+
+  def getEligibility(regId: String)(implicit hc: HeaderCarrier): Future[Option[Eligibility]] = {
+    val projection = BSONDocument("eligibility" -> 1)
+    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
+      doc.flatMap { js =>
+        (js \ "eligibility").validateOpt[Eligibility].get
+      }
+    }
+  }
+
+  def updateEligibility(regId: String, eligibility: Eligibility)(implicit hc: HeaderCarrier): Future[Eligibility] = {
+    val setDoc = BSONDocument("$set" -> BSONDocument("eligibility" -> BSONFormats.toBSON(Json.toJson(eligibility)).get))
+    collection.update(regIdSelector(regId), setDoc) map { updateResult =>
+      Logger.info(s"[Eligibility] updating eligibility for regId : $regId - documents modified : ${updateResult.nModified}")
+      eligibility
+    } recover {
+      case e =>
+        Logger.warn(s"Unable to update eligibility for regId: $regId, Error: ${e.getMessage}")
+        throw e
+    }
+  }
+
+  def getThreshold(regId: String)(implicit hc: HeaderCarrier): Future[Option[Threshold]] = {
+    val projection = BSONDocument("threshold" -> 1)
+    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
+      doc.flatMap { js =>
+        (js \ "threshold").validateOpt[Threshold].get
+      }
+    }
+  }
+
+  def updateThreshold(regId: String, threshold: Threshold)(implicit hc: HeaderCarrier): Future[Threshold] = {
+    val setDoc = BSONDocument("$set" -> BSONDocument("threshold" -> BSONFormats.toBSON(Json.toJson(threshold)).get))
+    collection.update(regIdSelector(regId), setDoc) map { updateResult =>
+      Logger.info(s"[Threshold] updating threshold for regId : $regId - documents modified : ${updateResult.nModified}")
+      threshold
+    } recover {
+      case e =>
+        Logger.warn(s"Unable to update threshold for regId: $regId, Error: ${e.getMessage}")
+        throw e
     }
   }
 }

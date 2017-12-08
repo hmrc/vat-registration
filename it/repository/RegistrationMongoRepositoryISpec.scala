@@ -16,11 +16,13 @@
 
 package repository
 
+import java.time.LocalDate
+
 import common.exceptions._
 import common.{LogicalGroup, RegistrationId, TransactionId}
 import enums.VatRegStatus
 import itutil.{FutureAssertions, ITFixtures, MongoBaseSpec}
-import models.api.TradingDetails
+import models.api.{Eligibility, Threshold, TradingDetails}
 import models.{AcknowledgementReferencePath, VatBankAccountPath}
 import org.scalatest.BeforeAndAfterEach
 import play.api.libs.json._
@@ -275,6 +277,199 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
       await(repository.updateTradingDetails(registrationId, tradingDetails))
 
       fetchAll without _id shouldBe Some(otherUsersVatScheme)
+    }
+  }
+
+  "Calling getEligibility" should {
+    val eligibility = Eligibility(version = 1, result = "testResult")
+
+    "return eligibility data from an existing registration containing data" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(eligibility = Some(eligibility)))
+        res <- repository.getEligibility(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe Some(eligibility)
+    }
+
+    "return None from an existing registration containing no data" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme)
+        res <- repository.getEligibility(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe None
+    }
+
+    "return None from a none existing registration" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(eligibility = Some(eligibility)))
+        res <- repository.getEligibility("wrongRegId")
+      } yield res
+
+      await(result) shouldBe None
+    }
+
+    "return an exception if there is no version in eligibility block in repository" in new Setup {
+      val regId = "reg-123"
+      val json: JsObject = Json.parse(
+        s"""
+           |{
+           |  "registrationId": "$regId",
+           |  "status": "${VatRegStatus.draft}",
+           |  "eligibility": {
+           |    "result": "test result"
+           |  }
+           |}
+         """.stripMargin).as[JsObject]
+
+      insert(json)
+
+      an[Exception] shouldBe thrownBy(await(repository.getEligibility(regId)))
+    }
+
+    "return an exception if there is no result in eligibility block in repository" in new Setup {
+      val regId = "reg-123"
+      val json: JsObject = Json.parse(
+        s"""
+           |{
+           |  "registrationId": "$regId",
+           |  "status": "${VatRegStatus.draft}",
+           |  "eligibility": {
+           |    "version": 1
+           |  }
+           |}
+         """.stripMargin).as[JsObject]
+
+      insert(json)
+
+      an[Exception] shouldBe thrownBy(await(repository.getEligibility(regId)))
+    }
+  }
+
+  "Calling updateEligibility" should {
+    val eligibility = Eligibility(version = 1, result = "testResult")
+
+    "update eligibility block in registration when there is no eligibility data" in new Setup {
+      val result = for {
+        _                   <- repository.insert(vatScheme)
+        _                   <- repository.updateEligibility(vatScheme.id.value, eligibility)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield updatedScheme.eligibility
+
+      await(result) shouldBe Some(eligibility)
+    }
+
+    "update eligibility block in registration when there is already eligibility data" in new Setup {
+      val otherEligibility = Eligibility(version = 2, result = "oldResult")
+      val result = for {
+        _                   <- repository.insert(vatScheme.copy(eligibility = Some(otherEligibility)))
+        _                   <- repository.updateEligibility(vatScheme.id.value, eligibility)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield updatedScheme.eligibility
+
+      await(result) shouldBe Some(eligibility)
+    }
+
+    "not update or insert eligibility if registration does not exist" in new Setup {
+      val result = for {
+        _         <- repository.insert(vatScheme)
+        _         <- repository.updateEligibility("wrongRegId", eligibility)
+        Some(res) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield res.eligibility
+
+      await(result) shouldBe None
+      count shouldBe 1
+      await(repository.findAll()).head shouldBe vatScheme
+    }
+  }
+
+  "Calling getThreshold" should {
+    val threshold = Threshold(mandatoryRegistration = false,
+                              voluntaryReason = Some("a reason"),
+                              overThresholdDate = Some(LocalDate.of(2017, 12, 28)),
+                              expectedOverThresholdDate = Some(LocalDate.of(2018, 1, 31)))
+
+    "return threshold data from an existing registration containing data" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(threshold = Some(threshold)))
+        res <- repository.getThreshold(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe Some(threshold)
+    }
+
+    "return None from an existing registration containing no data" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme)
+        res <- repository.getThreshold(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe None
+    }
+
+    "return None from a none existing registration" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(threshold = Some(threshold)))
+        res <- repository.getThreshold("wrongRegId")
+      } yield res
+
+      await(result) shouldBe None
+    }
+
+    "return an exception if there is no mandatoryRegistration in threshold block in repository" in new Setup {
+      val regId = "reg-123"
+      val json: JsObject = Json.parse(
+        s"""
+           |{
+           |  "registrationId": "$regId",
+           |  "status": "${VatRegStatus.draft}",
+           |  "threshold": {
+           |    "voluntaryReason": "test reason"
+           |  }
+           |}
+         """.stripMargin).as[JsObject]
+
+      insert(json)
+
+      an[Exception] shouldBe thrownBy(await(repository.getThreshold(regId)))
+    }
+  }
+
+  "Calling updateThreshold" should {
+    val threshold = Threshold(mandatoryRegistration = false, voluntaryReason = Some("a reason"), overThresholdDate = None, expectedOverThresholdDate = None)
+
+    "update threshold block in registration when there is no threshold data" in new Setup {
+      val result = for {
+        _                   <- repository.insert(vatScheme)
+        _                   <- repository.updateThreshold(vatScheme.id.value, threshold)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield updatedScheme.threshold
+
+      await(result) shouldBe Some(threshold)
+    }
+
+    "update threshold block in registration when there is already threshold data" in new Setup {
+      val otherThreshold = Threshold(mandatoryRegistration = true, voluntaryReason = None, overThresholdDate = None, expectedOverThresholdDate = None)
+      val result = for {
+        _                   <- repository.insert(vatScheme.copy(threshold = Some(otherThreshold)))
+        _                   <- repository.updateThreshold(vatScheme.id.value, threshold)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield updatedScheme.threshold
+
+      await(result) shouldBe Some(threshold)
+    }
+
+    "not update or insert threshold if registration does not exist" in new Setup {
+      val result = for {
+        _         <- repository.insert(vatScheme)
+        _         <- repository.updateThreshold("wrongRegId", threshold)
+        Some(res) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield res.threshold
+
+      await(result) shouldBe None
+      count shouldBe 1
+      await(repository.findAll()).head shouldBe vatScheme
     }
   }
 }
