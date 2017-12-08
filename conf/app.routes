@@ -26,3 +26,10 @@ PUT          /:regID/submit-registration            controllers.VatRegistrationC
 GET          /:regId/status                         controllers.VatRegistrationController.getDocumentStatus(regId: RegistrationId)
 
 PATCH        /:regId/update-iv-status               controllers.VatRegistrationController.updateIVStatus(regId)
+
+### new api links
+GET         /:regId/eligibility                     controllers.EligibilityController.getEligibility(regId: String)
+PATCH       /:regId/eligibility                     controllers.EligibilityController.updateEligibility(regId: String)
+
+GET         /:regId/threshold                       controllers.ThresholdController.getThreshold(regId: String)
+PATCH       /:regId/threshold                       controllers.ThresholdController.updateThreshold(regId: String)

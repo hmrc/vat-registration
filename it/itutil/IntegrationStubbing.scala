@@ -36,6 +36,9 @@ trait IntegrationStubbing extends IntegrationSpecBase {
       builder
     }
 
-    def isNotAuthorised: PreconditionBuilder = builder
+    def isNotAuthorised: PreconditionBuilder = {
+      stubGet("/auth/authority", 403, "")
+      builder
+    }
   }
 }

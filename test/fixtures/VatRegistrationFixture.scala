@@ -102,4 +102,8 @@ trait VatRegistrationFixture {
       )
     )
 
+  val validEligibility = Eligibility(1,"thisIsAValidReason")
+  val upsertEligibility = Eligibility(1,"thisIsAnUpsert")
+  val validThreshold = Threshold(false,Some("voluntaryReason"),Some(LocalDate.now()),Some(LocalDate.now()))
+  val upsertThreshold = Threshold(true,None,Some(LocalDate.now()),Some(LocalDate.now()))
 }
