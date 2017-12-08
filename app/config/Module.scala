@@ -17,8 +17,7 @@
 package config
 
 import com.google.inject.AbstractModule
-import com.google.inject.name.Names
-import controllers.{ProcessIncorporationsController, ProcessIncorporationsControllerImpl}
+import controllers._
 
 class Module extends AbstractModule {
 
@@ -28,5 +27,7 @@ class Module extends AbstractModule {
     bind(classOf[connectors.BusinessRegistrationConnector]).to(classOf[connectors.VatRegBusinessRegistrationConnector]).asEagerSingleton()
     bind(classOf[connectors.IncorporationInformationConnector]).to(classOf[connectors.VatRegIncorporationInformationConnector ]).asEagerSingleton()
     bind(classOf[services.RegistrationService]).to(classOf[services.VatRegistrationService]).asEagerSingleton()
+    bind(classOf[EligibilityController]).to(classOf[EligibilityControllerImpl]).asEagerSingleton()
+    bind(classOf[ThresholdController]).to(classOf[ThresholdControllerImpl]).asEagerSingleton()
   }
 }

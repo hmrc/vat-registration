@@ -16,10 +16,7 @@
 
 package controllers
 
-import common.exceptions.ResourceNotFound
 import connectors.IncorporationInformationResponseException
-import play.api.mvc.Results.Ok
-import controllers.IncorporationInformationController
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.external.IncorporationStatus
