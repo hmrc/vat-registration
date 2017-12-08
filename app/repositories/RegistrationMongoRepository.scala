@@ -24,9 +24,9 @@ import common.exceptions._
 import common.{LogicalGroup, RegistrationId}
 import enums.VatRegStatus
 import models._
-import models.api.{Eligibility, Threshold, TradingDetails, VatBankAccountMongoFormat, VatFinancials, VatScheme}
+import models.api._
 import play.api.Logger
-import play.api.libs.json.{JsObject, JsValue, Json, OFormat, Writes}
+import play.api.libs.json.{JsObject, Json, OFormat, Writes}
 import play.modules.reactivemongo.{MongoDbConnection, ReactiveMongoComponent}
 import reactivemongo.api.DB
 import reactivemongo.api.commands.UpdateWriteResult
@@ -57,6 +57,8 @@ trait RegistrationRepository {
   def updateIVStatus(regId: String, ivStatus: Boolean)(implicit hc: HeaderCarrier): Future[Boolean]
   def saveTransId(transId: String, regId: RegistrationId)(implicit hc: HeaderCarrier): Future[String]
   def fetchRegByTxId(transId: String)(implicit hc: HeaderCarrier): Future[Option[VatScheme]]
+  def updateEligibility(regId: String, eligibility: Eligibility)(implicit hc: HeaderCarrier): Future[Eligibility]
+  def updateThreshold(regId: String, threshold: Threshold)(implicit hc: HeaderCarrier): Future[Threshold]
 }
 
 
@@ -177,6 +179,7 @@ class RegistrationMongoRepository (mongo: () => DB)
         throw new MissingRegDocument(RegistrationId(regId))
     }
   }
+
 
   def updateTradingDetails(regId: String, tradingDetails: TradingDetails)(implicit ex: ExecutionContext): Future[TradingDetails] = {
     val selector = regIdSelector(regId)
