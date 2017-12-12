@@ -372,15 +372,12 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
     }
 
     "not update or insert eligibility if registration does not exist" in new Setup {
-      val result = for {
-        _         <- repository.insert(vatScheme)
-        _         <- repository.updateEligibility("wrongRegId", eligibility)
-        Some(res) <- repository.retrieveVatScheme(vatScheme.id)
-      } yield res.eligibility
+      await(repository.insert(vatScheme))
 
-      await(result) shouldBe None
       count shouldBe 1
       await(repository.findAll()).head shouldBe vatScheme
+
+      a[MissingRegDocument] shouldBe thrownBy(await(repository.updateEligibility("wrongRegId", eligibility)))
     }
   }
 
@@ -461,15 +458,12 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
     }
 
     "not update or insert threshold if registration does not exist" in new Setup {
-      val result = for {
-        _         <- repository.insert(vatScheme)
-        _         <- repository.updateThreshold("wrongRegId", threshold)
-        Some(res) <- repository.retrieveVatScheme(vatScheme.id)
-      } yield res.threshold
+      await(repository.insert(vatScheme))
 
-      await(result) shouldBe None
       count shouldBe 1
       await(repository.findAll()).head shouldBe vatScheme
+
+      a[MissingRegDocument] shouldBe thrownBy(await(repository.updateThreshold("wrongRegId", threshold)))
     }
   }
 }

@@ -199,8 +199,13 @@ class RegistrationMongoRepository (mongo: () => DB)
   def updateEligibility(regId: String, eligibility: Eligibility)(implicit hc: HeaderCarrier): Future[Eligibility] = {
     val setDoc = BSONDocument("$set" -> BSONDocument("eligibility" -> BSONFormats.toBSON(Json.toJson(eligibility)).get))
     collection.update(regIdSelector(regId), setDoc) map { updateResult =>
-      Logger.info(s"[Eligibility] updating eligibility for regId : $regId - documents modified : ${updateResult.nModified}")
-      eligibility
+      if (updateResult.n == 0) {
+        Logger.warn(s"[Eligibility] updating eligibility for regId : $regId - No document found")
+        throw MissingRegDocument(RegistrationId(regId))
+      } else {
+        Logger.info(s"[Eligibility] updating eligibility for regId : $regId - documents modified : ${updateResult.nModified}")
+        eligibility
+      }
     } recover {
       case e =>
         Logger.warn(s"Unable to update eligibility for regId: $regId, Error: ${e.getMessage}")
@@ -220,8 +225,13 @@ class RegistrationMongoRepository (mongo: () => DB)
   def updateThreshold(regId: String, threshold: Threshold)(implicit hc: HeaderCarrier): Future[Threshold] = {
     val setDoc = BSONDocument("$set" -> BSONDocument("threshold" -> BSONFormats.toBSON(Json.toJson(threshold)).get))
     collection.update(regIdSelector(regId), setDoc) map { updateResult =>
-      Logger.info(s"[Threshold] updating threshold for regId : $regId - documents modified : ${updateResult.nModified}")
-      threshold
+      if (updateResult.n == 0) {
+        Logger.warn(s"[Threshold] updating threshold for regId : $regId - No document found")
+        throw MissingRegDocument(RegistrationId(regId))
+      } else {
+        Logger.info(s"[Threshold] updating threshold for regId : $regId - documents modified : ${updateResult.nModified}")
+        threshold
+      }
     } recover {
       case e =>
         Logger.warn(s"Unable to update threshold for regId: $regId, Error: ${e.getMessage}")
