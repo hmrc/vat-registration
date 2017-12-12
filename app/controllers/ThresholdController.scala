@@ -18,6 +18,7 @@ package controllers
 
 import javax.inject.Inject
 
+import common.exceptions.MissingRegDocument
 import connectors.AuthConnector
 import models.api.Threshold
 import play.api.libs.json.{JsValue, Json}
@@ -49,6 +50,7 @@ trait ThresholdController extends VatRegistrationBaseController {
             thresholdService.upsertThreshold(regId, threshold) map {
               thresholdResponse => Ok(Json.toJson(thresholdResponse))
             } recover {
+              case _: MissingRegDocument => NotFound(s"Registration not found for regId: $regId")
               case e => InternalServerError(s"An error occurred while updating threshold: ${e.getMessage}")
             }
           }

@@ -16,6 +16,8 @@
 
 package controllers
 
+import common.RegistrationId
+import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api.Eligibility
@@ -50,6 +52,9 @@ class EligibilityControllerSpec extends VatRegSpec with VatRegistrationFixture {
 
     def upsertEligibilityFails(): OngoingStubbing[Future[Eligibility]] = when(mockEligibilityService.upsertEligibility(any(), any())(any()))
       .thenReturn(Future.failed(new Exception))
+
+    def upsertEligibilityNotFound(): OngoingStubbing[Future[Eligibility]] = when(mockEligibilityService.upsertEligibility(any(), any())(any()))
+      .thenReturn(Future.failed(new MissingRegDocument(RegistrationId("testId"))))
   }
 
   val validEligibilityJson = Json.parse(
@@ -125,6 +130,13 @@ class EligibilityControllerSpec extends VatRegSpec with VatRegistrationFixture {
       upsertEligibilityFails()
       val result = controller.updateEligibility("testId")(FakeRequest().withBody[JsObject](invalidUpsertJson))
       status(result) shouldBe 400
+    }
+
+    "returns 404 if the registration is not found" in new Setup {
+      userIsAuthorised()
+      upsertEligibilityNotFound()
+      val result = controller.updateEligibility("testId")(FakeRequest().withBody[JsObject](upsertEligibilityJson))
+      status(result) shouldBe 404
     }
 
     "returns 500 if an error occurs" in new Setup {

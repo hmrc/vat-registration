@@ -18,6 +18,8 @@ package controllers
 
 import java.time.LocalDate
 
+import common.RegistrationId
+import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api.{Eligibility, Threshold}
@@ -52,6 +54,9 @@ class ThresholdControllerSpec extends VatRegSpec with VatRegistrationFixture {
 
     def upsertThresholdFails(): OngoingStubbing[Future[Threshold]] = when(mockThresholdService.upsertThreshold(any(), any())(any()))
       .thenReturn(Future.failed(new Exception))
+
+    def upsertThresholdNotFound(): OngoingStubbing[Future[Threshold]] = when(mockThresholdService.upsertThreshold(any(), any())(any()))
+      .thenReturn(Future.failed(new MissingRegDocument(RegistrationId("testId"))))
   }
 
   val validThresholdJson = Json.parse(
@@ -130,6 +135,13 @@ class ThresholdControllerSpec extends VatRegSpec with VatRegistrationFixture {
       upsertThresholdFails()
       val result = controller.updateThreshold("testId")(FakeRequest().withBody[JsObject](invalidUpsertJson))
       status(result) shouldBe 400
+    }
+
+    "returns 404 if the registration is not found" in new Setup {
+      userIsAuthorised()
+      upsertThresholdNotFound()
+      val result = controller.updateThreshold("testId")(FakeRequest().withBody[JsObject](upsertTresholdJson))
+      status(result) shouldBe 404
     }
 
     "returns 500 if an error occurs" in new Setup {

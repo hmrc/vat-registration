@@ -18,6 +18,7 @@ package controllers
 
 import javax.inject.Inject
 
+import common.exceptions.MissingRegDocument
 import connectors.AuthConnector
 import models.api.Eligibility
 import play.api.libs.json.{JsValue, Json}
@@ -49,6 +50,7 @@ trait EligibilityController extends VatRegistrationBaseController {
             eligibilityService.upsertEligibility(regId, eligibility) map {
               eligibilityResponse => Ok(Json.toJson(eligibilityResponse))
             } recover {
+              case _: MissingRegDocument => NotFound(s"Registration not found for regId: $regId")
               case e => InternalServerError(s"An error occurred while updating eligibility: ${e.getMessage}")
             }
           }

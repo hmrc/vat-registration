@@ -132,12 +132,12 @@ class EligibilityControllerISpec extends IntegrationStubbing with ITFixtures {
       })
     }
 
-    "return 500 if no reg document is found" in new Setup {
+    "return 404 if no reg document is found" in new Setup {
       given
         .user.isAuthorised
 
       await(client(controllers.routes.EligibilityController.updateEligibility("regId").url).patch(validEligibilityJson) map { response =>
-        response.status shouldBe 500
+        response.status shouldBe 404
       })
     }
 

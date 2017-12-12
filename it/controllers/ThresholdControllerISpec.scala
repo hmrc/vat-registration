@@ -137,12 +137,12 @@ class ThresholdControllerISpec extends IntegrationStubbing with ITFixtures {
       })
     }
 
-    "return 500 if no reg document is found" in new Setup {
+    "return 404 if no reg document is found" in new Setup {
       given
         .user.isAuthorised
 
       await(client(controllers.routes.ThresholdController.updateThreshold("regId").url).patch(validThresholdJson) map { response =>
-        response.status shouldBe 500
+        response.status shouldBe 404
       })
     }
 

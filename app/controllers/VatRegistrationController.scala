@@ -80,6 +80,7 @@ class VatRegistrationController @Inject()(val auth: AuthConnector,
 
   def updateVatContact(id: RegistrationId): Action[JsValue] = patch[VatContact](registrationService, id)
 
+  @deprecated("Use updateEligibility or updateThreshold instead", "12/12/2017")
   def updateVatEligibility(id: RegistrationId): Action[JsValue] = patch[VatServiceEligibility](registrationService, id)
 
   def updateLodgingOfficer(id: RegistrationId): Action[JsValue] = patch[VatLodgingOfficer](registrationService, id)

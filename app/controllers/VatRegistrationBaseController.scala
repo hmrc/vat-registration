@@ -31,6 +31,7 @@ abstract class VatRegistrationBaseController extends BaseController with Authent
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
+  @deprecated
   protected def patch[G: LogicalGroup : Format : Manifest](service: RegistrationService, id: RegistrationId): Action[JsValue] =
     Action.async(parse.json) {
       implicit request =>
@@ -44,6 +45,7 @@ abstract class VatRegistrationBaseController extends BaseController with Authent
         }
     }
 
+  @deprecated
   protected def delete[T](service: RegistrationService,
                           id: RegistrationId, elementPath: ElementPath): Action[AnyContent] =
     Action.async { implicit request =>
