@@ -20,11 +20,13 @@ import models.api.VatChoice.{necessityValidator, reasonValidator}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+@deprecated("Use Threshold instead", "12/12/2017")
 case class VatEligibilityChoice(necessity: String, // "obligatory" or "voluntary"
                                 reason: Option[String] = None,
                                 vatThresholdPostIncorp: Option[VatThresholdPostIncorp] = None,
                                 vatExpectedThresholdPostIncorp: Option[VatExpectedThresholdPostIncorp] = None)
 
+@deprecated("Use Threshold instead", "12/12/2017")
 object VatEligibilityChoice {
   implicit val format: OFormat[VatEligibilityChoice] = (
     (__ \ "necessity").format[String](necessityValidator) and

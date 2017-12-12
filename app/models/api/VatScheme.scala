@@ -28,6 +28,7 @@ case class VatScheme(id: RegistrationId,
                      financials: Option[VatFinancials] = None,
                      vatSicAndCompliance: Option[VatSicAndCompliance] = None,
                      vatContact: Option[VatContact] = None,
+                     vatEligibility: Option[VatServiceEligibility] = None,
                      eligibility: Option[Eligibility] = None,
                      threshold: Option[Threshold] = None,
                      acknowledgementReference: Option[String] = None,
@@ -44,6 +45,7 @@ object VatScheme {
     (__ \ "financials").readNullable[VatFinancials](r) and
     (__ \ "vatSicAndCompliance").readNullable[VatSicAndCompliance] and
     (__ \ "vatContact").readNullable[VatContact] and
+    (__ \ "vatEligibility").readNullable[VatServiceEligibility] and
     (__ \ "eligibility").readNullable[Eligibility] and
     (__ \ "threshold").readNullable[Threshold] and
     (__ \ "acknowledgementReference").readNullable[String] and
@@ -59,6 +61,7 @@ object VatScheme {
     (__ \ "financials").writeNullable[VatFinancials](w) and
     (__ \ "vatSicAndCompliance").writeNullable[VatSicAndCompliance] and
     (__ \ "vatContact").writeNullable[VatContact] and
+    (__ \ "vatEligibility").writeNullable[VatServiceEligibility] and
     (__ \ "eligibility").writeNullable[Eligibility] and
     (__ \ "threshold").writeNullable[Threshold] and
     (__ \ "acknowledgementReference").writeNullable[String] and
