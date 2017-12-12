@@ -146,7 +146,7 @@ class ThresholdControllerISpec extends IntegrationStubbing with ITFixtures {
       })
     }
 
-    "return 200 if no data updated because data is same" in new Setup {
+    "return 200 if no data updated because data to be updated already exists" in new Setup {
       given
         .user.isAuthorised
 
@@ -157,7 +157,7 @@ class ThresholdControllerISpec extends IntegrationStubbing with ITFixtures {
       })
     }
 
-    "return 403 if user is not authorised obtained" in new Setup {
+    "return 403 if user is not authorised" in new Setup {
       given
         .user.isNotAuthorised
 
