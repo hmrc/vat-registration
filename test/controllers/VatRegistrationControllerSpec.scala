@@ -43,15 +43,16 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
 
   import fakeApplication.materializer
 
-  val vatLodgingOfficer       = VatLodgingOfficer(
+  val vatLodgingOfficer       = LodgingOfficer(
     currentAddress            = Some(scrsAddress),
-    dob                       = Some(DateOfBirth(1, 1, 1980)),
-    nino                      = Some("NB666666C"),
-    role                      = Some("director"),
-    name                      = Some(name),
+    dob                       = LocalDate.of(1980, 1, 1),
+    nino                      = "NB666666C",
+    role                      = "director",
+    name                      = name,
     changeOfName              = Some(changeOfName),
     currentOrPreviousAddress  = Some(currentOrPreviousAddress),
-    contact                   = Some(contact)
+    contact                   = Some(contact),
+    details                   = None
   )
 
 

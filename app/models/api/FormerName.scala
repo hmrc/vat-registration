@@ -20,7 +20,10 @@ import java.time.LocalDate
 
 import play.api.libs.json.Json
 
-case class FormerName(formerName: String, dateOfNameChange: LocalDate)
+case class FormerName(@deprecated("Use name instead", "SCRS-9379") formerName: String,
+                      @deprecated("Use change", "SCRS-9379") dateOfNameChange: LocalDate,
+                      name: Name,
+                      change: LocalDate)
 
 object FormerName {
   implicit val format = Json.format[FormerName]

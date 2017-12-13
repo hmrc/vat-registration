@@ -16,26 +16,29 @@
 
 package models
 
+import java.time.LocalDate
+
 import fixtures.VatRegistrationFixture
 import models.api._
 import play.api.data.validation.ValidationError
 import play.api.libs.json.{Format, JsPath, Json}
 
-class VatLodgingOfficerSpec extends JsonFormatValidation with VatRegistrationFixture {
+class LodgingOfficerSpec extends JsonFormatValidation with VatRegistrationFixture {
 
   private def writeAndRead[T](t: T)(implicit fmt: Format[T]) = fmt.reads(Json.toJson(fmt.writes(t)))
 
-  implicit val format = VatLodgingOfficer.format
+  implicit val format = LodgingOfficer.format
 
-  val vatLodgingOfficer = VatLodgingOfficer(
+  val vatLodgingOfficer = LodgingOfficer(
     currentAddress           = Some(scrsAddress),
-    dob                      = Some(DateOfBirth(1, 1, 1990)),
-    nino                     = Some("NB686868C"),
-    role                     = Some("director"),
-    name                     = Some(name),
+    dob                      = LocalDate.of(1990, 1, 1),
+    nino                     = "NB686868C",
+    role                     = "director",
+    name                     = name,
     changeOfName             = Some(changeOfName),
     currentOrPreviousAddress = Some(currentOrPreviousAddress),
-    contact                  = Some(contact)
+    contact                  = Some(contact),
+    details                  = None
   )
 
   "Creating a Json from a valid VatLodgingOfficer model" should {
@@ -47,32 +50,18 @@ class VatLodgingOfficerSpec extends JsonFormatValidation with VatRegistrationFix
   "Creating a Json from an invalid VatLodgingOfficer model" should {
     "fail with a ValidationError" when {
       "NINO is invalid" in {
-        val lodgingOfficer = vatLodgingOfficer.copy(nino = Some("NB888"))
+        val lodgingOfficer = vatLodgingOfficer.copy(nino = "NB888")
         writeAndRead(lodgingOfficer) shouldHaveErrors (JsPath() \ "nino" -> ValidationError("error.pattern"))
       }
 
-      "DOB day is invalid" in {
-        val lodgingOfficer = vatLodgingOfficer.copy(dob = Some(DateOfBirth(41, 1, 1990)))
-        writeAndRead(lodgingOfficer) shouldHaveErrors (JsPath() \ "dob" \ "day" -> ValidationError("error.max", 31))
-      }
-
-      "DOB month is invalid" in {
-        val lodgingOfficer = vatLodgingOfficer.copy(dob = Some(DateOfBirth(1, 0, 1990)))
-        writeAndRead(lodgingOfficer) shouldHaveErrors (JsPath() \ "dob" \ "month" -> ValidationError("error.min", 1))
-      }
-
-      "DOB year is invalid" in {
-        val lodgingOfficer = vatLodgingOfficer.copy(dob = Some(DateOfBirth(1, 1, 990)))
-        writeAndRead(lodgingOfficer) shouldHaveErrors (JsPath() \ "dob" \ "year" -> ValidationError("error.min", 1000))
-      }
-
       "Role is invalid" in {
-        val lodgingOfficer = vatLodgingOfficer.copy(role = Some("magician"))
+        val lodgingOfficer = vatLodgingOfficer.copy(role = "magician")
         writeAndRead(lodgingOfficer) shouldHaveErrors (JsPath() \ "role" -> ValidationError("error.pattern"))
       }
 
       "Name is invalid" in {
-        val lodgingOfficer = vatLodgingOfficer.copy(name = Some(Name(forename = Some("$%@$%^@#%@$^@$^$%@#$%@#$"))))
+        val name = Name(first = "$%@$%^@#%@$^@$^$%@#$%@#$", middle = None, last = None, forename = Some("$%@$%^@#%@$^@$^$%@#$%@#$"))
+        val lodgingOfficer = vatLodgingOfficer.copy(name = name)
         writeAndRead(lodgingOfficer) shouldHaveErrors (JsPath() \ "name" \ "forename" -> ValidationError("error.pattern"))
       }
 

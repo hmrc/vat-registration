@@ -31,7 +31,8 @@ trait ITFixtures {
   val vatScheme = VatScheme(regId, None, status = VatRegStatus.draft)
   val vatChoice = VatChoice(vatStartDate = VatStartDate(selection = "COMPANY_REGISTRATION_DATE", startDate = Some(date)))
   val tradingName = TradingName(selection = true, Some("some-trading-name"))
-  val changeOfName = ChangeOfName(true, Some(FormerName("", LocalDate.now())))
+  val oldName = Name(first = "Bob Smith", middle = None, last = None, forename = None, surname = None, title = None, otherForenames = None)
+  val changeOfName = ChangeOfName(true, Some(FormerName("", LocalDate.now(), name = oldName, change = LocalDate.now())))
 
   val vatTradingDetails = VatTradingDetails(
     vatChoice = vatChoice,
@@ -69,21 +70,29 @@ trait ITFixtures {
     accountingPeriods = VatAccountingPeriod("monthly")
   )
 
-  val scrsAddress               = ScrsAddress("line1", "line2", None, None, Some("XX XX"), Some("UK"))
+  val scrsAddress               = Address("line1", "line2", None, None, Some("XX XX"), Some("UK"))
   val vatDigitalContact         = VatDigitalContact("test@test.com", Some("12345678910"), Some("12345678910"))
   val vatContact                = VatContact(digitalContact = vatDigitalContact, website = None, ppob = scrsAddress)
 
-  val name                      = Name(forename = Some("Forename"), surname = Some("Surname"), title = Some("Title"))
+  val name                      = Name(first = "Forename",
+    middle = None,
+    last = Some("Surname"),
+    forename = Some("Forename"),
+    surname = Some("Surname"),
+    title = Some("Title")
+  )
   val contact                   = OfficerContactDetails(Some("test@test.com"), None, None)
-  val formerName                = FormerName("Bob Smith", date)
+  val formerName                = FormerName("Bob Smith", date, name = oldName, change = date)
   val currentOrPreviousAddress  = CurrentOrPreviousAddress(false, Some(scrsAddress))
-  val vatLodgingOfficer         = VatLodgingOfficer(
+  val vatLodgingOfficer         = LodgingOfficer(
     currentAddress            = Some(scrsAddress),
-    dob                       = Some(DateOfBirth(1, 1, 1980)),
-    nino                      = Some("NB686868C"),
-    role                      = Some("director"),
-    name                      = Some(name),
+    dob                       = LocalDate.of(1980, 1, 1),
+    nino                      = "NB686868C",
+    role                      = "director",
+    name                      = name,
     changeOfName              = Some(changeOfName),
     currentOrPreviousAddress  = Some(currentOrPreviousAddress),
-    contact                   = Some(contact))
+    contact                   = Some(contact),
+    details                   = None
+  )
 }

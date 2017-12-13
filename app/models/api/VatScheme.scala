@@ -24,7 +24,7 @@ import play.api.libs.json._
 case class VatScheme(id: RegistrationId,
                      transactionId: Option[TransactionId] = None,
                      tradingDetails: Option[VatTradingDetails] = None,
-                     lodgingOfficer: Option[VatLodgingOfficer] = None,
+                     lodgingOfficer: Option[LodgingOfficer] = None,
                      financials: Option[VatFinancials] = None,
                      vatSicAndCompliance: Option[VatSicAndCompliance] = None,
                      vatContact: Option[VatContact] = None,
@@ -41,7 +41,7 @@ object VatScheme {
     (__ \ "registrationId").read[RegistrationId] and
     (__ \ "transactionId").readNullable[TransactionId] and
     (__ \ "tradingDetails").readNullable[VatTradingDetails] and
-    (__ \ "lodgingOfficer").readNullable[VatLodgingOfficer] and
+    (__ \ "lodgingOfficer").readNullable[LodgingOfficer] and
     (__ \ "financials").readNullable[VatFinancials](r) and
     (__ \ "vatSicAndCompliance").readNullable[VatSicAndCompliance] and
     (__ \ "vatContact").readNullable[VatContact] and
@@ -57,7 +57,7 @@ object VatScheme {
     (__ \ "registrationId").write[RegistrationId] and
     (__ \ "transactionId").writeNullable[TransactionId] and
     (__ \ "tradingDetails").writeNullable[VatTradingDetails] and
-    (__ \ "lodgingOfficer").writeNullable[VatLodgingOfficer] and
+    (__ \ "lodgingOfficer").writeNullable[LodgingOfficer] and
     (__ \ "financials").writeNullable[VatFinancials](w) and
     (__ \ "vatSicAndCompliance").writeNullable[VatSicAndCompliance] and
     (__ \ "vatContact").writeNullable[VatContact] and

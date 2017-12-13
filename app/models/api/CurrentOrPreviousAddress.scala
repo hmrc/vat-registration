@@ -18,7 +18,7 @@ package models.api
 import play.api.libs.json.{Json, OFormat}
 
 case class CurrentOrPreviousAddress(currentAddressThreeYears: Boolean,
-                                    previousAddress: Option[ScrsAddress] = None)
+                                    previousAddress: Option[Address] = None)
 
 object CurrentOrPreviousAddress {
   implicit val format: OFormat[CurrentOrPreviousAddress] = Json.format[CurrentOrPreviousAddress]

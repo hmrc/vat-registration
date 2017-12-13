@@ -18,13 +18,13 @@ package models.api
 
 import play.api.libs.json.{Json, OFormat}
 
-case class ScrsAddress(line1: String,
-                       line2: String,
-                       line3: Option[String] = None,
-                       line4: Option[String] = None,
-                       postcode: Option[String] = None,
-                       country: Option[String] = None )
+case class Address(line1: String,
+                   line2: String,
+                   line3: Option[String] = None,
+                   line4: Option[String] = None,
+                   postcode: Option[String] = None,
+                   country: Option[String] = None )
 
-object ScrsAddress {
-  implicit val format: OFormat[ScrsAddress] = Json.format[ScrsAddress]
+object Address {
+  implicit val format: OFormat[Address] = Json.format[Address]
 }

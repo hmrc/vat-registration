@@ -47,7 +47,7 @@ trait VatRegistrationFixture {
       tradingName = Some("some-trader-name")),
     euTrading = VatEuTrading(selection = true, eoriApplication = Some(true))
   )
-  val scrsAddress = ScrsAddress("line1", "line2", None, None, Some("XX XX"), Some("UK"))
+  val scrsAddress = Address("line1", "line2", None, None, Some("XX XX"), Some("UK"))
   val sicCode = SicCode("88888888", "description", "displayDetails")
   val sicAndCompliance: VatSicAndCompliance = VatSicAndCompliance("some-business-description", None, None, mainBusinessActivity = sicCode)
   val vatDigitalContact = VatDigitalContact("test@test.com", Some("12345678910"), Some("12345678910"))
@@ -72,8 +72,9 @@ trait VatRegistrationFixture {
     ))
   )
 
-  val name = Name(forename = Some("Forename"), surname = Some("Surname"), title = Some("Title"))
-  val formerName = FormerName("Bob Smith", date)
+  val name = Name(first = "Forename", middle = None, last = Some("Surname"), forename = Some("Forename"), surname = Some("Surname"), title = Some("Title"))
+  val oldName = Name(first = "Bob Smith", middle = None, last = None, forename = None, surname = None, title = None, otherForenames = None)
+  val formerName = FormerName("Bob Smith", date, name = oldName, change = date)
   val contact = OfficerContactDetails(Some("test@test.com"), None, None)
   val vatScheme: VatScheme = VatScheme(regId, status = VatRegStatus.draft)
   val exception = new Exception("Exception")
@@ -84,7 +85,7 @@ trait VatRegistrationFixture {
     annualCostsLimited = Some("yesWithin12months"),
     doYouWantToUseThisRate = Some(false),
     whenDoYouWantToJoinFrs = Some("VAT_REGISTRATION_DATE"))
-  val changeOfName = ChangeOfName(true, Some(FormerName("", LocalDate.now())))
+  val changeOfName = ChangeOfName(true, Some(FormerName(formerName = "", LocalDate.now(), name = oldName, change = LocalDate.now())))
 
   def incorporationStatus(status: String = "accepted", incorpDate: LocalDate = LocalDate.now()): IncorporationStatus =
     IncorporationStatus(

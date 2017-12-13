@@ -179,8 +179,17 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
 
   "Calling updateIVStatus" should {
     "update the ivStatus in lodging officer" in new Setup {
+      val lodginOfficer = LodgingOfficer(
+        dob = LocalDate.of(1980, 1, 1),
+        nino = "NB686868C",
+        role = "director",
+        name = Name(first = "some name", middle = None, last = None),
+        details = None
+      )
+      val vatSchemeWithLodgingOfficer = vatScheme.copy(lodgingOfficer = Some(lodginOfficer))
+
       val result = for {
-        insert                <- repository.insert(vatScheme)
+        insert                <- repository.insert(vatSchemeWithLodgingOfficer)
         update                <- repository.updateIVStatus(vatScheme.id.value, true)
         Some(updatedScheme)   <- repository.retrieveVatScheme(vatScheme.id)
       } yield updatedScheme.lodgingOfficer.get.ivPassed
