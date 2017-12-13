@@ -282,4 +282,30 @@ class RegistrationMongoRepository (mongo: () => DB)
         throw e
     }
   }
+
+  def getLodgingOfficer(regId: String)(implicit hc: HeaderCarrier): Future[Option[LodgingOfficer]] = {
+    val projection = BSONDocument("lodgingOfficer" -> 1)
+    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
+      doc.flatMap { js =>
+        (js \ "lodgingOfficer").validateOpt[LodgingOfficer].get
+      }
+    }
+  }
+
+  def updateLodgingOfficer(regId: String, lodgingOfficer: LodgingOfficer)(implicit hc: HeaderCarrier): Future[LodgingOfficer] = {
+    val setDoc = BSONDocument("$set" -> BSONDocument("lodgingOfficer" -> BSONFormats.toBSON(Json.toJson(lodgingOfficer)).get))
+    collection.update(regIdSelector(regId), setDoc) map { updateResult =>
+      if (updateResult.n == 0) {
+        Logger.warn(s"[LodgingOfficer] updating threshold for regId : $regId - No document found")
+        throw MissingRegDocument(RegistrationId(regId))
+      } else {
+        Logger.info(s"[LodgingOfficer] updating threshold for regId : $regId - documents modified : ${updateResult.nModified}")
+        lodgingOfficer
+      }
+    } recover {
+      case e =>
+        Logger.warn(s"Unable to update lodgingOfficer for regId: $regId, Error: ${e.getMessage}")
+        throw e
+    }
+  }
 }

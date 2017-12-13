@@ -731,4 +731,87 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
       a[MissingRegDocument] shouldBe thrownBy(await(repository.updateThreshold("wrongRegId", threshold)))
     }
   }
+
+  "Calling getLodgingOfficer" should {
+    val lodgingOfficer = LodgingOfficer(dob = LocalDate.of(1990, 1, ))
+
+    "return lodgingOfficer data from an existing registration containing data" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(lodgingOfficer = Some(lodgingOfficer)))
+        res <- repository.getThreshold(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe Some(lodgingOfficer)
+    }
+
+    "return None from an existing registration containing no data" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme)
+        res <- repository.getThreshold(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe None
+    }
+
+    "return None from a none existing registration" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(lodgingOfficer = Some(lodgingOfficer)))
+        res <- repository.getThreshold("wrongRegId")
+      } yield res
+
+      await(result) shouldBe None
+    }
+
+    "return an exception if there is no mandatoryRegistration in lodgingOfficer block in repository" in new Setup {
+      val regId = "reg-123"
+      val json: JsObject = Json.parse(
+        s"""
+           |{
+           |  "registrationId": "$regId",
+           |  "status": "${VatRegStatus.draft}",
+           |  "lodgingOfficer": {
+           |    "voluntaryReason": "test reason"
+           |  }
+           |}
+         """.stripMargin).as[JsObject]
+
+      insert(json)
+
+      an[Exception] shouldBe thrownBy(await(repository.getThreshold(regId)))
+    }
+  }
+
+  "Calling updateLodgingOfficer" should {
+    val lodgingOfficer = Threshold(mandatoryRegistration = false, voluntaryReason = Some("a reason"), overThresholdDate = None, expectedOverThresholdDate = None)
+
+    "update lodgingOfficer block in registration when there is no lodgingOfficer data" in new Setup {
+      val result = for {
+        _                   <- repository.insert(vatScheme)
+        _                   <- repository.updateThreshold(vatScheme.id.value, lodgingOfficer)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield updatedScheme.lodgingOfficer
+
+      await(result) shouldBe Some(lodgingOfficer)
+    }
+
+    "update lodgingOfficer block in registration when there is already lodgingOfficer data" in new Setup {
+      val otherThreshold = Threshold(mandatoryRegistration = true, voluntaryReason = None, overThresholdDate = None, expectedOverThresholdDate = None)
+      val result = for {
+        _                   <- repository.insert(vatScheme.copy(lodgingOfficer = Some(otherThreshold)))
+        _                   <- repository.updateThreshold(vatScheme.id.value, lodgingOfficer)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield updatedScheme.lodgingOfficer
+
+      await(result) shouldBe Some(lodgingOfficer)
+    }
+
+    "not update or insert lodgingOfficer if registration does not exist" in new Setup {
+      await(repository.insert(vatScheme))
+
+      count shouldBe 1
+      await(repository.findAll()).head shouldBe vatScheme
+
+      a[MissingRegDocument] shouldBe thrownBy(await(repository.updateThreshold("wrongRegId", lodgingOfficer)))
+    }
+  }
 }
