@@ -20,8 +20,10 @@ import java.time.LocalDate
 
 import play.api.libs.json.Json
 
+@deprecated("Use Option[LocalDate] instead", "12/12/2017")
 case class VatExpectedThresholdPostIncorp(expectedOverThresholdSelection: Boolean, expectedOverThresholdDate: Option[LocalDate])
 
+@deprecated("Use Option[LocalDate] instead", "12/12/2017")
 object VatExpectedThresholdPostIncorp {
   implicit val format = Json.format[VatExpectedThresholdPostIncorp]
 }

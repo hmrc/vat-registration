@@ -574,42 +574,6 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
 
       await(result) shouldBe None
     }
-
-    "return an exception if there is no version in eligibility block in repository" in new Setup {
-      val regId = "reg-123"
-      val json: JsObject = Json.parse(
-        s"""
-           |{
-           |  "registrationId": "$regId",
-           |  "status": "${VatRegStatus.draft}",
-           |  "eligibility": {
-           |    "result": "test result"
-           |  }
-           |}
-         """.stripMargin).as[JsObject]
-
-      insert(json)
-
-      an[Exception] shouldBe thrownBy(await(repository.getEligibility(regId)))
-    }
-
-    "return an exception if there is no result in eligibility block in repository" in new Setup {
-      val regId = "reg-123"
-      val json: JsObject = Json.parse(
-        s"""
-           |{
-           |  "registrationId": "$regId",
-           |  "status": "${VatRegStatus.draft}",
-           |  "eligibility": {
-           |    "version": 1
-           |  }
-           |}
-         """.stripMargin).as[JsObject]
-
-      insert(json)
-
-      an[Exception] shouldBe thrownBy(await(repository.getEligibility(regId)))
-    }
   }
 
   "Calling updateEligibility" should {
@@ -678,24 +642,6 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
 
       await(result) shouldBe None
     }
-
-    "return an exception if there is no mandatoryRegistration in threshold block in repository" in new Setup {
-      val regId = "reg-123"
-      val json: JsObject = Json.parse(
-        s"""
-           |{
-           |  "registrationId": "$regId",
-           |  "status": "${VatRegStatus.draft}",
-           |  "threshold": {
-           |    "voluntaryReason": "test reason"
-           |  }
-           |}
-         """.stripMargin).as[JsObject]
-
-      insert(json)
-
-      an[Exception] shouldBe thrownBy(await(repository.getThreshold(regId)))
-    }
   }
 
   "Calling updateThreshold" should {
@@ -729,6 +675,119 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
       await(repository.findAll()).head shouldBe vatScheme
 
       a[MissingRegDocument] shouldBe thrownBy(await(repository.updateThreshold("wrongRegId", threshold)))
+    }
+  }
+
+  "Calling getLodgingOfficer" should {
+    val lodgingOfficerDetails = LodgingOfficerDetails(
+      currentAddress = scrsAddress,
+      changeOfName = None,
+      previousAddress = None,
+      contact = VatDigitalContact(
+        email = "test@t.com",
+        tel = None,
+        mobile = None
+      )
+    )
+    val lodgingOfficer = LodgingOfficer(
+      dob = LocalDate.of(1990, 1, 30),
+      nino = "NB686868C",
+      role = "director",
+      name = name,
+      details = None
+    )
+
+    "return lodgingOfficer data from an existing registration containing data" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(lodgingOfficer = Some(lodgingOfficer)))
+        res <- repository.getLodgingOfficer(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe Some(lodgingOfficer)
+    }
+
+    "return lodgingOfficer with details data from an existing registration containing data" in new Setup {
+      val lodgingOfficerWithDetails = lodgingOfficer.copy(details = Some(lodgingOfficerDetails))
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(lodgingOfficer = Some(lodgingOfficerWithDetails)))
+        res <- repository.getLodgingOfficer(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe Some(lodgingOfficerWithDetails)
+    }
+
+    "return None from an existing registration containing no data" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme)
+        res <- repository.getLodgingOfficer(vatScheme.id.value)
+      } yield res
+
+      await(result) shouldBe None
+    }
+
+    "return None from a none existing registration" in new Setup {
+      val result = for {
+        _   <- repository.insert(vatScheme.copy(lodgingOfficer = Some(lodgingOfficer)))
+        res <- repository.getLodgingOfficer("wrongRegId")
+      } yield res
+
+      await(result) shouldBe None
+    }
+  }
+
+  "Calling updateLodgingOfficer" should {
+    val lodgingOfficer = LodgingOfficer(
+      dob = LocalDate.of(1990, 1, 30),
+      nino = "NB686868C",
+      role = "director",
+      name = name,
+      details = None
+    )
+
+    "update lodgingOfficer block in registration when there is no lodgingOfficer data" in new Setup {
+      val result = for {
+        _                   <- repository.insert(vatScheme)
+        _                   <- repository.updateLodgingOfficer(vatScheme.id.value, lodgingOfficer)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield updatedScheme.lodgingOfficer
+
+      await(result) shouldBe Some(lodgingOfficer)
+    }
+
+    "update lodgingOfficer block in registration when there is already lodgingOfficer data" in new Setup {
+      val lodgingOfficerDetails = LodgingOfficerDetails(
+        currentAddress = scrsAddress,
+        changeOfName = None,
+        previousAddress = None,
+        contact = VatDigitalContact(
+          email = "test@t.com",
+          tel = None,
+          mobile = None
+        )
+      )
+      val otherLodgingOfficer = LodgingOfficer(
+        dob = LocalDate.of(1988, 12, 15),
+        nino = "NB535353C",
+        role = "secretary",
+        name = oldName,
+        details = Some(lodgingOfficerDetails)
+      )
+      val result = for {
+        _                   <- repository.insert(vatScheme.copy(lodgingOfficer = Some(otherLodgingOfficer)))
+        _                   <- repository.updateLodgingOfficer(vatScheme.id.value, lodgingOfficer)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatScheme.id)
+      } yield updatedScheme.lodgingOfficer
+
+      await(result) shouldBe Some(lodgingOfficer)
+    }
+
+    "not update or insert lodgingOfficer if registration does not exist" in new Setup {
+      await(repository.insert(vatScheme))
+
+      count shouldBe 1
+      await(repository.findAll()).head shouldBe vatScheme
+
+      a[MissingRegDocument] shouldBe thrownBy(await(repository.updateLodgingOfficer("wrongRegId", lodgingOfficer)))
     }
   }
 }

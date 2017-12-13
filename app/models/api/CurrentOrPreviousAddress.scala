@@ -17,9 +17,11 @@
 package models.api
 import play.api.libs.json.{Json, OFormat}
 
+@deprecated("Use Option[Address] instead", "SCRS-9379")
 case class CurrentOrPreviousAddress(currentAddressThreeYears: Boolean,
                                     previousAddress: Option[Address] = None)
 
+@deprecated("Use Option[Address] instead", "SCRS-9379")
 object CurrentOrPreviousAddress {
   implicit val format: OFormat[CurrentOrPreviousAddress] = Json.format[CurrentOrPreviousAddress]
 }

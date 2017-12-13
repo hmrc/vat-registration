@@ -20,8 +20,10 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 
+@deprecated("Use VatDigitalContact instead", "SCRS-9379")
 case class OfficerContactDetails(email: Option[String], tel: Option[String], mobile: Option[String])
 
+@deprecated("Use VatDigitalContact instead", "SCRS-9379")
 object OfficerContactDetails extends VatLodgingOfficerValidator {
 
   implicit val format: OFormat[OfficerContactDetails] = (

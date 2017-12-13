@@ -18,8 +18,10 @@ package models.api
 
 import play.api.libs.json.Json
 
+@deprecated("Use Option[FormerName] instead", "SCRS-9379")
 case class ChangeOfName(nameHasChanged: Boolean, formerName: Option[FormerName] = None)
 
+@deprecated("Use Option[FormerName] instead", "SCRS-9379")
 object ChangeOfName {
   implicit val format = Json.format[ChangeOfName]
 }
