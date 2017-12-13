@@ -103,8 +103,14 @@ trait VatRegistrationFixture {
       )
     )
 
-  val validEligibility = Eligibility(1,"thisIsAValidReason")
-  val upsertEligibility = Eligibility(1,"thisIsAnUpsert")
-  val validThreshold = Threshold(false,Some("voluntaryReason"),Some(LocalDate.now()),Some(LocalDate.now()))
-  val upsertThreshold = Threshold(true,None,Some(LocalDate.now()),Some(LocalDate.now()))
+  val validEligibility          = Eligibility(1,"thisIsAValidReason")
+  val upsertEligibility         = Eligibility(1,"thisIsAnUpsert")
+  val validThreshold            = Threshold(false,Some("voluntaryReason"),Some(LocalDate.now()),Some(LocalDate.now()))
+  val upsertThreshold           = Threshold(true,None,Some(LocalDate.now()),Some(LocalDate.now()))
+  val currentAddress            = Address("12 Lukewarm","Oriental lane")
+  val skylakeValiarm            = Name(first = "Skylake", middle = None, last = Some("Valiarm"))
+  val skylakeDigitalContact     = VatDigitalContact("skylake@vilikariet.com", None, None)
+  val lodgingOfficerDetails     = LodgingOfficerDetails(currentAddress = currentAddress, None, None, contact = skylakeDigitalContact)
+  val validLodgingOfficerPreIV  = LodgingOfficer(dob = LocalDate.now(), nino = "AB123456A",role = "secretary", name = skylakeValiarm, details = None)
+  val validLodgingOfficerPostIv = validLodgingOfficerPreIV.copy(details = Some(lodgingOfficerDetails))
 }
