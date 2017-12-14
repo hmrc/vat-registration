@@ -79,7 +79,7 @@ class RegistrationMongoRepository (mongo: () => DB)
 
   private[repositories] def ridSelector(id: RegistrationId) = BSONDocument("registrationId" -> BSONString(id.value))
   private[repositories] def tidSelector(id: String) = BSONDocument("transactionId" -> id)
-  private def regIdSelector(regId: String)                  = BSONDocument("registrationId" -> regId)
+  private[repositories] def regIdSelector(regId: String)                  = BSONDocument("registrationId" -> regId)
 
   override def indexes: Seq[Index] = Seq(
     Index(
@@ -178,6 +178,27 @@ class RegistrationMongoRepository (mongo: () => DB)
     }
   }
 
+  private[repositories] def updateBlock[T](regId: String, data: T, key: String = "")(implicit ec: ExecutionContext, writes: Writes[T]): Future[T] = {
+    def toCamelCase(str: String): String = str.head.toLower + str.tail
+
+    val selectorKey = if(key=="") toCamelCase(data.getClass.getSimpleName) else key
+
+    val setDoc = Json.obj("$set" -> Json.obj(selectorKey -> Json.toJson(data)))
+    collection.update(regIdSelector(regId), setDoc) map { updateResult =>
+      if (updateResult.n == 0) {
+        Logger.warn(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
+        throw MissingRegDocument(RegistrationId(regId))
+      } else {
+        Logger.info(s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${updateResult.nModified}")
+        data
+      }
+    } recover {
+      case e =>
+        Logger.warn(s"Unable to update ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId, Error: ${e.getMessage}")
+        throw e
+    }
+  }
+
   override def updateIVStatus(regId: String, ivStatus: Boolean)(implicit hc: HeaderCarrier): Future[Boolean] = {
     val updateDocument = BSONDocument("$set" -> BSONDocument("lodgingOfficer.ivPassed" -> BSONBoolean(ivStatus)))
     collection.find(regIdSelector(regId)).one[VatScheme] flatMap {
@@ -241,59 +262,20 @@ class RegistrationMongoRepository (mongo: () => DB)
     fetchBlock[Eligibility](regId, "eligibility")
 
   def updateEligibility(regId: String, eligibility: Eligibility)(implicit ec: ExecutionContext): Future[Eligibility] = {
-    val setDoc = BSONDocument("$set" -> BSONDocument("eligibility" -> BSONFormats.toBSON(Json.toJson(eligibility)).get))
-    collection.update(regIdSelector(regId), setDoc) map { updateResult =>
-      if (updateResult.n == 0) {
-        Logger.warn(s"[Eligibility] updating eligibility for regId : $regId - No document found")
-        throw MissingRegDocument(RegistrationId(regId))
-      } else {
-        Logger.info(s"[Eligibility] updating eligibility for regId : $regId - documents modified : ${updateResult.nModified}")
-        eligibility
-      }
-    } recover {
-      case e =>
-        Logger.warn(s"Unable to update eligibility for regId: $regId, Error: ${e.getMessage}")
-        throw e
-    }
+    updateBlock(regId, eligibility)
   }
 
   def getThreshold(regId: String)(implicit ec: ExecutionContext): Future[Option[Threshold]] =
     fetchBlock[Threshold](regId, "threshold")
 
   def updateThreshold(regId: String, threshold: Threshold)(implicit ec: ExecutionContext): Future[Threshold] = {
-    val setDoc = BSONDocument("$set" -> BSONDocument("threshold" -> BSONFormats.toBSON(Json.toJson(threshold)).get))
-    collection.update(regIdSelector(regId), setDoc) map { updateResult =>
-      if (updateResult.n == 0) {
-        Logger.warn(s"[Threshold] updating threshold for regId : $regId - No document found")
-        throw MissingRegDocument(RegistrationId(regId))
-      } else {
-        Logger.info(s"[Threshold] updating threshold for regId : $regId - documents modified : ${updateResult.nModified}")
-        threshold
-      }
-    } recover {
-      case e =>
-        Logger.warn(s"Unable to update threshold for regId: $regId, Error: ${e.getMessage}")
-        throw e
-    }
+    updateBlock(regId, threshold)
   }
 
   def getLodgingOfficer(regId: String)(implicit ec: ExecutionContext): Future[Option[LodgingOfficer]] =
     fetchBlock[LodgingOfficer](regId, "lodgingOfficer")
 
   def updateLodgingOfficer(regId: String, lodgingOfficer: LodgingOfficer)(implicit ec: ExecutionContext): Future[LodgingOfficer] = {
-    val setDoc = BSONDocument("$set" -> BSONDocument("lodgingOfficer" -> BSONFormats.toBSON(Json.toJson(lodgingOfficer)).get))
-    collection.update(regIdSelector(regId), setDoc) map { updateResult =>
-      if (updateResult.n == 0) {
-        Logger.warn(s"[LodgingOfficer] updating threshold for regId : $regId - No document found")
-        throw MissingRegDocument(RegistrationId(regId))
-      } else {
-        Logger.info(s"[LodgingOfficer] updating threshold for regId : $regId - documents modified : ${updateResult.nModified}")
-        lodgingOfficer
-      }
-    } recover {
-      case e =>
-        Logger.warn(s"Unable to update lodgingOfficer for regId: $regId, Error: ${e.getMessage}")
-        throw e
-    }
+    updateBlock(regId, lodgingOfficer)
   }
 }
