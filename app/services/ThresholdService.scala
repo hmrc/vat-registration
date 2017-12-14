@@ -22,7 +22,7 @@ import models.api.Threshold
 import repositories.{RegistrationMongo, RegistrationMongoRepository, RegistrationRepository}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class ThresholdService @Inject()(val registrationMongo: RegistrationMongo) extends ThresholdSrv {
   val registrationRepository: RegistrationMongoRepository = registrationMongo.store
@@ -31,9 +31,9 @@ class ThresholdService @Inject()(val registrationMongo: RegistrationMongo) exten
 trait ThresholdSrv {
   val registrationRepository: RegistrationMongoRepository
 
-  def upsertThreshold(regId: String, threshold: Threshold)(implicit hc: HeaderCarrier): Future[Threshold] =
+  def upsertThreshold(regId: String, threshold: Threshold)(implicit ex: ExecutionContext): Future[Threshold] =
     registrationRepository.updateThreshold(regId, threshold)
 
-  def getThreshold(regId: String)(implicit hc: HeaderCarrier): Future[Option[Threshold]] =
+  def getThreshold(regId: String)(implicit ex: ExecutionContext): Future[Option[Threshold]] =
     registrationRepository.getThreshold(regId)
 }

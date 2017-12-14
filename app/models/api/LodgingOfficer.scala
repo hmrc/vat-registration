@@ -47,7 +47,7 @@ case class LodgingOfficer(@deprecated("Use LodgingOfficerDetails instead", "SCRS
                           ivPassed: Boolean = false)
 
 object LodgingOfficer extends VatLodgingOfficerValidator {
-  implicit val format = (
+  implicit val format: OFormat[LodgingOfficer] = (
     (__ \ "currentAddress").formatNullable[Address] and
     (__ \ "dob").format[LocalDate] and
     (__ \ "nino").format[String](ninoValidator) and

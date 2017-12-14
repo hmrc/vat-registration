@@ -26,7 +26,7 @@ import enums.VatRegStatus
 import models._
 import models.api._
 import play.api.Logger
-import play.api.libs.json.{JsObject, Json, OFormat, Writes}
+import play.api.libs.json.{JsObject, Json, OFormat, Reads, Writes}
 import play.modules.reactivemongo.{MongoDbConnection, ReactiveMongoComponent}
 import reactivemongo.api.DB
 import reactivemongo.api.commands.UpdateWriteResult
@@ -172,6 +172,15 @@ class RegistrationMongoRepository (mongo: () => DB)
     collection.find(tidSelector(transId)).one[VatScheme]
   }
 
+  private def fetchBlock[T](regId: String, key: String)(implicit ec: ExecutionContext, rds: Reads[T]): Future[Option[T]] = {
+    val projection = Json.obj(key -> 1)
+    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
+      doc.flatMap { js =>
+        (js \ key).validateOpt[T].get
+      }
+    }
+  }
+
   override def updateIVStatus(regId: String, ivStatus: Boolean)(implicit hc: HeaderCarrier): Future[Boolean] = {
     val updateDocument = BSONDocument("$set" -> BSONDocument("lodgingOfficer.ivPassed" -> BSONBoolean(ivStatus)))
     collection.find(regIdSelector(regId)).one[VatScheme] flatMap {
@@ -231,16 +240,10 @@ class RegistrationMongoRepository (mongo: () => DB)
     }
   }
 
-  def getEligibility(regId: String)(implicit hc: HeaderCarrier): Future[Option[Eligibility]] = {
-    val projection = BSONDocument("eligibility" -> 1)
-    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
-      doc.flatMap { js =>
-        (js \ "eligibility").validateOpt[Eligibility].get
-      }
-    }
-  }
+  def getEligibility(regId: String)(implicit ec: ExecutionContext): Future[Option[Eligibility]] =
+    fetchBlock[Eligibility](regId, "eligibility")
 
-  def updateEligibility(regId: String, eligibility: Eligibility)(implicit hc: HeaderCarrier): Future[Eligibility] = {
+  def updateEligibility(regId: String, eligibility: Eligibility)(implicit ec: ExecutionContext): Future[Eligibility] = {
     val setDoc = BSONDocument("$set" -> BSONDocument("eligibility" -> BSONFormats.toBSON(Json.toJson(eligibility)).get))
     collection.update(regIdSelector(regId), setDoc) map { updateResult =>
       if (updateResult.n == 0) {
@@ -257,16 +260,10 @@ class RegistrationMongoRepository (mongo: () => DB)
     }
   }
 
-  def getThreshold(regId: String)(implicit hc: HeaderCarrier): Future[Option[Threshold]] = {
-    val projection = BSONDocument("threshold" -> 1)
-    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
-      doc.flatMap { js =>
-        (js \ "threshold").validateOpt[Threshold].get
-      }
-    }
-  }
+  def getThreshold(regId: String)(implicit ec: ExecutionContext): Future[Option[Threshold]] =
+    fetchBlock[Threshold](regId, "threshold")
 
-  def updateThreshold(regId: String, threshold: Threshold)(implicit hc: HeaderCarrier): Future[Threshold] = {
+  def updateThreshold(regId: String, threshold: Threshold)(implicit ec: ExecutionContext): Future[Threshold] = {
     val setDoc = BSONDocument("$set" -> BSONDocument("threshold" -> BSONFormats.toBSON(Json.toJson(threshold)).get))
     collection.update(regIdSelector(regId), setDoc) map { updateResult =>
       if (updateResult.n == 0) {
@@ -283,16 +280,10 @@ class RegistrationMongoRepository (mongo: () => DB)
     }
   }
 
-  def getLodgingOfficer(regId: String)(implicit hc: HeaderCarrier): Future[Option[LodgingOfficer]] = {
-    val projection = BSONDocument("lodgingOfficer" -> 1)
-    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
-      doc.flatMap { js =>
-        (js \ "lodgingOfficer").validateOpt[LodgingOfficer].get
-      }
-    }
-  }
+  def getLodgingOfficer(regId: String)(implicit ec: ExecutionContext): Future[Option[LodgingOfficer]] =
+    fetchBlock[LodgingOfficer](regId, "lodgingOfficer")
 
-  def updateLodgingOfficer(regId: String, lodgingOfficer: LodgingOfficer)(implicit hc: HeaderCarrier): Future[LodgingOfficer] = {
+  def updateLodgingOfficer(regId: String, lodgingOfficer: LodgingOfficer)(implicit ec: ExecutionContext): Future[LodgingOfficer] = {
     val setDoc = BSONDocument("$set" -> BSONDocument("lodgingOfficer" -> BSONFormats.toBSON(Json.toJson(lodgingOfficer)).get))
     collection.update(regIdSelector(regId), setDoc) map { updateResult =>
       if (updateResult.n == 0) {

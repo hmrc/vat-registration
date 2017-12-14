@@ -22,7 +22,7 @@ import models.api.Eligibility
 import repositories.{RegistrationMongo, RegistrationMongoRepository, RegistrationRepository}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class EligibilityService @Inject()(val registrationMongo: RegistrationMongo) extends EligibilitySrv {
   val registrationRepository: RegistrationMongoRepository = registrationMongo.store
@@ -32,9 +32,9 @@ trait EligibilitySrv {
 
   val registrationRepository: RegistrationMongoRepository
 
-  def upsertEligibility(regId: String, eligibility: Eligibility)(implicit hc: HeaderCarrier): Future[Eligibility] =
+  def upsertEligibility(regId: String, eligibility: Eligibility)(implicit ex: ExecutionContext): Future[Eligibility] =
     registrationRepository.updateEligibility(regId, eligibility)
 
-  def getEligibility(regId: String)(implicit hc: HeaderCarrier): Future[Option[Eligibility]] =
+  def getEligibility(regId: String)(implicit ex: ExecutionContext): Future[Option[Eligibility]] =
     registrationRepository.getEligibility(regId)
 }

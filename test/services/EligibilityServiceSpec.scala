@@ -23,9 +23,9 @@ import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
 import play.api.libs.json.Json
-import repositories.{RegistrationMongoRepository, RegistrationRepository}
-import uk.gov.hmrc.http.HeaderCarrier
+import repositories.RegistrationMongoRepository
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
@@ -69,25 +69,25 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
   "upsertEligibility" should {
     "return the data that is being inputted" in new Setup {
       upsertToMongo()
-      val result = await(service.upsertEligibility("regId", upsertEligibilityModel)(HeaderCarrier()))
+      val result = await(service.upsertEligibility("regId", upsertEligibilityModel))
       result shouldBe upsertEligibilityModel
     }
 
     "encounter an exception if an error occurs" in new Setup {
       upsertToMongoFail()
-      intercept[Exception](await(service.upsertEligibility("regId", upsertEligibilityModel)(HeaderCarrier())))
+      intercept[Exception](await(service.upsertEligibility("regId", upsertEligibilityModel)))
     }
   }
   "getEligibility" should {
     "return an eligibility if found" in new Setup {
       getsFromMongo()
-      val result = await(service.getEligibility("regId")(HeaderCarrier()))
+      val result = await(service.getEligibility("regId"))
       result shouldBe Some(validEligibilityModel)
     }
 
     "return None if none found matching regId" in new Setup {
       getsNothingFromMongo()
-      val result = await(service.getEligibility("regId")(HeaderCarrier()))
+      val result = await(service.getEligibility("regId"))
       result shouldBe None
     }
   }

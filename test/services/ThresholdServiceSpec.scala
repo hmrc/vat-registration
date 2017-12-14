@@ -25,9 +25,9 @@ import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
 import play.api.libs.json.Json
-import repositories.{RegistrationMongoRepository, RegistrationRepository}
-import uk.gov.hmrc.http.HeaderCarrier
+import repositories.RegistrationMongoRepository
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ThresholdServiceSpec extends VatRegSpec with VatRegistrationFixture {
@@ -74,25 +74,25 @@ class ThresholdServiceSpec extends VatRegSpec with VatRegistrationFixture {
   "upsertThreshold" should {
     "return the data that is being inputted" in new Setup {
       upsertToMongo()
-      val result = await(service.upsertThreshold("regId", upsertTresholdModel)(HeaderCarrier()))
+      val result = await(service.upsertThreshold("regId", upsertTresholdModel))
       result shouldBe upsertTresholdModel
     }
     "encounter an exception if an error occurs" in new Setup {
       upsertToMongoFail()
-      intercept[Exception](await(service.upsertThreshold("regId", upsertTresholdModel)(HeaderCarrier())))
+      intercept[Exception](await(service.upsertThreshold("regId", upsertTresholdModel)))
     }
   }
 
   "getThreshold" should {
     "return an eligibility if found" in new Setup {
       getsFromMongo()
-      val result = await(service.getThreshold("regId")(HeaderCarrier()))
+      val result = await(service.getThreshold("regId"))
       result shouldBe Some(validThresholdModel)
     }
 
     "return None if none found matching regId" in new Setup {
       getsNothingFromMongo()
-      val result = await(service.getThreshold("regId")(HeaderCarrier()))
+      val result = await(service.getThreshold("regId"))
       result shouldBe None
     }
   }
