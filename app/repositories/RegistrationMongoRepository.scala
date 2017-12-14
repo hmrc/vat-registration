@@ -16,8 +16,7 @@
 
 package repositories
 
-import java.time.LocalDate
-import javax.inject.{Inject, Named}
+import javax.inject.Inject
 
 import cats.data.OptionT
 import common.exceptions._
@@ -29,7 +28,6 @@ import play.api.Logger
 import play.api.libs.json.{JsObject, Json, OFormat, Reads, Writes}
 import play.modules.reactivemongo.{MongoDbConnection, ReactiveMongoComponent}
 import reactivemongo.api.DB
-import reactivemongo.api.commands.UpdateWriteResult
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson._
 import reactivemongo.json.BSONFormats
@@ -39,7 +37,6 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 
 class RegistrationMongo @Inject()(mongo: ReactiveMongoComponent) extends ReactiveMongoFormats {
   lazy val store = new RegistrationMongoRepository(mongo.mongoConnector.db)

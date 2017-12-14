@@ -43,3 +43,7 @@ PATCH       /:regId/eligibility                     controllers.EligibilityContr
 
 GET         /:regId/threshold                       controllers.ThresholdController.getThreshold(regId: String)
 PATCH       /:regId/threshold                       controllers.ThresholdController.updateThreshold(regId: String)
+
+# rename to lodging officer once the old ones are removed
+GET         /:regId/officer                         controllers.LodgingOfficerController.getLodgingOfficer(regId: String)
+PATCH       /:regId/officer                         controllers.LodgingOfficerController.updateLodgingOfficer(regId: String)

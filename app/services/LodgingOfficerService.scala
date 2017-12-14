@@ -18,22 +18,21 @@ package services
 
 import javax.inject.Inject
 
-import models.api.Eligibility
+import models.api.LodgingOfficer
 import repositories.{RegistrationMongo, RegistrationMongoRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class EligibilityService @Inject()(val registrationMongo: RegistrationMongo) extends EligibilitySrv {
+class LodgingOfficerService @Inject()(registrationMongo: RegistrationMongo) extends LodgingOfficerSrv {
   val registrationRepository: RegistrationMongoRepository = registrationMongo.store
 }
 
-trait EligibilitySrv {
-
+trait LodgingOfficerSrv {
   val registrationRepository: RegistrationMongoRepository
 
-  def upsertEligibility(regId: String, eligibility: Eligibility)(implicit ex: ExecutionContext): Future[Eligibility] =
-    registrationRepository.updateEligibility(regId, eligibility)
+  def getLodgingOfficer(regId: String)(implicit ec: ExecutionContext): Future[Option[LodgingOfficer]] =
+    registrationRepository.getLodgingOfficer(regId)
 
-  def getEligibility(regId: String)(implicit ex: ExecutionContext): Future[Option[Eligibility]] =
-    registrationRepository.getEligibility(regId)
+  def updateLodgingOfficer(regId: String, officer: LodgingOfficer)(implicit ec: ExecutionContext): Future[LodgingOfficer] =
+    registrationRepository.updateLodgingOfficer(regId,officer)
 }
