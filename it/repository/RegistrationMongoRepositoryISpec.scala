@@ -574,6 +574,24 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
 
       await(result) shouldBe None
     }
+
+    "return an exception if there is no version in eligibility block in repository" in new Setup {
+      val regId = "reg-123"
+      val json: JsObject = Json.parse(
+        s"""
+           |{
+           |  "registrationId": "$regId",
+           |  "status": "${VatRegStatus.draft}",
+           |  "eligibility": {
+           |    "result": "test result"
+           |  }
+           |}
+         """.stripMargin).as[JsObject]
+
+      insert(json)
+
+      an[Exception] shouldBe thrownBy(await(repository.getEligibility(regId)))
+    }
   }
 
   "Calling updateEligibility" should {
@@ -641,6 +659,24 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
       } yield res
 
       await(result) shouldBe None
+    }
+
+    "return an exception if there is no mandatory registration in threshold block in repository" in new Setup {
+      val regId = "reg-123"
+      val json: JsObject = Json.parse(
+        s"""
+           |{
+           |  "registrationId": "$regId",
+           |  "status": "${VatRegStatus.draft}",
+           |  "threshold": {
+           |    "voluntaryReason": "test reason"
+           |  }
+           |}
+         """.stripMargin).as[JsObject]
+
+      insert(json)
+
+      an[Exception] shouldBe thrownBy(await(repository.getThreshold(regId)))
     }
   }
 
@@ -732,6 +768,26 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
       } yield res
 
       await(result) shouldBe None
+    }
+
+    "return an exception if there is no name in lodging officer block in repository" in new Setup {
+      val regId = "reg-123"
+      val json: JsObject = Json.parse(
+        s"""
+           |{
+           |  "registrationId": "$regId",
+           |  "status": "${VatRegStatus.draft}",
+           |  "lodgingOfficer": {
+           |    "nino": "SS111111S",
+           |    "dob" : "2011-11-11",
+           |    "role" : "director"
+           |  }
+           |}
+         """.stripMargin).as[JsObject]
+
+      insert(json)
+
+      an[Exception] shouldBe thrownBy(await(repository.getLodgingOfficer(regId)))
     }
   }
 
