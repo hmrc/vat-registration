@@ -36,12 +36,7 @@ trait VatRegistrationFixture {
   val userId = "userId"
   val ackRefNumber = "BRPY000000000001"
   val date = LocalDate.of(2017, 1, 1)
-  val vatChoice: VatChoice = VatChoice(
-    vatStartDate = VatStartDate(
-      selection = "SPECIFIC_DATE",
-      startDate = Some(date)))
   val tradingDetails: VatTradingDetails = VatTradingDetails(
-    vatChoice = vatChoice,
     tradingName = TradingName(
       selection = true,
       tradingName = Some("some-trader-name")),

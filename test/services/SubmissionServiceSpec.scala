@@ -325,11 +325,10 @@ class SubmissionServiceSpec extends VatRegSpec with VatRegistrationFixture with 
 
   "Calling buildDesSubmission" should {
 
-    val vatScheme = VatScheme(RegistrationId("1"), Some(TransactionId("1")), Some(tradingDetails), None, None, status = VatRegStatus.draft)
+    val schemeReturns = Returns(true, "monthly", None, StartDate(date = Some(date)))
+    val vatScheme = VatScheme(RegistrationId("1"), Some(TransactionId("1")), returns = Some(schemeReturns), status = VatRegStatus.draft)
     val vatSchemeNoTradingDetails = VatScheme(RegistrationId("1"), None, None, None, status = VatRegStatus.draft)
-    val vatChoiceNoStartDate = vatChoice.copy(vatStartDate = VatStartDate(selection = "SPECIFIC_DATE", startDate = None))
-    val tradingDetailsNoStartDate = tradingDetails.copy(vatChoice = vatChoiceNoStartDate)
-    val vatSchemeNoStartDate = VatScheme(RegistrationId("1"), Some(TransactionId("1")), Some(tradingDetailsNoStartDate), None, None, status = VatRegStatus.draft)
+    val vatSchemeNoStartDate = VatScheme(RegistrationId("1"), Some(TransactionId("1")), None, None, status = VatRegStatus.draft)
 
     val fullDESSubmission = DESSubmission("ackRef", "companyName", Some(date), Some(date))
     val partialDESSubmission = DESSubmission("ackRef", "companyName", None, None)
@@ -356,21 +355,20 @@ class SubmissionServiceSpec extends VatRegSpec with VatRegistrationFixture with 
       intercept[MissingRegDocument](await(service.buildDesSubmission(regId, "ackRef", "companyName", someNow)))
     }
 
-    "throw a NoTradingDetails exception when the vat scheme doesn't contain trading details" in new Setup {
+    "throw a NoRetuens exception when the vat scheme doesn't contain returns" in new Setup {
       when(mockRegistrationRepository.retrieveVatScheme(RegistrationId(anyString()))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some(vatSchemeNoTradingDetails)))
 
-      intercept[NoTradingDetails](await(service.buildDesSubmission(regId, "ackRef", "companyName", someNow)))
+      intercept[NoReturns](await(service.buildDesSubmission(regId, "ackRef", "companyName", someNow)))
     }
   }
 
   "Calling buildTopUpDesSubmission" should {
 
-    val vatScheme = VatScheme(RegistrationId("1"), Some(TransactionId("1")), Some(tradingDetails), None, None, status = VatRegStatus.draft)
+    val schemeReturns = Returns(true, "monthly", None, StartDate(date = Some(date)))
+    val vatScheme = VatScheme(RegistrationId("1"), Some(TransactionId("1")), returns = Some(schemeReturns), status = VatRegStatus.draft)
     val vatSchemeNoTradingDetails = VatScheme(RegistrationId("1"), None, None, None, status = VatRegStatus.draft)
-    val vatChoiceNoStartDate = vatChoice.copy(vatStartDate = VatStartDate(selection = "SPECIFIC_DATE", startDate = None))
-    val tradingDetailsNoStartDate = tradingDetails.copy(vatChoice = vatChoiceNoStartDate)
-    val vatSchemeNoStartDate = VatScheme(RegistrationId("1"), Some(TransactionId("1")), Some(tradingDetailsNoStartDate), None, None, status = VatRegStatus.draft)
+    val vatSchemeNoStartDate = VatScheme(RegistrationId("1"), Some(TransactionId("1")), None, None, status = VatRegStatus.draft)
 
     val someLocalDateNow = Some(LocalDate.of(2017, 1, 1))
     val someDateTimeNow = Some(DateTime.now())
@@ -406,11 +404,11 @@ class SubmissionServiceSpec extends VatRegSpec with VatRegistrationFixture with 
       intercept[MissingRegDocument](await(service.buildTopUpSubmission(regId, "ackRef", "accepted", someDateTimeNow)))
     }
 
-    "throw a NoTradingDetails exception when the vat scheme doesn't contain trading details" in new Setup {
+    "throw a NoReturns exception when the vat scheme doesn't contain returns" in new Setup {
       when(mockRegistrationRepository.retrieveVatScheme(RegistrationId(anyString()))(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some(vatSchemeNoTradingDetails)))
 
-      intercept[NoTradingDetails](await(service.buildTopUpSubmission(regId, "ackRef", "accepted", someDateTimeNow)))
+      intercept[NoReturns](await(service.buildTopUpSubmission(regId, "ackRef", "accepted", someDateTimeNow)))
     }
   }
 

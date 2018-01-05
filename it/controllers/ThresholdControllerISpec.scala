@@ -161,7 +161,7 @@ class ThresholdControllerISpec extends IntegrationStubbing with ITFixtures {
       given
         .user.isAuthorised
 
-      insertIntoDb(vatScheme("regId"))
+      await(repo.insert(vatScheme))
 
       await(client(controllers.routes.ThresholdController.updateThreshold("regId").url).patch(validThresholdJson) map { response =>
         response.status shouldBe 200

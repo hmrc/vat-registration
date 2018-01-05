@@ -114,9 +114,9 @@ trait SubmissionSrv extends FutureInstances {
   }
 
   private[services] def retrieveVatStartDate(vatScheme: VatScheme, regId: RegistrationId) : Option[LocalDate] = {
-    vatScheme.tradingDetails match {
-      case Some(td) => td.vatChoice.vatStartDate.startDate
-      case None => throw NoTradingDetails(s"Vat trading details was not found for regID: $regId")
+    vatScheme.returns match {
+      case Some(returns) => returns.start.date
+      case None => throw NoReturns()
     }
   }
 
