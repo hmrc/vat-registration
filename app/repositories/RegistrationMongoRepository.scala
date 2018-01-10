@@ -93,7 +93,7 @@ class RegistrationMongoRepository (mongo: () => DB)
   )
 
   override def createNewVatScheme(id: RegistrationId)(implicit hc: HeaderCarrier): Future[VatScheme] = {
-    val newReg = VatScheme(id, None, None, None, None, status = VatRegStatus.draft)
+    val newReg = VatScheme(id, status = VatRegStatus.draft)
     collection.insert(newReg) map (_ => newReg) recover {
       case e =>
         logger.error(s"[createNewVatScheme] - Unable to insert new VAT Scheme for registration ID $id, Error: ${e.getMessage}")

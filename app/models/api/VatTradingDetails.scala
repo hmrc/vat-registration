@@ -20,8 +20,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 @deprecated("Use TradingDetails instead", "07/12/2017")
-case class VatTradingDetails(vatChoice: VatChoice,
-                             tradingName: TradingName,
+case class VatTradingDetails(tradingName: TradingName,
                              euTrading: VatEuTrading)
 
 @deprecated("Use TradingDetails instead", "07/12/2017")

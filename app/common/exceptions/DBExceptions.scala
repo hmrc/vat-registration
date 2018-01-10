@@ -24,6 +24,7 @@ sealed trait DBExceptions {
   val id: RegistrationId
 }
 
+case class NoReturns() extends NoStackTrace
 case class NoTradingDetails(msg: String) extends NoStackTrace
 case class InvalidSubmissionStatus(msg: String) extends NoStackTrace
 case class UnknownIncorpStatus(msg: String) extends NoStackTrace

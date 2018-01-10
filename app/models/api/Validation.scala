@@ -60,10 +60,6 @@ trait VatChoiceValidator extends Validation {
   val reasonValidator: Format[String]    = acceptOnly("COMPANY_ALREADY_SELLS_TAXABLE_GOODS_OR_SERVICES", "COMPANY_INTENDS_TO_SELLS_TAXABLE_GOODS_OR_SERVICES_IN_THE_FUTURE", "NEITHER")
 }
 
-trait VatStartDateValidator extends Validation {
-  val vatStartDateValidator: Format[String] = acceptOnly("COMPANY_REGISTRATION_DATE", "BUSINESS_START_DATE", "SPECIFIC_DATE")
-}
-
 trait VatDigitalContactValidator extends Validation {
   val emailValidator: Format[String]  = readToFmt(pattern("""^([A-Za-z0-9\-_.]+)@([A-Za-z0-9\-_.]+)\.[A-Za-z0-9\-_.]{2,3}$""".r))
   val telValidator: Format[String]    = readToFmt(pattern("^(\\d){1,20}$".r))

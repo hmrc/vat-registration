@@ -125,7 +125,6 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
   "call to updateLogicalGroup" should {
 
     val tradingDetails = VatTradingDetails(
-      vatChoice = vatChoice,
       tradingName = TradingName(
         selection = true,
         tradingName = Some("some-trader-name")),

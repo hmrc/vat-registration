@@ -22,8 +22,9 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import common.RegistrationId
 import enums.VatRegStatus
 import itutil.{ITFixtures, IntegrationStubbing, WiremockHelper}
+import models.api.VatScheme
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.FakeApplication
 import play.api.test.Helpers._
 import play.modules.reactivemongo.ReactiveMongoComponent
@@ -216,14 +217,14 @@ class VatRegistrationBasicISpec extends IntegrationStubbing with ITFixtures {
         )
       )
 
-      repo.createNewVatScheme(RegistrationId(registrationID)).flatMap(_ => repo.updateLogicalGroup(RegistrationId(registrationID), tradingDetails))
+      repo.createNewVatScheme(RegistrationId(registrationID)).flatMap(_ => repo.updateLogicalGroup(RegistrationId(registrationID), returns))
 
-      val result = await(client(
+      val result: WSResponse = await(client(
         controllers.routes.VatRegistrationController.submitVATRegistration(RegistrationId(registrationID)).url).put("")
       )
       result.status shouldBe OK
 
-      val reg = await(repo.retrieveVatScheme(RegistrationId(registrationID)))
+      val reg: Option[VatScheme] = await(repo.retrieveVatScheme(RegistrationId(registrationID)))
       reg.get.status shouldBe VatRegStatus.submitted
 
       await(repo.remove("registrationId" -> registrationID))

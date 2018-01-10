@@ -28,15 +28,13 @@ trait ITFixtures {
 
   val date: LocalDate = LocalDate.of(2017, 1, 1)
   val startDate = StartDate(Some(date))
-  val regId = RegistrationId("123")
-  val vatScheme = VatScheme(regId, None, status = VatRegStatus.draft)
-  val vatChoice = VatChoice(vatStartDate = VatStartDate(selection = "COMPANY_REGISTRATION_DATE", startDate = Some(date)))
+  val regId = RegistrationId("regId")
+  val vatScheme = VatScheme(regId, status = VatRegStatus.draft)
   val tradingName = TradingName(selection = true, Some("some-trading-name"))
   val oldName = Name(first = Some("Bob Smith"), middle = None, last = None, forename = None, surname = None, title = None, otherForenames = None)
   val changeOfName = ChangeOfName(true, Some(FormerName("", LocalDate.now(), name = oldName, change = LocalDate.now())))
 
   val vatTradingDetails = VatTradingDetails(
-    vatChoice = vatChoice,
     tradingName = tradingName,
     euTrading = VatEuTrading(
       selection = true,
@@ -44,9 +42,14 @@ trait ITFixtures {
     )
   )
   val tradingDetails = VatTradingDetails(
-    vatChoice = vatChoice,
     tradingName = tradingName,
     euTrading = VatEuTrading(selection = true, eoriApplication = Some(true))
+  )
+  val returns = Returns(
+    reclaimVatOnMostReturns = true,
+    frequency = "quarterly",
+    staggerStart = Some("jan"),
+    start = startDate
   )
   val compliance =
     VatSicAndCompliance(
@@ -66,9 +69,7 @@ trait ITFixtures {
   val vatFinancials = VatFinancials(
     bankAccount = Some(VatBankAccount("Reddy", "101010", "100000000000")),
     turnoverEstimate = EstimateValue,
-    zeroRatedTurnoverEstimate = Some(zeroRatedTurnoverEstimate),
-    reclaimVatOnMostReturns = true,
-    accountingPeriods = VatAccountingPeriod("monthly")
+    zeroRatedTurnoverEstimate = Some(zeroRatedTurnoverEstimate)
   )
 
   val scrsAddress               = Address("line1", "line2", None, None, Some("XX XX"), Some("UK"))

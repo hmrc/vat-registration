@@ -77,7 +77,7 @@ class ProcessIncorporationsISpec extends IntegrationStubbing with ITFixtures {
     def prepareHeldSubmission(repo : RegistrationMongoRepository): Future[Unit] = {
       for {
         _    <- repo.createNewVatScheme(regIDCase)
-        _    <- repo.updateLogicalGroup(regIDCase, tradingDetails)
+        _    <- repo.updateLogicalGroup(regIDCase, returns)
         _    <- repo.saveTransId(transactionId, regIDCase)
         _    <- repo.finishRegistrationSubmission(regIDCase, VatRegStatus.held)
       } yield {

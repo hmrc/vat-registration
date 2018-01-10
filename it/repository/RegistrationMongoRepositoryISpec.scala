@@ -86,7 +86,6 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
        |}
       """.stripMargin).as[JsObject]
 
-  val returns = Returns(reclaimVatOnMostReturns = true, "quarterly", Some("jan"), startDate)
   val vatSchemeWithReturns: JsObject = Json.parse(
     s"""
        |{
@@ -117,7 +116,7 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
   "Calling createNewVatScheme" should {
 
     "create a new, blank VatScheme with the correct ID" in new Setup {
-      repository.createNewVatScheme(regId) returns vatScheme
+      await(repository.createNewVatScheme(regId)) shouldBe vatScheme
     }
 
     "throw an InsertFailed exception when creating a new VAT scheme when one already exists" in new Setup {
