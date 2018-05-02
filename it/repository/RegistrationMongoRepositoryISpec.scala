@@ -195,6 +195,22 @@ class RegistrationMongoRepositoryISpec extends UnitSpec with MongoBaseSpec with 
   }
 
 
+  "Calling clearDownScheme" should {
+    "clear any optional data from the vat scheme object" in new Setup {
+      await(repository.insert(fullVatScheme))
+      await(repository.clearDownDocument(transactionId)) shouldBe true
+      await(repository.retrieveVatScheme(regId)) shouldBe Some(emptyVatScheme(regId.value))
+    }
+    "fail when a already cleared document is cleared" in new Setup {
+      await(repository.insert(fullVatScheme))
+      await(repository.clearDownDocument(transactionId)) shouldBe true
+      await(repository.retrieveVatScheme(regId)) shouldBe Some(emptyVatScheme(regId.value))
+      await(repository.clearDownDocument(transactionId)) shouldBe false
+      await(repository.retrieveVatScheme(regId)) shouldBe Some(emptyVatScheme(regId.value))
+    }
+  }
+
+
   val ACK_REF_NUM = "REF0000001"
   "Calling updateByElement" should {
 

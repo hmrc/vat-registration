@@ -17,7 +17,7 @@ package itutil
 
 import java.time.LocalDate
 
-import common.RegistrationId
+import common.{RegistrationId, TransactionId}
 import enums.VatRegStatus
 import models.api._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -30,6 +30,7 @@ trait ITFixtures {
   val startDate = StartDate(Some(date))
   val regId = RegistrationId("regId")
   val internalid = "INT-123-456-789"
+  val transactionId = "transId"
   val vatScheme = VatScheme(regId, internalId = internalid, status = VatRegStatus.draft)
   val tradingName = TradingName(selection = true, Some("some-trading-name"))
   val oldName = Name(first = Some("Bob Smith"), middle = None, last = None, forename = None, surname = None, title = None, otherForenames = None)
@@ -96,6 +97,45 @@ trait ITFixtures {
     details                   = None
   )
   val businessContact         = BusinessContact(digitalContact = digitalContact, website = None, ppob = scrsAddress)
+  val sicAndCompliance        = SicAndCompliance("businessDesc", Some(ComplianceLabour(1, Some(true), Some(true))), SicCode("12345678","sicDesc","sicDetail"))
+
+  val vatComplicanceLabour    = VatComplianceLabour(true, Some(5), Some(true), Some(true))
+
+  val vatComplianceFinancial  = VatComplianceFinancial(true, true, Some(true), Some(true), Some(true), Some(true), Some(true), Some(true))
+
+  val vatSicAndCompliance     = VatSicAndCompliance("businessDesc", Some(VatComplianceCultural(true)), Some(vatComplicanceLabour), Some(vatComplianceFinancial), SicCode("12345678", "sic", "sic"))
+
+  val vatServiceEligibility   = VatServiceEligibility(Some(true), Some(true), Some(true), Some(true), Some(true), Some(true), Some(VatEligibilityChoice("voluntary", None, None, None)))
+
+  val eligibility             = Eligibility(1, "result")
+
+  val vatTurnoverEstimates       = TurnoverEstimates(12345678L)
+
+  val vatBankAccount             = BankAccount(true, None)
+
+  val threshold               = Threshold(true, None, None, None, None)
+
+  val fullVatScheme =
+    VatScheme(
+      regId,
+      internalid,
+      Some(TransactionId(transactionId)),
+      Some(tradingDetails),
+      Some(vatLodgingOfficer),
+      Some(returns),
+      Some(vatSicAndCompliance),
+      Some(sicAndCompliance),
+      Some(vatContact),
+      Some(businessContact),
+      Some(vatServiceEligibility),
+      Some(eligibility),
+      Some(vatTurnoverEstimates),
+      Some(vatBankAccount),
+      Some(threshold),
+      Some("ackRef"),
+      Some(flatRateScheme),
+      VatRegStatus.draft
+    )
 
   def emptyVatScheme(regId: String): VatScheme = VatScheme(
     id = RegistrationId(regId),

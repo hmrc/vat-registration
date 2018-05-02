@@ -23,6 +23,9 @@ GET          /:regId/acknowledgement-reference      controllers.VatRegistrationC
 GET          /incorporation-information/:txId       controllers.IncorporationInformationController.getIncorporationInformation(txId: TransactionId)
 
 DELETE       /:regId/delete-scheme                  controllers.VatRegistrationController.deleteVatScheme(regId: String)
+PATCH        /:transId/clear-scheme                 controllers.VatRegistrationController.clearDownDocument(transId: String)
+
+PATCH        /:regId/transaction-id                 controllers.VatRegistrationController.saveTransId(regId: String)
 
 PUT          /:regID/submit-registration            controllers.VatRegistrationController.submitVATRegistration(regID : RegistrationId)
 

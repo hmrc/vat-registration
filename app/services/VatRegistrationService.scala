@@ -137,7 +137,12 @@ trait RegistrationService extends ApplicativeSyntax with FutureInstances {
     } yield deleted
   }
 
-  def retrieveAcknowledgementReference(id: RegistrationId)(implicit hc: HeaderCarrier): ServiceResult[String] =
+  def clearDownDocument(transId: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
+    registrationRepository.clearDownDocument(transId)
+  }
+
+  def retrieveAcknowledgementReference(id: RegistrationId)(implicit hc: HeaderCarrier): ServiceResult[String] = {
     retrieveVatScheme(id).subflatMap(_.acknowledgementReference.toRight(ResourceNotFound("AcknowledgementId")))
+  }
 
 }

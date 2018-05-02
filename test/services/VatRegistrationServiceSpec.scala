@@ -252,4 +252,13 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
       await(service.getStatus(RegistrationId("1"))) shouldBe expectedJson
     }
   }
+
+  "call to clearDownDocment" should {
+    "pass" when {
+      "given a transactionid" in new Setup {
+        when(mockRegistrationRepository.clearDownDocument(any())(any())).thenReturn(Future.successful(true))
+        await(service.clearDownDocument("testTransID")) shouldBe true
+      }
+    }
+  }
 }

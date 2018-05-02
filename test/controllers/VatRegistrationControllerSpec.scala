@@ -426,4 +426,38 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       await(contentAsJson(response)) shouldBe Json.toJson(s"BRVT000000$regId")
     }
   }
+
+  "call to clearDownDocment" should {
+    "pass" when {
+      "given a transactionid" in new Setup {
+        when(mockRegistrationService.clearDownDocument(any())(any())).thenReturn(Future.successful(true))
+        val resp = await(controller.clearDownDocument("TransID")(FakeRequest()))
+        status(resp) shouldBe Status.OK
+      }
+    }
+    "fail" when {
+      "given a transactionid that isn't found in mongo" in new Setup {
+        when(mockRegistrationService.clearDownDocument(any())(any())).thenReturn(Future.successful(false))
+        val resp = await(controller.clearDownDocument("TransID")(FakeRequest()))
+        status(resp) shouldBe Status.INTERNAL_SERVER_ERROR
+      }
+    }
+  }
+
+  "call to saveTransId" should {
+    "return Ok" when {
+      "the transaction id was saved to the document" in new Setup {
+        val regId = "regId"
+
+        when(mockRegistrationMongoRepository.saveTransId(any(), RegistrationId(any()))(any()))
+          .thenReturn(Future.successful("transId"))
+
+        lazy val fakeRequest: FakeRequest[JsValue] =
+          FakeRequest().withBody[JsValue](Json.parse("""{"transactionID":"transId"}"""))
+
+        val resp = await(controller.saveTransId(regId)(fakeRequest))
+        status(resp) shouldBe Status.OK
+      }
+    }
+  }
 }
