@@ -30,7 +30,7 @@ import play.api.mvc._
 import repositories.{RegistrationMongo, RegistrationMongoRepository}
 import services._
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.{Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.http.Upstream5xxResponse
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import utils.VATFeatureSwitches
@@ -164,6 +164,15 @@ trait VatRegistrationController extends BaseController with Authorisation with F
         }
       }
   }
+
+  def clearDownDocument(transId: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      registrationService.clearDownDocument(transId).map {
+        case true => Ok
+        case _ => InternalServerError
+      }
+  }
+
   // TODO: this returns 404 when other methods return 204. Refactor to return 204 at some point
   def fetchBankAccountDetails(regId: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -194,6 +203,16 @@ trait VatRegistrationController extends BaseController with Authorisation with F
       isAuthorised(id.value) { authResult =>
         authResult.ifAuthorised(id.value, "VatRegistrationController", "getDocumentStatus") {
           registrationService.getStatus(id).sendResult("getDocumentStatus", id.value)
+        }
+      }
+  }
+
+  def saveTransId(id: String): Action[JsValue] = Action.async(parse.json) {
+    implicit request =>
+      withJsonBody[JsValue] { json =>
+        val transId: String = (json \ "transactionID").as[String]
+        registrationRepository.saveTransId(transId, RegistrationId(id)) map { _ =>
+          Ok
         }
       }
   }

@@ -67,6 +67,7 @@ trait RegistrationRepository {
   def updateFlatRateScheme(regId: String, flatRateScheme: FlatRateScheme)(implicit ec: ExecutionContext): Future[FlatRateScheme]
   def getInternalId(id: String)(implicit hc : HeaderCarrier) : Future[Option[String]]
   def removeFlatRateScheme(regId: String)(implicit ec: ExecutionContext): Future[Boolean]
+  def clearDownDocument(transId: String)(implicit ec: ExecutionContext): Future[Boolean]
 }
 
 class RegistrationMongoRepository (mongo: () => DB, crypto: Crypto)
@@ -355,5 +356,26 @@ class RegistrationMongoRepository (mongo: () => DB, crypto: Crypto)
         Logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] Unable to remove for regId: $regId, Error: ${e.getMessage}")
         throw e
     }
+  }
+
+  def clearDownDocument(transId: String)(implicit ec: ExecutionContext): Future[Boolean] = {
+    val doc = tidSelector(transId)
+    val updatedDoc = BSONDocument("$unset" -> BSONDocument(
+      "transactionId" -> "",
+      "tradingDetails" -> "",
+      "lodgingOfficer" -> "",
+      "returns" -> "",
+      "vatSicAndCompliance" -> "",
+      "sicAndCompliance" -> "",
+      "vatContact" -> "",
+      "businessContact" -> "",
+      "vatEligibility" -> "",
+      "eligibility" -> "",
+      "turnoverEstimates" -> "",
+      "bankAccount" -> "",
+      "threshold" -> "",
+      "acknowledgementReference" -> "",
+      "flatRateScheme" -> ""))
+    collection.update(doc, updatedDoc) map ( _.nModified == 1)
   }
 }
