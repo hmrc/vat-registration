@@ -92,7 +92,7 @@ trait VatRegistrationFixture {
   val mandatoryThreshold        = Threshold(true, None, Some(LocalDate.now()), Some(LocalDate.now()), Some(LocalDate.now()))
   val currentAddress            = Address("12 Lukewarm","Oriental lane")
   val skylakeValiarm            = Name(first = Some("Skylake"), middle = None, last = Some("Valiarm"))
-  val skylakeDigitalContact     = DigitalContact("skylake@vilikariet.com", None, None)
+  val skylakeDigitalContact     = DigitalContactOptional(Some("skylake@vilikariet.com"), None, None)
   val lodgingOfficerDetails     = LodgingOfficerDetails(currentAddress = currentAddress, None, None, contact = skylakeDigitalContact)
   val validLodgingOfficerPreIV  = LodgingOfficer(
     dob = LocalDate.now(),

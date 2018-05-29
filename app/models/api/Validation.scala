@@ -18,8 +18,7 @@ package models.api
 
 import java.util.regex.Pattern
 
-import play.api.libs.json.Reads.pattern
-import play.api.libs.json.Reads.email
+import play.api.libs.json.Reads.{email, maxLength, pattern}
 import play.api.libs.json._
 
 trait Validation {
