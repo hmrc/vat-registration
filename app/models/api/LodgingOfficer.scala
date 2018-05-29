@@ -24,14 +24,14 @@ import play.api.libs.json._
 case class LodgingOfficerDetails(currentAddress: Address,
                                  changeOfName: Option[FormerName],
                                  previousAddress : Option[Address],
-                                 contact: DigitalContact)
+                                 contact: DigitalContactOptional)
 
 object LodgingOfficerDetails {
   implicit val format = (
     (__ \ "currentAddress").format[Address] and
     (__ \ "changeOfName").formatNullable[FormerName] and
     (__ \ "previousAddress").formatNullable[Address] and
-    (__ \ "contact").format[DigitalContact]
+    (__ \ "contact").format[DigitalContactOptional]
   )(LodgingOfficerDetails.apply, unlift(LodgingOfficerDetails.unapply))
 }
 

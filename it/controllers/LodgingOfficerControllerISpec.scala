@@ -45,7 +45,7 @@ class LodgingOfficerControllerISpec extends IntegrationStubbing {
 
   val currentAddress            = Address("12 Lukewarm","Oriental lane")
   val skylakeValiarm            = Name(first = Some("Skylake"), middle = None, last = Some("Valiarm"))
-  val skylakeDigitalContact     = DigitalContact("skylake@vilikariet.com", None, None)
+  val skylakeDigitalContact     = DigitalContactOptional(None, Some("123456789012345678"), None)
   val lodgingOfficerDetails     = LodgingOfficerDetails(currentAddress = currentAddress, None, None, contact = skylakeDigitalContact)
   val validLodgingOfficerPreIV  = LodgingOfficer(
     dob = LocalDate.now(),
