@@ -38,10 +38,6 @@ trait MongoBaseSpec extends PlaySpec with MongoSpecSupport with BeforeAndAfterEa
 
   val _id = "_id"
 
-  implicit class RichJsObj(o: JsObject) {
-    def without(key: String): JsObject = o - key
-  }
-
   implicit class RichOptJsObj(o: Option[JsObject]) {
     def without(key: String): Option[JsObject] = o.map(_ - key)
   }

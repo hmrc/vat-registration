@@ -1,15 +1,14 @@
 
 package controllers
 
-import java.time.LocalDate
-
+import controllers.routes.FlatRateSchemeController
 import itutil.IntegrationStubbing
 import models.api.{FlatRateScheme, VatScheme}
 import play.api.libs.json.{JsObject, Json}
-import play.api.test.Helpers._
-import controllers.routes.FlatRateSchemeController
 import play.api.libs.ws.WSResponse
+import play.api.test.Helpers._
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class FlatRateSchemeControllerISpec extends IntegrationStubbing {

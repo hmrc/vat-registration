@@ -20,9 +20,9 @@ import auth.CryptoSCRS
 import com.typesafe.config.ConfigFactory
 import helpers.VatRegSpec
 import models.api.{BankAccount, BankAccountDetails, BankAccountMongoFormat, BeingSetup}
+import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.libs.json._
-import org.mockito.Mockito._
 
 class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
 

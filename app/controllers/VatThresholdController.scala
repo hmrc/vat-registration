@@ -16,12 +16,13 @@
 
 package controllers
 
-import javax.inject.{Inject, Singleton}
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.VatThresholdService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class VatThresholdController @Inject()(val vatThresholdService: VatThresholdService,

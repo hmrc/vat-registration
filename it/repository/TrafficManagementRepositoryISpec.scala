@@ -1,22 +1,17 @@
 
 package repository
 
-import java.time.{LocalDate, LocalDateTime, LocalTime}
 import itutil.{FakeTimeMachine, ITFixtures, IntegrationSpecBase}
 import models.api._
-import play.api.{Application, Configuration}
+import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.TimeMachine
 
+import java.time.{LocalDate, LocalDateTime, LocalTime}
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.scalatest.concurrent.Eventually._
-import reactivemongo.bson.BSONDocument.pretty
-import repositories.trafficmanagement.TrafficManagementRepository
-
-import scala.concurrent.duration._
 
 class TrafficManagementRepositoryISpec extends IntegrationSpecBase {
 

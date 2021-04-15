@@ -19,7 +19,7 @@ package models
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Format, JsString, Reads, Writes, __}
+import play.api.libs.json._
 
 case class VatThreshold(date: DateTime, amount: String)
 

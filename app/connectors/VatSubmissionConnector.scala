@@ -17,8 +17,9 @@
 package connectors
 
 import config.BackendConfig
-import httpparsers.VatSubmissionHttpParser.VatSubmissionHttpReads
-import play.api.libs.json.JsObject
+import play.api.http.Status.{BAD_REQUEST, CONFLICT, OK}
+import play.api.libs.json.{JsObject, JsSuccess}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http._
 
 import javax.inject.{Inject, Singleton}
@@ -29,8 +30,12 @@ class VatSubmissionConnector @Inject()(appConfig: BackendConfig,
                                        http: HttpClient
                                       )(implicit executionContext: ExecutionContext) {
 
-  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  private val CodeKey = "code"
+  private val InvalidPayloadKey = "INVALID_PAYLOAD"
+  private val InvalidSessionIdKey = "INVALID_SESSIONID"
+  private val InvalidCredentialIdKey = "INVALID_CREDENTIALID"
 
+  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val submissionHeaders = Seq(
       "Authorization" -> appConfig.urlHeaderAuthorization,
       "Environment" -> appConfig.urlHeaderEnvironment,
@@ -39,16 +44,29 @@ class VatSubmissionConnector @Inject()(appConfig: BackendConfig,
       "Content-Type" -> "application/json"
     ) ++ hc.headers(Seq("X-Session-ID"))
 
-    http.POST[JsObject, HttpResponse](
-      url = appConfig.vatSubmissionUrl,
-      body = submissionData,
-      headers = submissionHeaders
-    )(
-      wts = JsObject.writes,
-      rds = VatSubmissionHttpReads,
-      hc = hc,
-      ec = executionContext
-    )
+    http.POST[JsObject, HttpResponse](appConfig.vatSubmissionUrl, submissionData, submissionHeaders) map { response =>
+      response.status match {
+        case OK =>
+          response
+        case BAD_REQUEST =>
+          (response.json \ CodeKey).validate[String] match {
+            case JsSuccess(InvalidPayloadKey, _) =>
+              throw new InternalServerException("VAT Submission API - invalid payload")
+            case JsSuccess(InvalidSessionIdKey, _) =>
+              throw new InternalServerException("VAT Submission API - invalid Session ID")
+            case JsSuccess(InvalidCredentialIdKey, _) =>
+              throw new InternalServerException("VAT Submission API - invalid Credential ID")
+            case _ =>
+              throw new InternalServerException(s"Unexpected Json response for this status: $BAD_REQUEST")
+          }
+        case CONFLICT =>
+          throw new InternalServerException("VAT Submission API - application already in progress")
+        case _ =>
+          throw new InternalServerException(
+            s"Unexpected response from VAT Submission API - status = ${response.status}, body = ${response.body}"
+          )
+      }
+    }
 
   }
 

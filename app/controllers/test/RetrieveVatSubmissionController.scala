@@ -17,13 +17,12 @@
 package controllers.test
 
 import play.api.Logging
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.submission.SubmissionPayloadBuilder
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class RetrieveVatSubmissionController @Inject()(cc: ControllerComponents,

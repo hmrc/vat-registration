@@ -16,12 +16,12 @@
 
 package services
 
-import javax.inject.{Inject, Singleton}
 import models.api.EligibilitySubmissionData
 import play.api.libs.json.{JsObject, JsResultException}
 import repositories.RegistrationMongoRepository
 import utils.EligibilityDataJsonUtils
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

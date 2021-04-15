@@ -17,7 +17,6 @@
 package controllers
 
 import auth.{Authorisation, AuthorisationResource}
-import javax.inject.{Inject, Singleton}
 import models.api.ApplicantDetails
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -25,6 +24,7 @@ import services.ApplicantDetailsService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton

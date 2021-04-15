@@ -4,8 +4,7 @@ package controllers.test
 import itutil.{ITVatSubmissionFixture, IntegrationStubbing}
 import models.api.DailyQuota
 import play.api.libs.json.{JsString, Json}
-import play.api.test.Helpers.await
-import play.api.test.Helpers._
+import play.api.test.Helpers.{await, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

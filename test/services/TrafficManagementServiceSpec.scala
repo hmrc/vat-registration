@@ -16,8 +16,6 @@
 
 package services
 
-import java.time.LocalDate
-
 import helpers.VatRegSpec
 import mocks.{MockDailyQuotaRepository, MockTrafficManagementRepository}
 import models.api.{Draft, OTRS, RegistrationInformation, VatReg}
@@ -25,6 +23,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FakeTimeMachine
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class TrafficManagementServiceSpec extends VatRegSpec

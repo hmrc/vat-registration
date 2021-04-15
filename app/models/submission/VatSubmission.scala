@@ -18,7 +18,7 @@ package models.submission
 
 import models.api._
 import play.api.libs.json._
-import utils.JsonUtilities
+import utils.FilterNullJsonFields
 
 case class VatSubmission(messageType: String = "SubscriptionCreate",
                          tradersPartyType: Option[PartyType],
@@ -33,7 +33,7 @@ case class VatSubmission(messageType: String = "SubscriptionCreate",
                          eligibilitySubmissionData: EligibilitySubmissionData,
                          returns: Returns)
 
-object VatSubmission extends JsonUtilities {
+object VatSubmission extends FilterNullJsonFields {
 
   implicit val mongoFormat: OFormat[VatSubmission] = Json.format[VatSubmission]
 

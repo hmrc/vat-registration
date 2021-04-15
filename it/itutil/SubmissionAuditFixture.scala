@@ -1,7 +1,7 @@
 
 package itutil
 
-import models.api.{MTDfB, Submitted}
+import models.api.Submitted
 import models.submission.UkCompany
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation

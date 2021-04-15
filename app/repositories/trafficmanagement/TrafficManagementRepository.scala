@@ -16,11 +16,8 @@
 
 package repositories.trafficmanagement
 
-import java.time.LocalDate
 import auth.AuthorisationResource
 import config.BackendConfig
-
-import javax.inject.{Inject, Singleton}
 import models.api.{RegistrationChannel, RegistrationInformation, RegistrationStatus}
 import play.api.libs.json.{JsString, Json}
 import play.modules.reactivemongo.ReactiveMongoComponent
@@ -29,6 +26,8 @@ import reactivemongo.bson.{BSONDocument, BSONInteger}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.ReactiveRepository
 
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

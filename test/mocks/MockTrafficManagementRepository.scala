@@ -16,8 +16,6 @@
 
 package mocks
 
-import java.time.LocalDate
-
 import models.api.{RegistrationChannel, RegistrationInformation, RegistrationStatus}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -25,6 +23,7 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatestplus.mockito.MockitoSugar
 import repositories.trafficmanagement.TrafficManagementRepository
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 trait MockTrafficManagementRepository extends MockitoSugar {

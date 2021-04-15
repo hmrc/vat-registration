@@ -16,13 +16,13 @@
 
 package services.submission
 
+import models.api.NoUKBankAccount
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.jsonObject
-import javax.inject.{Inject, Singleton}
-import models.api.NoUKBankAccount
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

@@ -18,19 +18,9 @@ package utils
 
 import play.api.libs.json._
 
-trait JsonUtilities {
+trait FilterNullJsonFields {
 
-  implicit class JsonUtilities(json: JsValue) {
-
-    def getOptionalField[T](path: JsPath)(implicit r: Reads[T]): Option[T] =
-      path(json)
-        .headOption
-        .map(_.result.as[T])
-
-    def getField[T](path: JsPath)(implicit r: Reads[T]): T =
-      getOptionalField(path)
-        .getOrElse(throw new Exception(s"Could not parse JSON at path: ${path.toString()}"))
-
+  implicit class FilterNulls(json: JsValue) {
     def filterNullFields: JsValue = json match {
       case JsObject(fieldSet) => JsObject(fieldSet.flatMap {
         case (_, JsNull) => None

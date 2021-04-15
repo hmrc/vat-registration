@@ -16,12 +16,12 @@
 
 package models.api
 
-import java.time.LocalDate
-
+import models.api.EligibilitySubmissionData._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
-import EligibilitySubmissionData._
+
+import java.time.LocalDate
 
 case class EligibilitySubmissionData(threshold: Threshold,
                                      exceptionOrExemption: String,

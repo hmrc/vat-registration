@@ -17,13 +17,12 @@
 package connectors
 
 import config.BackendConfig
-import javax.inject.{Inject, Singleton}
 import models.nonrepudiation.{NonRepudiationMetadata, NonRepudiationSubmissionAccepted}
 import play.api.http.Status.ACCEPTED
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpReadsHttpResponse, HttpResponse}
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpReadsHttpResponse, HttpResponse}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

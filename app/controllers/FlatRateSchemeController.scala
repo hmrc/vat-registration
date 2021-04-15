@@ -18,7 +18,6 @@ package controllers
 
 import auth.Authorisation
 import common.exceptions.MissingRegDocument
-import javax.inject.{Inject, Singleton}
 import models.api.FlatRateScheme
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -27,6 +26,7 @@ import services.FlatRateSchemeService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton

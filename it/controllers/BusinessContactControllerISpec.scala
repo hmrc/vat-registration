@@ -3,7 +3,7 @@ package controllers
 
 import auth.CryptoSCRS
 import itutil.IntegrationStubbing
-import models.api.{Address, BusinessContact, DigitalContact, Letter, VatScheme}
+import models.api._
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._

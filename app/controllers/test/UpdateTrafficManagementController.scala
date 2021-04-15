@@ -16,13 +16,13 @@
 
 package controllers.test
 
-import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import repositories.trafficmanagement.DailyQuotaRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.TimeMachine
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

@@ -16,13 +16,12 @@
 
 package services
 
-import java.util.UUID
-
 import featureswitch.core.config.FeatureSwitching
-import javax.inject.{Inject, Singleton}
 import models.api.VatScheme
 import repositories.RegistrationMongoRepository
 
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton

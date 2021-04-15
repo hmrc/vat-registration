@@ -16,10 +16,10 @@
 
 package models.api
 
-import java.time.LocalDate
-
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
+
+import java.time.LocalDate
 
 case class FormerName(name: Option[Name],
                       change: Option[LocalDate])

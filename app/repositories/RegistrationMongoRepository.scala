@@ -18,7 +18,7 @@ package repositories
 
 import auth.{AuthorisationResource, CryptoSCRS}
 import common.exceptions._
-import enums.VatRegStatus
+import models.VatRegStatus
 import models.api._
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
@@ -29,7 +29,6 @@ import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import utils.JsonErrorUtil
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,7 +40,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     collectionName = "registration-information",
     mongo = mongo.mongoConnector.db,
     domainFormat = VatScheme.mongoFormat(crypto)
-  ) with ReactiveMongoFormats with AuthorisationResource with JsonErrorUtil {
+  ) with ReactiveMongoFormats with AuthorisationResource {
 
   startUp
 
@@ -91,7 +90,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   def insertVatScheme(vatScheme: VatScheme): Future[VatScheme] = {
     implicit val vatSchemeWrites: OWrites[VatScheme] = VatScheme.mongoFormat(crypto)
 
-    collection.update.one(regIdSelector(vatScheme.id), vatScheme, upsert = true).map { writeResult =>
+    collection.update.one(regIdSelector(vatScheme.id), vatScheme, upsert = true).map { _ =>
       logger.info(s"[RegistrationMongoRepository] [insertVatScheme] successfully stored a preexisting VatScheme")
       vatScheme
     }.recover {

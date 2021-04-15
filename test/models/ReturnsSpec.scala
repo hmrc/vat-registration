@@ -16,12 +16,12 @@
 
 package models
 
-import java.time.LocalDate
-
 import helpers.BaseSpec
 import models.api.{Returns, StartDate, TurnoverEstimates}
 import play.api.libs.json._
 import utils.EligibilityDataJsonUtils
+
+import java.time.LocalDate
 
 class ReturnsSpec extends BaseSpec with JsonFormatValidation {
 

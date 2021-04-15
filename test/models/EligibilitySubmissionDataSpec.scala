@@ -16,11 +16,11 @@
 
 package models
 
-import java.time.LocalDate
-
 import models.api.{EligibilitySubmissionData, MTDfB, Threshold, TurnoverEstimates}
 import play.api.libs.json.{JsArray, JsObject, JsSuccess, Json}
 import utils.EligibilityDataJsonUtils
+
+import java.time.LocalDate
 
 class EligibilitySubmissionDataSpec extends JsonFormatValidation {
 

@@ -16,14 +16,14 @@
 
 package models.monitoring
 
-import java.time.LocalDate
-
 import models.api._
 import models.submission.VatSubmission
 import play.api.libs.json.{JsObject, JsValue, Json}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
-import utils.JsonUtilities
+import utils.FilterNullJsonFields
+
+import java.time.LocalDate
 
 object RegistrationSubmissionAuditing {
   val vatRegTransactionName = "subscription-submitted"
@@ -33,7 +33,7 @@ object RegistrationSubmissionAuditing {
                                               regId: String,
                                               authProviderId: String,
                                               affinityGroup: AffinityGroup,
-                                              optAgentReferenceNumber: Option[String]) extends AuditModel with JsonUtilities {
+                                              optAgentReferenceNumber: Option[String]) extends AuditModel with FilterNullJsonFields {
 
     override val transactionName: String = vatRegTransactionName
     override val auditType: String = vatRegAuditType

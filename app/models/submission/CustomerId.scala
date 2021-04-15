@@ -16,9 +16,9 @@
 
 package models.submission
 
-import java.time.LocalDate
-
 import play.api.libs.json.Json
+
+import java.time.LocalDate
 
 case class CustomerId(idValue: String,
                       idType: IdType,

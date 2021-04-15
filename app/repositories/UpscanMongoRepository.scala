@@ -16,7 +16,7 @@
 
 package repositories
 
-import models.api.{InProgress, UpscanDetails}
+import models.api.UpscanDetails
 import play.api.libs.json.{JsString, Json}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}

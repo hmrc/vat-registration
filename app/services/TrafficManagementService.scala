@@ -16,14 +16,13 @@
 
 package services
 
-import java.time.LocalDate
-
-import javax.inject.{Inject, Singleton}
 import models.api._
 import play.api.libs.json.Json
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import utils.TimeMachine
 
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

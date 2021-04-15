@@ -18,10 +18,11 @@ package services
 
 import com.typesafe.config.{ConfigList, ConfigRenderOptions}
 import config.BackendConfig
-import javax.inject.{Inject, Singleton}
 import models.VatThreshold
 import org.joda.time.DateTime
 import play.api.libs.json._
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class VatThresholdService @Inject()(backendConfig: BackendConfig) {

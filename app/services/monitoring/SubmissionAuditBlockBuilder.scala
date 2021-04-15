@@ -18,13 +18,12 @@ package services.monitoring
 
 import models.api.VatScheme
 import models.monitoring.SubmissionAuditModel
-import play.api.libs.json.{JsObject, Json}
-import repositories.RegistrationMongoRepository
+import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: SubscriptionBlockBuilder,

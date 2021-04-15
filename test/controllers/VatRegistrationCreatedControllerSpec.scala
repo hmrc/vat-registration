@@ -16,8 +16,6 @@
 
 package controllers
 
-import java.time.LocalDate
-
 import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
@@ -33,6 +31,7 @@ import play.api.test.FakeRequest
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrationFixture with MockNewRegistrationService {

@@ -16,10 +16,10 @@
 
 package models
 
-import java.time.LocalDate
-
 import models.api.Threshold
 import play.api.libs.json.{JsPath, JsSuccess, Json, JsonValidationError}
+
+import java.time.LocalDate
 
 class ThresholdSpec extends JsonFormatValidation {
   "Threshold model" should {

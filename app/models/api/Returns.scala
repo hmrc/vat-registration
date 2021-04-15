@@ -16,10 +16,9 @@
 
 package models.api
 
-import java.time.LocalDate
-
 import play.api.libs.json._
-import utils.JsonUtilities
+
+import java.time.LocalDate
 
 case class StartDate(date: Option[LocalDate])
 
@@ -33,7 +32,7 @@ case class Returns(reclaimVatOnMostReturns: Boolean,
                    start: StartDate,
                    zeroRatedSupplies: Option[BigDecimal])
 
-object Returns extends VatAccountingPeriodValidator with JsonUtilities {
+object Returns extends VatAccountingPeriodValidator {
   implicit val format: Format[Returns] = Json.format[Returns]
 
   def readStaggerStart(stagger: Option[String]): Option[String] =

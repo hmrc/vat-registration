@@ -15,7 +15,7 @@
  */
 package itutil
 
-import enums.VatRegStatus
+import models.VatRegStatus
 import models.api._
 import models.submission.{DateOfBirth, Director, RoleInBusiness}
 import play.api.libs.json.{JsValue, Json}

@@ -16,10 +16,10 @@
 
 package services
 
-import javax.inject.{Inject, Singleton}
 import models.api.SicAndCompliance
 import repositories.RegistrationMongoRepository
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton

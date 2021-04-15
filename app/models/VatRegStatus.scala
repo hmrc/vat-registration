@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package utils
+package models
 
-import play.api.libs.json.{JsPath, JsonValidationError}
+import play.api.libs.json.{Format, JsString, Reads, Writes}
 
-trait JsonErrorUtil {
+object VatRegStatus extends Enumeration {
+  val invalid = Value
+  val draft = Value
+  val locked = Value
+  val held = Value
+  val submitted = Value
+  val acknowledged = Value
+  val rejected = Value
+  val cancelled = Value
 
-  type PlayJsonErrorSeq = Seq[(JsPath, Seq[JsonValidationError])]
-
-  def jsonErrorLogMessage(thrownBy: String, errors: PlayJsonErrorSeq): String = {
-    val invalidKeys = errors.map { case (key, _) => key.toString.replace("/", "") }
-
-    s"[$thrownBy] Missing or invalid fields: ${invalidKeys.mkString(", ")}"
-  }
+  implicit val format = Format(
+    Reads[VatRegStatus.Value] { json => json.validate[String].map(VatRegStatus.withName) },
+    Writes[VatRegStatus.Value] { value => JsString(value.toString) }
+  )
 
 }

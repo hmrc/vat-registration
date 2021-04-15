@@ -17,8 +17,8 @@
 package repository
 
 import common.exceptions._
-import enums.VatRegStatus
 import itutil.{FutureAssertions, ITFixtures, MongoBaseSpec}
+import models.VatRegStatus
 import models.api.{TurnoverEstimates, _}
 import play.api.libs.json._
 import play.api.test.Helpers._

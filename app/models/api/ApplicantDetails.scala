@@ -16,13 +16,12 @@
 
 package models.api
 
-import java.time.LocalDate
-
 import helpers.ApplicantDetailsHelper
 import models.submission.{DateOfBirth, RoleInBusiness}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import utils.JsonUtilities
+
+import java.time.LocalDate
 
 case class ApplicantDetails(nino: String,
                             roleInBusiness: RoleInBusiness,
@@ -43,8 +42,7 @@ case class ApplicantDetails(nino: String,
                             countryOfIncorporation: String = "GB")
 
 object ApplicantDetails extends VatApplicantDetailsValidator
-  with ApplicantDetailsHelper
-  with JsonUtilities {
+  with ApplicantDetailsHelper {
 
   implicit val format: Format[ApplicantDetails] = (
     (__ \ "nino").format[String] and

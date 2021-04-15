@@ -19,8 +19,8 @@ package services.submission
 import cats.instances.FutureInstances
 import common.exceptions._
 import connectors.VatSubmissionConnector
-import enums.VatRegStatus
 import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching, UseSubmissionAuditBuilders}
+import models.VatRegStatus
 import models.api.{Submitted, VatScheme}
 import models.monitoring.RegistrationSubmissionAuditing.RegistrationSubmissionAuditModel
 import models.submission.VatSubmission

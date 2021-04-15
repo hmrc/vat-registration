@@ -16,9 +16,9 @@
 
 package models.api
 
-import java.time.LocalDate
-
 import play.api.libs.json.Json
+
+import java.time.LocalDate
 
 case class DailyQuota(date: LocalDate, currentTotal: Int = 0)
 

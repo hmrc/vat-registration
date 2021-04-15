@@ -16,10 +16,7 @@
 
 package repositories.trafficmanagement
 
-import java.time.LocalDate
-
 import config.BackendConfig
-import javax.inject.{Inject, Singleton}
 import models.api.DailyQuota
 import play.api.libs.json.{JsString, Json}
 import play.modules.reactivemongo.ReactiveMongoComponent
@@ -28,6 +25,8 @@ import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.mongo.ReactiveRepository
 import utils.TimeMachine
 
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

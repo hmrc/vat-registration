@@ -19,7 +19,7 @@ package controllers
 import auth.{Authorisation, AuthorisationResource}
 import cats.instances.FutureInstances
 import common.exceptions.{InvalidSubmissionStatus, LeftState}
-import enums.VatRegStatus
+import models.VatRegStatus
 import models.api._
 import play.api.libs.json._
 import play.api.mvc._

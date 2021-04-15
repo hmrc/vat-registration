@@ -17,7 +17,7 @@
 package models.api
 
 import auth.CryptoSCRS
-import enums.VatRegStatus
+import models.VatRegStatus
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 

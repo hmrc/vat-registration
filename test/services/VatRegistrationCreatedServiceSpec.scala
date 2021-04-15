@@ -16,13 +16,10 @@
 
 package services
 
-import java.time.LocalDate
-
 import common.exceptions._
-import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models._
+import models.VatRegStatus
 import models.api.{Threshold, _}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
@@ -31,50 +28,35 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationFixture {
 
   class Setup {
     lazy val service: VatRegistrationService = new VatRegistrationService(mockRegistrationMongoRepository, backendConfig, mockHttpClient) {
+      override def generateRegistrationId(): String = testRegId
       override lazy val vatCancelUrl = "/test/uri"
       override lazy val vatRestartUrl = "/test-uri"
     }
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  val vatScheme = VatScheme(testRegId, testInternalid, None, None, None, status = VatRegStatus.draft)
 
-  //TODO - fix these tests when we define how to create new journeys
-  "createNewRegistration" ignore {
-
-    val vatScheme = VatScheme(testRegId, testInternalid, None, None, None, status = VatRegStatus.draft)
-
-    "return a existing VatScheme response " in new Setup {
-
+  "createNewRegistration" should {
+    "return a existing VatScheme where one exists" in new Setup {
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatScheme)))
 
       service.createNewRegistration(testInternalid) returnsRight vatScheme
     }
-
-    "call to retrieveVatScheme return VatScheme from DB" in new Setup {
-      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatScheme)))
-      service.retrieveVatScheme(testRegId) returnsRight vatScheme
-    }
-
-    "call to retrieveVatScheme return None from DB " in new Setup {
-      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(None))
-      service.retrieveVatScheme(testRegId) returnsLeft ResourceNotFound("1")
-    }
-
-    "return a new VatScheme response " in new Setup {
-
+    "return a new VatScheme if one doesn't already exist" in new Setup {
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(None))
       when(mockRegistrationMongoRepository.createNewVatScheme(testRegId, testInternalid)).thenReturn(Future.successful(vatScheme))
 
       await(service.createNewRegistration(testInternalid).value) mustBe Right(vatScheme)
     }
-
-    "error when creating VatScheme" in new Setup {
+    "return a GenericError with a specific exception where one is thrown" in new Setup {
       val t = new Exception("Exception")
 
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(None))
@@ -82,8 +64,7 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
 
       service.createNewRegistration(testInternalid) returnsLeft GenericError(t)
     }
-
-    "error with the DB when creating VatScheme" in new Setup {
+    "return a GenericDatabaseError if writing the VatScheme fails" in new Setup {
       val error: InsertFailed = InsertFailed("regId", "VatScheme")
 
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(None))
@@ -91,21 +72,17 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
 
       service.createNewRegistration(testInternalid) returnsLeft GenericDatabaseError(error, Some("regId"))
     }
+  }
 
-    "call to business service return ForbiddenException response " in new Setup {
-      service.createNewRegistration(testInternalid) returnsLeft ForbiddenAccess("forbidden")
+  "retrieveVatScheme" should {
+    "return VatScheme where one exists" in new Setup {
+      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatScheme)))
+      service.retrieveVatScheme(testRegId) returnsRight vatScheme
     }
-
-    "call to business service return NotFoundException response " in new Setup {
-      service.createNewRegistration(testInternalid) returnsLeft ResourceNotFound("notfound")
+    "return ResourceNotFound if no VatScheme exists" in new Setup {
+      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(None))
+      service.retrieveVatScheme(testRegId) returnsLeft ResourceNotFound(testRegId)
     }
-
-    "call to business service return ErrorResponse response " in new Setup {
-      val t = new RuntimeException("Exception")
-
-      service.createNewRegistration(testInternalid) returnsLeft GenericError(t)
-    }
-
   }
 
   "call to deleteVatScheme" should {
@@ -144,7 +121,6 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
   }
 
   "call to retrieveAcknowledgementReference" should {
-
     "call to retrieveAcknowledgementReference return AcknowledgementReference from DB" in new Setup {
       val vatSchemeWithAckRefNum: VatScheme = testVatScheme.copy(acknowledgementReference = Some(testAckReference))
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatSchemeWithAckRefNum)))

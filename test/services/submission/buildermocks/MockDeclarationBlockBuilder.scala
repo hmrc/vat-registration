@@ -16,10 +16,10 @@
 
 package services.submission.buildermocks
 
-import org.scalatest.Suite
-import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
+import org.scalatest.Suite
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import services.submission.DeclarationBlockBuilder
 

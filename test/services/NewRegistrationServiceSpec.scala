@@ -16,17 +16,17 @@
 
 package services
 
-import java.time.LocalDate
-
 import config.BackendConfig
-import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import helpers.VatRegSpec
 import mocks.{MockDailyQuotaRepository, MockRegistrationRepository, MockTrafficManagementService}
+import models.VatRegStatus
 import models.api.{Draft, RegistrationInformation, VatReg, VatScheme}
 import org.scalatest.BeforeAndAfterEach
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
+
+import java.time.LocalDate
 
 class NewRegistrationServiceSpec extends VatRegSpec
   with MockDailyQuotaRepository

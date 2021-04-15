@@ -23,9 +23,9 @@ import play.api.mvc.Results
 import play.api.test.Helpers._
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
-import uk.gov.hmrc.http.HeaderCarrier
 
 class AuthorisationSpec extends VatRegSpec {
 

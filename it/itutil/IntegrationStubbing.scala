@@ -17,6 +17,7 @@ package itutil
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlMatching}
 import models.api.{DailyQuota, RegistrationInformation, UpscanDetails, VatScheme}
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.auth.core.AuthenticateHeaderParser
@@ -96,7 +97,11 @@ trait IntegrationStubbing extends IntegrationSpecBase with ITFixtures {
 
   case class SubscriptionApi()(implicit builder: PreconditionBuilder) {
     def respondsWith(status: Int): PreconditionBuilder = {
-      stubPost("/vatreg/test-only/vat/subscription", status, "")
+      stubPost("/vat/subscription", status, "")
+      builder
+    }
+    def respondsWithJson(status: Int, json: JsValue): PreconditionBuilder = {
+      stubPost("/vat/subscription", status, Json.stringify(json))
       builder
     }
   }

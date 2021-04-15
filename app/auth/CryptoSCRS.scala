@@ -16,10 +16,11 @@
 
 package auth
 
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.json.{JsString, Reads, Writes}
 import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Crypted, PlainText}
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class CryptoSCRS @Inject()(config: Configuration) {

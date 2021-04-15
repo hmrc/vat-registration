@@ -2,12 +2,10 @@
 package controllers.test
 
 import itutil.{IntegrationSpecBase, IntegrationStubbing}
-import org.scalatest.Matchers
-import play.api.libs.json.Json
-
-import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.test.Helpers._
 import services.submission.SubmissionPayloadBuilder
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with IntegrationStubbing {
 

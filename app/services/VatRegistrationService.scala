@@ -16,21 +16,20 @@
 
 package services
 
-import java.util.UUID
-
 import cats.data.{EitherT, OptionT}
 import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
 import common.exceptions._
 import config.BackendConfig
-import enums.VatRegStatus
-import javax.inject.{Inject, Singleton}
+import models.VatRegStatus
 import models.api.{Threshold, TurnoverEstimates, VatScheme}
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.HttpClient
 
+import java.util.UUID
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

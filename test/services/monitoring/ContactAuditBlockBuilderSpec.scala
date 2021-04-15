@@ -16,10 +16,9 @@
 
 package services.monitoring
 
-import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api.{Address, BusinessContact, Country, DigitalContact, Email, VatScheme}
+import models.api._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.InternalServerException
 

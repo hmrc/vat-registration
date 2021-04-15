@@ -16,10 +16,10 @@
 
 package models.api
 
-import java.util.regex.Pattern
-
 import play.api.libs.json.Reads.{email, pattern}
 import play.api.libs.json._
+
+import java.util.regex.Pattern
 
 trait Validation {
   protected def readToFmt(rds: Reads[String])(implicit wts: Writes[String]): Format[String] = Format(rds, wts)

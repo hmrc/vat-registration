@@ -18,7 +18,7 @@ package models
 
 import org.scalatest.Assertion
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsError, JsPath, JsResult, JsSuccess, JsonValidationError}
+import play.api.libs.json._
 
 trait JsonFormatValidation extends PlaySpec {
 

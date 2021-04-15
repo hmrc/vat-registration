@@ -1,12 +1,12 @@
 
 package controllers
 
+import controllers.routes.SicAndComplianceController
 import itutil.IntegrationStubbing
 import models.api._
 import play.api.libs.json.{JsObject, Json}
-import play.api.test.Helpers._
-import controllers.routes.SicAndComplianceController
 import play.api.libs.ws.WSResponse
+import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

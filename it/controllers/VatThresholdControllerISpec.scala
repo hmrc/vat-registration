@@ -16,10 +16,10 @@
 
 package controllers
 
-import itutil.IntegrationStubbing
-import play.api.test.Helpers._
 import controllers.routes.VatThresholdController
+import itutil.IntegrationStubbing
 import play.api.libs.ws.WSResponse
+import play.api.test.Helpers._
 
 class VatThresholdControllerISpec extends IntegrationStubbing {
 

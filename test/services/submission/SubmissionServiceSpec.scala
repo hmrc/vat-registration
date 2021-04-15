@@ -19,12 +19,12 @@ package services.submission
 import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
 import common.exceptions._
-import enums.VatRegStatus
 import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching, UseSubmissionAuditBuilders}
-import fixtures.{SubmissionAuditFixture, VatRegistrationFixture, VatSubmissionFixture}
+import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import mocks.MockTrafficManagementService
 import mocks.monitoring.MockAuditService
+import models.VatRegStatus
 import models.api._
 import models.monitoring.RegistrationSubmissionAuditing.RegistrationSubmissionAuditModel
 import models.monitoring.SubmissionAuditModel

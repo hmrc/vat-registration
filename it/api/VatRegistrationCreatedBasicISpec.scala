@@ -17,9 +17,9 @@
 package api
 
 import connectors.stubs.VatSubmissionStub._
-import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.IntegrationStubbing
+import models.VatRegStatus
 import models.api.VatScheme
 import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse

@@ -16,9 +16,9 @@
 
 package fixtures
 
-import enums.VatRegStatus
+import models.VatRegStatus
 import models.api._
-import models.submission.{DateOfBirth, Director, RoleInBusiness, UkCompany, VatSubmission}
+import models.submission._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials

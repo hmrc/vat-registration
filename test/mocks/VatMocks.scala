@@ -20,7 +20,7 @@ import auth.AuthorisationResource
 import cats.data.EitherT
 import common.exceptions._
 import connectors._
-import enums.VatRegStatus
+import models.VatRegStatus
 import models.api.VatScheme
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._

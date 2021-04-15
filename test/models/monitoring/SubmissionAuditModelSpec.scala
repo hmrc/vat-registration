@@ -16,9 +16,9 @@
 
 package models.monitoring
 
-import enums.VatRegStatus
 import fixtures.SubmissionAuditFixture
 import helpers.VatRegSpec
+import models.VatRegStatus
 import models.api.{MTDfB, VatScheme}
 import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
