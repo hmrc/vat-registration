@@ -19,7 +19,7 @@ package fixtures
 import common.TransactionId
 import enums.VatRegStatus
 import models.api._
-import models.submission.{DateOfBirth, Director, RoleInBusiness, UkCompany, VatSubmission}
+import models.submission._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -118,6 +118,18 @@ trait VatRegistrationFixture {
 
   lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None)
   lazy val testBankAccountNotProvided = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup))
+
+  lazy val validFullAASDetails: AASDetails = AASDetails(
+    paymentMethod = StandingOrder,
+    annualStagger = JanDecStagger,
+    paymentFrequency = Monthly,
+    estimatedTurnover = TurnoverEstimates(123456),
+    requestedStartDate = testDate
+  )
+
+  lazy val validFullAAS: AnnualAccountingScheme = AnnualAccountingScheme(joinAAS = true,
+    submissionType = "1",
+    validFullAASDetails)
 
   lazy val validFullFRSDetails: FRSDetails =
     FRSDetails(
@@ -303,6 +315,21 @@ trait VatRegistrationFixture {
     s"""
        |{
        |  "joinFrs": false
+       |}
+     """.stripMargin).as[JsObject]
+
+  lazy val validFullAnnualAccountingSchemeJson: JsObject = Json.parse(
+    s"""
+       |{
+       | "joinAAS":true,
+       | "submissionType":"1",
+       | "AASDetails":{
+       |  "paymentMethod":"01",
+       |  "annualStagger":"YA",
+       |  "paymentFrequency":"M",
+       |  "estimatedTurnover":{"turnoverEstimate":123456},
+       |  "requestedStartDate":"2018-01-01"
+       |  }
        |}
      """.stripMargin).as[JsObject]
 
