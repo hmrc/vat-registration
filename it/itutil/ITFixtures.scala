@@ -59,7 +59,16 @@ trait ITFixtures {
     limitedCostTrader = Some(false)
   )
 
+  val aasDetails = AASDetails(
+    paymentMethod = StandingOrder,
+    annualStagger = JanDecStagger,
+    paymentFrequency = Monthly,
+    estimatedTurnover = TurnoverEstimates(123456),
+    requestedStartDate = testDate
+  )
+
   val testFlatRateScheme = FlatRateScheme(joinFrs = true, Some(frsDetails))
+  val testAnnualAccountingScheme = AnnualAccountingScheme(joinAAS = true, submissionType = "1", aasDetails)
   val EstimateValue: Long = 1000L
   val zeroRatedTurnoverEstimate: Long = 1000L
   val testCountry = Country(Some("GB"), None)
