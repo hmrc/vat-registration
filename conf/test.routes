@@ -2,6 +2,7 @@ GET         /api/feature-switches                                  featureswitch
 POST        /api/feature-switches                                  featureswitch.api.controllers.FeatureSwitchApiController.updateFeatureSwitches()
 
 PUT         /api/daily-quota                                       controllers.test.UpdateTrafficManagementController.updateQuota
+DELETE      /api/traffic-management                                controllers.test.UpdateTrafficManagementController.clear
 
 POST        /vat/subscription                                      controllers.test.StubVatSubmissionController.processSubmission
 

@@ -18,8 +18,8 @@ package controllers.test
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents}
-import repositories.trafficmanagement.DailyQuotaRepository
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.TimeMachine
 
@@ -28,6 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class UpdateTrafficManagementController @Inject()(cc: ControllerComponents,
                                                   dailyQuotaRepository: DailyQuotaRepository,
+                                                  trafficManagementRepository: TrafficManagementRepository,
                                                   timeMachine: TimeMachine
                                                 )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
@@ -43,6 +44,10 @@ class UpdateTrafficManagementController @Inject()(cc: ControllerComponents,
       case JsError(_) =>
         Future.successful(BadRequest)
     }
+  }
+
+  val clear: Action[AnyContent] = Action.async { implicit request =>
+    trafficManagementRepository.removeAll().map (_ => NoContent)
   }
 
 }
