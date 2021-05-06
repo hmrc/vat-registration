@@ -1,7 +1,7 @@
 
 package itutil
 
-import models.api.{MTDfB, Submitted}
+import models.api.Submitted
 import models.submission.UkCompany
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
@@ -67,7 +67,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
         "previousName" -> Json.obj(
           "firstName" -> "Bob",
           "lastName" -> "Smith",
-          "nameChangeDate"-> "2017-01-01"
+          "nameChangeDate" -> "2017-01-01"
         ),
         "currentAddress" -> testFullAddressJson,
         "previousAddress" -> testFullAddressJson,
@@ -121,6 +121,17 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
       )
     )
 
+  val fullAnnualAccountingBlockJson: JsValue =
+    Json.obj("submissionType" -> "1",
+      "customerRequest" -> Json.obj(
+        "paymentMethod" -> "01",
+        "annualStagger" -> "YA",
+        "paymentFrequency" -> "M",
+        "estimatedTurnover" -> 123456,
+        "reqStartDate" -> "2017-01-01"
+      )
+    )
+
   val auditModelJson = Json.obj(
     "authProviderId" -> testAuthProviderId,
     "journeyId" -> vatScheme.id,
@@ -145,7 +156,8 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
     "customerIdentification" -> customerIdentificationAuditBlockJson,
     "bankDetails" -> bankAuditBlockJson,
     "businessContact" -> contactBlockFullJson,
-    "periods" -> periodsAuditBlockJson
+    "periods" -> periodsAuditBlockJson,
+    "joinAA" -> fullAnnualAccountingBlockJson
   )
 
 }

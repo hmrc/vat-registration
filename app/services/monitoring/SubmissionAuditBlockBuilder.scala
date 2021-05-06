@@ -18,13 +18,12 @@ package services.monitoring
 
 import models.api.VatScheme
 import models.monitoring.SubmissionAuditModel
-import play.api.libs.json.{JsObject, Json}
-import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
+import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: SubscriptionBlockBuilder,
@@ -33,7 +32,8 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
                                             customerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder,
                                             periodsAuditBlockBuilder: PeriodsAuditBlockBuilder,
                                             bankAuditBlockBuilder: BankAuditBlockBuilder,
-                                            contactAuditBlockBuilder: ContactAuditBlockBuilder)
+                                            contactAuditBlockBuilder: ContactAuditBlockBuilder,
+                                            annualAccountingAuditBlockBuilder: AnnualAccountingAuditBlockBuilder)
                                            (implicit ec: ExecutionContext) {
 
 
@@ -42,7 +42,7 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
                      affinityGroup: AffinityGroup,
                      optAgentReferenceNumber: Option[String]
                     )(implicit hc: HeaderCarrier): SubmissionAuditModel = {
-    val details = Json.obj(
+    val details = jsonObject(
       "outsideEUSales" -> {
         vatScheme.tradingDetails.map(_.eoriRequested) match {
           case Some(euGoods) => euGoods
@@ -53,9 +53,10 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
       "declaration" -> declarationBlockBuilder.buildDeclarationBlock(vatScheme),
       "compliance" -> complianceBlockBuilder.buildComplianceBlock(vatScheme),
       "customerIdentification" -> customerIdentificationBlockBuilder.buildCustomerIdentificationBlock(vatScheme),
-      "periods" -> periodsAuditBlockBuilder.buildPeriodsBlock(vatScheme),
+      "businessContact" -> contactAuditBlockBuilder.buildContactBlock(vatScheme),
       "bankDetails" -> bankAuditBlockBuilder.buildBankAuditBlock(vatScheme),
-      "businessContact" -> contactAuditBlockBuilder.buildContactBlock(vatScheme)
+      "periods" -> periodsAuditBlockBuilder.buildPeriodsBlock(vatScheme),
+      optional("joinAA" -> annualAccountingAuditBlockBuilder.buildAnnualAccountingAuditBlock(vatScheme))
     )
 
     SubmissionAuditModel(

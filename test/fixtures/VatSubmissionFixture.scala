@@ -712,6 +712,16 @@ trait VatSubmissionFixture {
       |      "number": "01023456"
       |    }
       |  },
+      |  "joinAA": {
+      | "submissionType":"1",
+      | "customerRequest":{
+      |  "paymentMethod":"01",
+      |  "annualStagger":"YA",
+      |  "paymentFrequency":"M",
+      |  "estimatedTurnover":123456,
+      |  "requestedStartDate":"2018-01-01"
+      |  }
+      |},
       |  "sicAndCompliance": {
       |    "businessDescription": "this is my business description",
       |    "labourCompliance": {

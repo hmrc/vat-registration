@@ -19,7 +19,7 @@ package controllers
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo, verify}
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import enums.VatRegStatus
-import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching, StubSubmission, UseSubmissionAuditBuilders}
+import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
 import models.api.VatScheme
 import models.nonrepudiation.NonRepudiationMetadata

@@ -99,6 +99,16 @@ trait ITVatSubmissionFixture extends ITFixtures {
         // Missing bank account reason is being developed
       )
     ),
+    "joinAA" -> Json.obj(
+      "submissionType" -> "1",
+      "customerRequest" -> Json.obj(
+        "paymentMethod" -> "01",
+        "annualStagger" -> "YA",
+        "paymentFrequency" -> "M",
+        "estimatedTurnover" -> 123456.00,
+        "reqStartDate" -> "2017-01-01"
+      )
+    ),
     "compliance" -> Json.obj(
       "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
       "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
@@ -219,6 +229,16 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "periods" -> Json.obj(
       "customerPreferredPeriodicity" -> "MA"
+    ),
+    "joinAA" -> Json.obj(
+      "submissionType" -> "1",
+      "customerRequest" -> Json.obj(
+        "paymentMethod" -> "01",
+        "annualStagger" -> "YA",
+        "paymentFrequency" -> "M",
+        "estimatedTurnover" -> 123456,
+        "reqStartDate" -> testDate
+      )
     ),
     "bankDetails" -> Json.obj(
       "UK" -> Json.obj(

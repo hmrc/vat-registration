@@ -101,7 +101,7 @@ class BusinessContactControllerISpec extends IntegrationStubbing {
       response.status mustBe FORBIDDEN
     }
   }
-  "updateBusinessConact" should {
+  "updateBusinessContact" should {
     "return OK during update to existing BusinessContact record" in new Setup {
       given.user.isAuthorised
         .regRepo.insertIntoDb(vatScheme("fooBar"),repo.insert)
