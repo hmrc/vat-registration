@@ -21,8 +21,8 @@ import play.api.libs.json._
 import java.time.LocalDate
 
 case class AnnualAccountingScheme(joinAAS: Boolean,
-                                  submissionType: String,
-                                  AASDetails: AASDetails)
+                                  submissionType: Option[String],
+                                  customerRequest: Option[AASDetails])
 
 object AnnualAccountingScheme {
   implicit val format: Format[AnnualAccountingScheme] = Json.format[AnnualAccountingScheme]
@@ -31,7 +31,7 @@ object AnnualAccountingScheme {
 case class AASDetails(paymentMethod: PaymentMethod,
                       annualStagger: AnnualStagger,
                       paymentFrequency: PaymentFrequency,
-                      estimatedTurnover: TurnoverEstimates,
+                      estimatedTurnover: BigDecimal,
                       requestedStartDate: LocalDate
                      )
 

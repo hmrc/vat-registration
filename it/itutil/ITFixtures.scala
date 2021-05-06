@@ -63,12 +63,12 @@ trait ITFixtures {
     paymentMethod = StandingOrder,
     annualStagger = JanDecStagger,
     paymentFrequency = Monthly,
-    estimatedTurnover = TurnoverEstimates(123456),
+    estimatedTurnover = 123456,
     requestedStartDate = testDate
   )
 
   val testFlatRateScheme = FlatRateScheme(joinFrs = true, Some(frsDetails))
-  val testAnnualAccountingScheme = AnnualAccountingScheme(joinAAS = true, submissionType = "1", aasDetails)
+  val testAnnualAccountingScheme = AnnualAccountingScheme(joinAAS = true, submissionType = Some("1"), Some(aasDetails))
   val EstimateValue: Long = 1000L
   val zeroRatedTurnoverEstimate: Long = 1000L
   val testCountry = Country(Some("GB"), None)
@@ -182,6 +182,7 @@ trait ITFixtures {
     sicAndCompliance = Some(testFullSicAndCompliance),
     businessContact = Some(testFullBusinessContactDetails),
     bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
+    annualAccountingScheme = Some(testAnnualAccountingScheme),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -202,6 +203,7 @@ trait ITFixtures {
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
+      annualAccountingScheme = Some(testAnnualAccountingScheme),
       status = VatRegStatus.draft,
       applicantDetails = Some(testUnregisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -221,6 +223,7 @@ trait ITFixtures {
       bankAccount = Some(BankAccount(isProvided = false, None, Some(BeingSetup))),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(FlatRateScheme(joinFrs = false, None)),
+      annualAccountingScheme = Some(testAnnualAccountingScheme),
       status = VatRegStatus.draft,
       applicantDetails = Some(testRegisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),

@@ -123,13 +123,11 @@ trait VatRegistrationFixture {
     paymentMethod = StandingOrder,
     annualStagger = JanDecStagger,
     paymentFrequency = Monthly,
-    estimatedTurnover = TurnoverEstimates(123456),
+    estimatedTurnover = 123456,
     requestedStartDate = testDate
   )
 
-  lazy val validFullAAS: AnnualAccountingScheme = AnnualAccountingScheme(joinAAS = true,
-    submissionType = "1",
-    validFullAASDetails)
+  lazy val validFullAAS: AnnualAccountingScheme = AnnualAccountingScheme(joinAAS = true, submissionType = Some("1"), Some(validFullAASDetails))
 
   lazy val validFullFRSDetails: FRSDetails =
     FRSDetails(
@@ -162,6 +160,7 @@ trait VatRegistrationFixture {
     sicAndCompliance = testSicAndCompliance,
     businessContact = testBusinessContact,
     bankAccount = Some(testBankAccount),
+    annualAccountingScheme = Some(validFullAAS),
     flatRateScheme = Some(validFullFlatRateScheme),
     applicantDetails = Some(validApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -323,11 +322,11 @@ trait VatRegistrationFixture {
        |{
        | "joinAAS":true,
        | "submissionType":"1",
-       | "AASDetails":{
+       | "customerRequest":{
        |  "paymentMethod":"01",
        |  "annualStagger":"YA",
        |  "paymentFrequency":"M",
-       |  "estimatedTurnover":{"turnoverEstimate":123456},
+       |  "estimatedTurnover":123456,
        |  "requestedStartDate":"2018-01-01"
        |  }
        |}

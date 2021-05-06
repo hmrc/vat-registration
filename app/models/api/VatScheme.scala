@@ -30,6 +30,7 @@ case class VatScheme(id: String,
                      sicAndCompliance: Option[SicAndCompliance] = None,
                      businessContact: Option[BusinessContact] = None,
                      bankAccount: Option[BankAccount] = None,
+                     annualAccountingScheme: Option[AnnualAccountingScheme] = None,
                      acknowledgementReference: Option[String] = None,
                      flatRateScheme: Option[FlatRateScheme] = None,
                      status: VatRegStatus.Value,
@@ -50,6 +51,7 @@ object VatScheme {
       (__ \ "sicAndCompliance").formatNullable[SicAndCompliance] and
       (__ \ "businessContact").formatNullable[BusinessContact] and
       (__ \ "bankAccount").formatNullable[BankAccount] and
+      (__ \ "annualAccountingScheme").formatNullable[AnnualAccountingScheme] and
       (__ \ "acknowledgementReference").formatNullable[String] and
       (__ \ "flatRateScheme").formatNullable[FlatRateScheme] and
       (__ \ "status").format[VatRegStatus.Value] and
@@ -69,6 +71,7 @@ object VatScheme {
       (__ \ "sicAndCompliance").formatNullable[SicAndCompliance] and
       (__ \ "businessContact").formatNullable[BusinessContact] and
       (__ \ "bankAccount").formatNullable[BankAccount](BankAccountMongoFormat.encryptedFormat(crypto)) and
+      (__ \ "annualAccountingScheme").formatNullable[AnnualAccountingScheme] and
       (__ \ "acknowledgementReference").formatNullable[String] and
       (__ \ "flatRateScheme").formatNullable[FlatRateScheme] and
       (__ \ "status").format[VatRegStatus.Value] and

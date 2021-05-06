@@ -30,10 +30,10 @@ object PaymentFrequency {
   val quarterly: String = "Q"
 
   val reads: Reads[PaymentFrequency] = Reads[PaymentFrequency] {
-      case JsString(`monthly`) => JsSuccess(Monthly)
-      case JsString(`quarterly`) => JsSuccess(Quarterly)
-      case _ => JsError("Could not parse payment frequency")
-    }
+    case JsString(`monthly`) => JsSuccess(Monthly)
+    case JsString(`quarterly`) => JsSuccess(Quarterly)
+    case _ => JsError("Could not parse payment frequency")
+  }
 
   val writes: Writes[PaymentFrequency] = Writes[PaymentFrequency] {
     case Monthly => JsString(monthly)

@@ -35,7 +35,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
   with MockBankDetailsBlockBuilder
   with MockComplianceBlockBuilder
   with MockSubscriptionBlockBuilder
-  with MockDeclarationBlockBuilder {
+  with MockDeclarationBlockBuilder
+  with MockAnnualAccountingBlockBuilder {
 
   object TestBuilder extends SubmissionPayloadBuilder(
     mockAdminBlockBuilder,
@@ -45,7 +46,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
     mockPeriodsBlockBuilder,
     mockSubscriptionBlockBuilder,
     mockBankDetailsBlockBuilder,
-    mockComplianceBlockBuilder
+    mockComplianceBlockBuilder,
+    mockAnnualAccountingBlockBuilder
   )
 
   val testAdminBlockJson: JsObject = Json.obj(
@@ -76,7 +78,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
         "countryCode" -> "GB"
       ),
       "commDetails" -> Json.obj(
-        "email" -> "email@email.com",
+        "email" -> "email@email.com"
       ),
       "identifiers" -> Json.arr(
         Json.obj(
@@ -163,6 +165,17 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
     )
   )
 
+  val testAnnualAccountingBlockJson: JsObject = Json.obj(
+    "submissionType" -> "01",
+    "customerRequest" -> Json.obj(
+      "paymentMethod" -> "",
+      "annualStagger" -> "",
+      "paymentFrequency" -> "",
+      "estimatedTurnover" -> "",
+      "requestedStartDate" -> ""
+    )
+  )
+
   val expectedJson: JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> testAdminBlockJson,
@@ -172,6 +185,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
     "subscription" -> testSubscriptionBlockJson,
     "bankDetails" -> testBankDetailsBlockJson,
     "periods" -> testPeriodsBlockJson,
+    "joinAA" -> testAnnualAccountingBlockJson,
     "compliance" -> testComplianceJson
   )
 
@@ -194,6 +208,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildPeriodsBlock(testRegId)(Future.successful(testPeriodsBlockJson))
 
+        mockBuildAnnualAccountingBlock(testRegId)(Future.successful(Some(testAnnualAccountingBlockJson)))
+
         val result = await(TestBuilder.buildSubmissionPayload(testRegId))
 
         result mustBe expectedJson
@@ -214,6 +230,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
         mockBuildComplianceBlock(testRegId)(Future.successful(None))
 
         mockBuildPeriodsBlock(testRegId)(Future.successful(testPeriodsBlockJson))
+
+        mockBuildAnnualAccountingBlock(testRegId)(Future.successful(Some(testAnnualAccountingBlockJson)))
 
         val result = await(TestBuilder.buildSubmissionPayload(testRegId))
 

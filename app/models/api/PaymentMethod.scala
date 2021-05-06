@@ -36,12 +36,12 @@ object PaymentMethod {
   val objectCHAPS: String = "04"
 
   val reads: Reads[PaymentMethod] = Reads[PaymentMethod] {
-      case JsString(`standingOrder`) => JsSuccess(StandingOrder)
-      case JsString(`bankGIRO`) => JsSuccess(BankGIRO)
-      case JsString(`objectBACS`) => JsSuccess(BACS)
-      case JsString(`objectCHAPS`) => JsSuccess(CHAPS)
-      case _ => JsError("Could not parse payment method")
-    }
+    case JsString(`standingOrder`) => JsSuccess(StandingOrder)
+    case JsString(`bankGIRO`) => JsSuccess(BankGIRO)
+    case JsString(`objectBACS`) => JsSuccess(BACS)
+    case JsString(`objectCHAPS`) => JsSuccess(CHAPS)
+    case _ => JsError("Could not parse payment method")
+  }
 
   val writes: Writes[PaymentMethod] = Writes {
     case StandingOrder => JsString(standingOrder)

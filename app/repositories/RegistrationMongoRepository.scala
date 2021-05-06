@@ -348,10 +348,10 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     updateBlock(regId, sicAndCompliance, "sicAndCompliance")(SicAndCompliance.apiFormat)
 
   def fetchAnnualAccountingScheme(regId: String): Future[Option[AnnualAccountingScheme]] =
-    fetchBlock[AnnualAccountingScheme](regId,"annualAccountingScheme")
+    fetchBlock[AnnualAccountingScheme](regId, "annualAccountingScheme")
 
   def updateAnnualAccountingScheme(regId: String, annualAccounting: AnnualAccountingScheme): Future[AnnualAccountingScheme] =
-    updateBlock(regId, annualAccounting,"annualAccountingScheme")
+    updateBlock(regId, annualAccounting, "annualAccountingScheme")
 
   def fetchBusinessContact(regId: String): Future[Option[BusinessContact]] =
     fetchBlock[BusinessContact](regId, "businessContact")
