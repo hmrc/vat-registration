@@ -16,11 +16,11 @@
 
 package models
 
-import java.time.LocalDate
-
 import models.api.{EligibilitySubmissionData, MTDfB, Threshold, TurnoverEstimates}
 import play.api.libs.json.{JsArray, JsObject, JsSuccess, Json}
 import utils.EligibilityDataJsonUtils
+
+import java.time.LocalDate
 
 class EligibilitySubmissionDataSpec extends JsonFormatValidation {
 
@@ -42,7 +42,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         Json.obj("questionId" -> "customerStatus-value", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> "2"),
         Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
-        "answerValue" -> true)
+          "answerValue" -> true)
       )
       val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
       val testEligibilityJson: JsObject = Json.obj("sections" -> section)

@@ -40,7 +40,7 @@ class AnnualAccountingBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
       |   "annualStagger":"YA",
       |   "paymentFrequency":"M",
       |   "estimatedTurnover":123456,
-      |   "reqStartDate":"2018-01-01"
+      |   "reqStartDate":"2020-10-07"
       |   }
       |}
       |""".stripMargin).as[JsObject]
@@ -48,8 +48,10 @@ class AnnualAccountingBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
   "buildAnnualAccountingBlock" should {
     "return the correct json" when {
       "the applicant wants to join AAS and all data is provided" in new Setup {
-        when(mockRegistrationMongoRepository.fetchAnnualAccountingScheme(testRegId))
-          .thenReturn(Future.successful(Some(validFullAAS)))
+        when(mockRegistrationMongoRepository.fetchReturns(testRegId))
+          .thenReturn(Future.successful(Some(validAASReturns)))
+        when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(testRegId))
+          .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
 
         val result: Option[JsObject] = await(service.buildAnnualAccountingBlock(testRegId))
         result mustBe Some(annualAccountingBlockJson)

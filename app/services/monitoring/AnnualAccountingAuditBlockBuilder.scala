@@ -16,7 +16,9 @@
 
 package services.monitoring
 
+import models.api.EligibilitySubmissionData._
 import models.api.VatScheme
+import models.api.returns.Annual
 import play.api.libs.json.JsObject
 import utils.JsonUtils._
 
@@ -27,17 +29,23 @@ import scala.concurrent.ExecutionContext
 class AnnualAccountingAuditBlockBuilder @Inject()(implicit ec: ExecutionContext) {
 
   def buildAnnualAccountingAuditBlock(vatScheme: VatScheme): Option[JsObject] = {
-    vatScheme.annualAccountingScheme match {
-      case Some(annualAccountingScheme) if annualAccountingScheme.joinAAS =>
+    (vatScheme.returns, vatScheme.eligibilitySubmissionData) match {
+      case (Some(returns), Some(eligibilitySubmissionData)) if returns.returnsFrequency.equals(Annual) =>
         Some(jsonObject(
-          "submissionType" -> annualAccountingScheme.submissionType,
-          "customerRequest" -> annualAccountingScheme.customerRequest.map { customerRequest =>
+          "submissionType" -> "1",
+          "customerRequest" -> returns.annualAccountingDetails.map { details =>
             jsonObject(
-              "paymentMethod" -> customerRequest.paymentMethod,
-              "annualStagger" -> customerRequest.annualStagger,
-              "paymentFrequency" -> customerRequest.paymentFrequency,
-              "estimatedTurnover" -> customerRequest.estimatedTurnover,
-              "reqStartDate" -> customerRequest.requestedStartDate
+              "paymentMethod" -> details.paymentMethod,
+              "annualStagger" -> returns.staggerStart,
+              "paymentFrequency" -> details.paymentFrequency,
+              "estimatedTurnover" -> eligibilitySubmissionData.estimates.turnoverEstimate,
+              "reqStartDate" -> {
+                eligibilitySubmissionData.reasonForRegistration() match {
+                  case `voluntaryKey` => returns.startDate
+                  case `backwardLookKey` => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
+                  case `forwardLookKey` => Some(eligibilitySubmissionData.earliestDate)
+                }
+              }
             )
           }
         ))

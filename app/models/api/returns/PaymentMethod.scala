@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package models.api
+package models.api.returns
 
 import play.api.libs.json._
 
 sealed trait PaymentMethod
-
 case object StandingOrder extends PaymentMethod
-
 case object BankGIRO extends PaymentMethod
-
 case object BACS extends PaymentMethod
-
 case object CHAPS extends PaymentMethod
 
 object PaymentMethod {

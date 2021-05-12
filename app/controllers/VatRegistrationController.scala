@@ -88,30 +88,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
       }
   }
 
-  // TODO: this returns 404 when other methods return 204. Refactor to return 204 at some point
-  def fetchReturns(regId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "fetchReturns") {
-          registrationRepository.fetchReturns(regId) map {
-            case Some(returns) => Ok(Json.toJson(returns))
-            case None => NotFound
-          }
-        }
-      }
-  }
-
-  def updateReturns(regId: String): Action[JsValue] = Action.async(parse.json) {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "updateReturns") {
-          withJsonBody[Returns] { returns =>
-            registrationRepository.updateReturns(regId, returns) map (_ => Ok)
-          }
-        }
-      }
-  }
-
   def submitVATRegistration(regId: String): Action[JsValue] = Action.async(parse.json) {
     implicit request =>
       isAuthorised(regId) { authResult =>

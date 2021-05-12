@@ -17,7 +17,8 @@ package itutil
 
 import common.TransactionId
 import enums.VatRegStatus
-import models.api._
+import models.api.returns._
+import models.api.{returns, _}
 import models.submission.{DateOfBirth, Director, RoleInBusiness}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -33,7 +34,7 @@ trait ITFixtures {
 
   val testDate: LocalDate = LocalDate.of(2017, 1, 1)
   val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.of(0, 0))
-  val startDate = StartDate(Some(testDate))
+  val startDate = testDate
   val testRegId = "regId"
   val testInternalid = "INT-123-456-789"
   val testTransactionId = "transId"
@@ -43,12 +44,13 @@ trait ITFixtures {
   val testTradingDetails = TradingDetails(Some(testTradingName), true)
   val testAuthProviderId = "authProviderId"
 
-  val testReturns = Returns(
+  val testReturns: Returns = Returns(
+    zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
-    frequency = "quarterly",
-    staggerStart = Some("jan"),
-    start = startDate,
-    zeroRatedSupplies = Some(12.99)
+    returnsFrequency = Quarterly,
+    staggerStart = JanuaryStagger,
+    startDate = Some(startDate),
+    annualAccountingDetails = None
   )
 
   val frsDetails = FRSDetails(
@@ -59,16 +61,21 @@ trait ITFixtures {
     limitedCostTrader = Some(false)
   )
 
-  val aasDetails = AASDetails(
+  val aasDetails = returns.AASDetails(
     paymentMethod = StandingOrder,
-    annualStagger = JanDecStagger,
-    paymentFrequency = Monthly,
-    estimatedTurnover = 123456,
-    requestedStartDate = testDate
+    paymentFrequency = MonthlyPayment
+  )
+
+  val testAASReturns: Returns = Returns(
+    zeroRatedSupplies = Some(12.99),
+    reclaimVatOnMostReturns = true,
+    returnsFrequency = Annual,
+    staggerStart = JanDecStagger,
+    startDate = Some(startDate),
+    annualAccountingDetails = Some(aasDetails)
   )
 
   val testFlatRateScheme = FlatRateScheme(joinFrs = true, Some(frsDetails))
-  val testAnnualAccountingScheme = AnnualAccountingScheme(joinAAS = true, submissionType = Some("1"), Some(aasDetails))
   val EstimateValue: Long = 1000L
   val zeroRatedTurnoverEstimate: Long = 1000L
   val testCountry = Country(Some("GB"), None)
@@ -182,7 +189,6 @@ trait ITFixtures {
     sicAndCompliance = Some(testFullSicAndCompliance),
     businessContact = Some(testFullBusinessContactDetails),
     bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
-    annualAccountingScheme = Some(testAnnualAccountingScheme),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -197,13 +203,12 @@ trait ITFixtures {
       internalId = testInternalid,
       transactionId = Some(TransactionId(testTransactionId)),
       tradingDetails = Some(testTradingDetails),
-      returns = Some(testReturns),
+      returns = Some(testAASReturns),
       sicAndCompliance = Some(testSicAndCompliance),
       businessContact = Some(testBusinessContactDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
-      annualAccountingScheme = Some(testAnnualAccountingScheme),
       status = VatRegStatus.draft,
       applicantDetails = Some(testUnregisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -223,7 +228,6 @@ trait ITFixtures {
       bankAccount = Some(BankAccount(isProvided = false, None, Some(BeingSetup))),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(FlatRateScheme(joinFrs = false, None)),
-      annualAccountingScheme = Some(testAnnualAccountingScheme),
       status = VatRegStatus.draft,
       applicantDetails = Some(testRegisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),

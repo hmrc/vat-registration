@@ -17,6 +17,7 @@
 package models.submission
 
 import models.api._
+import models.api.returns.Returns
 import play.api.libs.json._
 import utils.JsonUtilities
 

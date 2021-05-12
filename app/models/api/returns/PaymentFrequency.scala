@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package models.api
+package models.api.returns
 
 import play.api.libs.json._
 
 sealed trait PaymentFrequency
-
-case object Monthly extends PaymentFrequency
-
-case object Quarterly extends PaymentFrequency
+case object MonthlyPayment extends PaymentFrequency
+case object QuarterlyPayment extends PaymentFrequency
 
 object PaymentFrequency {
 
@@ -30,14 +28,14 @@ object PaymentFrequency {
   val quarterly: String = "Q"
 
   val reads: Reads[PaymentFrequency] = Reads[PaymentFrequency] {
-    case JsString(`monthly`) => JsSuccess(Monthly)
-    case JsString(`quarterly`) => JsSuccess(Quarterly)
+    case JsString(`monthly`) => JsSuccess(MonthlyPayment)
+    case JsString(`quarterly`) => JsSuccess(QuarterlyPayment)
     case _ => JsError("Could not parse payment frequency")
   }
 
   val writes: Writes[PaymentFrequency] = Writes[PaymentFrequency] {
-    case Monthly => JsString(monthly)
-    case Quarterly => JsString(quarterly)
+    case MonthlyPayment => JsString(monthly)
+    case QuarterlyPayment => JsString(quarterly)
   }
 
   implicit val format: Format[PaymentFrequency] = Format(reads, writes)

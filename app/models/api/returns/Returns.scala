@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-package models.api
+package models.api.returns
 
 import play.api.libs.json._
+import utils.JsonUtilities
 
 import java.time.LocalDate
 
-case class AnnualAccountingScheme(joinAAS: Boolean,
-                                  submissionType: Option[String],
-                                  customerRequest: Option[AASDetails])
+case class Returns(zeroRatedSupplies: Option[BigDecimal],
+                   reclaimVatOnMostReturns: Boolean,
+                   returnsFrequency: ReturnsFrequency,
+                   staggerStart: Stagger,
+                   startDate: Option[LocalDate],
+                   annualAccountingDetails: Option[AASDetails])
 
-object AnnualAccountingScheme {
-  implicit val format: Format[AnnualAccountingScheme] = Json.format[AnnualAccountingScheme]
+object Returns extends JsonUtilities {
+  implicit val format: Format[Returns] = Json.format[Returns]
 }
 
 case class AASDetails(paymentMethod: PaymentMethod,
-                      annualStagger: AnnualStagger,
-                      paymentFrequency: PaymentFrequency,
-                      estimatedTurnover: BigDecimal,
-                      requestedStartDate: LocalDate
-                     )
+                      paymentFrequency: PaymentFrequency)
 
 object AASDetails {
-
   implicit val format: Format[AASDetails] = Json.format[AASDetails]
-
 }

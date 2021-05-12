@@ -16,10 +16,10 @@
 
 package services.submission
 
-import models.api.Returns.writePeriod
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
+import utils.JsonUtils.jsonObject
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,13 +32,7 @@ class PeriodsBlockBuilder @Inject()(registrationMongoRepository: RegistrationMon
     registrationMongoRepository.retrieveVatScheme(regId) map { scheme =>
       scheme.flatMap(_.returns) match {
         case Some(returns) =>
-          writePeriod(returns.frequency, returns.staggerStart)
-            .map(period => Json.obj(
-              "customerPreferredPeriodicity" -> period
-            ))
-            .getOrElse(
-              throw new InternalServerException("Couldn't build periods section due to either an invalid frequency or stagger start")
-            )
+          jsonObject("customerPreferredPeriodicity" -> returns.staggerStart)
         case None =>
           throw new InternalServerException("Couldn't build periods section due to missing returns section in vat scheme")
       }

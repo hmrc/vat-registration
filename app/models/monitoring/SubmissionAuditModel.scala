@@ -50,7 +50,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           "registrationReason" -> eligibilityData.reasonForRegistration(humanReadable = true),
           optional("registrationRelevantDate" -> {
             if (eligibilityData.reasonForRegistration() == EligibilitySubmissionData.voluntaryKey) {
-              returns.start.date
+              returns.startDate
             } else {
               Some(eligibilityData.earliestDate)
             }

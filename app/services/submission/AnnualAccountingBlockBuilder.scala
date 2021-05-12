@@ -16,7 +16,8 @@
 
 package services.submission
 
-import models.api.AnnualAccountingScheme
+import models.api.EligibilitySubmissionData._
+import models.api.returns.Annual
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import utils.JsonUtils.jsonObject
@@ -28,23 +29,28 @@ import scala.concurrent.{ExecutionContext, Future}
 class AnnualAccountingBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository)(implicit ec: ExecutionContext) {
 
   def buildAnnualAccountingBlock(regId: String): Future[Option[JsObject]] = for {
-    optAnnualAccounting <- registrationMongoRepository.fetchAnnualAccountingScheme(regId)
-  } yield optAnnualAccounting match {
-    case Some(annualAccountingScheme: AnnualAccountingScheme) if annualAccountingScheme.joinAAS =>
+    optReturns <- registrationMongoRepository.fetchReturns(regId)
+    optEligibilitySubmissionData <- registrationMongoRepository.fetchEligibilitySubmissionData(regId)
+  } yield (optReturns, optEligibilitySubmissionData) match {
+    case (Some(returns), Some(eligibilitySubmissionData)) if returns.returnsFrequency.equals(Annual) =>
       Some(jsonObject(
-        "submissionType" -> annualAccountingScheme.submissionType,
-        "customerRequest" -> annualAccountingScheme.customerRequest.map { customerRequest =>
+        "submissionType" -> "1",
+        "customerRequest" -> returns.annualAccountingDetails.map { details =>
           jsonObject(
-            "paymentMethod" -> customerRequest.paymentMethod,
-            "annualStagger" -> customerRequest.annualStagger,
-            "paymentFrequency" -> customerRequest.paymentFrequency,
-            "estimatedTurnover" -> customerRequest.estimatedTurnover,
-            "reqStartDate" -> customerRequest.requestedStartDate
+            "paymentMethod" -> details.paymentMethod,
+            "annualStagger" -> returns.staggerStart,
+            "paymentFrequency" -> details.paymentFrequency,
+            "estimatedTurnover" -> eligibilitySubmissionData.estimates.turnoverEstimate,
+            "reqStartDate" -> {
+              eligibilitySubmissionData.reasonForRegistration() match {
+                case `voluntaryKey` => returns.startDate
+                case `backwardLookKey` => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
+                case `forwardLookKey` => Some(eligibilitySubmissionData.earliestDate)
+              }
+            }
           )
         }
       ))
     case _ => None
-
   }
-
 }

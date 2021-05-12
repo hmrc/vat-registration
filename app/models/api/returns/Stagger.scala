@@ -14,37 +14,40 @@
  * limitations under the License.
  */
 
-package models.api
+package models.api.returns
 
 import play.api.libs.json._
 
-sealed trait AnnualStagger
+sealed trait Stagger
 
+case object MonthlyStagger extends Stagger
+
+sealed trait QuarterlyStagger extends Stagger
+case object JanuaryStagger extends QuarterlyStagger
+case object FebruaryStagger extends QuarterlyStagger
+case object MarchStagger extends QuarterlyStagger
+
+sealed trait AnnualStagger extends Stagger
 case object JanDecStagger extends AnnualStagger
-
 case object FebJanStagger extends AnnualStagger
-
 case object MarFebStagger extends AnnualStagger
-
 case object AprMarStagger extends AnnualStagger
-
 case object MayAprStagger extends AnnualStagger
-
 case object JunMayStagger extends AnnualStagger
-
 case object JulJunStagger extends AnnualStagger
-
 case object AugJulStagger extends AnnualStagger
-
 case object SepAugStagger extends AnnualStagger
-
 case object OctSepStagger extends AnnualStagger
-
 case object NovOctStagger extends AnnualStagger
-
 case object DecNovStagger extends AnnualStagger
 
-object AnnualStagger {
+object Stagger {
+
+  val monthlyStagger: String = "MM"
+
+  val janStagger: String = "MA"
+  val febStagger: String = "MB"
+  val marStagger: String = "MC"
 
   val janDecStagger: String = "YA"
   val febJanStagger: String = "YB"
@@ -59,7 +62,11 @@ object AnnualStagger {
   val novOctStagger: String = "YK"
   val decNovStagger: String = "YL"
 
-  val reads: Reads[AnnualStagger] = Reads[AnnualStagger] {
+  val reads: Reads[Stagger] = Reads[Stagger] {
+    case JsString(`monthlyStagger`) => JsSuccess(MonthlyStagger)
+    case JsString(`janStagger`) => JsSuccess(JanuaryStagger)
+    case JsString(`febStagger`) => JsSuccess(FebruaryStagger)
+    case JsString(`marStagger`) => JsSuccess(MarchStagger)
     case JsString(`janDecStagger`) => JsSuccess(JanDecStagger)
     case JsString(`febJanStagger`) => JsSuccess(FebJanStagger)
     case JsString(`marFebStagger`) => JsSuccess(MarFebStagger)
@@ -72,10 +79,14 @@ object AnnualStagger {
     case JsString(`octSepStagger`) => JsSuccess(OctSepStagger)
     case JsString(`novOctStagger`) => JsSuccess(NovOctStagger)
     case JsString(`decNovStagger`) => JsSuccess(DecNovStagger)
-    case _ => JsError("Could not parse Annual Stagger for Annual Accounting Scheme")
+    case _ => JsError("Could not parse Stagger")
   }
 
-  val writes: Writes[AnnualStagger] = Writes[AnnualStagger] {
+  val writes: Writes[Stagger] = Writes[Stagger] {
+    case MonthlyStagger => JsString(monthlyStagger)
+    case JanuaryStagger => JsString(janStagger)
+    case FebruaryStagger => JsString(febStagger)
+    case MarchStagger => JsString(marStagger)
     case JanDecStagger => JsString(janDecStagger)
     case FebJanStagger => JsString(febJanStagger)
     case MarFebStagger => JsString(marFebStagger)
@@ -90,5 +101,5 @@ object AnnualStagger {
     case DecNovStagger => JsString(decNovStagger)
   }
 
-  implicit val format: Format[AnnualStagger] = Format(reads, writes)
+  implicit val format: Format[Stagger] = Format(reads, writes)
 }

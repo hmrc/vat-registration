@@ -21,7 +21,8 @@ import common.exceptions._
 import enums.VatRegStatus
 import itutil.{FutureAssertions, ITFixtures, MongoBaseSpec}
 import models.AcknowledgementReferencePath
-import models.api.{TurnoverEstimates, _}
+import models.api._
+import models.api.returns._
 import play.api.libs.json._
 import play.api.test.Helpers._
 import reactivemongo.api.commands.WriteResult
@@ -85,14 +86,12 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     s"""
        |{
        |  "registrationId":"$registrationId",
-       |  "status":"draft",
-       |  "returns":{
-       |    "reclaimVatOnMostReturns":true,
-       |    "frequency":"quarterly",
-       |    "staggerStart":"jan",
-       |    "start":{
-       |      "date":"$testDate"
-       |    },
+       |  "status": "draft",
+       |  "returns": {
+       |    "reclaimVatOnMostReturns": true,
+       |    "returnsFrequency": ${Json.toJson[ReturnsFrequency](Quarterly)},
+       |    "staggerStart": ${Json.toJson[Stagger](JanuaryStagger)},
+       |    "startDate": "$testDate",
        |    "zeroRatedSupplies": 12.99
        |  }
        |}
@@ -425,13 +424,10 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     val otherRegId = "other-reg-12345"
     val otherUsersVatScheme = vatSchemeJson(otherRegId)
 
-    val MONTHLY = "monthly"
-    val JAN = "jan"
-
     val dateValue = LocalDate of(1990, 10, 10)
-    val startDate = StartDate(Some(dateValue))
+    val startDate = dateValue
 
-    val returns: Returns = Returns(reclaimVatOnMostReturns = true, MONTHLY, Some(JAN), startDate, Some(12.99))
+    val returns: Returns = Returns(Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None)
 
     val vatSchemeWithReturns = Json.parse(
       s"""
@@ -440,11 +436,9 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
          | "status":"draft",
          | "returns":{
          |   "reclaimVatOnMostReturns":true,
-         |   "frequency":"$MONTHLY",
-         |   "staggerStart":"$JAN",
-         |   "start":{
-         |     "date":"$dateValue"
-         |   },
+         |   "returnsFrequency": ${Json.toJson[ReturnsFrequency](Quarterly)},
+         |   "staggerStart": ${Json.toJson[Stagger](JanuaryStagger)},
+         |   "startDate": "$dateValue",
          |   "zeroRatedSupplies": 12.99
          | }
          |}

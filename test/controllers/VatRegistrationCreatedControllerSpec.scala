@@ -16,8 +16,6 @@
 
 package controllers
 
-import java.time.LocalDate
-
 import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
@@ -33,6 +31,7 @@ import play.api.test.FakeRequest
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrationFixture with MockNewRegistrationService {
@@ -148,61 +147,6 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
         val result: Future[Result] = controller.fetchBankAccountDetails(testRegId)(FakeRequest())
         status(result) mustBe NOT_FOUND
 
-      }
-    }
-
-    "fetchReturns" should {
-      val date = StartDate(Some(LocalDate.of(2017, 1, 1)))
-      val returns = Returns(true, "quarterly", Some("jan"), date, None)
-
-      val expected = Json.obj(
-        "reclaimVatOnMostReturns" -> true,
-        "frequency" -> "quarterly",
-        "staggerStart" -> "jan",
-        "start" -> date
-      )
-
-      "return a OK if the returns is present in the database" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-        when(mockRegistrationMongoRepository.fetchReturns(any()))
-          .thenReturn(Future.successful(Some(returns)))
-
-        val result: Future[Result] = controller.fetchReturns(testRegId)(FakeRequest())
-        status(result) mustBe OK
-        contentAsJson(result) mustBe expected
-      }
-
-      "return a NOT_FOUND if the returns is not present" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-        when(mockRegistrationMongoRepository.fetchReturns(any()))
-          .thenReturn(Future.successful(None))
-
-        val result: Future[Result] = controller.fetchReturns(testRegId)(FakeRequest())
-        status(result) mustBe NOT_FOUND
-      }
-    }
-
-    "updateReturns" should {
-
-      import Returns._
-
-      val startDate = StartDate(Some(LocalDate of(1990, 10, 10)))
-      val returns: Returns = Returns(reclaimVatOnMostReturns = true, MONTHLY, Some(JAN), startDate, None)
-
-      "return a 200 if the update to mongo is successful" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-        when(mockRegistrationMongoRepository.updateReturns(any(), any()))
-          .thenReturn(Future.successful(returns))
-
-        val request: FakeRequest[JsObject] = FakeRequest().withBody(Json.obj(
-          "reclaimVatOnMostReturns" -> true,
-          "frequency" -> MONTHLY,
-          "staggerStart" -> JAN,
-          "start" -> Some(startDate))
-        )
-
-        val result: Future[Result] = controller.updateReturns(testRegId)(request)
-        status(result) mustBe OK
       }
     }
 

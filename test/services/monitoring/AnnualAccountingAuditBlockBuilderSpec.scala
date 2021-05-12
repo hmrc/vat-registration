@@ -18,10 +18,7 @@ package services.monitoring
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api._
 import play.api.libs.json.{JsObject, Json}
-
-import java.time.LocalDate
 
 class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
@@ -33,7 +30,7 @@ class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrat
       |   "annualStagger":"YA",
       |   "paymentFrequency":"M",
       |   "estimatedTurnover":123456,
-      |   "reqStartDate":"2018-01-01"
+      |   "reqStartDate":"2020-10-07"
       |   }
       |}
       |""".stripMargin).as[JsObject]
@@ -43,15 +40,7 @@ class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrat
   "buildAnnualAccountingBlock" should {
     "return the correct json" when {
       "the applicant wants to join AAS and all data is provided" in {
-        val testAnnualAccountingDetails: AASDetails = AASDetails(
-          paymentMethod = StandingOrder,
-          annualStagger = JanDecStagger,
-          paymentFrequency = Monthly,
-          estimatedTurnover = 123456,
-          requestedStartDate = LocalDate.of(2018, 1, 1)
-        )
-
-        val testScheme = testVatScheme.copy(annualAccountingScheme = Some(validFullAAS).map(_.copy(customerRequest = Some(testAnnualAccountingDetails))))
+        val testScheme = testVatScheme.copy(returns = Some(validAASReturns), eligibilitySubmissionData = Some(testEligibilitySubmissionData))
 
         val res = TestBuilder.buildAnnualAccountingAuditBlock(testScheme)
 
@@ -60,8 +49,16 @@ class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrat
     }
 
     "return None" when {
-      "the annual accounting scheme block is missing" in {
-        val testScheme = testVatScheme.copy(annualAccountingScheme = None)
+      "the returns block is quarterly" in {
+        val testScheme = testVatScheme.copy(returns = Some(testReturns))
+
+        val res = TestBuilder.buildAnnualAccountingAuditBlock(testScheme)
+
+        res mustBe None
+      }
+
+      "the returns block is missing" in {
+        val testScheme = testVatScheme.copy(returns = None)
 
         val res = TestBuilder.buildAnnualAccountingAuditBlock(testScheme)
 

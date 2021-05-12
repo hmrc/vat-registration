@@ -23,6 +23,7 @@ import common.exceptions._
 import enums.VatRegStatus
 import models._
 import models.api._
+import models.api.returns.Returns
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.WriteConcern
@@ -346,12 +347,6 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
 
   def updateSicAndCompliance(regId: String, sicAndCompliance: SicAndCompliance): Future[SicAndCompliance] =
     updateBlock(regId, sicAndCompliance, "sicAndCompliance")(SicAndCompliance.apiFormat)
-
-  def fetchAnnualAccountingScheme(regId: String): Future[Option[AnnualAccountingScheme]] =
-    fetchBlock[AnnualAccountingScheme](regId, "annualAccountingScheme")
-
-  def updateAnnualAccountingScheme(regId: String, annualAccounting: AnnualAccountingScheme): Future[AnnualAccountingScheme] =
-    updateBlock(regId, annualAccounting, "annualAccountingScheme")
 
   def fetchBusinessContact(regId: String): Future[Option[BusinessContact]] =
     fetchBlock[BusinessContact](regId, "businessContact")

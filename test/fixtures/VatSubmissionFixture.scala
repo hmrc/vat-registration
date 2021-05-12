@@ -712,16 +712,6 @@ trait VatSubmissionFixture {
       |      "number": "01023456"
       |    }
       |  },
-      |  "joinAA": {
-      | "submissionType":"1",
-      | "customerRequest":{
-      |  "paymentMethod":"01",
-      |  "annualStagger":"YA",
-      |  "paymentFrequency":"M",
-      |  "estimatedTurnover":123456,
-      |  "requestedStartDate":"2018-01-01"
-      |  }
-      |},
       |  "sicAndCompliance": {
       |    "businessDescription": "this is my business description",
       |    "labourCompliance": {
@@ -780,11 +770,9 @@ trait VatSubmissionFixture {
       |  },
       |  "returns": {
       |     "reclaimVatOnMostReturns" : false,
-      |     "frequency" : "quarterly",
-      |     "staggerStart" : "jan",
-      |     "start" : {
-      |       "date" : "2018-01-01"
-      |     },
+      |     "returnsFrequency" : "quarterly",
+      |     "staggerStart" : "MA",
+      |     "startDate" : "2018-01-01",
       |     "zeroRatedSupplies": 12.99
       |  },
       |  "eligibilitySubmissionData": {

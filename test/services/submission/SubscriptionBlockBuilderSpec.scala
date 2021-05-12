@@ -19,6 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api._
+import models.api.returns.{JanuaryStagger, Quarterly, Returns}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
@@ -34,39 +35,39 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   def fullSubscriptionBlockJson(reason: String = "0016"): JsValue = Json.parse(
     s"""
-      |{
-      | "corporateBodyRegistered": {
-      |   "dateOfIncorporation": "2020-01-02",
-      |   "companyRegistrationNumber": "testCrn",
-      |   "countryOfIncorporation": "GB"
-      | },
-      | "reasonForSubscription": {
-      |   "voluntaryOrEarlierDate": "2020-02-02",
-      |   "relevantDate": "2020-10-01",
-      |   "registrationReason": "$reason",
-      |   "exemptionOrException": "0"
-      | },
-      | "yourTurnover": {
-      |   "VATRepaymentExpected": false,
-      |   "turnoverNext12Months": 123456,
-      |   "zeroRatedSupplies": 12.99
-      | },
-      | "schemes": {
-      |   "startDate": "2018-01-01",
-      |   "FRSCategory": "testCategory",
-      |   "FRSPercentage": 15,
-      |   "limitedCostTrader": false
-      | },
-      | "businessActivities": {
-      |   "SICCodes": {
-      |     "primaryMainCode": "12345",
-      |     "mainCode2": "00002",
-      |     "mainCode3": "00003",
-      |     "mainCode4": "00004"
-      |   },
-      |   "description": "testDescription"
-      | }
-      |}""".stripMargin
+       |{
+       | "corporateBodyRegistered": {
+       |   "dateOfIncorporation": "2020-01-02",
+       |   "companyRegistrationNumber": "testCrn",
+       |   "countryOfIncorporation": "GB"
+       | },
+       | "reasonForSubscription": {
+       |   "voluntaryOrEarlierDate": "2020-02-02",
+       |   "relevantDate": "2020-10-01",
+       |   "registrationReason": "$reason",
+       |   "exemptionOrException": "0"
+       | },
+       | "yourTurnover": {
+       |   "VATRepaymentExpected": false,
+       |   "turnoverNext12Months": 123456,
+       |   "zeroRatedSupplies": 12.99
+       | },
+       | "schemes": {
+       |   "startDate": "2018-01-01",
+       |   "FRSCategory": "testCategory",
+       |   "FRSPercentage": 15,
+       |   "limitedCostTrader": false
+       | },
+       | "businessActivities": {
+       |   "SICCodes": {
+       |     "primaryMainCode": "12345",
+       |     "mainCode2": "00002",
+       |     "mainCode3": "00003",
+       |     "mainCode4": "00004"
+       |   },
+       |   "description": "testDescription"
+       | }
+       |}""".stripMargin
   )
 
   val minimalSubscriptionBlockJson: JsValue = Json.parse(
@@ -99,7 +100,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   "buildSubscriptionBlock" should {
     val testDate = LocalDate.of(2020, 2, 2)
-    val testReturns = Returns(reclaimVatOnMostReturns = false, "quarterly", Some("jan"), StartDate(Some(testDate)), Some(12.99))
+    val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None)
     val otherActivities = List(
       SicCode("00002", "testBusiness 2", "testDetails"),
       SicCode("00003", "testBusiness 3", "testDetails"),

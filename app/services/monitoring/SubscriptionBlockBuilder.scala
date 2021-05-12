@@ -36,7 +36,7 @@ class SubscriptionBlockBuilder {
         "overThresholdInNextMonth" -> eligibilityData.threshold.thresholdNextThirtyDays.isDefined,
         optional("overThresholdInNextMonthDate" -> eligibilityData.threshold.thresholdNextThirtyDays),
         "reasonForSubscription" -> jsonObject(
-          optional("voluntaryOrEarlierDate" -> returns.start.date),
+          optional("voluntaryOrEarlierDate" -> returns.startDate),
           "exemptionOrException" -> eligibilityData.exceptionOrExemption
         ),
         "businessActivities" -> jsonObject(
