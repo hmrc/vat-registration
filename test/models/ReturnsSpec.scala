@@ -16,163 +16,111 @@
 
 package models
 
-import java.time.LocalDate
-
 import helpers.BaseSpec
-import models.api.{Returns, StartDate, TurnoverEstimates}
+import models.api.returns._
 import play.api.libs.json._
-import utils.EligibilityDataJsonUtils
+
+import java.time.LocalDate
 
 class ReturnsSpec extends BaseSpec with JsonFormatValidation {
 
-  val dateValue: LocalDate = LocalDate.of(2017, 1, 1)
-  val date: StartDate = StartDate(Some(dateValue))
+  val testZeroRatedSupplies = 10000.5
+  val testDate: LocalDate = LocalDate.now()
 
-  val fullJson: JsObject = Json.parse(
-    s"""
-       |{
-       |  "reclaimVatOnMostReturns" : true,
-       |  "frequency" : "quarterly",
-       |  "staggerStart" : "jan",
-       |  "start" : {
-       |    "date" : "$dateValue"
-       |  },
-       |  "zeroRatedSupplies": 12.99
-       |}
-        """.stripMargin).as[JsObject]
-
-  val invalidValidationJson: JsObject = Json.parse(
-    s"""
-       |{
-       |  "reclaimVatOnMostReturns" : true,
-       |  "frequency" : "whatever",
-       |  "staggerStart" : "month",
-       |  "start" : {
-       |    "date" : "$dateValue"
-       |  }
-       |}
-        """.stripMargin).as[JsObject]
-
-  val invalidStaggerStartReturns: Returns = Returns(
+  val testMonthlyReturns: Returns = Returns(
+    Some(testZeroRatedSupplies),
     reclaimVatOnMostReturns = true,
-    "quarterly",
-    Some("month"),
-    date,
+    Monthly,
+    MonthlyStagger,
+    Some(testDate),
     None
   )
 
-  val invalidFrequencyReturns: Returns = Returns(
-    reclaimVatOnMostReturns = true,
-    "whatever",
-    Some("jan"),
-    date,
+  val testQuarterlyReturns: Returns = Returns(
+    Some(testZeroRatedSupplies),
+    reclaimVatOnMostReturns = false,
+    Quarterly,
+    JanuaryStagger,
+    Some(testDate),
     None
   )
 
-  val fullReturns: Returns = Returns(
-    reclaimVatOnMostReturns = true,
-    "quarterly",
-    Some("jan"),
-    date,
-    Some(12.99)
+  val testAnnualReturns: Returns = Returns(
+    Some(testZeroRatedSupplies),
+    reclaimVatOnMostReturns = false,
+    Annual,
+    JanDecStagger,
+    Some(testDate),
+    Some(AASDetails(BankGIRO, MonthlyPayment))
   )
 
-  val missingOptionsReturns: Returns = Returns(
-    reclaimVatOnMostReturns = true,
-    "quarterly",
-    None,
-    date,
-    Some(12.99)
+  val validMonthlyReturnsJson: JsObject = Json.obj(
+    "zeroRatedSupplies" -> testZeroRatedSupplies,
+    "reclaimVatOnMostReturns" -> true,
+    "returnsFrequency" -> Json.toJson[ReturnsFrequency](Monthly),
+    "staggerStart" -> Json.toJson[Stagger](MonthlyStagger),
+    "startDate" -> testDate
   )
 
-  val invalidValidationReturns: Returns = Returns(
-    reclaimVatOnMostReturns = true,
-    "whatever",
-    Some("month"),
-    date,
-    None
+  val validQuarterlyReturnsJson: JsObject = Json.obj(
+    "zeroRatedSupplies" -> testZeroRatedSupplies,
+    "reclaimVatOnMostReturns" -> false,
+    "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
+    "staggerStart" -> Json.toJson[Stagger](JanuaryStagger),
+    "startDate" -> testDate
   )
 
-  val fullSubmissionJson = Json.obj(
-    "subscription" -> Json.obj(
-      "reasonForSubscription" -> Json.obj(
-        "voluntaryOrEarlierDate" -> "2017-01-01"
-      ),
-      "yourTurnover" -> Json.obj(
-        "VATRepaymentExpected" -> true,
-        "zeroRatedSupplies" -> 12.99
+  def validAnnualReturnsJson(startDate: Option[LocalDate] = Some(testDate)): JsObject =
+    Json.obj(
+      "zeroRatedSupplies" -> testZeroRatedSupplies,
+      "reclaimVatOnMostReturns" -> false,
+      "returnsFrequency" -> Json.toJson[ReturnsFrequency](Annual),
+      "staggerStart" -> Json.toJson[Stagger](JanDecStagger),
+      "startDate" -> startDate,
+      "annualAccountingDetails" -> Json.obj(
+        "paymentMethod" -> Json.toJson[PaymentMethod](BankGIRO),
+        "paymentFrequency" -> Json.toJson[PaymentFrequency](MonthlyPayment)
       )
-    ),
-    "periods" -> Json.obj(
-      "customerPreferredPeriodicity" -> "MA"
+    )
+
+  val invalidReturnsJson: JsObject = Json.obj(
+    "zeroRatedSupplies" -> testZeroRatedSupplies,
+    "returnsFrequency" -> "invalidFrequency",
+    "staggerStart" -> "invalidStagger",
+    "startDate" -> testDate,
+    "annualAccountingDetails" -> Json.obj(
+      "paymentMethod" -> Json.toJson[PaymentMethod](BankGIRO),
+      "paymentFrequency" -> Json.toJson[PaymentFrequency](MonthlyPayment)
     )
   )
 
   "Parsing Returns" should {
     "succeed" when {
-      "full json is present" in {
-        Json.fromJson[Returns](fullJson) mustBe JsSuccess(fullReturns)
+      "full monthly json is present" in {
+        Json.fromJson[Returns](validMonthlyReturnsJson) mustBe JsSuccess(testMonthlyReturns)
       }
-      "frequency and staggerStart are present but invalid" in {
-        Json.fromJson[Returns](invalidValidationJson) mustBe JsSuccess(invalidValidationReturns)
+
+      "full quarterly json is present" in {
+        Json.fromJson[Returns](validQuarterlyReturnsJson) mustBe JsSuccess(testQuarterlyReturns)
       }
-      "staggeredStart is missing" in {
-        val json = Json.parse(
-          s"""
-             |{
-             |  "reclaimVatOnMostReturns" : true,
-             |  "frequency" : "quarterly",
-             |  "start" : {
-             |    "date" : "$dateValue"
-             |  },
-             |  "zeroRatedSupplies": 12.99
-             |}
-        """.stripMargin)
-        Json.fromJson[Returns](json) mustBe JsSuccess(fullReturns.copy(staggerStart = None))
+
+      "full annual json is present" in {
+        Json.fromJson[Returns](validAnnualReturnsJson()) mustBe JsSuccess(testAnnualReturns)
+      }
+
+      "full json is present without startDate" in {
+        Json.fromJson[Returns](validAnnualReturnsJson(None)) mustBe JsSuccess(testAnnualReturns.copy(startDate = None))
       }
     }
+
     "fails" when {
-      "reclaimVatOnMostReturns is missing" in {
-        val json = Json.parse(
-          s"""
-             |{
-             |  "frequency" : "quarterly",
-             |  "staggerStart" : "jan",
-             |  "start" : {
-             |    "date" : "$dateValue"
-             |  }
-             |}
-        """.stripMargin)
-        val result = Json.fromJson[Returns](json)
-        result shouldHaveErrors (__ \ "reclaimVatOnMostReturns" -> JsonValidationError("error.path.missing"))
-      }
-
-      "frequency is missing" in {
-        val json = Json.parse(
-          s"""
-             |{
-             |  "reclaimVatOnMostReturns" : true,
-             |  "staggerStart" : "jan",
-             |  "start" : {
-             |    "date" : "$dateValue"
-             |  }
-             |}
-        """.stripMargin)
-        val result = Json.fromJson[Returns](json)
-        result shouldHaveErrors (__ \ "frequency" -> JsonValidationError("error.path.missing"))
-      }
-
-      "start is missing" in {
-        val json = Json.parse(
-          s"""
-             |{
-             |  "reclaimVatOnMostReturns" : true,
-             |  "frequency" : "quarterly",
-             |  "staggerStart" : "jan"
-             |}
-        """.stripMargin)
-        val result = Json.fromJson[Returns](json)
-        result shouldHaveErrors (__ \ "start" -> JsonValidationError("error.path.missing"))
+      "json is invalid" in {
+        val result = Json.fromJson[Returns](invalidReturnsJson)
+        result shouldHaveErrors(
+          __ \ "reclaimVatOnMostReturns" -> JsonValidationError("error.path.missing"),
+          __ \ "returnsFrequency" -> JsonValidationError("Could not parse payment frequency"),
+          __ \ "staggerStart" -> JsonValidationError("Could not parse Stagger")
+        )
       }
     }
   }
@@ -180,129 +128,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   "Returns model to json" should {
     "succeed" when {
       "everything is present" in {
-        Json.toJson[Returns](fullReturns) mustBe fullJson
+        Json.toJson[Returns](testAnnualReturns) mustBe validAnnualReturnsJson()
       }
-      "staggerStart is missing" in {
-        Json.toJson[Returns](missingOptionsReturns) mustBe (fullJson - "staggerStart")
-      }
-    }
-  }
-
-  "TurnoverEstimates mongoReads" must {
-    "return model successfully when turnoverEstimate-value exists" in {
-      val json = Json.parse(
-        s"""{
-           |  "sections": [
-           |   {
-           |     "title": "Foo bar",
-           |     "data": [
-           |       {"questionId":"turnoverEstimate-value","question": "VAT start date", "answer": "£123456" , "answerValue": 123456}
-           |     ]
-           |   }
-           | ]
-           | }""".stripMargin)
-      val expected = TurnoverEstimates(turnoverEstimate = 123456)
-
-      val result = Json.fromJson[TurnoverEstimates](EligibilityDataJsonUtils.toJsObject(json))(TurnoverEstimates.eligibilityDataJsonReads)
-      result mustBe JsSuccess(expected)
-    }
-
-    "return empty model successfully" in {
-      val json = Json.parse(
-        s"""
-           |[
-           |   {
-           |     "title": "Foo bar",
-           |     "data": [
-           |       {"questionId":"wrongId","question": "VAT start date", "answer": "The date the company is registered with Companies House" , "answerValue": 10000}
-           |     ]
-           |   },
-           |   {
-           |     "title": "Director details",
-           |     "data": [
-           |       {"questionId":"fooDirectorDetails2","question": "Former name", "answer": "Dan Swales", "answerValue": true},
-           |       {"questionId":"fooDirectorDetails3","question": "Date of birth", "answer": "1 January 2000", "answerValue": true}
-           |     ]
-           |   }
-           |]
-        """.stripMargin)
-
-      val result = Json.fromJson[TurnoverEstimates](EligibilityDataJsonUtils.toJsObject(json))(TurnoverEstimates.eligibilityDataJsonReads)
-      result.isError mustBe true
-    }
-  }
-
-  "readStaggerStart" should {
-    "convert the stagger to the correct values" in {
-      val values = List(
-        Some("MM"),
-        Some("MA"),
-        Some("MB"),
-        Some("MC"),
-        None
-      )
-
-      val result = values.map(Returns.readStaggerStart)
-
-      result mustBe List(
-        None,
-        Some("jan"),
-        Some("feb"),
-        Some("mar"),
-        None
-      )
-    }
-  }
-
-  "readPeriod" should {
-    "convert the periods to the correct values" in {
-      val values = List(
-        "MM",
-        "MA",
-        "MB",
-        "MC"
-      )
-
-      val result = values.map(Returns.readPeriod)
-
-      result mustBe List(
-        "monthly",
-        "quarterly",
-        "quarterly",
-        "quarterly"
-      )
-    }
-  }
-
-  "writePeriod" should {
-    "convert the periods to the correct values" in {
-      val values = List(
-        ("monthly", Some("invalid")),
-        ("monthly", Some("jan")),
-        ("monthly", None),
-        ("quarterly", Some("jan")),
-        ("quarterly", Some("feb")),
-        ("quarterly", Some("mar")),
-        ("quarterly", Some("apr")),
-        ("quarterly", None),
-        ("invalid", Some("invalid"))
-      )
-
-      val result = values.map {
-        case (freq, period) => Returns.writePeriod(freq, period)
-      }
-
-      result mustBe List(
-        Some("MM"),
-        Some("MM"),
-        Some("MM"),
-        Some("MA"),
-        Some("MB"),
-        Some("MC"),
-        None,
-        None,
-        None
-      )
     }
   }
 }

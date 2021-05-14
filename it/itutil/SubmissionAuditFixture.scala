@@ -84,7 +84,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
     )
 
   val periodsAuditBlockJson = Json.obj(
-    "customerPreferredPeriodicity" -> "MA"
+    "customerPreferredPeriodicity" -> "YA"
   )
 
   val fullSubscriptionBlockJson: JsValue =

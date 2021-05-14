@@ -16,20 +16,20 @@
 
 package services
 
-import models.api.AnnualAccountingScheme
+import models.api.returns.Returns
 import repositories.RegistrationMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class AnnualAccountingService @Inject()(val registrationRepository: RegistrationMongoRepository) {
+class ReturnsService @Inject()(val registrationRepository: RegistrationMongoRepository) {
 
-  def retrieveAnnualAccountingScheme(regId: String): Future[Option[AnnualAccountingScheme]] = {
-    registrationRepository.fetchAnnualAccountingScheme(regId)
+  def retrieveReturns(regId: String): Future[Option[Returns]] = {
+    registrationRepository.fetchReturns(regId)
   }
 
-  def updateAnnualAccountingScheme(regId: String, annualAccounting: AnnualAccountingScheme): Future[AnnualAccountingScheme] = {
-    registrationRepository.updateAnnualAccountingScheme(regId, annualAccounting)
+  def updateReturns(regId: String, returns: Returns): Future[Returns] = {
+    registrationRepository.updateReturns(regId, returns)
   }
 }

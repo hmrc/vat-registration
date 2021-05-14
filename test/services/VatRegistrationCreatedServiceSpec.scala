@@ -17,12 +17,12 @@
 package services
 
 import java.time.LocalDate
-
 import common.exceptions._
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models._
+import models.api.TurnoverEstimates
 import models.api.{Threshold, _}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any

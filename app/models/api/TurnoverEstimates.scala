@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package models
+package models.api
 
-import fixtures.VatRegistrationFixture
-import helpers.BaseSpec
-import models.api.AnnualAccountingScheme
-import play.api.libs.json.{JsPath, JsSuccess, Json, JsonValidationError}
+import play.api.libs.json.{Format, Json, Reads}
 
-class AnnualAccountingSchemeSpec extends BaseSpec with JsonFormatValidation with VatRegistrationFixture {
+case class TurnoverEstimates(turnoverEstimate: Long)
 
-  "Creating a AnnualAccountingScheme model from Json" should {
-    "complete successfully" when {
-      "complete json provided" in {
-        Json.fromJson[AnnualAccountingScheme](validFullAnnualAccountingSchemeJson) mustBe JsSuccess(validFullAAS)
-      }
-    }
+object TurnoverEstimates {
+
+  val eligibilityDataJsonReads: Reads[TurnoverEstimates] = Reads { json =>
+    (json \ "turnoverEstimate-value").validate[Long].map(turnOverEstimateAmount =>
+      TurnoverEstimates(turnoverEstimate = turnOverEstimateAmount)
+    )
   }
+
+  implicit val format: Format[TurnoverEstimates] = Json.format
+
 }

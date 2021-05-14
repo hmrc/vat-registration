@@ -63,8 +63,7 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies              ++= AppDependencies(),
     retrieveManaged                  := true,
     cancelable             in Global := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    routesImport                     ++= Seq("config.CustomPathBinder._", "common.TransactionId", "models.ElementPath")
+    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
   )
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
 

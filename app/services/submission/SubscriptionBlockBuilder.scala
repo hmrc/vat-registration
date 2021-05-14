@@ -42,12 +42,12 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
         "registrationReason" -> eligibilityData.reasonForRegistration(),
         "relevantDate" -> {
           eligibilityData.reasonForRegistration() match {
-            case `voluntaryKey` => returns.start.date
+            case `voluntaryKey` => returns.startDate
             case `backwardLookKey` => eligibilityData.threshold.thresholdInTwelveMonths
             case `forwardLookKey` => Some(eligibilityData.earliestDate)
           }
         },
-        optional("voluntaryOrEarlierDate" -> returns.start.date),
+        optional("voluntaryOrEarlierDate" -> returns.startDate),
         "exemptionOrException" -> eligibilityData.exceptionOrExemption
       ),
       "corporateBodyRegistered" -> jsonObject(

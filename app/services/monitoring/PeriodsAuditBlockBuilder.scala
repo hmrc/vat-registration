@@ -16,7 +16,6 @@
 
 package services.monitoring
 
-import models.api.Returns.writePeriod
 import models.api.VatScheme
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
@@ -30,13 +29,7 @@ class PeriodsAuditBlockBuilder {
   def buildPeriodsBlock(vatScheme: VatScheme): JsObject = {
     vatScheme.returns match {
       case Some(returns) =>
-        writePeriod(returns.frequency, returns.staggerStart)
-          .map(period => jsonObject(
-            "customerPreferredPeriodicity" -> period
-          ))
-          .getOrElse(
-            throw new InternalServerException("[PeriodsBlockBuilder]: Couldn't build periods section due to either an invalid frequency or stagger start")
-          )
+        jsonObject("customerPreferredPeriodicity" -> returns.staggerStart)
       case None =>
         throw new InternalServerException("[PeriodsBlockBuilder]: Couldn't build periods section due to missing returns section in vat scheme")
     }

@@ -19,6 +19,7 @@ package fixtures
 import common.TransactionId
 import enums.VatRegStatus
 import models.api._
+import models.api.returns._
 import models.submission._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -60,7 +61,7 @@ trait VatRegistrationFixture {
   lazy val testDigitalContactOptional = DigitalContactOptional(Some("skylake@vilikariet.com"), None, None)
   lazy val testBankDetails = BankAccountDetails("Test Bank Account", "010203", "01023456")
   lazy val testFormerName = FormerName(Some(testName), Some(testDate))
-  lazy val testReturns = Returns(reclaimVatOnMostReturns = false, "quarterly", Some("jan"), StartDate(Some(testDate)), Some(12.99))
+  lazy val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None)
   lazy val zeroRatedSupplies: BigDecimal = 12.99
   lazy val testBpSafeId = "testBpSafeId"
 
@@ -119,15 +120,19 @@ trait VatRegistrationFixture {
   lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None)
   lazy val testBankAccountNotProvided = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup))
 
-  lazy val validFullAASDetails: AASDetails = AASDetails(
+  lazy val validAASDetails: AASDetails = AASDetails(
     paymentMethod = StandingOrder,
-    annualStagger = JanDecStagger,
-    paymentFrequency = Monthly,
-    estimatedTurnover = 123456,
-    requestedStartDate = testDate
+    paymentFrequency = MonthlyPayment
   )
 
-  lazy val validFullAAS: AnnualAccountingScheme = AnnualAccountingScheme(joinAAS = true, submissionType = Some("1"), Some(validFullAASDetails))
+  lazy val validAASReturns: Returns = Returns(
+    Some(12.99),
+    reclaimVatOnMostReturns = false,
+    Annual,
+    JanDecStagger,
+    Some(testDate),
+    Some(validAASDetails)
+  )
 
   lazy val validFullFRSDetails: FRSDetails =
     FRSDetails(
@@ -160,7 +165,6 @@ trait VatRegistrationFixture {
     sicAndCompliance = testSicAndCompliance,
     businessContact = testBusinessContact,
     bankAccount = Some(testBankAccount),
-    annualAccountingScheme = Some(validFullAAS),
     flatRateScheme = Some(validFullFlatRateScheme),
     applicantDetails = Some(validApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -314,21 +318,6 @@ trait VatRegistrationFixture {
     s"""
        |{
        |  "joinFrs": false
-       |}
-     """.stripMargin).as[JsObject]
-
-  lazy val validFullAnnualAccountingSchemeJson: JsObject = Json.parse(
-    s"""
-       |{
-       | "joinAAS":true,
-       | "submissionType":"1",
-       | "customerRequest":{
-       |  "paymentMethod":"01",
-       |  "annualStagger":"YA",
-       |  "paymentFrequency":"M",
-       |  "estimatedTurnover":123456,
-       |  "requestedStartDate":"2018-01-01"
-       |  }
        |}
      """.stripMargin).as[JsObject]
 

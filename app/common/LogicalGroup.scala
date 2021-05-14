@@ -17,6 +17,7 @@
 package common
 
 import models.api._
+import models.api.returns.Returns
 
 trait LogicalGroup[T] {
   val name: String

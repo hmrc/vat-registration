@@ -33,18 +33,6 @@ trait VatBankAccountValidator extends Validation {
   protected val accountSortCodeValidator: Format[String]  = readToFmt(pattern("^(\\d){2}-(\\d){2}-(\\d){2}$".r))
 }
 
-trait VatAccountingPeriodValidator extends Validation {
-  val JAN = "jan"
-  val FEB = "feb"
-  val MAR = "mar"
-
-  val MONTHLY = "monthly"
-  val QUARTERLY = "quarterly"
-
-  val staggerStartValidator: Format[String] = acceptOnly(JAN, FEB, MAR)
-  val frequencyValidator: Format[String]    = acceptOnly(MONTHLY, QUARTERLY)
-}
-
 trait VatChoiceValidator extends Validation {
   val necessityValidator: Format[String] = acceptOnly("voluntary", "obligatory")
   val reasonValidator: Format[String]    = acceptOnly("COMPANY_ALREADY_SELLS_TAXABLE_GOODS_OR_SERVICES", "COMPANY_INTENDS_TO_SELLS_TAXABLE_GOODS_OR_SERVICES_IN_THE_FUTURE", "NEITHER")

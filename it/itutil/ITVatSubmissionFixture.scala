@@ -89,7 +89,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "periods" -> Json.obj(
-      "customerPreferredPeriodicity" -> "MA"
+      "customerPreferredPeriodicity" -> "YA"
     ),
     "bankDetails" -> Json.obj(
       "UK" -> Json.obj(
@@ -229,16 +229,6 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "periods" -> Json.obj(
       "customerPreferredPeriodicity" -> "MA"
-    ),
-    "joinAA" -> Json.obj(
-      "submissionType" -> "1",
-      "customerRequest" -> Json.obj(
-        "paymentMethod" -> "01",
-        "annualStagger" -> "YA",
-        "paymentFrequency" -> "M",
-        "estimatedTurnover" -> 123456,
-        "reqStartDate" -> testDate
-      )
     ),
     "bankDetails" -> Json.obj(
       "UK" -> Json.obj(

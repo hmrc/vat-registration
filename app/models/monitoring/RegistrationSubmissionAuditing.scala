@@ -80,7 +80,7 @@ object RegistrationSubmissionAuditing {
           "overThresholdInPreviousMonthDate" -> vatSubmission.eligibilitySubmissionData.threshold.thresholdPreviousThirtyDays,
           "overThresholdInNextMonthDate" -> vatSubmission.eligibilitySubmissionData.threshold.thresholdNextThirtyDays,
           "reasonForSubscription" -> Json.obj(
-            "voluntaryOrEarlierDate" -> vatSubmission.returns.start.date,
+            "voluntaryOrEarlierDate" -> vatSubmission.returns.startDate,
             "exemptionOrException" -> vatSubmission.eligibilitySubmissionData.exceptionOrExemption
           ),
           "businessActivities" -> Json.obj(
@@ -97,7 +97,7 @@ object RegistrationSubmissionAuditing {
           "frsScheme" -> vatSubmission.flatRateScheme.map(Json.toJson(_)(FRSDetails.auditWrites))
         ),
         "periods" -> Json.obj(
-          "customerPreferredPeriodicity" -> vatSubmission.returns.frequency
+          "customerPreferredPeriodicity" -> vatSubmission.returns.returnsFrequency
         ),
         "bankDetails" -> vatSubmission.bankDetails.map {
           case BankAccount(true, Some(details), _) => Json.obj(
