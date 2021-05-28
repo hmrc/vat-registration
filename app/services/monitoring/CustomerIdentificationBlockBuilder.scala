@@ -17,7 +17,7 @@
 package services.monitoring
 
 import models.api.VatScheme
-import models.submission.UkCompany
+import models.{LimitedCompany, SoleTrader}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -25,19 +25,33 @@ import utils.JsonUtils._
 import javax.inject.Singleton
 
 @Singleton
-class CustomerIdentificationBlockBuilder extends {
+class CustomerIdentificationBlockBuilder {
 
   def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsValue = {
     (vatScheme.applicantDetails, vatScheme.tradingDetails) match {
       case (Some(applicantDetails), Some(tradingDetails)) =>
         jsonObject(
-          "tradersPartyType" -> UkCompany.toString, // TODO: refactor once we allow different entities
-          "identifiers" -> Json.obj(
-            "companyRegistrationNumber" -> applicantDetails.companyNumber,
-            "ctUTR" -> applicantDetails.ctutr
-          ),
-          "shortOrgName" -> applicantDetails.companyName,
-          "dateOfBirth" -> applicantDetails.dateOfBirth,
+          "tradersPartyType" -> vatScheme.partyType,
+          "identifiers" -> {
+            applicantDetails.entity match {
+              case LimitedCompany(_, companyNumber, _, ctutr, _, _, _, _, _) =>
+                Json.obj(
+                  "companyRegistrationNumber" -> companyNumber,
+                  "ctUTR" -> ctutr
+                )
+              case SoleTrader(_, utr, _, _, _, _) =>
+                Json.obj(
+                  "saUTR" -> utr
+                )
+            }
+          },
+          optional("shortOrgName" -> {
+            applicantDetails.entity match {
+              case LimitedCompany(companyName, _, _, _, _, _, _, _, _) => Some(companyName)
+              case _ => None
+            }
+          }),
+          "dateOfBirth" -> applicantDetails.transactor.dateOfBirth,
           optional("tradingName" -> tradingDetails.tradingName)
         )
       case (None, _) =>

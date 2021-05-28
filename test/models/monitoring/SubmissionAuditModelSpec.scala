@@ -19,7 +19,8 @@ package models.monitoring
 import enums.VatRegStatus
 import fixtures.SubmissionAuditFixture
 import helpers.VatRegSpec
-import models.api.{MTDfB, VatScheme}
+import models.LimitedCompany
+import models.api.{BvFail, MTDfB, NotCalledStatus, VatScheme}
 import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.http.InternalServerException
@@ -74,7 +75,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
           )
         }
         "return the root JSON block when BP Safe ID is present" in {
-          val applicantDetailsWithSafeId = validApplicantDetails.copy(bpSafeId = Some(testBpSafeId))
+          val applicantDetailsWithSafeId = validApplicantDetails.copy(entity = testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId)))
           val res = model(rootBlockTestVatScheme.copy(applicantDetails = Some(applicantDetailsWithSafeId)))
 
           res.detail mustBe Json.obj(
@@ -103,7 +104,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
         "return the correct json" in {
           val threshold = testMandatoryThreshold.copy(
             thresholdNextThirtyDays = Some(LocalDate.of(2021, 1, 12)),
-            thresholdPreviousThirtyDays = Some(LocalDate.of(2021, 1, 12)),
+            thresholdPreviousThirtyDays = Some(LocalDate.of(2021, 1, 12))
           )
 
           val eligibilityData = testEligibilitySubmissionData.copy(threshold = threshold)

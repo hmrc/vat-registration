@@ -17,6 +17,7 @@
 package models.api
 
 import models.api.EligibilitySubmissionData._
+import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
@@ -26,7 +27,8 @@ import java.time.LocalDate
 case class EligibilitySubmissionData(threshold: Threshold,
                                      exceptionOrExemption: String,
                                      estimates: TurnoverEstimates,
-                                     customerStatus: CustomerStatus) {
+                                     customerStatus: CustomerStatus,
+                                     partyType: PartyType) {
 
   def earliestDate: LocalDate = Seq(
     threshold.thresholdPreviousThirtyDays,
@@ -73,7 +75,8 @@ object EligibilitySubmissionData {
           }
         ) and
         json.validate[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads) and
-        json.validate[CustomerStatus](CustomerStatus.eligibilityDataJsonReads)
+        json.validate[CustomerStatus](CustomerStatus.eligibilityDataJsonReads) and
+        json.validate[PartyType](PartyType.eligibilityDataJsonReads)
       ) (EligibilitySubmissionData.apply _)
   }
 

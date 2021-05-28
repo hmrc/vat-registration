@@ -16,8 +16,9 @@
 
 package models.api
 
-import java.time.LocalDate
+import models.submission.PartyType
 
+import java.time.LocalDate
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
 

@@ -59,7 +59,7 @@ trait SubmissionAuditFixture extends VatRegistrationFixture {
       "tradersPartyType" -> UkCompany.toString,
       "identifiers" -> Json.obj(
         "companyRegistrationNumber" -> testCrn,
-        "ctUTR" -> testCtUtr
+        "ctUTR" -> testUtr
       ),
       "shortOrgName" -> testCompanyName,
       "dateOfBirth" -> testDateOfBirth,

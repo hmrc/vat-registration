@@ -669,20 +669,25 @@ trait VatSubmissionFixture {
       |  "confirmInformationDeclaration": true,
       |  "companyRegistrationNumber": "testCrn",
       |  "applicantDetails": {
-      |    "nino": "AB123456A",
-      |    "roleInTheBusiness": "03",
-      |    "name": {
-      |      "first": "Forename",
-      |      "last": "Surname"
+      |    "entity": {
+      |      "companyName": "testCompanyName",
+      |      "companyNumber": "testCrn",
+      |      "dateOfIncorporation": "2020-01-02",
+      |      "ctutr": "testCtUtr",
+      |      "businessVerification": "FAIL",
+      |      "registration": "REGISTRATION_NOT_CALLED",
+      |      "identifiersMatch": true,
+      |      "countryOfIncorporation": "GB"
       |    },
-      |    "dateOfBirth": "2018-01-01",
-      |    "companyName": "testCompanyName",
-      |    "companyNumber": "testCrn",
-      |    "dateOfIncorporation": "2020-01-02",
-      |    "ctutr": "testCtUtr",
-      |    "businessVerification": "FAIL",
-      |    "registration": "REGISTRATION_NOT_CALLED",
-      |    "identifiersMatch": true,
+      |    "transactor": {
+      |      "name": {
+      |        "first": "Forename",
+      |        "last": "Surname"
+      |      },
+      |      "dateOfBirth": "2018-01-01",
+      |      "nino": "AB123456A"
+      |    },
+      |    "roleInTheBusiness": "03",
       |    "currentAddress": {
       |      "line1": "line1",
       |      "line2": "line2",
@@ -701,8 +706,7 @@ trait VatSubmissionFixture {
       |        "last": "Surname"
       |      },
       |      "change": "2018-01-01"
-      |    },
-      |    "countryOfIncorporation": "GB"
+      |    }
       |  },
       |  "bankDetails": {
       |    "isProvided": true,
@@ -786,7 +790,8 @@ trait VatSubmissionFixture {
       |    "estimates": {
       |      "turnoverEstimate": 123456
       |    },
-      |    "customerStatus": "2"
+      |    "customerStatus": "2",
+      |    "partyType": "50"
       |  }
       |}""".stripMargin)
 

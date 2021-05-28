@@ -36,18 +36,18 @@ class DeclarationBlockBuilder {
           ),
           "applicant" -> jsonObject(
             "roleInBusiness" -> applicantDetails.roleInBusiness.toString,
-            "name" -> formatName(applicantDetails.name),
+            "name" -> formatName(applicantDetails.transactor.name),
             optional("previousName" -> applicantDetails.changeOfName.map(formatFormerName)),
             "currentAddress" -> formatAddress(applicantDetails.currentAddress),
             optional("previousAddress" -> applicantDetails.previousAddress.map(formatAddress)),
-            "dateOfBirth" -> applicantDetails.dateOfBirth,
+            "dateOfBirth" -> applicantDetails.transactor.dateOfBirth,
             "communicationDetails" -> jsonObject(
               optional("emailAddress" -> applicantDetails.contact.email),
               optional("telephone" -> applicantDetails.contact.tel),
               optional("mobileNumber" -> applicantDetails.contact.mobile)
             ),
             "identifiers" -> jsonObject(
-              "nationalInsuranceNumber" -> applicantDetails.nino
+              "nationalInsuranceNumber" -> applicantDetails.transactor.nino
             )
           )
         )
