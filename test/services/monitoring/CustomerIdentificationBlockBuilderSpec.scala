@@ -24,8 +24,6 @@ import uk.gov.hmrc.http.InternalServerException
 
 class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
-
-
   "buildCustomerIdentificationBlock" when {
     "all required sections are present in the VAT scheme" when {
       "a trading name is present" must {
@@ -33,10 +31,10 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
           val res = buildCustomerIdentificationBlock(testFullVatScheme)
 
           res mustBe Json.obj(
-            "tradersPartyType" -> UkCompany.toString, // TODO: refactor once we allow different entities
+            "tradersPartyType" -> "50",
             "identifiers" -> Json.obj(
               "companyRegistrationNumber" -> testCrn,
-              "ctUTR" -> testCtUtr
+              "ctUTR" -> testUtr
             ),
             "shortOrgName" -> testCompanyName,
             "dateOfBirth" -> testDateOfBirth,
@@ -50,10 +48,10 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
           val res = buildCustomerIdentificationBlock(testFullVatScheme.copy(tradingDetails = Some(tradingDetails)))
 
           res mustBe Json.obj(
-            "tradersPartyType" -> UkCompany.toString, // TODO: refactor once we allow different entities
+            "tradersPartyType" -> "50",
             "identifiers" -> Json.obj(
               "companyRegistrationNumber" -> testCrn,
-              "ctUTR" -> testCtUtr
+              "ctUTR" -> testUtr
             ),
             "shortOrgName" -> testCompanyName,
             "dateOfBirth" -> testDateOfBirth

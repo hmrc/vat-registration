@@ -16,6 +16,7 @@
 
 package services.submission
 
+import models.LimitedCompany
 import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -30,41 +31,32 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
                                                   )(implicit ec: ExecutionContext) {
 
   def buildCustomerIdentificationBlock(regId: String): Future[JsObject] = for {
-    optApplicantDetails <- registrationMongoRepository.getApplicantDetails(regId)
-    optTradingDetails <- registrationMongoRepository.retrieveTradingDetails(regId)
-  } yield (optApplicantDetails, optTradingDetails) match {
-    case (Some(applicantDetails), Some(tradingDetails)) =>
+    optVatScheme <- registrationMongoRepository.retrieveVatScheme(regId)
+    optApplicantDetails = optVatScheme.flatMap(_.applicantDetails)
+    optTradingDetails = optVatScheme.flatMap(_.tradingDetails)
+  } yield (optVatScheme, optApplicantDetails, optTradingDetails) match {
+    case (Some(vatScheme), Some(applicantDetails), Some(tradingDetails)) =>
       jsonObject(
-        "tradersPartyType" -> "50",
-        "shortOrgName" -> applicantDetails.companyName,
+        "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map(_.partyType),
+        optional("shortOrgName" -> Option(applicantDetails.entity).collect {
+          case LimitedCompany(companyName, _, _, _, _, _, _, _, _) => companyName
+        }),
         optional("tradingName" -> tradingDetails.tradingName)
       ) ++ {
-        (applicantDetails.bpSafeId, applicantDetails.companyNumber, applicantDetails.ctutr) match {
-          case (Some(bpSafeId), _, _) =>
+        applicantDetails.entity.bpSafeId match {
+          case Some(bpSafeId) =>
             Json.obj("primeBPSafeID" -> bpSafeId)
-          case (None, companyNumber, ctutr) =>
-            Json.obj("customerID" ->
-              Json.arr(
-                jsonObject(
-                  "idType" -> "UTR",
-                  "IDsVerificationStatus" -> applicantDetails.idVerificationStatus,
-                  "idValue" -> ctutr
-                ),
-                jsonObject(
-                  "idType" -> "CRN",
-                  "idValue" -> companyNumber,
-                  "date" -> applicantDetails.dateOfIncorporation,
-                  "IDsVerificationStatus" -> applicantDetails.idVerificationStatus
-                )
-              )
-            )
+          case None if applicantDetails.entity.identifiers.nonEmpty =>
+            Json.obj("customerID" -> Json.toJson(applicantDetails.entity.identifiers))
           case _ =>
-            throw new InternalServerException("Could not build customer identification block for submission due to missing BPSafeID")
+            Json.obj()
         }
       }
-    case (None, Some(tradingDetails)) =>
+    case (None, _, _) =>
+      throw new InternalServerException("Could not retrieve VAT scheme")
+    case (_, None, _) =>
       throw new InternalServerException("Could not build customer identification block for submission due to missing applicant details data")
-    case (Some(applicantDetails), None) =>
+    case (_, _, None) =>
       throw new InternalServerException("Could not build customer identification block for submission due to missing trading details data")
     case _ =>
       throw new InternalServerException("Could not build customer identification block for submission due to missing data from applicant and trading details")

@@ -43,9 +43,9 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: Registratio
               ),
               "applicantDetails" -> jsonObject(
                 "roleInBusiness" -> applicantDetails.roleInBusiness,
-                "name" -> formatName(applicantDetails.name),
+                "name" -> formatName(applicantDetails.transactor.name),
                 optional("prevName" -> applicantDetails.changeOfName.map(formatFormerName)),
-                "dateOfBirth" -> applicantDetails.dateOfBirth,
+                "dateOfBirth" -> applicantDetails.transactor.dateOfBirth,
                 "currAddress" -> formatAddress(applicantDetails.currentAddress),
                 optional("prevAddress" -> applicantDetails.previousAddress.map(formatAddress)),
                 "commDetails" -> jsonObject(

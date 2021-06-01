@@ -16,12 +16,14 @@
 
 package models.monitoring
 
+import models.{LimitedCompany, SoleTrader}
 import models.api._
 import models.submission.VatSubmission
 import play.api.libs.json.{JsObject, JsValue, Json}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
 import utils.JsonUtilities
+import utils.JsonUtils.{jsonObject, optional}
 
 import java.time.LocalDate
 
@@ -38,7 +40,7 @@ object RegistrationSubmissionAuditing {
     override val transactionName: String = vatRegTransactionName
     override val auditType: String = vatRegAuditType
 
-    override val detail: JsValue = formatRegReason(vatSubmission.eligibilitySubmissionData.threshold).deepMerge(Json.obj(
+    override val detail: JsValue = formatRegReason(vatSubmission.eligibilitySubmissionData.threshold).deepMerge(jsonObject(
       "authProviderId" -> authProviderId,
       "journeyId" -> regId,
       "userType" -> affinityGroup.toString,
@@ -46,23 +48,24 @@ object RegistrationSubmissionAuditing {
       "messageType" -> vatSubmission.messageType,
       "customerStatus" -> vatSubmission.eligibilitySubmissionData.customerStatus.toString,
       "eoriRequested" -> vatSubmission.tradingDetails.eoriRequested,
-      "corporateBodyRegistered" -> Json.obj(
-        "dateOfIncorporation" -> vatSubmission.applicantDetails.dateOfIncorporation,
-        "countryOfIncorporation" -> vatSubmission.applicantDetails.countryOfIncorporation
-      ),
+      optional("corporateBodyRegistered" -> {
+        vatSubmission.applicantDetails.entity match {
+          case LimitedCompany(_, _, _, _, _, countryOfIncorporation, _, _, _) =>
+            Some(Json.obj(
+              "countryOfIncorporation" -> countryOfIncorporation
+            ))
+          case _ =>
+            None
+        }
+      }),
       "idsVerificationStatus" -> "1",
       "cidVerification" -> "1",
-      "businessPartnerReference" -> vatSubmission.applicantDetails.bpSafeId,
+      "businessPartnerReference" -> vatSubmission.applicantDetails.entity.bpSafeId,
       "userEnteredDetails" -> Json.obj(
         "outsideEUSales" -> vatSubmission.tradingDetails.eoriRequested,
         "customerIdentification" -> Json.obj(
           "tradersPartyType" -> vatSubmission.tradersPartyType.map(_.toString),
-          "identifiers" -> Json.obj(
-            "companyRegistrationNumber" -> vatSubmission.applicantDetails.companyNumber,
-            "ctUTR" -> vatSubmission.applicantDetails.ctutr
-          ),
-          "shortOrgName" -> vatSubmission.applicantDetails.companyName,
-          "dateOfBirth" -> vatSubmission.applicantDetails.dateOfBirth,
+          "dateOfBirth" -> vatSubmission.applicantDetails.transactor.dateOfBirth,
           "tradingName" -> vatSubmission.tradingDetails.tradingName
         ),
         "businessContact" -> Json.obj(
@@ -114,16 +117,16 @@ object RegistrationSubmissionAuditing {
           "applicant" -> Json.obj(
             "roleInBusiness" -> Json.toJson(vatSubmission.applicantDetails.roleInBusiness),
             "otherRole" -> "None",
-            "name" -> Json.toJson(vatSubmission.applicantDetails.name)(Name.auditWrites),
+            "name" -> Json.toJson(vatSubmission.applicantDetails.transactor.name)(Name.auditWrites),
             "previousName" -> vatSubmission.applicantDetails.changeOfName.map(Json.toJson(_)(FormerName.auditWrites)),
             "currentAddress" -> Json.toJson(vatSubmission.applicantDetails.currentAddress)(Address.auditFormat),
             "communicationDetails" -> Json.obj(
               "telephone" -> vatSubmission.applicantDetails.contact.tel,
               "emailAddress" -> vatSubmission.applicantDetails.contact.email
             ),
-            "dateOfBirth" -> Json.toJson(vatSubmission.applicantDetails.dateOfBirth),
+            "dateOfBirth" -> Json.toJson(vatSubmission.applicantDetails.transactor.dateOfBirth),
             "identifiers" -> Json.obj(
-              "nationalInsuranceNumber" -> vatSubmission.applicantDetails.nino
+              "nationalInsuranceNumber" -> vatSubmission.applicantDetails.transactor.nino
             ),
             "previousAddress" -> vatSubmission.applicantDetails.previousAddress.map(Json.toJson(_)(Address.auditFormat)),
             "declarationSigning" -> Json.obj(

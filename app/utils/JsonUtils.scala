@@ -16,7 +16,7 @@
 
 package utils
 
-import play.api.libs.json.{JsObject, JsValue, Writes}
+import play.api.libs.json.{Format, JsObject, JsValue, Writes}
 
 object JsonUtils {
 
@@ -35,4 +35,14 @@ object JsonUtils {
       case (key, None) =>
         JsonField(None)
     }
+
+  def conditional[T](condition: => Boolean)(field: (String, T))(implicit writer: Writes[T]): JsonField = {
+    if (condition) JsonField(Some(field._1 -> writer.writes(field._2)))
+    else JsonField(None)
+  }
+
+  def canParseTo[A](implicit fmt: Format[A]): PartialFunction[JsValue, A] = new PartialFunction[JsValue, A] {
+    def apply(js: JsValue): A = js.validate[A].get
+    def isDefinedAt(js: JsValue): Boolean = js.validate[A].isSuccess
+  }
 }

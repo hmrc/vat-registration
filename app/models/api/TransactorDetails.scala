@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package common
+package models.api
 
-import models.api._
-import models.api.returns.Returns
+import java.time.LocalDate
+import play.api.libs.json.{Json, Format}
 
-trait LogicalGroup[T] {
-  val name: String
-}
+case class TransactorDetails(name: Name,
+                             nino: String,
+                             dateOfBirth: LocalDate)
 
-object LogicalGroup {
-  def apply[T]()(implicit t: LogicalGroup[T]): LogicalGroup[T] = t
-
-  def apply[T](s: String): LogicalGroup[T] = new LogicalGroup[T] {
-    val name: String = s
-  }
-
-  implicit val tradingDetails       = LogicalGroup[TradingDetails]("tradingDetails")
-  implicit val vatApplicantDetails    = LogicalGroup[ApplicantDetails]("applicantDetails")
-  implicit val returns              = LogicalGroup[Returns]("returns")
+object TransactorDetails {
+  implicit val format: Format[TransactorDetails] = Json.format[TransactorDetails]
 }

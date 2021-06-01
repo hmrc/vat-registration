@@ -19,6 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api.{BvCtEnrolled, BvPass, BvUnchallenged, FailedStatus}
+import models.submission.Individual
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsObject, Json}
@@ -67,24 +68,47 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
        |}
        |""".stripMargin).as[JsObject]
 
+  val soleTraderBlockJson = Json.parse(
+    s"""
+       |{
+       |    "tradingName": "trading-name",
+       |    "tradersPartyType": "Z1",
+       |    "customerID": [
+       |      {
+       |        "idValue": "testCtUtr",
+       |        "idType": "UTR",
+       |        "IDsVerificationStatus": "1"
+       |      }
+       |    ]
+       |}
+       |""".stripMargin).as[JsObject]
+
   "buildCustomerIdentificationBlock" should {
+    "build the correct json for a sole trader entity type" in new Setup {
+      val appDetails = validApplicantDetails.copy(entity = testSoleTraderEntity)
+      val eligibilityData = testEligibilitySubmissionData.copy(partyType = Individual)
+
+      when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+        .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData)))))
+
+      val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
+      result mustBe soleTraderBlockJson
+    }
     "return Status Code 1" when {
       "the businessVerificationStatus is BvPass" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(Some(validApplicantDetails.copy(identifiersMatch = true, businessVerification = BvPass, registration = FailedStatus))))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvPass, registration = FailedStatus))
 
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
 
         val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
         result mustBe customerIdentificationBlockJson(1)
       }
       "the businessVerificationStatus is CtEnrolled" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(Some(validApplicantDetails.copy(identifiersMatch = true, businessVerification = BvCtEnrolled, registration = FailedStatus))))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvCtEnrolled, registration = FailedStatus))
 
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
 
         val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
         result mustBe customerIdentificationBlockJson(1)
@@ -92,11 +116,10 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return Status Code 2" when {
       "the identifiersMatch is false" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(Some(validApplicantDetails.copy(identifiersMatch = false, businessVerification = BvUnchallenged))))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvUnchallenged, identifiersMatch = false))
 
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
 
         val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
         result mustBe customerIdentificationBlockJson(2)
@@ -104,21 +127,17 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return Status Code 3" when {
       "businessVerification fails" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(Some(validApplicantDetails)))
-
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme)))
 
         val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
         result mustBe customerIdentificationBlockJson(3)
       }
       "businessVerification is not called" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(Some(validApplicantDetails.copy(businessVerification = BvUnchallenged))))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvUnchallenged))
 
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
 
         val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
         result mustBe customerIdentificationBlockJson(3)
@@ -126,21 +145,19 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return the BP Safe ID" when {
       "businessVerificationStatus is Pass" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(Some(validApplicantDetails.copy(bpSafeId = Some(testBpSafeId), businessVerification = BvPass))))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvPass, bpSafeId = Some(testBpSafeId)))
 
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
 
         val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
         result mustBe customerIdentificationBlockWithBPJson
       }
       "businessVerification is CT-Enrolled" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(Some(validApplicantDetails.copy(bpSafeId = Some(testBpSafeId), businessVerification = BvCtEnrolled))))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvCtEnrolled, bpSafeId = Some(testBpSafeId)))
 
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
 
         val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
         result mustBe customerIdentificationBlockWithBPJson
@@ -148,29 +165,20 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "throw an Interval Server Exception" when {
       "applicant details is missing" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(None))
-
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = None))))
 
         intercept[InternalServerException](await(service.buildCustomerIdentificationBlock(testRegId)))
       }
       "trading details is missing" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(Some(validApplicantDetails)))
-
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(None))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(tradingDetails = None))))
 
         intercept[InternalServerException](await(service.buildCustomerIdentificationBlock(testRegId)))
       }
       "applicant details and trading details are missing" in new Setup {
-        when(mockRegistrationMongoRepository.getApplicantDetails(any()))
-          .thenReturn(Future.successful(None))
-
-        when(mockRegistrationMongoRepository.retrieveTradingDetails(any()))
-          .thenReturn(Future.successful(None))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = None, tradingDetails = None))))
 
         intercept[InternalServerException](await(service.buildCustomerIdentificationBlock(testRegId)))
       }

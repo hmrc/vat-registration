@@ -18,6 +18,7 @@ package fixtures
 
 import common.TransactionId
 import enums.VatRegStatus
+import models.{LimitedCompany, SoleTrader}
 import models.api._
 import models.api.returns._
 import models.submission._
@@ -41,7 +42,7 @@ trait VatRegistrationFixture {
   lazy val testDateOfBirth = DateOfBirth(testDate)
   lazy val testCompanyName = "testCompanyName"
   lazy val testCrn = "testCrn"
-  lazy val testCtUtr = "testCtUtr"
+  lazy val testUtr = "testCtUtr"
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
   lazy val testAddress = Address("line1", "line2", None, None, Some("XX XX"), Some(Country(Some("GB"), None)), addressValidated = Some(true))
   lazy val testPostcode = "ZZ1 1ZZ"
@@ -78,26 +79,40 @@ trait VatRegistrationFixture {
     threshold = testMandatoryThreshold,
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
-    customerStatus = MTDfB
+    customerStatus = MTDfB,
+    partyType = UkCompany
+  )
+
+  val testLtdCoEntity = LimitedCompany(
+    companyName = testCompanyName,
+    companyNumber = testCrn,
+    ctutr = testUtr,
+    dateOfIncorporation = testDateOFIncorp,
+    businessVerification = BvFail,
+    registration = NotCalledStatus,
+    identifiersMatch = true
+  )
+
+  val testSoleTraderEntity = SoleTrader(
+    name = testName,
+    sautr = Some(testUtr),
+    businessVerification = BvPass,
+    registration = FailedStatus,
+    identifiersMatch = true
   )
 
   lazy val validApplicantDetails: ApplicantDetails = ApplicantDetails(
-    nino = testNino,
+    transactor = TransactorDetails(
+      name = testName,
+      nino = testNino,
+      dateOfBirth = testDate
+    ),
+    entity = testLtdCoEntity,
     roleInBusiness = testRole,
-    name = testName,
-    dateOfBirth = DateOfBirth(testDate),
-    companyName = testCompanyName,
-    companyNumber = testCrn,
-    dateOfIncorporation = testDateOFIncorp,
-    ctutr = testCtUtr,
     currentAddress = testAddress,
     contact = testDigitalContactOptional,
     changeOfName = Some(testFormerName),
-    previousAddress = None,
-    businessVerification = BvFail,
-    registration = NotCalledStatus,
-    identifiersMatch = true,
-    bpSafeId = None
+    previousAddress = None
   )
 
   lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =

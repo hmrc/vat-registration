@@ -19,7 +19,8 @@ package controllers
 import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api.{ApplicantDetails, BvPass, RegisteredStatus}
+import models.LimitedCompany
+import models.api.{ApplicantDetails, BvFail, BvPass, NotCalledStatus, RegisteredStatus, TransactorDetails}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
@@ -39,22 +40,26 @@ class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixt
   }
 
   val upsertApplicantDetails: ApplicantDetails = ApplicantDetails(
-    nino = testNino,
-    name = testName,
     roleInBusiness = testRole,
-    dateOfBirth = testDateOfBirth,
-    companyName = testCompanyName,
-    companyNumber = testCrn,
-    dateOfIncorporation = testDateOFIncorp,
-    ctutr = testCtUtr,
+    transactor = TransactorDetails(
+      name = testName,
+      nino = testNino,
+      dateOfBirth = testDate
+    ),
+    entity = LimitedCompany(
+      companyName = testCompanyName,
+      companyNumber = testCrn,
+      ctutr = testUtr,
+      dateOfIncorporation = testDateOFIncorp,
+      businessVerification = BvFail,
+      registration = NotCalledStatus,
+      identifiersMatch = true,
+      bpSafeId = Some(testBpSafeId)
+    ),
     currentAddress = testAddress,
     contact = testDigitalContactOptional,
     changeOfName = None,
-    previousAddress = None,
-    businessVerification = BvPass,
-    registration = RegisteredStatus,
-    identifiersMatch = true,
-    bpSafeId = Some(testBpSafeId)
+    previousAddress = None
   )
 
   val upsertApplicantDetailsJson: JsValue = Json.toJson(upsertApplicantDetails)

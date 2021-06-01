@@ -16,53 +16,51 @@
 
 package models.api
 
-import java.time.LocalDate
-
-import helpers.ApplicantDetailsHelper
-import models.submission.{DateOfBirth, RoleInBusiness}
+import models.{BusinessEntity, LimitedCompany, SoleTrader}
+import models.submission.{CustomerId, IdVerified, NinoIdType, RoleInBusiness}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtilities
+import utils.JsonUtils.canParseTo
 
-case class ApplicantDetails(nino: String,
-                            roleInBusiness: RoleInBusiness,
-                            name: Name,
-                            dateOfBirth: DateOfBirth,
-                            companyName: String,
-                            companyNumber: String,
-                            dateOfIncorporation: LocalDate,
-                            ctutr: String,
-                            businessVerification: BusinessVerificationStatus,
-                            registration: BusinessRegistrationStatus,
-                            identifiersMatch: Boolean,
-                            bpSafeId: Option[String] = None,
+case class ApplicantDetails(transactor: TransactorDetails,
+                            entity: BusinessEntity,
                             currentAddress: Address,
+                            previousAddress: Option[Address] = None,
                             contact: DigitalContactOptional,
                             changeOfName: Option[FormerName] = None,
-                            previousAddress: Option[Address] = None,
-                            countryOfIncorporation: String = "GB")
+                            roleInBusiness: RoleInBusiness) {
+
+  def personalIdentifiers: List[CustomerId] =
+    List(CustomerId(transactor.nino, NinoIdType, IdVerified, date = Some(transactor.dateOfBirth)))
+
+}
 
 object ApplicantDetails extends VatApplicantDetailsValidator
-  with ApplicantDetailsHelper
   with JsonUtilities {
 
   implicit val format: Format[ApplicantDetails] = (
-    (__ \ "nino").format[String] and
-      (__ \ "roleInTheBusiness").format[RoleInBusiness] and
-      (__ \ "name").format[Name] and
-      (__ \ "dateOfBirth").format[DateOfBirth] and
-      (__ \ "companyName").format[String] and
-      (__ \ "companyNumber").format[String] and
-      (__ \ "dateOfIncorporation").format[LocalDate] and
-      (__ \ "ctutr").format[String] and
-      (__ \ "businessVerification").format[BusinessVerificationStatus] and
-      (__ \ "registration").format[BusinessRegistrationStatus] and
-      (__ \ "identifiersMatch").format[Boolean] and
-      (__ \ "bpSafeId").formatNullable[String] and
+    (__ \ "transactor").format[TransactorDetails] and
+      (__ \ "entity").format[JsValue].inmap[BusinessEntity](parseToEntity, writeEntityToJson) and
       (__ \ "currentAddress").format[Address] and
+      (__ \ "previousAddress").formatNullable[Address] and
       (__ \ "contact").format[DigitalContactOptional] and
       (__ \ "changeOfName").formatNullable[FormerName] and
-      (__ \ "previousAddress").formatNullable[Address] and
-      (__ \ "countryOfIncorporation").format[String]
+      (__ \ "roleInTheBusiness").format[RoleInBusiness]
     ) (ApplicantDetails.apply, unlift(ApplicantDetails.unapply))
+
+  private def parseToEntity(json: JsValue): BusinessEntity =
+    canParseTo[LimitedCompany] orElse
+    canParseTo[SoleTrader] apply
+    json
+
+  private def writeEntityToJson(entity: BusinessEntity): JsValue = entity match {
+    case ltdCo @ LimitedCompany(_, _, _, _, _, _, _, _, _) =>
+      Json.toJson(ltdCo)
+    case soleTrader @ SoleTrader(_, _, _, _, _, _) =>
+      Json.toJson(soleTrader)
+    case _ =>
+      throw new InternalServerException("Unsupported entity")
+  }
 }

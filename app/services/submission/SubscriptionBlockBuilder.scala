@@ -16,13 +16,13 @@
 
 package services.submission
 
+import models.{LimitedCompany, SoleTrader}
 import models.api.EligibilitySubmissionData._
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
 
-import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -50,11 +50,14 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
         optional("voluntaryOrEarlierDate" -> returns.startDate),
         "exemptionOrException" -> eligibilityData.exceptionOrExemption
       ),
-      "corporateBodyRegistered" -> jsonObject(
-        "companyRegistrationNumber" -> applicantDetails.companyNumber,
-        "dateOfIncorporation" -> applicantDetails.dateOfIncorporation,
-        "countryOfIncorporation" -> applicantDetails.countryOfIncorporation
-      ),
+      optional("corporateBodyRegistered" -> Option(applicantDetails.entity).collect {
+        case LimitedCompany(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _) =>
+          Some(jsonObject(
+            "companyRegistrationNumber" -> companyNumber,
+            "dateOfIncorporation" -> dateOfIncorporation,
+            "countryOfIncorporation" -> countryOfIncorporation
+          ))
+      }),
       "businessActivities" -> jsonObject(
         "description" -> sicAndCompliance.businessDescription,
         "SICCodes" -> jsonObject(

@@ -26,22 +26,28 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
   private def writeAndRead[T](t: T)(implicit fmt: Format[T]) = fmt.reads(Json.toJson(fmt.writes(t)))
 
   "Creating a Json from a valid VatApplicantDetails model" should {
-    "complete successfully" in {
+    "parse successfully if the entity is a Ltd Co" in {
       writeAndRead(validApplicantDetails) resultsIn validApplicantDetails
+    }
+    "parse successfully if the entity is a Sole Trader" in {
+      val soleTraderAppDetails = validApplicantDetails.copy(entity = SoleTrader(testName, Some(testUtr), Some(testBpSafeId), BvPass, RegisteredStatus, identifiersMatch = true))
+      writeAndRead(soleTraderAppDetails) resultsIn soleTraderAppDetails
     }
   }
 
   "Creating a Json from an invalid VatApplicantDetails model" ignore {
     "fail with a JsonValidationError" when {
       "NINO is invalid" in {
-        val applicantDetails = validApplicantDetails.copy(nino = "NB888")
-        writeAndRead(applicantDetails) shouldHaveErrors (JsPath() \ "nino" -> JsonValidationError("error.pattern"))
+        val applicantDetails = validApplicantDetails.copy(transactor = validApplicantDetails.transactor.copy(nino = "NB888" ))
+        writeAndRead(applicantDetails) shouldHaveErrors (JsPath() \ "transactor" \ "nino" -> JsonValidationError("error.pattern"))
       }
 
       "Name is invalid" in {
         val name = Name(first = Some("$%@$%^@#%@$^@$^$%@#$%@#$"), middle = None, last = "valid name")
-        val applicantDetails = validApplicantDetails.copy(name = name)
-        writeAndRead(applicantDetails) shouldHaveErrors (JsPath() \ "name" \ "first" -> JsonValidationError("error.pattern"))
+        val applicantDetails = validApplicantDetails.copy(
+          transactor = validApplicantDetails.transactor.copy(name = name)
+        )
+        writeAndRead(applicantDetails) shouldHaveErrors (JsPath() \ "transactor" \ "firstName" -> JsonValidationError("error.pattern"))
       }
     }
   }

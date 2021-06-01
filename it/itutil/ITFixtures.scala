@@ -17,9 +17,10 @@ package itutil
 
 import common.TransactionId
 import enums.VatRegStatus
+import models.LimitedCompany
 import models.api.returns._
 import models.api.{returns, _}
-import models.submission.{DateOfBirth, Director, RoleInBusiness}
+import models.submission.{DateOfBirth, Director, RoleInBusiness, UkCompany}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
@@ -96,41 +97,49 @@ trait ITFixtures {
   val testWebsite = "www.foo.com"
 
   val testUnregisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
-    nino = testNino,
+    transactor = TransactorDetails(
+      name = testName,
+      nino = testNino,
+      dateOfBirth = testDate
+    ),
+    entity = LimitedCompany(
+      companyName = testCompanyName,
+      companyNumber = testCrn,
+      dateOfIncorporation = testDateOfIncorp,
+      ctutr = testCtUtr,
+      businessVerification = BvUnchallenged,
+      registration = NotCalledStatus,
+      identifiersMatch = true,
+      bpSafeId = None
+    ),
     roleInBusiness = testRole,
-    name = testName,
-    dateOfBirth = DateOfBirth(testDate),
-    companyName = testCompanyName,
-    companyNumber = testCrn,
-    dateOfIncorporation = testDateOfIncorp,
-    ctutr = testCtUtr,
     currentAddress = testFullAddress,
     contact = testDigitalContactOptional,
     changeOfName = Some(testFormerName),
-    previousAddress = Some(testFullAddress),
-    businessVerification = BvUnchallenged,
-    registration = NotCalledStatus,
-    identifiersMatch = true,
-    bpSafeId = None
+    previousAddress = Some(testFullAddress)
   )
 
   val testRegisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
-    nino = testNino,
+    transactor = TransactorDetails(
+      name = testName,
+      nino = testNino,
+      dateOfBirth = testDate
+    ),
+    entity = LimitedCompany(
+      companyName = testCompanyName,
+      companyNumber = testCrn,
+      dateOfIncorporation = testDateOfIncorp,
+      ctutr = testCtUtr,
+      identifiersMatch = true,
+      businessVerification = BvPass,
+      registration = RegisteredStatus,
+      bpSafeId = Some(testBpSafeId)
+    ),
     roleInBusiness = testRole,
-    name = testName,
-    dateOfBirth = DateOfBirth(testDate),
-    companyName = testCompanyName,
-    companyNumber = testCrn,
-    dateOfIncorporation = testDateOfIncorp,
-    ctutr = testCtUtr,
     currentAddress = testAddress,
     contact = testDigitalContactOptional,
     changeOfName = None,
-    previousAddress = None,
-    businessVerification = BvPass,
-    registration = RegisteredStatus,
-    identifiersMatch = true,
-    bpSafeId = Some(testBpSafeId)
+    previousAddress = None
   )
 
   val testBusinessContactDetails = BusinessContact(digitalContact = testContactDetails, website = None, ppob = testFullAddress, commsPreference = Email)
@@ -176,7 +185,8 @@ trait ITFixtures {
     threshold = testThreshold,
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
-    customerStatus = MTDfB
+    customerStatus = MTDfB,
+    partyType = UkCompany
   )
 
   val testNrsSubmissionPayload = "testNrsSubmissionPayload"

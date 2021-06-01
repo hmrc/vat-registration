@@ -19,7 +19,9 @@ package models.api
 import auth.CryptoSCRS
 import common.TransactionId
 import enums.VatRegStatus
+import models.BusinessEntity
 import models.api.returns.Returns
+import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -38,7 +40,11 @@ case class VatScheme(id: String,
                      eligibilitySubmissionData: Option[EligibilitySubmissionData] = None,
                      applicantDetails: Option[ApplicantDetails] = None,
                      confirmInformationDeclaration: Option[Boolean] = None,
-                     nrsSubmissionPayload: Option[String] = None)
+                     nrsSubmissionPayload: Option[String] = None) {
+
+  def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
+
+}
 
 object VatScheme {
 
