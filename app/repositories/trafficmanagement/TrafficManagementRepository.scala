@@ -24,8 +24,10 @@ import javax.inject.{Inject, Singleton}
 import models.api.{RegistrationChannel, RegistrationInformation, RegistrationStatus}
 import play.api.libs.json.{JsString, Json}
 import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONInteger}
+import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.ReactiveRepository
 
@@ -115,4 +117,11 @@ class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
     find("internalId" -> JsString(id))
       .map(_.headOption.map(_.internalId))
 
+
+  def clearDocument(internalId: String): Future[Boolean] = {
+    collection.delete.one(BSONDocument("internalId" -> internalId)) map { res =>
+      if (!res.ok) logger.error(s"[clearDocument] - Error deleting traffic management doc for internalId $internalId - Error: ${Message.unapply(res)}")
+      res.ok
+    }
+  }
 }

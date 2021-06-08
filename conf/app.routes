@@ -6,6 +6,7 @@ POST         /insert-s4l-scheme                         controllers.VatRegistrat
 POST         /traffic-management/:regId/allocate    controllers.TrafficManagementController.allocate(regId)
 GET          /traffic-management/reg-info           controllers.TrafficManagementController.getRegistrationInformation
 PUT          /traffic-management/reg-info           controllers.TrafficManagementController.upsertRegistrationInformation()
+DELETE       /traffic-management/reg-info/clear     controllers.TrafficManagementController.clearDocument
 
 GET          /scheme                                controllers.VatRegistrationController.retrieveVatSchemeByInternalId()
 GET          /:regId/get-scheme                     controllers.VatRegistrationController.retrieveVatScheme(regId: String)

@@ -97,4 +97,16 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
 
   }
 
+  "DELETE /traffic-management/reg-info/clear" must {
+    "return NO_CONTENT when successful" in new Setup {
+      given
+        .user.isAuthorised
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+
+      val res = await(client(controllers.routes.TrafficManagementController.clearDocument().url).delete())
+
+      res.status mustBe NO_CONTENT
+    }
+  }
+
 }

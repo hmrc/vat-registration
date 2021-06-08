@@ -71,4 +71,13 @@ class TrafficManagementController @Inject()(controllerComponents: ControllerComp
     }
   }
 
+  def clearDocument(): Action[AnyContent] = Action.async { implicit request =>
+    isAuthenticated { internalId =>
+      trafficManagementService.clearDocument(internalId) map {
+        case true => NoContent
+        case _ => PreconditionFailed
+      }
+    }
+  }
+
 }
