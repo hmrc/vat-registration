@@ -51,4 +51,9 @@ trait MockTrafficManagementService extends MockitoSugar {
       ArgumentMatchers.eq(channel)
     )) thenReturn response
 
+  def mockClearDocument(internalId: String)
+                       (response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
+    when(mockTrafficManagementService.clearDocument(
+      ArgumentMatchers.eq(internalId)
+    )) thenReturn response
 }

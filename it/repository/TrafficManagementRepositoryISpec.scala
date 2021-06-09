@@ -2,7 +2,7 @@
 package repository
 
 import java.time.{LocalDate, LocalDateTime, LocalTime}
-import itutil.{FakeTimeMachine, ITFixtures, IntegrationSpecBase}
+import itutil.{FakeTimeMachine, ITFixtures, IntegrationSpecBase, FutureAssertions}
 import models.api._
 import play.api.{Application, Configuration}
 import play.api.inject.bind
@@ -18,7 +18,7 @@ import repositories.trafficmanagement.TrafficManagementRepository
 
 import scala.concurrent.duration._
 
-class TrafficManagementRepositoryISpec extends IntegrationSpecBase {
+class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAssertions {
 
   class Setup(hour: Int = 9) extends SetupHelper with ITFixtures {
     class TimestampMachine extends FakeTimeMachine {
@@ -73,6 +73,13 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase {
       val res = await(trafficManagementRepo.upsertRegistrationInformation(internalId2, regId2, Draft, testDate2, VatReg, testDate2))
 
       res mustBe regInfo2
+    }
+  }
+
+  "Calling clearDocument" must {
+    "delete the entry to the traffic management repo" in new Setup {
+
+      trafficManagementRepo.insert(regInfo1).flatMap(_ => trafficManagementRepo.clearDocument(internalId1)) returns true
     }
   }
 

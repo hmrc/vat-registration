@@ -66,6 +66,8 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       upsert = true
     ) map (_.result[RegistrationInformation])
 
+  def clearDocument(internalId: String): Future[Boolean] =
+    trafficManagementRepository.clearDocument(internalId)
 }
 
 sealed trait AllocationResponse

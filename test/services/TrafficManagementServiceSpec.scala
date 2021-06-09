@@ -104,4 +104,14 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
   }
 
+  "clearDocument" must {
+    "return true" in {
+      mockClearDocument(testInternalId)(response = Future.successful(true))
+
+      val res = await(Service.clearDocument(testInternalId))
+
+      res mustBe true
+    }
+  }
+
 }
