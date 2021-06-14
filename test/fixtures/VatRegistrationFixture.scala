@@ -94,7 +94,6 @@ trait VatRegistrationFixture {
   )
 
   val testSoleTraderEntity = SoleTrader(
-    name = testName,
     sautr = Some(testUtr),
     businessVerification = BvPass,
     registration = FailedStatus,

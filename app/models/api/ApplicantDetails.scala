@@ -58,7 +58,7 @@ object ApplicantDetails extends VatApplicantDetailsValidator
   private def writeEntityToJson(entity: BusinessEntity): JsValue = entity match {
     case ltdCo @ LimitedCompany(_, _, _, _, _, _, _, _, _) =>
       Json.toJson(ltdCo)
-    case soleTrader @ SoleTrader(_, _, _, _, _, _) =>
+    case soleTrader @ SoleTrader(_, _, _, _, _) =>
       Json.toJson(soleTrader)
     case _ =>
       throw new InternalServerException("Unsupported entity")

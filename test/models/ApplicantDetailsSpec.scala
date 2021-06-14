@@ -30,7 +30,7 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
       writeAndRead(validApplicantDetails) resultsIn validApplicantDetails
     }
     "parse successfully if the entity is a Sole Trader" in {
-      val soleTraderAppDetails = validApplicantDetails.copy(entity = SoleTrader(testName, Some(testUtr), Some(testBpSafeId), BvPass, RegisteredStatus, identifiersMatch = true))
+      val soleTraderAppDetails = validApplicantDetails.copy(entity = SoleTrader(Some(testUtr), Some(testBpSafeId), BvPass, RegisteredStatus, identifiersMatch = true))
       writeAndRead(soleTraderAppDetails) resultsIn soleTraderAppDetails
     }
   }
