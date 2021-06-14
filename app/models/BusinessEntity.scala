@@ -78,8 +78,7 @@ object LimitedCompany {
 }
 
 
-case class SoleTrader(name: Name,
-                      sautr: Option[String] = None,
+case class SoleTrader(sautr: Option[String] = None,
                       bpSafeId: Option[String] = None,
                       businessVerification: BusinessVerificationStatus,
                       registration: BusinessRegistrationStatus,
