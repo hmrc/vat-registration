@@ -17,10 +17,10 @@ package itutil
 
 import common.TransactionId
 import enums.VatRegStatus
-import models.LimitedCompany
+import models.{LimitedCompany, SoleTrader}
 import models.api.returns._
 import models.api.{returns, _}
-import models.submission.{DateOfBirth, Director, RoleInBusiness, UkCompany}
+import models.submission.{DateOfBirth, Director, OwnerProprietor, RoleInBusiness, UkCompany}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
@@ -92,6 +92,7 @@ trait ITFixtures {
   val testDateOfBirth = DateOfBirth(testDate)
   val testCrn = "testCrn"
   val testCtUtr = "testCtUtr"
+  val testSaUtr = "testSaUtr"
   val testDateOfIncorp = LocalDate.of(2020, 1, 2)
   val testBpSafeId = "testBpSafeId"
   val testWebsite = "www.foo.com"
@@ -141,6 +142,18 @@ trait ITFixtures {
     changeOfName = None,
     previousAddress = None
   )
+
+  val testRegisteredSoleTraderApplicantDetails: ApplicantDetails =
+    testRegisteredApplicantDetails.copy(
+      entity = SoleTrader(
+        sautr = Some(testSaUtr),
+        bpSafeId = Some(testBpSafeId),
+        businessVerification = BvPass,
+        registration = RegisteredStatus,
+        identifiersMatch = true
+      ),
+      roleInBusiness = OwnerProprietor
+    )
 
   val testBusinessContactDetails = BusinessContact(digitalContact = testContactDetails, website = None, ppob = testFullAddress, commsPreference = Email)
   val testFullBusinessContactDetails = BusinessContact(digitalContact = testContactDetails, website = Some(testWebsite), ppob = testFullAddress, commsPreference = Email)
@@ -242,6 +255,11 @@ trait ITFixtures {
       applicantDetails = Some(testRegisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),
       confirmInformationDeclaration = Some(true)
+    )
+
+  lazy val testMinimalVatSchemeWithVerifiedSoleTrader: VatScheme =
+    testMinimalVatSchemeWithRegisteredBusinessPartner.copy(
+      applicantDetails = Some(testRegisteredSoleTraderApplicantDetails)
     )
 
   def testEmptyVatScheme(regId: String): VatScheme = VatScheme(
