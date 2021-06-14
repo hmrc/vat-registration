@@ -142,6 +142,22 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       res.status mustBe OK
     }
 
+    "return OK if the submission is successful for a sole trader with a bpSafeId" in new Setup {
+      enable(StubSubmission)
+
+      given
+        .user.isAuthorised
+        .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader, repo.insert)
+
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJson, OK, "")
+
+      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+        .put(Json.obj())
+      )
+
+      res.status mustBe OK
+    }
+
     "return OK if the submission is successful where the business partner is already registered" in new Setup {
       enable(StubSubmission)
 

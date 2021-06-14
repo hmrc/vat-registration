@@ -1,6 +1,7 @@
 
 package itutil
 
+import models.submission.{OwnerProprietor, RoleInBusiness}
 import play.api.libs.json.{JsObject, Json}
 
 trait ITVatSubmissionFixture extends ITFixtures {
@@ -275,4 +276,105 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     )
   )
+
+  val testVerifiedSoleTraderJson: JsObject = Json.obj(
+    "messageType" -> "SubscriptionCreate",
+    "admin" -> Json.obj(
+      "additionalInformation" -> Json.obj(
+        "customerStatus" -> "2"
+      ),
+      "attachments" -> Json.obj(
+        "EORIrequested" -> true
+      )
+    ),
+    "customerIdentification" -> Json.obj(
+      "tradersPartyType" -> "50",
+      "primeBPSafeID" -> testBpSafeId,
+      "tradingName" -> testTradingDetails.tradingName.get
+    ),
+    "contact" -> Json.obj(
+      "address" -> Json.obj(
+        "line1" -> testFullAddress.line1,
+        "line2" -> testFullAddress.line2,
+        "line3" -> testFullAddress.line3,
+        "line4" -> testFullAddress.line4,
+        "postCode" -> testFullAddress.postcode,
+        "countryCode" -> "GB",
+        "addressValidated" -> true
+      ),
+      "commDetails" -> Json.obj(
+        "telephone" -> testContactDetails.tel,
+        "mobileNumber" -> testContactDetails.mobile,
+        "email" -> testContactDetails.email,
+        "commsPreference" -> "ZEL"
+      )
+    ),
+    "subscription" -> Json.obj(
+      "reasonForSubscription" -> Json.obj(
+        "registrationReason" -> "0016",
+        "relevantDate" -> testDate,
+        "voluntaryOrEarlierDate" -> testDate,
+        "exemptionOrException" -> "0"
+      ),
+      "businessActivities" -> Json.obj(
+        "description" -> testSicAndCompliance.businessDescription,
+        "SICCodes" -> Json.obj(
+          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id
+        )
+      ),
+      "yourTurnover" -> Json.obj(
+        "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
+        "zeroRatedSupplies" -> 12.99,
+        "VATRepaymentExpected" -> true
+      )
+    ),
+    "periods" -> Json.obj(
+      "customerPreferredPeriodicity" -> "MA"
+    ),
+    "bankDetails" -> Json.obj(
+      "UK" -> Json.obj(
+        "reasonBankAccNotProvided" -> "1"
+      )
+    ),
+    "compliance" -> Json.obj(
+      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
+      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+    ),
+    "declaration" -> Json.obj(
+      "applicantDetails" -> Json.obj(
+        "roleInBusiness" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString),
+        "name" -> Json.obj(
+          "firstName" -> testName.first,
+          "lastName" -> testName.last
+        ),
+        "currAddress" -> Json.obj(
+          "line1" -> testFullAddress.line1,
+          "line2" -> testFullAddress.line2,
+          "postCode" -> testFullAddress.postcode,
+          "countryCode" -> "GB",
+          "addressValidated" -> true
+        ),
+        "commDetails" -> Json.obj(
+          "email" -> testDigitalContactOptional.email.get,
+          "telephone" -> testDigitalContactOptional.tel,
+          "mobileNumber" -> testDigitalContactOptional.mobile
+        ),
+        "dateOfBirth" -> testDate,
+        "identifiers" -> Json.arr(
+          Json.obj(
+            "date" -> testDate,
+            "idType" -> "NINO",
+            "idValue" -> testNino,
+            "IDsVerificationStatus" -> "1"
+          )
+        )
+      ),
+      "declarationSigning" -> Json.obj(
+        "confirmInformationDeclaration" -> true,
+        "declarationCapacity" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString)
+      )
+    )
+  )
+
 }
