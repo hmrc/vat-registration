@@ -18,6 +18,7 @@ package controllers
 
 import auth.{Authorisation, AuthorisationResource}
 import models.api.{RegistrationChannel, RegistrationStatus}
+import models.submission.PartyType
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.{Allocated, QuotaReached, TrafficManagementService}
@@ -26,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TrafficManagementController @Inject()(controllerComponents: ControllerComponents,
@@ -37,11 +38,18 @@ class TrafficManagementController @Inject()(controllerComponents: ControllerComp
 
   override val resourceConn: AuthorisationResource = trafficManagementService.trafficManagementRepository
 
-  def allocate(regId: String): Action[AnyContent] = Action.async { implicit request =>
+  def allocate(regId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     isAuthenticated { internalId =>
-      trafficManagementService.allocate(internalId, regId) map {
-        case Allocated => Created
-        case QuotaReached => TooManyRequests
+      val optPartyType = (request.body \ "partyType").validate[PartyType].asOpt
+      val optIsEnrolled = (request.body \ "isEnrolled").validate[Boolean].asOpt
+
+      (optPartyType, optIsEnrolled) match {
+        case (Some(partyType), Some(isEnrolled)) =>
+          trafficManagementService.allocate(internalId, regId, partyType, isEnrolled) map {
+            case Allocated => Created
+            case QuotaReached => TooManyRequests
+          }
+        case _ => Future.successful(BadRequest)
       }
     }
   }

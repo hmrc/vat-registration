@@ -16,6 +16,8 @@
 
 package mocks
 
+import models.submission.PartyType
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
@@ -29,8 +31,16 @@ trait MockDailyQuotaRepository extends MockitoSugar {
 
   val mockDailyQuotaRepository = mock[DailyQuotaRepository]
 
-  def mockCheckQuota(response: Boolean): OngoingStubbing[Future[Boolean]] =
-    when(mockDailyQuotaRepository.checkQuota)
-      .thenReturn(Future.successful(response))
+  def mockCurrentTotal(partyType: PartyType, isEnrolled: Boolean)(response: Int): OngoingStubbing[Future[Int]] =
+    when(mockDailyQuotaRepository.currentTotal(
+      ArgumentMatchers.eq(partyType),
+      ArgumentMatchers.eq(isEnrolled)
+    )) thenReturn Future.successful(response)
+
+  def mockIncrement(partyType: PartyType, isEnrolled: Boolean)(response: Int): OngoingStubbing[Future[Int]] =
+    when(mockDailyQuotaRepository.incrementTotal(
+      ArgumentMatchers.eq(partyType),
+      ArgumentMatchers.eq(isEnrolled)
+    )) thenReturn Future.successful(response)
 
 }

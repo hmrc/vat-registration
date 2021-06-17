@@ -64,7 +64,9 @@ trait IntegrationSpecBase extends PlaySpec
     "microservice.services.non-repudiation.host" -> mockHost,
     "microservice.services.non-repudiation.port" -> mockPort,
     "mongo-encryption.key" -> "ABCDEFGHIJKLMNOPQRSTUV==",
-    "traffic-management.daily-quota" -> "1",
+    "traffic-management.quotas.uk-company-enrolled" -> "11",
+    "traffic-management.quotas.uk-company" -> "1",
+    "traffic-management.quotas.sole-trader" -> "1",
     "traffic-management.hours.from" -> "9",
     "traffic-management.hours.until" -> "17"
   ) ++ additionalConfig

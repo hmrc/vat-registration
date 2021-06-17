@@ -16,11 +16,12 @@
 
 package models.api
 
-import java.time.LocalDate
+import models.submission.PartyType
 
+import java.time.LocalDate
 import play.api.libs.json.Json
 
-case class DailyQuota(date: LocalDate, currentTotal: Int = 0)
+case class DailyQuota(date: LocalDate, partyType: PartyType, isEnrolled: Boolean, currentTotal: Int = 0)
 
 object DailyQuota {
   implicit val format = Json.format[DailyQuota]

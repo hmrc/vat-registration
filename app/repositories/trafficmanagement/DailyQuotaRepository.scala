@@ -16,30 +16,30 @@
 
 package repositories.trafficmanagement
 
-import java.time.LocalDate
-
-import config.BackendConfig
-import javax.inject.{Inject, Singleton}
 import models.api.DailyQuota
-import play.api.libs.json.{JsString, Json}
+import models.submission.PartyType
+import models.submission.PartyType.toJsString
+import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.mongo.ReactiveRepository
 import utils.TimeMachine
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class DailyQuotaRepository @Inject()(mongo: ReactiveMongoComponent,
-                                     timeMachine: TimeMachine,
-                                     config: BackendConfig)
+                                     timeMachine: TimeMachine)
                                     (implicit ec: ExecutionContext)
   extends ReactiveRepository[DailyQuota, BSONObjectID](
     collectionName = "daily-quota",
     mongo = mongo.mongoConnector.db,
     domainFormat = DailyQuota.format
   ) {
+
+  private val defaultQuota = 0
 
   override def indexes: Seq[Index] = Seq(
     Index(
@@ -49,24 +49,20 @@ class DailyQuotaRepository @Inject()(mongo: ReactiveMongoComponent,
     )
   )
 
-  private def today: LocalDate = timeMachine.today
+  def currentTotal(partyType: PartyType, isEnrolled: Boolean): Future[Int] =
+    find(
+      "date" -> timeMachine.today.toString,
+      "partyType" -> toJsString(partyType),
+      "isEnrolled" -> isEnrolled
+    )
+    .map(_.headOption.map(_.currentTotal).getOrElse(defaultQuota))
 
-  private def currentHour: Int = timeMachine.timestamp.getHour
-
-  def checkQuota: Future[Boolean] =
-    find("date" -> JsString(today.toString))
-      .map(_.headOption.getOrElse(DailyQuota(today)))
-      .flatMap {
-        case _ if currentHour < config.allowUsersFrom || currentHour >= config.allowUsersUntil =>
-          Future.successful(true)
-        case quota if quota.currentTotal >= config.dailyQuota =>
-          Future.successful(true)
-        case _ =>
-          incrementTotal.map(_ => false)
-      }
-
-  def incrementTotal: Future[Int] = {
-    val selector = Json.obj("date" -> today.toString)
+  def incrementTotal(partyType: PartyType, isEnrolled: Boolean): Future[Int] = {
+    val selector = Json.obj(
+      "date" -> timeMachine.today.toString,
+      "partyType" -> toJsString(partyType),
+      "isEnrolled" -> isEnrolled
+    )
     val modifier = Json.obj("$inc" -> Json.obj("currentTotal" -> 1))
 
     findAndUpdate(query = selector, update = modifier, fetchNewObject = true, upsert = true)

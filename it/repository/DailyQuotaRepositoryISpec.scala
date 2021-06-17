@@ -3,6 +3,7 @@ package repository
 
 import itutil.{FakeTimeMachine, IntegrationStubbing}
 import models.api.DailyQuota
+import models.submission.UkCompany
 import play.api.libs.json.JsString
 import play.api.test.Helpers._
 
@@ -14,40 +15,32 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
    FakeTimeMachine.hour = hour
   }
 
-  val testQuota = DailyQuota(testDate, 10)
+  val testQuota = DailyQuota(testDate, UkCompany, isEnrolled = true)
 
-  "checkQuota" must {
-    "return true if the quota has been reached" in new Setup {
+  "currentTotal" must {
+    "return the current total for a party type that we have a quota for" in new Setup {
       given.user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, 1), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(testQuota.copy(currentTotal = 1), dailyQuotaRepo.insert)
 
-      val res = await(dailyQuotaRepo.checkQuota)
+      val res = await(dailyQuotaRepo.currentTotal(UkCompany, isEnrolled = true))
 
-      res mustBe true
+      res mustBe 1
     }
-    "return false if the quota has not been reached" in new Setup {
+    "return the default quota for a party type that we don't have a quota for" in new Setup {
       given.user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(testQuota, dailyQuotaRepo.insert)
 
-      val res = await(dailyQuotaRepo.checkQuota)
+      val res = await(dailyQuotaRepo.currentTotal(UkCompany, isEnrolled = false))
 
-      res mustBe false
+      res mustBe 0
     }
-    "return true if before service hours" in new Setup(hour = 8) {
+    "return the default quota if there is no record for the current day" in new Setup {
       given.user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(testQuota.copy(date = testDate.minusDays(1), currentTotal = 1), dailyQuotaRepo.insert)
 
-      val res = await(dailyQuotaRepo.checkQuota)
+      val res = await(dailyQuotaRepo.currentTotal(UkCompany, isEnrolled = false))
 
-      res mustBe true
-    }
-    "return true if after service hours" in new Setup(hour = 17) {
-      given.user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate), dailyQuotaRepo.insert)
-
-      val res = await(dailyQuotaRepo.checkQuota)
-
-      res mustBe true
+      res mustBe 0
     }
   }
 
@@ -55,22 +48,22 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
     "increment the quota for the day" in new Setup {
       given.user.isAuthorised
       await(dailyQuotaRepo.bulkInsert(Seq(
-        DailyQuota(testDate.minusDays(1), 15),
-        DailyQuota(testDate, 9)))
+        DailyQuota(testDate.minusDays(1), UkCompany, true, 15),
+        DailyQuota(testDate, UkCompany, true, 9)))
       )
 
-      val res = await(dailyQuotaRepo.incrementTotal)
+      val res = await(dailyQuotaRepo.incrementTotal(UkCompany, true))
 
       res mustBe 10
     }
     "create a new record for the day if one doesn't exist" in new Setup {
       given.user.isAuthorised
 
-      val res = await(dailyQuotaRepo.incrementTotal)
+      val res = await(dailyQuotaRepo.incrementTotal(UkCompany, true))
       val data = await(dailyQuotaRepo.find("date" -> JsString(testDate.toString)).map(_.headOption))
 
       res mustBe 1
-      data mustBe Some(DailyQuota(testDate, 1))
+      data mustBe Some(DailyQuota(testDate, UkCompany, true, 1))
     }
   }
 

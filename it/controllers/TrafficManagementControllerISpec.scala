@@ -3,6 +3,7 @@ package controllers
 
 import itutil.IntegrationStubbing
 import models.api._
+import models.submission.UkCompany
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 
@@ -25,9 +26,13 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     "return CREATED if the user can be allocated" in new Setup {
       given
         .user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true), dailyQuotaRepo.insert)
 
-      val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url).post(Json.obj()))
+      val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
+        .post(Json.obj(
+          "partyType" -> "50",
+          "isEnrolled" -> true
+        )))
 
       res.status mustBe CREATED
     }
@@ -37,18 +42,35 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
 
       dailyQuotaRepo.drop
 
-      val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url).post(Json.obj()))
+      val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
+        .post(Json.obj(
+          "partyType" -> "50",
+          "isEnrolled" -> true
+        )))
 
       res.status mustBe CREATED
     }
     "return TOO_MANY_REQUESTS if the user cannot be allocated" in new Setup {
       given
         .user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, 1), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true, currentTotal = 11), dailyQuotaRepo.insert)
+
+      val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
+        .post(Json.obj(
+          "partyType" -> "50",
+          "isEnrolled" -> true
+        )))
+
+      res.status mustBe TOO_MANY_REQUESTS
+    }
+    "return BAD_REQUEST if the request JSON is malformed" in new Setup {
+      given
+        .user.isAuthorised
+        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true, currentTotal = 1), dailyQuotaRepo.insert)
 
       val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url).post(Json.obj()))
 
-      res.status mustBe TOO_MANY_REQUESTS
+      res.status mustBe BAD_REQUEST
     }
   }
 

@@ -16,28 +16,42 @@
 
 package services
 
-import java.time.LocalDate
-
-import javax.inject.{Inject, Singleton}
+import config.BackendConfig
 import models.api._
+import models.submission.{Individual, PartyType, UkCompany}
 import play.api.libs.json.Json
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import utils.TimeMachine
 
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaRepository,
                                          val trafficManagementRepository: TrafficManagementRepository,
                                          timeMachine: TimeMachine)
-                                        (implicit ec: ExecutionContext) {
+                                        (implicit ec: ExecutionContext, config: BackendConfig) {
 
-  def allocate(internalId: String, regId: String): Future[AllocationResponse] = {
+  def dailyQuota(partyType: PartyType, isEnrolled: Boolean): Int =
+    partyType match {
+      case UkCompany if isEnrolled => config.DailyQuotas.enrolledUkCompany
+      case UkCompany => config.DailyQuotas.ukCompany
+      case Individual if isEnrolled => config.DailyQuotas.enrolledSoleTrader
+      case Individual => config.DailyQuotas.soleTrader
+    }
+
+  def currentHour: Int = timeMachine.timestamp.getHour
+
+  def allocate(internalId: String, regId: String, partyType: PartyType, isEnrolled: Boolean): Future[AllocationResponse] = {
+    val isWithinOpeningHours = currentHour >= config.allowUsersFrom && currentHour < config.allowUsersUntil
     for {
-      quotaReached <- dailyQuotaRepository.checkQuota
-      channel = if (quotaReached) OTRS else VatReg
+      currentTotal <- dailyQuotaRepository.currentTotal(partyType, isEnrolled)
+      isWithinQuota = currentTotal < dailyQuota(partyType, isEnrolled)
+      channel = if (isWithinQuota) VatReg else OTRS
+      _ <- if (isWithinQuota) dailyQuotaRepository.incrementTotal(partyType, isEnrolled) else Future.successful()
       _ <- trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, channel, timeMachine.today)
-    } yield if (quotaReached) QuotaReached else Allocated
+    } yield if (isWithinQuota && isWithinOpeningHours) Allocated else QuotaReached
   }
 
   def getRegistrationInformation(internalId: String): Future[Option[RegistrationInformation]] =
