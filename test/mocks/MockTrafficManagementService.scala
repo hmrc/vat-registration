@@ -17,6 +17,7 @@
 package mocks
 
 import models.api.{RegistrationInformation, RegistrationStatus}
+import models.submission.PartyType
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
@@ -31,11 +32,13 @@ trait MockTrafficManagementService extends MockitoSugar {
 
   val mockTrafficManagementService = mock[TrafficManagementService]
 
-  def mockAllocate(internalId: String, regId: String)
+  def mockAllocate(internalId: String, regId: String, partyType: PartyType, isEnrolled: Boolean)
                   (response: Future[AllocationResponse]): OngoingStubbing[Future[AllocationResponse]] =
     when(mockTrafficManagementService.allocate(
       ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId)
+      ArgumentMatchers.eq(regId),
+      ArgumentMatchers.eq(partyType),
+      ArgumentMatchers.eq(isEnrolled)
     )).thenReturn(response)
 
   def mockGetRegInfo(internalId: String)

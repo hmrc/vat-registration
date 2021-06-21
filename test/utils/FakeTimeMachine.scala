@@ -16,8 +16,15 @@
 
 package utils
 
-import java.time.LocalDate
+import fixtures.VatRegistrationFixture
 
-class FakeTimeMachine extends TimeMachine {
+import java.time.{LocalDate, LocalDateTime, LocalTime}
+
+class FakeTimeMachine extends TimeMachine with VatRegistrationFixture {
   override def today: LocalDate = LocalDate.parse("2020-01-01")
+  override def timestamp: LocalDateTime = LocalDateTime.of(testDate, LocalTime.of(FakeTimeMachine.hour, 0))
+}
+
+object FakeTimeMachine {
+  var hour: Int = 9
 }

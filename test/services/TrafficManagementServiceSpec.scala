@@ -16,75 +16,127 @@
 
 package services
 
-import java.time.LocalDate
-
+import config.BackendConfig
 import helpers.VatRegSpec
 import mocks.{MockDailyQuotaRepository, MockTrafficManagementRepository}
 import models.api.{Draft, OTRS, RegistrationInformation, VatReg}
+import models.submission.{Individual, UkCompany}
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FakeTimeMachine
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class TrafficManagementServiceSpec extends VatRegSpec
   with MockDailyQuotaRepository
   with MockTrafficManagementRepository {
 
-  val timeMachine = new FakeTimeMachine
 
-  object Service extends TrafficManagementService(
-    mockDailyQuotaRepository,
-    mockTrafficManagementRepository,
-    timeMachine
-  )
+  override lazy val app: Application = new GuiceApplicationBuilder()
+    .configure(Map(
+      "traffic-management.hours.from"-> 9,
+      "traffic-management.hours.until"-> 17,
+      "traffic-management.quotas.uk-company-enrolled"-> 15,
+      "traffic-management.quotas.sole-trader" -> 1
+    ))
+    .build()
+
+  implicit val config = app.injector.instanceOf[BackendConfig]
+
+  class Setup(hour: Int = 9) {
+    FakeTimeMachine.hour = hour
+    val timeMachine = new FakeTimeMachine
+
+    object Service extends TrafficManagementService(
+      mockDailyQuotaRepository,
+      mockTrafficManagementRepository,
+      timeMachine
+    )
+
+    val testRegInfo = RegistrationInformation(
+      internalId = testInternalId,
+      registrationId = testRegId,
+      status = Draft,
+      regStartDate = timeMachine.today,
+      channel = VatReg,
+      lastModified = timeMachine.today
+    )
+  }
 
   val testInternalId = "testInternalId"
   val testRegId = "testRegID"
   val testDate = LocalDate.of(2020, 1, 1)
   implicit val hc = HeaderCarrier()
 
-  val testRegInfo = RegistrationInformation(
-    internalId = testInternalId,
-    registrationId = testRegId,
-    status = Draft,
-    regStartDate = timeMachine.today,
-    channel = VatReg,
-    lastModified = timeMachine.today
-  )
-
   "allocate" must {
-    "return QuotaReached when the quota is exceeded" in {
-      mockCheckQuota(response = true)
+    "return QuotaReached when the quota is exceeded" in new Setup() {
+      mockCurrentTotal(UkCompany, isEnrolled = true)(16)
       mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
         Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
       )
 
-      val res = await(Service.allocate(testInternalId, testRegId))
+      val res = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
 
       res mustBe QuotaReached
     }
-    "return Allocated when the quota has not been exceeded" in {
-      mockCheckQuota(response = false)
+    "return Allocated when the quota has not been exceeded" in new Setup() {
+      mockCurrentTotal(UkCompany, isEnrolled = true)(1)
       mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
         Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today))
       )
+      mockIncrement(UkCompany, isEnrolled = true)(1)
 
-      val res = await(Service.allocate(testInternalId, testRegId))
+      val res = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
 
       res mustBe Allocated
+    }
+    "return quota reached before opening hours" in new Setup(hour = 8) {
+      mockCurrentTotal(UkCompany, isEnrolled = true)(1)
+      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
+        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
+      )
+
+      val res = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
+
+      res mustBe QuotaReached
+    }
+    "return quota reached after opening hours" in new Setup(hour = 18) {
+      mockCurrentTotal(UkCompany, isEnrolled = true)(1)
+      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
+        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
+      )
+
+      val res = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
+
+      res mustBe QuotaReached
+    }
+    "apply different quotas for different entity types" in new Setup() {
+      mockCurrentTotal(UkCompany, isEnrolled = true)(14)
+      mockCurrentTotal(Individual, isEnrolled = false)(1)
+      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
+        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today))
+      )
+      mockIncrement(UkCompany, isEnrolled = true)(1)
+
+      val allocatableRes = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
+      allocatableRes mustBe Allocated
+      val nonAllocatableRes = await(Service.allocate(testInternalId, testRegId, Individual, isEnrolled = false))
+      nonAllocatableRes mustBe QuotaReached
     }
   }
 
   "getRegistrationInformation" must {
-    "return the registration information where it exists" in {
+    "return the registration information where it exists" in new Setup {
       mockGetRegInfo(testInternalId)(Future.successful(Some(testRegInfo)))
 
       val res = await(Service.getRegistrationInformation(testInternalId))
 
       res mustBe Some(testRegInfo)
     }
-    "return None where a record doesn't exist" in {
+    "return None where a record doesn't exist" in new Setup {
       mockGetRegInfo(testInternalId)(Future.successful(None))
 
       val res = await(Service.getRegistrationInformation(testInternalId))
@@ -94,7 +146,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
   }
 
   "upsertRegistrationInformation" must {
-    "return registration information" in {
+    "return registration information" in new Setup {
       val regInfo = RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)
       mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(Future.successful(regInfo))
 
@@ -105,7 +157,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
   }
 
   "clearDocument" must {
-    "return true" in {
+    "return true" in new Setup {
       mockClearDocument(testInternalId)(response = Future.successful(true))
 
       val res = await(Service.clearDocument(testInternalId))

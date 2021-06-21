@@ -16,13 +16,13 @@
 
 package controllers.test
 
-import javax.inject.{Inject, Singleton}
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import utils.TimeMachine
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -33,15 +33,21 @@ class UpdateTrafficManagementController @Inject()(cc: ControllerComponents,
                                                 )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   val updateQuota: Action[JsValue] = Action.async(parse.json) { implicit request =>
-    (request.body \ "quota").validate[Int] match {
-      case JsSuccess(value, _) =>
-        val query = Json.obj("date" -> timeMachine.today)
-        val update = Json.obj("$set" -> Json.obj(
-          "currentTotal" -> value
-        ))
+    val optQuota = (request.body \ "quota").validate[Int].asOpt
+    val optPartyType = (request.body \ "partyType").validate[String].asOpt
+    val optIsEnrolled = (request.body \ "isEnrolled").validate[Boolean].asOpt
+
+    (optQuota, optPartyType, optIsEnrolled) match {
+      case (Some(quota), Some(partyType), Some(isEnrolled)) =>
+        val query = Json.obj(
+          "date" -> timeMachine.today,
+          "partyType" -> partyType,
+          "isEnrolled" -> isEnrolled
+        )
+        val update = Json.obj("$set" -> Json.obj("currentTotal" -> quota))
 
         dailyQuotaRepository.findAndUpdate(query, update, upsert = true) map (_ => Ok)
-      case JsError(_) =>
+      case _ =>
         Future.successful(BadRequest)
     }
   }
