@@ -39,7 +39,7 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
       jsonObject(
         "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map(_.partyType),
         optional("shortOrgName" -> Option(applicantDetails.entity).collect {
-          case LimitedCompany(companyName, _, _, _, None, _, _, _, _) => companyName //Don't send company name when safeId is present
+          case LimitedCompany(companyName, _, _, _, _, _, _, _, _) => companyName
         }),
         optional("tradingName" -> tradingDetails.tradingName)
       ) ++ {

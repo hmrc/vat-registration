@@ -41,7 +41,8 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
       |{
       |    "tradingName": "trading-name",
       |    "tradersPartyType": "50",
-      |    "primeBPSafeID": "testBpSafeId"
+      |    "primeBPSafeID": "testBpSafeId",
+      |    "shortOrgName": "testCompanyName"
       |}
       |""".stripMargin).as[JsObject]
 

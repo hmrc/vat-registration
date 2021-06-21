@@ -180,7 +180,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
     "customerIdentification" -> Json.obj(
       "tradersPartyType" -> "50",
       "primeBPSafeID" -> testBpSafeId,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testTradingDetails.tradingName.get,
+      "shortOrgName" -> testCompanyName
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
