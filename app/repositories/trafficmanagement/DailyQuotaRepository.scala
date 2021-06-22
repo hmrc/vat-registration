@@ -49,13 +49,32 @@ class DailyQuotaRepository @Inject()(mongo: ReactiveMongoComponent,
     )
   )
 
-  def currentTotal(partyType: PartyType, isEnrolled: Boolean): Future[Int] =
-    find(
-      "date" -> timeMachine.today.toString,
-      "partyType" -> toJsString(partyType),
-      "isEnrolled" -> isEnrolled
+  private def convertDocument(partyType: PartyType, isEnrolled: Boolean) =
+    collection.findAndModify(
+      selector = Json.obj(
+        "date" -> timeMachine.today.toString,
+        "isEnrolled" -> Json.obj("$exists" -> false),
+        "partyType" -> Json.obj("$exists" -> false)
+      ),
+      modifier = collection.updateModifier(
+        Json.obj(
+          "$set" -> Json.obj(
+            "partyType" -> toJsString(partyType),
+            "isEnrolled" -> isEnrolled
+          )
+        ))
     )
-    .map(_.headOption.map(_.currentTotal).getOrElse(defaultQuota))
+
+  def currentTotal(partyType: PartyType, isEnrolled: Boolean): Future[Int] = {
+    convertDocument(partyType, isEnrolled) flatMap { _ =>
+      find(
+        "date" -> timeMachine.today.toString,
+        "partyType" -> toJsString(partyType),
+        "isEnrolled" -> isEnrolled
+      )
+        .map(_.headOption.map(_.currentTotal).getOrElse(defaultQuota))
+    }
+  }
 
   def incrementTotal(partyType: PartyType, isEnrolled: Boolean): Future[Int] = {
     val selector = Json.obj(
@@ -65,11 +84,13 @@ class DailyQuotaRepository @Inject()(mongo: ReactiveMongoComponent,
     )
     val modifier = Json.obj("$inc" -> Json.obj("currentTotal" -> 1))
 
-    findAndUpdate(query = selector, update = modifier, fetchNewObject = true, upsert = true)
-      .map(_.result[DailyQuota] match {
-        case Some(dailyQuota) => dailyQuota.currentTotal
-        case _ => throw new Exception("Unexpected exception while trying to update daily quota")
-      })
+    convertDocument(partyType, isEnrolled) flatMap { _ =>
+      findAndUpdate(query = selector, update = modifier, fetchNewObject = true, upsert = true)
+        .map(_.result[DailyQuota] match {
+          case Some(dailyQuota) => dailyQuota.currentTotal
+          case _ => throw new Exception("Unexpected exception while trying to update daily quota")
+        })
+    }
   }
 
 }

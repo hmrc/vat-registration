@@ -47,11 +47,16 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
     val isWithinOpeningHours = currentHour >= config.allowUsersFrom && currentHour < config.allowUsersUntil
     for {
       currentTotal <- dailyQuotaRepository.currentTotal(partyType, isEnrolled)
-      isWithinQuota = currentTotal < dailyQuota(partyType, isEnrolled)
-      channel = if (isWithinQuota) VatReg else OTRS
-      _ <- if (isWithinQuota) dailyQuotaRepository.incrementTotal(partyType, isEnrolled) else Future.successful()
-      _ <- trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, channel, timeMachine.today)
-    } yield if (isWithinQuota && isWithinOpeningHours) Allocated else QuotaReached
+      canAllocate = currentTotal < dailyQuota(partyType, isEnrolled) && isWithinOpeningHours
+      _ <- {
+        if (canAllocate) {
+          trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, VatReg, timeMachine.today)
+            .map(_ => dailyQuotaRepository.incrementTotal(partyType, isEnrolled))
+        } else {
+          trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, OTRS, timeMachine.today)
+        }
+      }
+    } yield if (canAllocate) Allocated else QuotaReached
   }
 
   def getRegistrationInformation(internalId: String): Future[Option[RegistrationInformation]] =

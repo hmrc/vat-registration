@@ -17,9 +17,9 @@
 package models.api
 
 import models.submission.PartyType
+import play.api.libs.json.Json
 
 import java.time.LocalDate
-import play.api.libs.json.Json
 
 case class DailyQuota(date: LocalDate, partyType: PartyType, isEnrolled: Boolean, currentTotal: Int = 0)
 

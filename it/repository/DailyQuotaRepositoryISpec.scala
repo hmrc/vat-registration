@@ -4,7 +4,7 @@ package repository
 import itutil.{FakeTimeMachine, IntegrationStubbing}
 import models.api.DailyQuota
 import models.submission.UkCompany
-import play.api.libs.json.JsString
+import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,6 +42,17 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
 
       res mustBe 0
     }
+    "convert a daily record in the old format to the new format" in new Setup {
+      given.user.isAuthorised
+      await(dailyQuotaRepo.insert(DailyQuota(testDate, UkCompany, isEnrolled = true, currentTotal = 10)))
+      await(dailyQuotaRepo.findAndUpdate(Json.obj("date" -> testDate.toString), Json.obj("$unset" -> Json.obj("partyType" -> "", "isEnrolled" -> ""))))
+
+      val res = await(dailyQuotaRepo.currentTotal(UkCompany, isEnrolled = true))
+      val data = await(dailyQuotaRepo.find("date" -> JsString(testDate.toString)).map(_.headOption))
+
+      res mustBe 10
+      data mustBe Some(DailyQuota(testDate, UkCompany, true, 10))
+    }
   }
 
   "incrementTotal" must {
@@ -64,6 +75,17 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
 
       res mustBe 1
       data mustBe Some(DailyQuota(testDate, UkCompany, true, 1))
+    }
+    "convert a daily record in the old format to the new format" in new Setup {
+      given.user.isAuthorised
+      await(dailyQuotaRepo.insert(DailyQuota(testDate, UkCompany, isEnrolled = true, currentTotal = 1)))
+      await(dailyQuotaRepo.findAndUpdate(Json.obj("date" -> testDate.toString), Json.obj("$unset" -> Json.obj("partyType" -> "", "isEnrolled" -> ""))))
+
+      val res = await(dailyQuotaRepo.incrementTotal(UkCompany, isEnrolled = true))
+      val data = await(dailyQuotaRepo.find("date" -> JsString(testDate.toString)).map(_.headOption))
+
+      res mustBe 2
+      data mustBe Some(DailyQuota(testDate, UkCompany, true, 2))
     }
   }
 
