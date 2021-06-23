@@ -43,7 +43,7 @@ class DailyQuotaRepository @Inject()(mongo: ReactiveMongoComponent,
 
   override def indexes: Seq[Index] = Seq(
     Index(
-      name = Some("quotaDate"),
+      name = Some("quotaCompoundKey"),
       key = Seq(
         "date" -> IndexType.Ascending,
         "partyType" -> IndexType.Ascending,
