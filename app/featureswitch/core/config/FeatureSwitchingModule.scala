@@ -16,18 +16,18 @@
 
 package featureswitch.core.config
 
-import javax.inject.Singleton
+import featureswitch.core.models.FeatureSwitch
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
-import featureswitch.core.models.FeatureSwitch
+
+import javax.inject.Singleton
 
 @Singleton
 class FeatureSwitchingModule extends Module with FeatureSwitchRegistry {
 
   val switches = Seq(
     StubSubmission,
-    CheckYourAnswersNrsSubmission,
-    UseSubmissionAuditBuilders
+    CheckYourAnswersNrsSubmission
   )
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
@@ -45,9 +45,4 @@ case object StubSubmission extends FeatureSwitch {
 case object CheckYourAnswersNrsSubmission extends FeatureSwitch {
   override val configName: String = "feature-switch.check-your-answers-nrs-submission"
   override val displayName: String = "Use CYA HTML as payload for NRS"
-}
-
-case object UseSubmissionAuditBuilders extends FeatureSwitch {
-  override val configName: String = "feature-switch.use-submission-audit-builders"
-  override val displayName: String = "Use submission audit builders"
 }

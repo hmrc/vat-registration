@@ -20,18 +20,15 @@ import cats.instances.FutureInstances
 import common.exceptions._
 import connectors.VatSubmissionConnector
 import enums.VatRegStatus
-import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching, UseSubmissionAuditBuilders}
+import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching}
 import models.api.{Submitted, VatScheme}
-import models.monitoring.RegistrationSubmissionAuditing.RegistrationSubmissionAuditModel
-import models.monitoring.SubmissionAuditModel
-import models.submission.VatSubmission
 import play.api.Logging
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
 import repositories._
 import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
 import services.{NonRepudiationService, TrafficManagementService}
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{credentials, _}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, InternalServerException}
@@ -61,11 +58,10 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
     for {
       status <- getValidDocumentStatus(regId)
       ackRefs <- ensureAcknowledgementReference(regId, status)
-      oldSubmission <- buildOldSubmission(regId)
       vatScheme <- registrationRepository.retrieveVatScheme(regId)
         .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
       submission <- submissionPayloadBuilder.buildSubmissionPayload(regId)
-      _ <- submit(submission, vatScheme, oldSubmission, regId, userHeaders) // TODO refactor so this returns a value from the VatRegStatus enum or maybe an ADT
+      _ <- submit(submission, vatScheme, regId, userHeaders) // TODO refactor so this returns a value from the VatRegStatus enum or maybe an ADT
       _ <- registrationRepository.finishRegistrationSubmission(regId, VatRegStatus.submitted)
       _ <- trafficManagementService.updateStatus(regId, Submitted)
     } yield {
@@ -76,7 +72,6 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
   // scalastyle:off
   private[services] def submit(submission: JsObject,
                                vatScheme: VatScheme,
-                               oldSubmission: VatSubmission,
                                regId: String,
                                userHeaders: Map[String, String]
                               )(implicit hc: HeaderCarrier,
@@ -89,25 +84,14 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
       case Some(credentials) ~ Some(affinity) ~ optAgentCode =>
         vatSubmissionConnector.submit(submission, correlationId, credentials.providerId).map {
           response =>
-            if (isEnabled(UseSubmissionAuditBuilders)) {
-              auditService.audit(
-                submissionAuditBlockBuilder.buildAuditJson(
-                  vatScheme = vatScheme,
-                  authProviderId = credentials.providerId,
-                  affinityGroup = affinity,
-                  optAgentReferenceNumber = optAgentCode
-                )
-              )
-            }
-            else {
-              auditService.audit(RegistrationSubmissionAuditModel(
-                vatSubmission = oldSubmission,
-                regId = regId,
+            auditService.audit(
+              submissionAuditBlockBuilder.buildAuditJson(
+                vatScheme = vatScheme,
                 authProviderId = credentials.providerId,
                 affinityGroup = affinity,
                 optAgentReferenceNumber = optAgentCode
-              ))
-            }
+              )
+            )
 
             if (isEnabled(CheckYourAnswersNrsSubmission)) {
               val encodedHtml = vatScheme.nrsSubmissionPayload
@@ -121,7 +105,7 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
               nonRepudiationService.submitNonRepudiation(regId, payloadString, timeMachine.timestamp, postCode, userHeaders)
             }
             else {
-              val nonRepudiationPostcode = oldSubmission.businessContact.ppob.postcode.getOrElse("NoPostcodeSupplied")
+              val nonRepudiationPostcode = vatScheme.businessContact.flatMap(_.ppob.postcode).getOrElse("NoPostcodeSupplied")
               //TODO - Confirm what to send when postcode is not available
 
               nonRepudiationService.submitNonRepudiation(regId, Json.toJson(submission).toString, timeMachine.timestamp, nonRepudiationPostcode, userHeaders)
@@ -141,13 +125,6 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
           _ <- registrationRepository.prepareRegistrationSubmission(regId, newAckref, status)
         } yield newAckref
       )(ar => Future.successful(ar))
-      case _ => throw MissingRegDocument(regId)
-    }
-  }
-
-  private[services] def buildOldSubmission(regId: String): Future[VatSubmission] = {
-    registrationRepository.retrieveVatScheme(regId) map {
-      case Some(vatScheme) => VatSubmission.fromVatScheme(vatScheme)
       case _ => throw MissingRegDocument(regId)
     }
   }
