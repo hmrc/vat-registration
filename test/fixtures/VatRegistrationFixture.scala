@@ -18,10 +18,10 @@ package fixtures
 
 import common.TransactionId
 import enums.VatRegStatus
-import models.{LimitedCompany, SoleTrader}
 import models.api._
 import models.api.returns._
 import models.submission._
+import models.{LimitedCompany, SoleTrader}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -185,20 +185,6 @@ trait VatRegistrationFixture {
     confirmInformationDeclaration = Some(true),
     returns = Some(testReturns.copy(zeroRatedSupplies = Some(zeroRatedSupplies))),
     nrsSubmissionPayload = Some(testEncodedPayload)
-  )
-
-  lazy val testFullSubmission: VatSubmission = VatSubmission(
-    tradersPartyType = Some(UkCompany),
-    confirmInformationDeclaration = Some(true),
-    companyRegistrationNumber = Some("CRN"),
-    applicantDetails = validApplicantDetails,
-    bankDetails = Some(testBankAccount),
-    sicAndCompliance = testSicAndCompliance.get,
-    businessContact = testBusinessContact.get,
-    tradingDetails = validFullTradingDetails,
-    flatRateScheme = Some(validFullFRSDetails),
-    eligibilitySubmissionData = testEligibilitySubmissionData,
-    returns = testReturns
   )
 
   lazy val validBusinessContactJson: JsObject = Json.parse(

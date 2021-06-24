@@ -20,16 +20,14 @@ import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
 import common.exceptions._
 import enums.VatRegStatus
-import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching, UseSubmissionAuditBuilders}
-import fixtures.{SubmissionAuditFixture, VatRegistrationFixture, VatSubmissionFixture}
+import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching}
+import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import mocks.MockTrafficManagementService
 import mocks.monitoring.MockAuditService
 import models.api._
-import models.monitoring.RegistrationSubmissionAuditing.RegistrationSubmissionAuditModel
 import models.monitoring.SubmissionAuditModel
 import models.nonrepudiation.NonRepudiationSubmissionAccepted
-import models.submission.VatSubmission
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._
@@ -40,7 +38,6 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.monitoring.buildermocks.MockSubmissionAuditBlockBuilder
 import services.submission.buildermocks.MockSubmissionPayloadBuilder
-import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
@@ -99,184 +96,139 @@ class SubmissionServiceSpec extends VatRegSpec
   }
 
   "submitVatRegistration" when {
-    "the UserSubmissionAuditBuilders FS is disabled" should {
-      "successfully submit and return an acknowledgment reference" in new Setup {
-        disable(UseSubmissionAuditBuilders)
-        when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
-          .thenReturn(Future.successful(Some(testFullVatScheme)))
-        when(mockSequenceRepository.getNext(any())).thenReturn(Future.successful(100))
-        when(mockRegistrationMongoRepository.prepareRegistrationSubmission(anyString(), any(), any())).thenReturn(Future.successful(true))
-        when(mockRegistrationMongoRepository.saveTransId(any(), anyString())).thenReturn(Future.successful("transID"))
-        when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
-        when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any())).thenReturn(Future.successful(VatRegStatus.submitted))
-        mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
-        when(mockTimeMachine.timestamp).thenReturn(testDateTime)
-        when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testRegId)).thenReturn(Future.successful(vatSubmissionVoluntaryJson.as[JsObject]))
-        val nonRepudiationPayloadString: String = Json.toJson(vatSubmissionVoluntaryJson).toString()
-        val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+    "successfully submit and return an acknowledgment reference" in new Setup {
+      when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
+        .thenReturn(Future.successful(Some(testFullVatScheme)))
+      when(mockSequenceRepository.getNext(any())).thenReturn(Future.successful(100))
+      when(mockRegistrationMongoRepository.prepareRegistrationSubmission(anyString(), any(), any())).thenReturn(Future.successful(true))
+      when(mockRegistrationMongoRepository.saveTransId(any(), anyString())).thenReturn(Future.successful("transID"))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
+      when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any())).thenReturn(Future.successful(VatRegStatus.submitted))
+      mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
+      when(mockTimeMachine.timestamp).thenReturn(testDateTime)
+      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testRegId)).thenReturn(Future.successful(vatSubmissionVoluntaryJson.as[JsObject]))
+      val nonRepudiationPayloadString: String = Json.toJson(vatSubmissionVoluntaryJson).toString()
+      val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
 
+      when(mockNonRepudiationService.submitNonRepudiation(
+        ArgumentMatchers.eq(testRegId),
+        ArgumentMatchers.eq(nonRepudiationPayloadString),
+        ArgumentMatchers.eq(testDateTime),
+        ArgumentMatchers.eq(testPostcode),
+        ArgumentMatchers.eq(testUserHeaders)
+      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)))
 
-        when(mockNonRepudiationService.submitNonRepudiation(
+      mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
+        Future.successful(
+          Some(testCredentials) ~ Some(testAffinityGroup) ~ None
+        )
+      )
+
+      await(service.submitVatRegistration(testRegId, testUserHeaders)) mustBe "BRVT00000000100"
+      eventually {
+        verifyAudit(SubmissionAuditModel(
+          detailBlockAnswers,
+          testFullVatScheme,
+          testProviderId,
+          testAffinityGroup,
+          None
+        ))
+        verify(mockNonRepudiationService).submitNonRepudiation(
           ArgumentMatchers.eq(testRegId),
           ArgumentMatchers.eq(nonRepudiationPayloadString),
           ArgumentMatchers.eq(testDateTime),
           ArgumentMatchers.eq(testPostcode),
           ArgumentMatchers.eq(testUserHeaders)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)))
-
-        mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
-          Future.successful(
-            Some(testCredentials) ~ Some(testAffinityGroup) ~ None
-          )
-        )
-
-        await(service.submitVatRegistration(testRegId, testUserHeaders)) mustBe "BRVT00000000100"
-        eventually {
-          verifyAudit(RegistrationSubmissionAuditModel(
-            testFullSubmission,
-            testRegId,
-            testProviderId,
-            testAffinityGroup,
-            None
-          ))
-          verify(mockNonRepudiationService).submitNonRepudiation(
-            ArgumentMatchers.eq(testRegId),
-            ArgumentMatchers.eq(nonRepudiationPayloadString),
-            ArgumentMatchers.eq(testDateTime),
-            ArgumentMatchers.eq(testPostcode),
-            ArgumentMatchers.eq(testUserHeaders)
-          )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-        }
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
       }
+    }
 
-      "successfully submit and return an acknowledgment reference when the new NRS payload feature switch is enabled" in new Setup {
-        disable(UseSubmissionAuditBuilders)
-        enable(CheckYourAnswersNrsSubmission)
-        when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
-          .thenReturn(Future.successful(Some(testFullVatScheme)))
-        when(mockSequenceRepository.getNext(any())).thenReturn(Future.successful(100))
-        when(mockRegistrationMongoRepository.prepareRegistrationSubmission(anyString(), any(), any())).thenReturn(Future.successful(true))
-        when(mockRegistrationMongoRepository.saveTransId(any(), anyString())).thenReturn(Future.successful("transID"))
-        when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
-        when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any())).thenReturn(Future.successful(VatRegStatus.submitted))
-        mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
-        when(mockTimeMachine.timestamp).thenReturn(testDateTime)
-        when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testRegId)).thenReturn(Future.successful(vatSubmissionVoluntaryJson.as[JsObject]))
-        val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+    "successfully submit and return an acknowledgment reference when the new NRS payload feature switch is enabled" in new Setup {
+      enable(CheckYourAnswersNrsSubmission)
 
-        when(mockNonRepudiationService.submitNonRepudiation(
+      when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
+        .thenReturn(Future.successful(Some(testFullVatScheme)))
+      when(mockSequenceRepository.getNext(any())).thenReturn(Future.successful(100))
+      when(mockRegistrationMongoRepository.prepareRegistrationSubmission(anyString(), any(), any())).thenReturn(Future.successful(true))
+      when(mockRegistrationMongoRepository.saveTransId(any(), anyString())).thenReturn(Future.successful("transID"))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
+      when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any())).thenReturn(Future.successful(VatRegStatus.submitted))
+      mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
+      when(mockTimeMachine.timestamp).thenReturn(testDateTime)
+      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testRegId)).thenReturn(Future.successful(vatSubmissionVoluntaryJson.as[JsObject]))
+      val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+
+      when(mockNonRepudiationService.submitNonRepudiation(
+        ArgumentMatchers.eq(testRegId),
+        ArgumentMatchers.eq(testSubmissionPayload),
+        ArgumentMatchers.eq(testDateTime),
+        ArgumentMatchers.eq(testPostcode),
+        ArgumentMatchers.eq(testUserHeaders)
+      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)))
+
+      mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
+        Future.successful(
+          Some(testCredentials) ~ Some(testAffinityGroup) ~ None
+        )
+      )
+
+      await(service.submitVatRegistration(testRegId, testUserHeaders)) mustBe "BRVT00000000100"
+      eventually {
+        verifyAudit(SubmissionAuditModel(
+          detailBlockAnswers,
+          testFullVatScheme,
+          testProviderId,
+          testAffinityGroup,
+          None
+        ))
+        verify(mockNonRepudiationService).submitNonRepudiation(
           ArgumentMatchers.eq(testRegId),
           ArgumentMatchers.eq(testSubmissionPayload),
           ArgumentMatchers.eq(testDateTime),
           ArgumentMatchers.eq(testPostcode),
           ArgumentMatchers.eq(testUserHeaders)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)))
-
-        mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
-          Future.successful(
-            Some(testCredentials) ~ Some(testAffinityGroup) ~ None
-          )
-        )
-
-        await(service.submitVatRegistration(testRegId, testUserHeaders)) mustBe "BRVT00000000100"
-        eventually {
-          verifyAudit(RegistrationSubmissionAuditModel(
-            testFullSubmission,
-            testRegId,
-            testProviderId,
-            testAffinityGroup,
-            None
-          ))
-          verify(mockNonRepudiationService).submitNonRepudiation(
-            ArgumentMatchers.eq(testRegId),
-            ArgumentMatchers.eq(testSubmissionPayload),
-            ArgumentMatchers.eq(testDateTime),
-            ArgumentMatchers.eq(testPostcode),
-            ArgumentMatchers.eq(testUserHeaders)
-          )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-        }
-      }
-    }
-    "the UserSubmissionAuditBuilders FS is enabled" should {
-      "successfully submit and return an acknowledgment reference" in new Setup {
-        enable(UseSubmissionAuditBuilders)
-        when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
-          .thenReturn(Future.successful(Some(testFullVatScheme)))
-        when(mockSequenceRepository.getNext(any())).thenReturn(Future.successful(100))
-        when(mockRegistrationMongoRepository.prepareRegistrationSubmission(anyString(), any(), any())).thenReturn(Future.successful(true))
-        when(mockRegistrationMongoRepository.saveTransId(any(), anyString())).thenReturn(Future.successful("transID"))
-        when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
-        when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any())).thenReturn(Future.successful(VatRegStatus.submitted))
-        mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
-        mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
-        when(mockTimeMachine.timestamp).thenReturn(testDateTime)
-        when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testRegId)).thenReturn(Future.successful(vatSubmissionVoluntaryJson.as[JsObject]))
-        val nonRepudiationPayloadString: String = Json.toJson(vatSubmissionVoluntaryJson).toString()
-        val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
-
-        when(mockNonRepudiationService.submitNonRepudiation(
-          ArgumentMatchers.eq(testRegId),
-          ArgumentMatchers.eq(nonRepudiationPayloadString),
-          ArgumentMatchers.eq(testDateTime),
-          ArgumentMatchers.eq(testPostcode),
-          ArgumentMatchers.eq(testUserHeaders)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)))
-
-        mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
-          Future.successful(
-            Some(testCredentials) ~ Some(testAffinityGroup) ~ None
-          )
-        )
-
-        await(service.submitVatRegistration(testRegId, testUserHeaders)) mustBe "BRVT00000000100"
-        eventually {
-          verifyAudit(SubmissionAuditModel(
-            detailBlockAnswers,
-            testFullVatScheme,
-            testProviderId,
-            testAffinityGroup,
-            None
-          ))
-        }
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
       }
     }
   }
 
   "submit" should {
     "return a 200 response and successfully audit when all calls succeed" in new Setup {
-      disable(UseSubmissionAuditBuilders)
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
       mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
         Future.successful(
           Some(testCredentials) ~ Some(testAffinityGroup) ~ None
         )
       )
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testVatScheme, testFullSubmission, testRegId, testUserHeaders)).status mustBe OK
-      verifyAudit(RegistrationSubmissionAuditModel(
-        testFullSubmission,
-        testRegId,
+      await(service.submit(vatSubmissionJson.as[JsObject], testFullVatScheme, testRegId, testUserHeaders)).status mustBe OK
+      verifyAudit(SubmissionAuditModel(
+        detailBlockAnswers,
+        testFullVatScheme,
         testProviderId,
-        AffinityGroup.Organisation,
+        testAffinityGroup,
         None
       ))
     }
 
     "return a 502 response and successfully audit when submission fails with a 502" in new Setup {
-      disable(UseSubmissionAuditBuilders)
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(502, "{}")))
       mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
         Future.successful(
           Some(testCredentials) ~ Some(testAffinityGroup) ~ None
         )
       )
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testVatScheme, testFullSubmission, testRegId, testUserHeaders)).status mustBe BAD_GATEWAY
-      verifyAudit(RegistrationSubmissionAuditModel(
-        testFullSubmission,
-        testRegId,
+      await(service.submit(vatSubmissionJson.as[JsObject], testFullVatScheme, testRegId, testUserHeaders)).status mustBe BAD_GATEWAY
+      verifyAudit(SubmissionAuditModel(
+        detailBlockAnswers,
+        testFullVatScheme,
         testProviderId,
-        AffinityGroup.Organisation,
+        testAffinityGroup,
         None
       ))
     }
@@ -344,39 +296,4 @@ class SubmissionServiceSpec extends VatRegSpec
       await(service.getValidDocumentStatus(testRegId)) mustBe VatRegStatus.draft
     }
   }
-
-  "Calling buildOldSubmission" should {
-    "successfully create a full submission model" in new Setup {
-      when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.eq(testRegId)))
-        .thenReturn(Future.successful(Some(testFullVatScheme)))
-
-      await(service.buildOldSubmission(testRegId)) mustBe testFullSubmission
-    }
-
-    "successfully create a partial submission model" in new Setup {
-      val partialScheme: VatScheme = testFullVatScheme.copy(bankAccount = None, flatRateScheme = None)
-      val partialDESSubmission: VatSubmission = testFullSubmission.copy(bankDetails = None, flatRateScheme = None)
-
-      when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
-        .thenReturn(Future.successful(Some(partialScheme)))
-
-      await(service.buildOldSubmission(testRegId)) mustBe partialDESSubmission
-    }
-
-    "throw a MissingRegDocument exception when there is no registration in mongo" in new Setup {
-      when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
-        .thenReturn(Future.successful(None))
-      intercept[MissingRegDocument](await(service.buildOldSubmission(testRegId)))
-    }
-
-    "throw a IllegalStateException when the vat scheme doesn't contain returns" in new Setup {
-      val vatSchemeNoTradingDetails: VatScheme = VatScheme(testRegId, testInternalid, None, None, None, status = VatRegStatus.draft)
-
-      when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
-        .thenReturn(Future.successful(Some(vatSchemeNoTradingDetails)))
-
-      intercept[IllegalStateException](await(service.buildOldSubmission(testRegId)))
-    }
-  }
-
 }
