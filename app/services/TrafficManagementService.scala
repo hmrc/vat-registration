@@ -49,8 +49,8 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       currentTotal <- dailyQuotaRepository.currentTotal(partyType, isEnrolled)
       canAllocate = currentTotal < dailyQuota(partyType, isEnrolled) && isWithinOpeningHours
       _ <- if (canAllocate) {
-          trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, VatReg, timeMachine.today)
-            .flatMap(_ => dailyQuotaRepository.incrementTotal(partyType, isEnrolled))
+        dailyQuotaRepository.incrementTotal(partyType, isEnrolled).flatMap(_ =>
+          trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, VatReg, timeMachine.today))
         } else {
           trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, OTRS, timeMachine.today)
         }

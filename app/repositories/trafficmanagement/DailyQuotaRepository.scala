@@ -40,6 +40,11 @@ class DailyQuotaRepository @Inject()(mongo: ReactiveMongoComponent,
     domainFormat = DailyQuota.format
   ) {
 
+  override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] = {
+    collection.indexesManager.dropAll()
+    super.ensureIndexes
+  }
+
   private val defaultQuota = 0
 
   override def indexes: Seq[Index] = Seq(
