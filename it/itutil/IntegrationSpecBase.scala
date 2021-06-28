@@ -68,7 +68,8 @@ trait IntegrationSpecBase extends PlaySpec
     "traffic-management.quotas.uk-company" -> "1",
     "traffic-management.quotas.sole-trader" -> "1",
     "traffic-management.hours.from" -> "9",
-    "traffic-management.hours.until" -> "17"
+    "traffic-management.hours.until" -> "17",
+    "traffic-management.quotas.time-to-live" -> "86400"
   ) ++ additionalConfig
 
 

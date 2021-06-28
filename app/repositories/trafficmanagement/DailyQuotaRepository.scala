@@ -16,13 +16,14 @@
 
 package repositories.trafficmanagement
 
+import config.BackendConfig
 import models.api.DailyQuota
 import models.submission.PartyType
 import models.submission.PartyType.toJsString
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.bson.BSONObjectID
+import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import uk.gov.hmrc.mongo.ReactiveRepository
 import utils.TimeMachine
 
@@ -32,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DailyQuotaRepository @Inject()(mongo: ReactiveMongoComponent,
                                      timeMachine: TimeMachine)
-                                    (implicit ec: ExecutionContext)
+                                    (implicit ec: ExecutionContext, backendConfig: BackendConfig)
   extends ReactiveRepository[DailyQuota, BSONObjectID](
     collectionName = "daily-quota",
     mongo = mongo.mongoConnector.db,
@@ -43,13 +44,20 @@ class DailyQuotaRepository @Inject()(mongo: ReactiveMongoComponent,
 
   override def indexes: Seq[Index] = Seq(
     Index(
-      name = Some("quotaDate"),
+      name = Some("compoundQuotaIndex"),
       key = Seq(
         "date" -> IndexType.Ascending,
         "partyType" -> IndexType.Ascending,
         "isEnrolled" -> IndexType.Ascending
       ),
       unique = true
+    ),
+    Index(
+      name = Some("lastModified"),
+      key = Seq("date" -> IndexType.Ascending),
+      options = BSONDocument {
+        "expireAfterSeconds" -> backendConfig.dailyQuotaExpiryInSeconds
+      }
     )
   )
 
