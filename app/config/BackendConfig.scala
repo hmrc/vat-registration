@@ -58,7 +58,6 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
   lazy val nonRepudiationApiKey: String = servicesConfig.getString("microservice.services.non-repudiation.api-key")
 
   lazy val expiryInSeconds: String = servicesConfig.getString("cache.expiryInSeconds")
-
-
+  lazy val dailyQuotaExpiryInSeconds: Int = servicesConfig.getInt("traffic-management.quotas.time-to-live")
 
 }
