@@ -76,7 +76,7 @@ object EligibilitySubmissionData {
         ) and
         json.validate[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads) and
         json.validate[CustomerStatus](CustomerStatus.eligibilityDataJsonReads) and
-        json.validate[PartyType](PartyType.eligibilityDataJsonReads)
+        (json \ "businessEntity-value").validate[PartyType]
       ) (EligibilitySubmissionData.apply _)
   }
 
