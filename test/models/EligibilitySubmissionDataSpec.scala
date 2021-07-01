@@ -45,7 +45,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> true),
         Json.obj("questionId" -> "businessEntity-value", "question" -> "testQuestion", "answer" -> "testQuestion",
-          "answerValue" -> "uk-company")
+          "answerValue" -> "50")
       )
       val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
       val testEligibilityJson: JsObject = Json.obj("sections" -> section)
