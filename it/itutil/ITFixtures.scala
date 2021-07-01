@@ -96,6 +96,8 @@ trait ITFixtures {
   val testDateOfIncorp = LocalDate.of(2020, 1, 2)
   val testBpSafeId = "testBpSafeId"
   val testWebsite = "www.foo.com"
+  lazy val testFirstName = "testFirstName"
+  lazy val testLastName = "testLastName"
 
   val testUnregisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
     transactor = TransactorDetails(
@@ -146,6 +148,10 @@ trait ITFixtures {
   val testRegisteredSoleTraderApplicantDetails: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
       entity = SoleTrader(
+        testFirstName,
+        testLastName,
+        testDate,
+        testNino,
         sautr = Some(testSaUtr),
         bpSafeId = Some(testBpSafeId),
         businessVerification = BvPass,

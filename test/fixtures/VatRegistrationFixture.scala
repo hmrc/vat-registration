@@ -65,6 +65,8 @@ trait VatRegistrationFixture {
   lazy val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None)
   lazy val zeroRatedSupplies: BigDecimal = 12.99
   lazy val testBpSafeId = "testBpSafeId"
+  lazy val testFirstName = "testFirstName"
+  lazy val testLastName = "testLastName"
 
   lazy val testProviderId: String = "testProviderID"
   lazy val testProviderType: String = "GovernmentGateway"
@@ -94,6 +96,10 @@ trait VatRegistrationFixture {
   )
 
   val testSoleTraderEntity = SoleTrader(
+    testFirstName,
+    testLastName,
+    testDate,
+    testNino,
     sautr = Some(testUtr),
     businessVerification = BvPass,
     registration = FailedStatus,

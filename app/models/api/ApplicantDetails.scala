@@ -16,7 +16,7 @@
 
 package models.api
 
-import models.{BusinessEntity, LimitedCompany, SoleTrader}
+import models.{BusinessEntity, GeneralPartnership, LimitedCompany, SoleTrader}
 import models.submission.{CustomerId, IdVerified, NinoIdType, RoleInBusiness}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -52,14 +52,17 @@ object ApplicantDetails extends VatApplicantDetailsValidator
 
   private def parseToEntity(json: JsValue): BusinessEntity =
     canParseTo[LimitedCompany] orElse
-    canParseTo[SoleTrader] apply
+    canParseTo[SoleTrader] orElse
+    canParseTo[GeneralPartnership] apply
     json
 
   private def writeEntityToJson(entity: BusinessEntity): JsValue = entity match {
     case ltdCo @ LimitedCompany(_, _, _, _, _, _, _, _, _) =>
       Json.toJson(ltdCo)
-    case soleTrader @ SoleTrader(_, _, _, _, _) =>
+    case soleTrader @ SoleTrader(_, _, _, _, _, _, _, _, _) =>
       Json.toJson(soleTrader)
+    case generalPartnership @ GeneralPartnership(_, _, _, _, _, _) =>
+      Json.toJson(generalPartnership)
     case _ =>
       throw new InternalServerException("Unsupported entity")
   }
