@@ -29,16 +29,26 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
     "parse successfully if the entity is a Ltd Co" in {
       writeAndRead(validApplicantDetails) resultsIn validApplicantDetails
     }
+
     "parse successfully if the entity is a Sole Trader" in {
-      val soleTraderAppDetails = validApplicantDetails.copy(entity = SoleTrader(Some(testUtr), Some(testBpSafeId), BvPass, RegisteredStatus, identifiersMatch = true))
+      val soleTraderAppDetails = validApplicantDetails.copy(
+        entity = testSoleTraderEntity
+      )
       writeAndRead(soleTraderAppDetails) resultsIn soleTraderAppDetails
+    }
+
+    "parse successfully if the entity is a General Partnership" in {
+      val generalPartnershipAppDetails = validApplicantDetails.copy(
+        entity = GeneralPartnership(Some(testUtr), Some(testPostcode), Some(testBpSafeId), BvPass, RegisteredStatus, identifiersMatch = true)
+      )
+      writeAndRead(generalPartnershipAppDetails) resultsIn generalPartnershipAppDetails
     }
   }
 
   "Creating a Json from an invalid VatApplicantDetails model" ignore {
     "fail with a JsonValidationError" when {
       "NINO is invalid" in {
-        val applicantDetails = validApplicantDetails.copy(transactor = validApplicantDetails.transactor.copy(nino = "NB888" ))
+        val applicantDetails = validApplicantDetails.copy(transactor = validApplicantDetails.transactor.copy(nino = "NB888"))
         writeAndRead(applicantDetails) shouldHaveErrors (JsPath() \ "transactor" \ "nino" -> JsonValidationError("error.pattern"))
       }
 

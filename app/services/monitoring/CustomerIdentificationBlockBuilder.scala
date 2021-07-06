@@ -39,7 +39,7 @@ class CustomerIdentificationBlockBuilder {
                   "companyRegistrationNumber" -> companyNumber,
                   "ctUTR" -> ctutr
                 )
-              case SoleTrader(utr, _, _, _, _) =>
+              case SoleTrader(_, _, _, _, utr, _, _, _, _) =>
                 Json.obj(
                   "saUTR" -> utr
                 )

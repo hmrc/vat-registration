@@ -78,7 +78,11 @@ object LimitedCompany {
 }
 
 
-case class SoleTrader(sautr: Option[String] = None,
+case class SoleTrader(firstName: String,
+                      lastName: String,
+                      dateOfBirth: LocalDate,
+                      nino: String,
+                      sautr: Option[String] = None,
                       bpSafeId: Option[String] = None,
                       businessVerification: BusinessVerificationStatus,
                       registration: BusinessRegistrationStatus,
@@ -97,4 +101,26 @@ case class SoleTrader(sautr: Option[String] = None,
 
 object SoleTrader {
   implicit val format: Format[SoleTrader] = Json.format[SoleTrader]
+}
+
+case class GeneralPartnership(sautr: Option[String],
+                              postCode: Option[String],
+                              bpSafeId: Option[String] = None,
+                              businessVerification: BusinessVerificationStatus,
+                              registration: BusinessRegistrationStatus,
+                              identifiersMatch: Boolean) extends BusinessEntity {
+
+  override def identifiers: List[CustomerId] =
+    List(sautr.map(utr =>
+      CustomerId(
+        idValue = utr,
+        idType = UtrIdType,
+        IDsVerificationStatus = idVerificationStatus
+      )
+    )).flatten
+
+}
+
+object GeneralPartnership {
+  implicit val format: Format[GeneralPartnership] = Json.format[GeneralPartnership]
 }
