@@ -21,6 +21,7 @@ import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.StringNormaliser
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,9 +40,9 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
       jsonObject(
         "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map(_.partyType),
         optional("shortOrgName" -> Option(applicantDetails.entity).collect {
-          case LimitedCompany(companyName, _, _, _, None, _, _, _, _) => companyName //Don't send company name when safeId is present
+          case LimitedCompany(companyName, _, _, _, None, _, _, _, _) => StringNormaliser.normaliseString(companyName) //Don't send company name when safeId is present
         }),
-        optional("tradingName" -> tradingDetails.tradingName)
+        optional("tradingName" -> tradingDetails.tradingName.map(StringNormaliser.normaliseString))
       ) ++ {
         applicantDetails.entity.bpSafeId match {
           case Some(bpSafeId) =>
