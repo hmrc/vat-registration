@@ -21,7 +21,7 @@ import enums.VatRegStatus
 import models.api._
 import models.api.returns._
 import models.submission._
-import models.{LimitedCompany, SoleTrader}
+import models.{GeneralPartnership, LimitedCompany, SoleTrader}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -103,6 +103,15 @@ trait VatRegistrationFixture {
     sautr = Some(testUtr),
     businessVerification = BvPass,
     registration = FailedStatus,
+    identifiersMatch = true
+  )
+
+  val testGeneralPartnershipEntity = GeneralPartnership(
+    Some(testUtr),
+    Some(testPostcode),
+    Some(testBpSafeId),
+    businessVerification = BvPass,
+    registration = RegisteredStatus,
     identifiersMatch = true
   )
 
