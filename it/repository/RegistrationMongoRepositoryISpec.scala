@@ -47,8 +47,10 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     await(repository.ensureIndexes)
   }
 
+  val ACK_REF_NUM = "REF0000001"
   val registrationId: String = "reg-12345"
   val otherRegId = "other-reg-12345"
+  val jsonEligiblityData = Json.obj("foo" -> "bar")
 
   def vatSchemeJson(regId: String = registrationId): JsObject = Json.parse(
     s"""
@@ -111,7 +113,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     """.stripMargin).as[JsObject]
 
   "Calling createNewVatScheme" should {
-
     "create a new, blank VatScheme with the correct ID" in new Setup {
       await(repository.createNewVatScheme(testRegId, testInternalid)) mustBe vatScheme
     }
@@ -124,13 +125,11 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       intercept[InsertFailed](await(repository.createNewVatScheme(vatScheme.id, "fooBarWizz")))
     }
   }
-
   "Calling insertVatScheme" should {
     "insert the VatScheme object" in new Setup {
       await(repository.insertVatScheme(testFullVatScheme)) mustBe testFullVatScheme
       await(repository.retrieveVatScheme(testRegId)) mustBe Some(testFullVatScheme)
     }
-
     "override a VatScheme with the same regId" in new Setup {
       await(repository.insertVatScheme(testVatScheme)) mustBe testVatScheme
       await(repository.retrieveVatScheme(testRegId)) mustBe Some(testVatScheme)
@@ -139,26 +138,19 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       await(repository.retrieveVatScheme(testRegId)) mustBe Some(testFullVatScheme)
     }
   }
-
   "Calling retrieveVatScheme" should {
-
     "retrieve a VatScheme object" in new Setup {
       repository.insert(vatScheme).flatMap(_ => repository.retrieveVatScheme(vatScheme.id)) returns Some(vatScheme)
     }
-
     "return a None when there is no corresponding VatScheme object" in new Setup {
       repository.insert(vatScheme).flatMap(_ => repository.retrieveVatScheme("fakeRegId")) returns None
     }
   }
-
   "Calling deleteVatScheme" should {
-
     "delete a VatScheme object" in new Setup {
       repository.insert(vatScheme).flatMap(_ => repository.deleteVatScheme(vatScheme.id)) returns true
     }
   }
-
-
   "Calling clearDownScheme" should {
     "clear any optional data from the vat scheme object" in new Setup {
       await(repository.insert(testFullVatSchemeWithUnregisteredBusinessPartner))
@@ -173,23 +165,17 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       await(repository.retrieveVatScheme(testRegId)) mustBe None
     }
   }
-
-
-  val ACK_REF_NUM = "REF0000001"
   "Calling updateByElement" should {
-
     "update Element object when one exists" in new Setup {
       val schemeWithAckRefNumber: VatScheme = vatScheme.copy(acknowledgementReference = Some(ACK_REF_NUM))
       repository.insert(schemeWithAckRefNumber).flatMap(_ => repository.updateByElement(vatScheme.id,
         AcknowledgementReferencePath, ACK_REF_NUM)) returns ACK_REF_NUM
     }
-
     "return a None when there is no corresponding VatScheme object" in new Setup {
       repository.insert(vatScheme).flatMap(_ => repository.updateByElement("fakeRegId",
         AcknowledgementReferencePath, ACK_REF_NUM)) failedWith classOf[UpdateFailed]
     }
   }
-
   "Calling prepareRegistrationSubmission" should {
     val testAckRef = "testAckRef"
     "update the vat scheme with the provided ackref" in new Setup {
@@ -201,7 +187,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe(VatRegStatus.locked, Some(testAckRef))
     }
-
     "update the vat scheme with the provided ackref on a topup" in new Setup {
       val result: Future[(VatRegStatus.Value, Option[String])] = for {
         insert <- repository.insert(vatScheme)
@@ -212,7 +197,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       await(result) mustBe(VatRegStatus.held, Some(testAckRef))
     }
   }
-
   "Calling finishRegistrationSubmission" should {
     "update the vat scheme to submitted with the provided ackref" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
@@ -223,7 +207,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe VatRegStatus.submitted
     }
-
     "update the vat scheme to held with the provided ackref" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
         insert <- repository.insert(vatScheme)
@@ -234,7 +217,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       await(result) mustBe VatRegStatus.held
     }
   }
-
   "Calling saveTransId" should {
     "store the transaction id provided into the specified vat scheme document" in new Setup {
       val testTransId = "testTransId"
@@ -248,7 +230,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       await(result).get mustBe TransactionId(testTransId)
     }
   }
-
   "Calling fetchRegIdByTxId" should {
     "retrieve the vat scheme by transactionid" in new Setup {
       val testTransId = "testTransId"
@@ -262,9 +243,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       await(result) mustBe vatScheme.copy(transactionId = Some(TransactionId(testTransId)))
     }
   }
-
   "updateTradingDetails" should {
-
     val tradingDetails = TradingDetails(Some("trading-name"), true)
 
     "update tradingDetails block in registration when there is no tradingDetails data" in new Setup {
@@ -276,7 +255,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe Some(tradingDetails)
     }
-
     "update tradingDetails block in registration when there is already tradingDetails data" in new Setup {
       val result: Future[Option[TradingDetails]] = for {
         _ <- repository.insert(vatScheme.copy(tradingDetails = Some(tradingDetails)))
@@ -286,7 +264,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe Some(tradingDetails)
     }
-
     "not update or insert tradingDetails if registration does not exist" in new Setup {
       await(repository.insert(vatScheme))
 
@@ -296,9 +273,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       a[MissingRegDocument] mustBe thrownBy(await(repository.updateTradingDetails("wrongRegId", tradingDetails)))
     }
   }
-
   "Calling retrieveTradingDetails" should {
-
     val tradingDetails = TradingDetails(Some("trading-name"), true)
 
     "return trading details data from an existing registration containing data" in new Setup {
@@ -309,7 +284,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe Some(tradingDetails)
     }
-
     "return None from an existing registration containing no data" in new Setup {
       val result: Future[Option[TradingDetails]] = for {
         _ <- repository.insert(vatScheme)
@@ -318,7 +292,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe None
     }
-
     "throw a MissingRegDocument for a none existing registration" in new Setup {
       val result: Future[Option[TradingDetails]] = for {
         _ <- repository.insert(vatScheme.copy(tradingDetails = Some(tradingDetails)))
@@ -328,9 +301,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       a[MissingRegDocument] mustBe thrownBy(await(result))
     }
   }
-
   "fetchBankAccount" should {
-
     "return a BankAccount case class if one is found in mongo with the supplied regId" in new Setup {
       insert(vatSchemeWithBankAccount)
 
@@ -338,13 +309,11 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchedBankAccount mustBe Some(bankAccount)
     }
-
     "return a None if a VatScheme already exists but a bank account block does not" in new Setup {
       insert(vatSchemeJson(registrationId))
       val fetchedBankAccount: Option[BankAccount] = await(repository.fetchBankAccount(registrationId))
       fetchedBankAccount mustBe None
     }
-
     "return None if no BankAccount is found in mongo for the supplied regId" in new Setup {
       count mustBe 0
 
@@ -352,7 +321,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchedBankAccount mustBe None
     }
-
     "return None if other users' data exists but no BankAccount is found in mongo for the supplied regId" in new Setup {
       insert(otherUsersVatScheme)
 
@@ -361,9 +329,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       fetchedBankAccount mustBe None
     }
   }
-
   "updateBankAccount" should {
-
     "update the registration doc with the provided bank account details and encrypt the account number" in new Setup {
       insert(vatSchemeJson())
 
@@ -371,7 +337,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchAll without _id mustBe Some(vatSchemeWithBankAccount)
     }
-
     "not update or insert new data into the registration doc if the supplied bank account details already exist on the doc" in new Setup {
       insert(vatSchemeWithBankAccount)
 
@@ -379,7 +344,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchAll without _id mustBe Some(vatSchemeWithBankAccount)
     }
-
     "not update or insert returns if a registration doc doesn't already exist" in new Setup {
       count mustBe 0
 
@@ -387,7 +351,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchAll without _id mustBe None
     }
-
     "not update or insert returns if a registration doc associated with the given reg id doesn't already exist" in new Setup {
       insert(otherUsersVatScheme)
 
@@ -398,7 +361,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       fetchAll without _id mustBe Some(otherUsersVatScheme)
     }
   }
-
   "fetchReturns" should {
     "return a Returns case class if one is found in mongo with the supplied regId" in new Setup {
       insert(vatSchemeWithReturns)
@@ -407,7 +369,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchedReturns mustBe Some(testReturns)
     }
-
     "return None if no BankAccount is found in mongo for the supplied regId" in new Setup {
       count mustBe 0
 
@@ -416,19 +377,13 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       fetchedReturns mustBe None
     }
   }
-
   "updateReturns" should {
-
     val registrationId: String = "reg-12345"
-
     val otherRegId = "other-reg-12345"
     val otherUsersVatScheme = vatSchemeJson(otherRegId)
-
     val dateValue = LocalDate of(1990, 10, 10)
     val startDate = dateValue
-
     val returns: Returns = Returns(Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None)
-
     val vatSchemeWithReturns = Json.parse(
       s"""
          |{
@@ -451,7 +406,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchAll without _id mustBe Some(vatSchemeWithReturns)
     }
-
     "not update or insert new data into the registration doc if the supplied returns already exist on the doc" in new Setup {
       insert(vatSchemeWithReturns)
 
@@ -459,7 +413,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchAll without _id mustBe Some(vatSchemeWithReturns)
     }
-
     "not update or insert returns if a registration doc doesn't already exist" in new Setup {
       count mustBe 0
 
@@ -467,7 +420,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       fetchAll without _id mustBe None
     }
-
     "not update or insert returns if a registration doc associated with the given reg id doesn't already exist" in new Setup {
       insert(otherUsersVatScheme)
 
@@ -478,7 +430,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       fetchAll without _id mustBe Some(otherUsersVatScheme)
     }
   }
-
   "calling getSicAndCompliance" should {
     val validSicAndCompliance = Some(SicAndCompliance(
       "this is my business description",
@@ -631,7 +582,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       a[MissingRegDocument] mustBe thrownBy(await(result))
     }
   }
-
   "fetchFlatRateScheme" should {
     "return flat rate scheme data from an existing registration containing data" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
@@ -641,7 +591,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe Some(testFlatRateScheme)
     }
-
     "return None from an existing registration containing no data" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
         _ <- repository.insert(vatScheme)
@@ -650,7 +599,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe None
     }
-
     "throw a MissingRegDocument for a none existing registration" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
         _ <- repository.insert(vatScheme.copy(flatRateScheme = Some(testFlatRateScheme)))
@@ -660,9 +608,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       a[MissingRegDocument] mustBe thrownBy(await(result))
     }
   }
-
   "updateFlatRateScheme" should {
-
     "update flat rate scheme block in registration when there is no flat rate scheme data" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
         _ <- repository.insert(vatScheme)
@@ -672,7 +618,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe Some(testFlatRateScheme)
     }
-
     "update flat rate scheme block in registration when there is already flat rate scheme data" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
         _ <- repository.insert(vatScheme.copy(flatRateScheme = Some(testFlatRateScheme)))
@@ -682,7 +627,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe Some(testFlatRateScheme)
     }
-
     "not update or insert flat rate scheme if registration does not exist" in new Setup {
       await(repository.insert(vatScheme))
 
@@ -692,7 +636,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       a[MissingRegDocument] mustBe thrownBy(await(repository.updateFlatRateScheme("wrongRegId", testFlatRateScheme)))
     }
   }
-
   "removeFlatRateScheme" should {
     "remove a flatRateScheme block in the registration document if it exists in the registration doc" in new Setup {
       val result: Future[Option[VatScheme]] = for {
@@ -703,12 +646,10 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe Some(vatScheme)
     }
-
     "throw a MissingRegDocument if the vat scheme does not exist for the regId" in new Setup {
       a[MissingRegDocument] mustBe thrownBy(await(repository.removeFlatRateScheme(vatScheme.id)))
     }
   }
-
   "getInternalId" should {
     "return a Future[Option[String]] containing Some(InternalId)" in new Setup {
       val result: Future[Option[String]] = for {
@@ -718,7 +659,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       } yield result
       await(result) mustBe Some(testInternalid)
     }
-
     "return a None when no regId document is found" in new Setup {
       await(repository.getInternalId(vatScheme.id)) mustBe None
     }
@@ -731,7 +671,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       val res = await(repository.getApplicantDetails(vatScheme.id))
       res mustBe Some(testUnregisteredApplicantDetails)
     }
-
     "return None if the record is missing" in new Setup {
       await(repository.insert(vatScheme))
       await(repository.count) mustBe 1
@@ -739,12 +678,10 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       val res = await(repository.getApplicantDetails(vatScheme.id))
       res mustBe None
     }
-
     "return an exception if no vatscheme doc exists" in new Setup {
       intercept[MissingRegDocument](await(repository.getApplicantDetails("1")))
     }
   }
-
   "patchApplicantDetails" should {
     "patch with details only" in new Setup {
       val updatedApplicantDetails = testUnregisteredApplicantDetails.copy(previousAddress = Some(testAddress))
@@ -756,9 +693,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       (fetchAll.get \ "applicantDetails").as[JsObject] mustBe Json.toJson(updatedApplicantDetails)
     }
   }
-
-  val jsonEligiblityData = Json.obj("foo" -> "bar")
-
   "getEligibilityData" should {
     "return some of eligibilityData" in new Setup {
       await(repository.insert(vatScheme.copy(eligibilityData = Some(jsonEligiblityData))))
@@ -799,7 +733,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       await(repository.fetchEligibilityData(vatScheme.id)) mustBe Some(newJsonEligiblityData)
     }
   }
-
   "calling fetchNrsSubmissionPayload" should {
     val testPayload = "testPayload"
 
@@ -813,7 +746,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result).get mustBe testPayload
     }
-
     "return None from an existing registration that exists but the payload does not exist" in new Setup {
       val result: Future[Option[String]] = for {
         _ <- repository.insert(vatScheme)
@@ -822,14 +754,12 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe None
     }
-
     "return a MissingRegDocument when nothing is returned from mongo for the reg id" in new Setup {
       val result: Future[Option[SicAndCompliance]] = repository.fetchSicAndCompliance("madeUpRegId")
 
       a[MissingRegDocument] mustBe thrownBy(await(result))
     }
   }
-
   "calling updateNrsSubmissionPayload" should {
     val testPayload = "testPayload"
 
@@ -844,7 +774,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
 
       await(result) mustBe testPayload
     }
-
     "return the payload string after storing it" in new Setup {
       val result: Future[String] = for {
         _ <- repository.insert(vatScheme)
@@ -852,7 +781,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       } yield res
       await(result) mustBe testPayload
     }
-
     "return an MissingRegDocument if registration document does not exist for the registration id" in new Setup {
       val result: Future[String] = repository.updateNrsSubmissionPayload("madeUpRegId", testPayload)
       a[MissingRegDocument] mustBe thrownBy(await(result))

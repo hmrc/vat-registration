@@ -17,7 +17,7 @@ package itutil
 
 import common.TransactionId
 import enums.VatRegStatus
-import models.{LimitedCompany, SoleTrader}
+import models.{GeneralPartnership, LimitedCompany, SoleTrader}
 import models.api.returns._
 import models.api.{returns, _}
 import models.submission.{DateOfBirth, Director, OwnerProprietor, RoleInBusiness, UkCompany}
@@ -34,6 +34,8 @@ trait ITFixtures {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   val testDate: LocalDate = LocalDate.of(2017, 1, 1)
+  val testUtr = "testUtr"
+  val testPostcode = "TF1 1NT"
   val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.of(0, 0))
   val startDate = testDate
   val testRegId = "regId"
@@ -361,7 +363,36 @@ trait ITFixtures {
         Some(testItmpAddress) ~
         Some(testCredentialStrength) ~
         testLoginTimes
-
   }
+
+  val testLtdCoEntity = LimitedCompany(
+    companyName = testCompanyName,
+    companyNumber = testCrn,
+    ctutr = testUtr,
+    dateOfIncorporation = testDateOfIncorp,
+    businessVerification = BvFail,
+    registration = NotCalledStatus,
+    identifiersMatch = true
+  )
+
+  val testSoleTraderEntity = SoleTrader(
+    testFirstName,
+    testLastName,
+    testDate,
+    testNino,
+    sautr = Some(testUtr),
+    businessVerification = BvPass,
+    registration = FailedStatus,
+    identifiersMatch = true
+  )
+
+  val testGeneralPartnershipEntity = GeneralPartnership(
+    Some(testUtr),
+    Some(testPostcode),
+    Some(testBpSafeId),
+    businessVerification = BvPass,
+    registration = RegisteredStatus,
+    identifiersMatch = true
+  )
 
 }

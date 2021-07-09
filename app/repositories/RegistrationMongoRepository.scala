@@ -26,9 +26,9 @@ import models.api._
 import models.api.returns.Returns
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.WriteConcern
 import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
+import reactivemongo.api.{Cursor, WriteConcern}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -77,6 +77,38 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
       unique = true
     )
   )
+
+  // Generic methods
+
+  def fetchBlock[T](regId: String, key: String)(implicit rds: Reads[T]): Future[Option[T]] = {
+    val projection = Some(Json.obj(key -> 1))
+    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
+      doc.fold(throw MissingRegDocument(regId)) { js =>
+        (js \ key).validateOpt[T].get
+      }
+    }
+  }
+
+  def updateBlock[T](regId: String, data: T, key: String = "")(implicit writes: Writes[T]): Future[T] = {
+    def toCamelCase(str: String): String = str.head.toLower + str.tail
+
+    val selectorKey = if (key == "") toCamelCase(data.getClass.getSimpleName) else key
+
+    val setDoc = Json.obj("$set" -> Json.obj(selectorKey -> Json.toJson(data)))
+    collection.update.one(regIdSelector(regId), setDoc) map { updateResult =>
+      if (updateResult.n == 0) {
+        logger.warn(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
+        throw MissingRegDocument(regId)
+      } else {
+        logger.info(s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${updateResult.nModified}")
+        data
+      }
+    } recover {
+      case e =>
+        logger.warn(s"Unable to update ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId, Error: ${e.getMessage}")
+        throw e
+    }
+  }
 
   def createNewVatScheme(regId: String, intId: String): Future[VatScheme] = {
     val set = Json.obj(
@@ -303,36 +335,6 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     collection.delete.one(tidSelector(transId)) map { wr =>
       if (!wr.ok) logger.error(s"[clearDownDocument] - Error deleting vat reg doc for txId $transId - Error: ${Message.unapply(wr)}")
       wr.ok
-    }
-  }
-
-  def fetchBlock[T](regId: String, key: String)(implicit rds: Reads[T]): Future[Option[T]] = {
-    val projection = Some(Json.obj(key -> 1))
-    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
-      doc.fold(throw MissingRegDocument(regId)) { js =>
-        (js \ key).validateOpt[T].get
-      }
-    }
-  }
-
-  def updateBlock[T](regId: String, data: T, key: String = "")(implicit writes: Writes[T]): Future[T] = {
-    def toCamelCase(str: String): String = str.head.toLower + str.tail
-
-    val selectorKey = if (key == "") toCamelCase(data.getClass.getSimpleName) else key
-
-    val setDoc = Json.obj("$set" -> Json.obj(selectorKey -> Json.toJson(data)))
-    collection.update.one(regIdSelector(regId), setDoc) map { updateResult =>
-      if (updateResult.n == 0) {
-        logger.warn(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
-        throw MissingRegDocument(regId)
-      } else {
-        logger.info(s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${updateResult.nModified}")
-        data
-      }
-    } recover {
-      case e =>
-        logger.warn(s"Unable to update ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId, Error: ${e.getMessage}")
-        throw e
     }
   }
 

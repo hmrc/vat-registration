@@ -40,7 +40,8 @@ case class VatScheme(id: String,
                      eligibilitySubmissionData: Option[EligibilitySubmissionData] = None,
                      applicantDetails: Option[ApplicantDetails] = None,
                      confirmInformationDeclaration: Option[Boolean] = None,
-                     nrsSubmissionPayload: Option[String] = None) {
+                     nrsSubmissionPayload: Option[String] = None,
+                     partners: Option[List[Partner]] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -64,7 +65,8 @@ object VatScheme {
       (__ \ "eligibilitySubmissionData").formatNullable[EligibilitySubmissionData] and
       (__ \ "applicantDetails").formatNullable[ApplicantDetails] and
       (__ \ "confirmInformationDeclaration").formatNullable[Boolean] and
-      (__ \ "nrsSubmissionPayload").formatNullable[String]
+      (__ \ "nrsSubmissionPayload").formatNullable[String] and
+      (__ \ "partners").formatNullable[List[Partner]]
     ) (VatScheme.apply, unlift(VatScheme.unapply))
 
   def mongoFormat(crypto: CryptoSCRS): OFormat[VatScheme] = (
@@ -83,7 +85,8 @@ object VatScheme {
       (__ \ "eligibilitySubmissionData").formatNullable[EligibilitySubmissionData] and
       (__ \ "applicantDetails").formatNullable[ApplicantDetails] and
       (__ \ "confirmInformationDeclaration").formatNullable[Boolean] and
-      (__ \ "nrsSubmissionPayload").formatNullable[String]
+      (__ \ "nrsSubmissionPayload").formatNullable[String] and
+      (__ \ "partners").formatNullable[List[Partner]]
     ) (VatScheme.apply, unlift(VatScheme.unapply))
 
 }
