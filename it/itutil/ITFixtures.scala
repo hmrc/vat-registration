@@ -20,7 +20,7 @@ import enums.VatRegStatus
 import models.{GeneralPartnership, LimitedCompany, SoleTrader}
 import models.api.returns._
 import models.api.{returns, _}
-import models.submission.{DateOfBirth, Director, OwnerProprietor, RoleInBusiness, UkCompany}
+import models.submission.{DateOfBirth, Director, Individual, OwnerProprietor, Partnership, RoleInBusiness, UkCompany}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
@@ -270,6 +270,48 @@ trait ITFixtures {
       applicantDetails = Some(testRegisteredSoleTraderApplicantDetails)
     )
 
+  val testSoleTraderEntity = SoleTrader(
+    testFirstName,
+    testLastName,
+    testDate,
+    testNino,
+    sautr = Some(testUtr),
+    businessVerification = BvPass,
+    registration = FailedStatus,
+    identifiersMatch = true
+  )
+
+  val testLtdCoEntity = LimitedCompany(
+    companyName = testCompanyName,
+    companyNumber = testCrn,
+    ctutr = testUtr,
+    dateOfIncorporation = testDateOfIncorp,
+    businessVerification = BvFail,
+    registration = NotCalledStatus,
+    identifiersMatch = true
+  )
+
+  val testGeneralPartnershipEntity = GeneralPartnership(
+    Some(testUtr),
+    Some(testPostcode),
+    Some(testBpSafeId),
+    businessVerification = BvPass,
+    registration = RegisteredStatus,
+    identifiersMatch = true
+  )
+
+  val testPartner = Partner(
+    details = testSoleTraderEntity,
+    partyType = Individual,
+    isLeadPartner = true
+  )
+
+  lazy val testVatSchemeWithPartners = testFullVatScheme.copy(
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
+    partners = Some(List(testPartner)),
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testSoleTraderEntity))
+  )
+
   def testEmptyVatScheme(regId: String): VatScheme = VatScheme(
     id = regId,
     internalId = testInternalid,
@@ -364,35 +406,5 @@ trait ITFixtures {
         Some(testCredentialStrength) ~
         testLoginTimes
   }
-
-  val testLtdCoEntity = LimitedCompany(
-    companyName = testCompanyName,
-    companyNumber = testCrn,
-    ctutr = testUtr,
-    dateOfIncorporation = testDateOfIncorp,
-    businessVerification = BvFail,
-    registration = NotCalledStatus,
-    identifiersMatch = true
-  )
-
-  val testSoleTraderEntity = SoleTrader(
-    testFirstName,
-    testLastName,
-    testDate,
-    testNino,
-    sautr = Some(testUtr),
-    businessVerification = BvPass,
-    registration = FailedStatus,
-    identifiersMatch = true
-  )
-
-  val testGeneralPartnershipEntity = GeneralPartnership(
-    Some(testUtr),
-    Some(testPostcode),
-    Some(testBpSafeId),
-    businessVerification = BvPass,
-    registration = RegisteredStatus,
-    identifiersMatch = true
-  )
 
 }

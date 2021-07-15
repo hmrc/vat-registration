@@ -36,8 +36,6 @@ class PartnersServiceSpec extends VatRegSpec with VatRegistrationFixture {
   val testLtdCoPartner = testSoleTraderPartner.copy(details = testLtdCoEntity, partyType = UkCompany)
   val testPartnershipPartner = testSoleTraderPartner.copy(details = testGeneralPartnershipEntity, partyType = Partnership)
 
-  implicit val hc = HeaderCarrier()
-
   object Service extends PartnersService(mockRegistrationMongoRepository)
 
   "getPartner" must {

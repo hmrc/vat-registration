@@ -20,7 +20,6 @@ import common.exceptions.UpdateFailed
 import models.api.Partner
 import play.api.libs.json.Reads
 import repositories.RegistrationMongoRepository
-import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,14 +32,14 @@ class PartnersService @Inject()(registrationMongoRepository: RegistrationMongoRe
   val indexOffset = 1
   val recordsToReplace = 1
 
-  def getPartner(regId: String, index: Int)(implicit hc: HeaderCarrier): Future[Option[Partner]] = {
+  def getPartner(regId: String, index: Int): Future[Option[Partner]] = {
     getPartners(regId).map {
       case Some(partners) => partners.lift(index - indexOffset)
       case _ => None
     }
   }
 
-  def storePartner(regId: String, partner: Partner, index: Int)(implicit hc: HeaderCarrier, reads: Reads[Partner]): Future[Partner] = {
+  def storePartner(regId: String, partner: Partner, index: Int)(implicit reads: Reads[Partner]): Future[Partner] = {
     registrationMongoRepository.fetchBlock[List[Partner]](regId, partnersBlock)
       .map(_.getOrElse(Nil))
       .flatMap { partners =>
@@ -51,10 +50,10 @@ class PartnersService @Inject()(registrationMongoRepository: RegistrationMongoRe
       }
   }
 
-  def getPartners(regId: String)(implicit hc: HeaderCarrier): Future[Option[List[Partner]]] =
+  def getPartners(regId: String): Future[Option[List[Partner]]] =
     registrationMongoRepository.fetchBlock[List[Partner]](regId, partnersBlock)
 
-  def deletePartner(regId: String, index: Int)(implicit hc: HeaderCarrier): Future[List[Partner]] =
+  def deletePartner(regId: String, index: Int): Future[List[Partner]] =
     registrationMongoRepository.fetchBlock[List[Partner]](regId, partnersBlock).map(_.getOrElse(Nil)).flatMap { partners =>
       registrationMongoRepository.updateBlock[List[Partner]](regId, partners.patch(index - indexOffset, Nil, recordsToReplace), partnersBlock)
     }

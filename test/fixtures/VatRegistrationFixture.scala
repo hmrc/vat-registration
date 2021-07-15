@@ -59,6 +59,7 @@ trait VatRegistrationFixture {
     Some(LocalDate.of(2020, 10, 7)),
     Some(LocalDate.of(2020, 10, 7))
   )
+
   lazy val testDigitalContactOptional = DigitalContactOptional(Some("skylake@vilikariet.com"), None, None)
   lazy val testBankDetails = BankAccountDetails("Test Bank Account", "010203", "01023456")
   lazy val testFormerName = FormerName(Some(testName), Some(testDate))

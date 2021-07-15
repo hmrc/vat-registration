@@ -21,6 +21,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockNewRegistrationService
 import models.api._
+import models.submission.Individual
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -252,6 +253,23 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
     "return an Ok response with acknowledgement reference for a valid submit" in new Setup {
       AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
       ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme)
+
+      when(mockSubmissionService.submitVatRegistration(
+        ArgumentMatchers.eq(testRegId),
+        ArgumentMatchers.eq(testUserHeaders)
+      )(any[HeaderCarrier], any[Request[_]]))
+        .thenReturn(Future.successful("BRVT00000000001"))
+
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
+        Json.obj("userHeaders" -> testUserHeaders)
+      ))
+      status(response) mustBe Status.OK
+      contentAsJson(response) mustBe Json.toJson("BRVT00000000001")
+    }
+    "return an Ok response with acknowledgement reference for a valid submission with partners" in new Setup {
+      val testPartner = Partner(testSoleTraderEntity, Individual, isLeadPartner = true)
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
+      ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme.copy(partners = Some(List(testPartner))))
 
       when(mockSubmissionService.submitVatRegistration(
         ArgumentMatchers.eq(testRegId),

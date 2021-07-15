@@ -27,6 +27,7 @@ import org.scalatest.concurrent.Eventually.eventually
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
+import services.submission.SubmissionPayloadBuilder
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -182,6 +183,22 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner.copy(flatRateScheme = None), repo.insert)
 
       stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, "")
+
+      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+        .put(Json.obj())
+      )
+
+      res.status mustBe OK
+    }
+    "return OK if the submission is successful where the submission contains partners" in new Setup {
+      enable(StubSubmission)
+
+      given
+        .user.isAuthorised
+        .regRepo.insertIntoDb(testVatSchemeWithPartners, repo.insert)
+      val blockBuilder = app.injector.instanceOf[SubmissionPayloadBuilder]
+
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderWithPartnerJson, OK, "")
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())

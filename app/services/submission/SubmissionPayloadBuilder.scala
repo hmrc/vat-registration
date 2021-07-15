@@ -31,7 +31,8 @@ class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
                                          subscriptionBlockBuilder: SubscriptionBlockBuilder,
                                          bankDetailsBlockBuilder: BankDetailsBlockBuilder,
                                          complianceBlockBuilder: ComplianceBlockBuilder,
-                                         annualAccountingBlockBuilder: AnnualAccountingBlockBuilder
+                                         annualAccountingBlockBuilder: AnnualAccountingBlockBuilder,
+                                         entitiesBlockBuilder: EntitiesBlockBuilder
                                         )(implicit ec: ExecutionContext) {
 
   def buildSubmissionPayload(regId: String): Future[JsObject] = for {
@@ -44,6 +45,7 @@ class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
     complianceBlock <- complianceBlockBuilder.buildComplianceBlock(regId)
     bankDetailsBlock <- bankDetailsBlockBuilder.buildBankDetailsBlock(regId)
     annualAccountingBlockBuilder <- annualAccountingBlockBuilder.buildAnnualAccountingBlock(regId)
+    entities <- entitiesBlockBuilder.buildEntitiesBlock(regId)
   } yield jsonObject(
     "messageType" -> "SubscriptionCreate",
     "admin" -> adminBlock,
@@ -54,6 +56,7 @@ class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
     "periods" -> periodsBlock,
     "bankDetails" -> bankDetailsBlock,
     optional("joinAA" -> annualAccountingBlockBuilder),
-    optional("compliance" -> complianceBlock)
+    optional("compliance" -> complianceBlock),
+    optional("entities" -> entities)
   )
 }
