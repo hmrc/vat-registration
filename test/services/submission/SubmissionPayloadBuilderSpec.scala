@@ -18,10 +18,12 @@ package services.submission
 
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
+import models.submission.{EntitiesArrayType, Individual, PartnerEntity, PartyType}
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.Helpers._
+import services.monitoring.buildermocks.MockEntitiesBlockBuilder
 import services.submission.buildermocks._
-import uk.gov.hmrc.http.InternalServerException
+import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 
 import scala.concurrent.Future
 
@@ -36,7 +38,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
   with MockComplianceBlockBuilder
   with MockSubscriptionBlockBuilder
   with MockDeclarationBlockBuilder
-  with MockAnnualAccountingBlockBuilder {
+  with MockAnnualAccountingBlockBuilder
+  with MockEntitiesBlockBuilder {
 
   object TestBuilder extends SubmissionPayloadBuilder(
     mockAdminBlockBuilder,
@@ -47,7 +50,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
     mockSubscriptionBlockBuilder,
     mockBankDetailsBlockBuilder,
     mockComplianceBlockBuilder,
-    mockAnnualAccountingBlockBuilder
+    mockAnnualAccountingBlockBuilder,
+    mockEntitiesBlockBuilder
   )
 
   val testAdminBlockJson: JsObject = Json.obj(
@@ -176,6 +180,18 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
     )
   )
 
+  val testEntitiesBlockJson = Json.arr(
+    Json.obj(
+      "action" -> 1,
+      "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
+      "partyType" -> Json.toJson[PartyType](Individual),
+      "businessContactDetails" -> Json.obj(
+        "address" -> Json.toJson(testAddress),
+        "telephone" -> "testPhone"
+      )
+    )
+  )
+
   val expectedJson: JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> testAdminBlockJson,
@@ -186,7 +202,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
     "bankDetails" -> testBankDetailsBlockJson,
     "periods" -> testPeriodsBlockJson,
     "joinAA" -> testAnnualAccountingBlockJson,
-    "compliance" -> testComplianceJson
+    "compliance" -> testComplianceJson,
+    "entities" -> testEntitiesBlockJson
   )
 
   "buildSubmissionPayload" should {
@@ -209,6 +226,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
         mockBuildPeriodsBlock(testRegId)(Future.successful(testPeriodsBlockJson))
 
         mockBuildAnnualAccountingBlock(testRegId)(Future.successful(Some(testAnnualAccountingBlockJson)))
+
+        mockBuildEntitiesBlock(testRegId)(Future.successful(Some(testEntitiesBlockJson)))
 
         val result = await(TestBuilder.buildSubmissionPayload(testRegId))
 
@@ -236,6 +255,31 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
         val result = await(TestBuilder.buildSubmissionPayload(testRegId))
 
         result mustBe expectedJson - "compliance"
+      }
+      "the entities section is not present" in {
+        mockBuildAdminBlock(testRegId)(Future.successful(testAdminBlockJson))
+
+        mockBuildDeclarationBlock(testRegId)(Future.successful(testDeclarationBlockJson))
+
+        mockBuildCustomerIdentificationBlock(testRegId)(Future.successful(testCustomerIdentificationBlockJson))
+
+        mockBuildContactBlock(testRegId)(Future.successful(testContactBlockJson))
+
+        mockBuildSubscriptionBlock(testRegId)(Future.successful(testSubscriptionBlockJson))
+
+        mockBuildBankDetailsBlock(testRegId)(Future.successful(testBankDetailsBlockJson))
+
+        mockBuildComplianceBlock(testRegId)(Future.successful(Some(testComplianceJson)))
+
+        mockBuildPeriodsBlock(testRegId)(Future.successful(testPeriodsBlockJson))
+
+        mockBuildAnnualAccountingBlock(testRegId)(Future.successful(Some(testAnnualAccountingBlockJson)))
+
+        mockBuildEntitiesBlock(testRegId)(Future.successful(None))
+
+        val result = await(TestBuilder.buildSubmissionPayload(testRegId))
+
+        result mustBe expectedJson - "entities"
       }
     }
 

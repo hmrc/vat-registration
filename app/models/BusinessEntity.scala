@@ -42,7 +42,20 @@ sealed trait BusinessEntity {
 }
 
 object BusinessEntity {
-  implicit val format: Format[BusinessEntity] = Json.format[BusinessEntity]
+  val reads: Reads[BusinessEntity] = Reads { json =>
+    Json.fromJson(json)(LimitedCompany.format).orElse(Json.fromJson(json)(SoleTrader.format)).orElse(Json.fromJson(json)(GeneralPartnership.format))
+  }
+  val writes: Writes[BusinessEntity] = Writes {
+    case limitedCompany: LimitedCompany =>
+      Json.toJson(limitedCompany)(LimitedCompany.format)
+    case soleTrader@SoleTrader(_, _, _, _, _, _, _, _, _) =>
+      Json.toJson(soleTrader)(SoleTrader.format)
+    case generalPartnership@GeneralPartnership(_, _, _, _, _, _) =>
+      Json.toJson(generalPartnership)(GeneralPartnership.format)
+    case entity =>
+      Json.obj()
+  }
+  implicit val format: Format[BusinessEntity] = Format[BusinessEntity](reads, writes)
 }
 
 // Entity specific types

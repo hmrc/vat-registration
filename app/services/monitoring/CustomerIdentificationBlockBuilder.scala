@@ -17,7 +17,7 @@
 package services.monitoring
 
 import models.api.VatScheme
-import models.{LimitedCompany, SoleTrader}
+import models.{GeneralPartnership, LimitedCompany, SoleTrader}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -32,19 +32,25 @@ class CustomerIdentificationBlockBuilder {
       case (Some(applicantDetails), Some(tradingDetails)) =>
         jsonObject(
           "tradersPartyType" -> vatScheme.partyType,
-          "identifiers" -> {
+          optional("identifiers" -> {
             applicantDetails.entity match {
               case LimitedCompany(_, companyNumber, _, ctutr, _, _, _, _, _) =>
-                Json.obj(
+                Some(Json.obj(
                   "companyRegistrationNumber" -> companyNumber,
                   "ctUTR" -> ctutr
-                )
-              case SoleTrader(_, _, _, _, utr, _, _, _, _) =>
-                Json.obj(
+                ))
+              case SoleTrader(_, _, _, _, Some(utr), _, _, _, _) =>
+                Some(Json.obj(
                   "saUTR" -> utr
-                )
+                ))
+              case GeneralPartnership(Some(utr), _, _, _, _, _) =>
+                Some(Json.obj(
+                  "saUTR" -> utr
+                ))
+              case _ =>
+                None
             }
-          },
+          }),
           optional("shortOrgName" -> {
             applicantDetails.entity match {
               case LimitedCompany(companyName, _, _, _, _, _, _, _, _) => Some(companyName)
@@ -60,6 +66,5 @@ class CustomerIdentificationBlockBuilder {
         throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Trading details data")
     }
   }
-
 
 }
