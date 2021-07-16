@@ -23,7 +23,7 @@ import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
-sealed trait BusinessEntity {
+sealed trait LimitedCompany {
   def bpSafeId: Option[String]
   def businessVerification: BusinessVerificationStatus
   def registration: BusinessRegistrationStatus
@@ -41,13 +41,13 @@ sealed trait BusinessEntity {
     }
 }
 
-object BusinessEntity {
-  val reads: Reads[BusinessEntity] = Reads { json =>
-    Json.fromJson(json)(LimitedCompany.format).orElse(Json.fromJson(json)(SoleTrader.format)).orElse(Json.fromJson(json)(GeneralPartnership.format))
+object LimitedCompany {
+  val reads: Reads[LimitedCompany] = Reads { json =>
+    Json.fromJson(json)(IncorporatedEntity.format).orElse(Json.fromJson(json)(SoleTrader.format)).orElse(Json.fromJson(json)(GeneralPartnership.format))
   }
-  val writes: Writes[BusinessEntity] = Writes {
-    case limitedCompany: LimitedCompany =>
-      Json.toJson(limitedCompany)(LimitedCompany.format)
+  val writes: Writes[LimitedCompany] = Writes {
+    case incorporatedEntity: IncorporatedEntity =>
+      Json.toJson(incorporatedEntity)(IncorporatedEntity.format)
     case soleTrader@SoleTrader(_, _, _, _, _, _, _, _, _) =>
       Json.toJson(soleTrader)(SoleTrader.format)
     case generalPartnership@GeneralPartnership(_, _, _, _, _, _) =>
@@ -55,20 +55,20 @@ object BusinessEntity {
     case entity =>
       Json.obj()
   }
-  implicit val format: Format[BusinessEntity] = Format[BusinessEntity](reads, writes)
+  implicit val format: Format[LimitedCompany] = Format[LimitedCompany](reads, writes)
 }
 
 // Entity specific types
 
-case class LimitedCompany(companyName: String,
-                          companyNumber: String,
-                          dateOfIncorporation: LocalDate,
-                          ctutr: String,
-                          bpSafeId: Option[String] = None,
-                          countryOfIncorporation: String = "GB",
-                          businessVerification: BusinessVerificationStatus,
-                          registration: BusinessRegistrationStatus,
-                          identifiersMatch: Boolean) extends BusinessEntity {
+case class IncorporatedEntity(companyName: String,
+                              companyNumber: String,
+                              dateOfIncorporation: LocalDate,
+                              ctutr: String,
+                              bpSafeId: Option[String] = None,
+                              countryOfIncorporation: String = "GB",
+                              businessVerification: BusinessVerificationStatus,
+                              registration: BusinessRegistrationStatus,
+                              identifiersMatch: Boolean) extends LimitedCompany {
 
   override def identifiers: List[CustomerId] = List(
     CustomerId(
@@ -86,8 +86,8 @@ case class LimitedCompany(companyName: String,
 
 }
 
-object LimitedCompany {
-  implicit val format: Format[LimitedCompany] = Json.format[LimitedCompany]
+object IncorporatedEntity {
+  implicit val format: Format[IncorporatedEntity] = Json.format[IncorporatedEntity]
 }
 
 
@@ -99,7 +99,7 @@ case class SoleTrader(firstName: String,
                       bpSafeId: Option[String] = None,
                       businessVerification: BusinessVerificationStatus,
                       registration: BusinessRegistrationStatus,
-                      identifiersMatch: Boolean) extends BusinessEntity {
+                      identifiersMatch: Boolean) extends LimitedCompany {
 
   override def identifiers: List[CustomerId] =
     List(sautr.map(utr =>
@@ -121,7 +121,7 @@ case class GeneralPartnership(sautr: Option[String],
                               bpSafeId: Option[String] = None,
                               businessVerification: BusinessVerificationStatus,
                               registration: BusinessRegistrationStatus,
-                              identifiersMatch: Boolean) extends BusinessEntity {
+                              identifiersMatch: Boolean) extends LimitedCompany {
 
   override def identifiers: List[CustomerId] =
     List(sautr.map(utr =>

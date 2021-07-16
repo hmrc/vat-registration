@@ -17,7 +17,7 @@ package itutil
 
 import common.TransactionId
 import enums.VatRegStatus
-import models.{GeneralPartnership, LimitedCompany, SoleTrader}
+import models.{GeneralPartnership, IncorporatedEntity, SoleTrader}
 import models.api.returns._
 import models.api.{returns, _}
 import models.submission.{DateOfBirth, Director, Individual, OwnerProprietor, Partnership, RoleInBusiness, UkCompany}
@@ -107,7 +107,7 @@ trait ITFixtures {
       nino = testNino,
       dateOfBirth = testDate
     ),
-    entity = LimitedCompany(
+    entity = IncorporatedEntity(
       companyName = testCompanyName,
       companyNumber = testCrn,
       dateOfIncorporation = testDateOfIncorp,
@@ -130,7 +130,7 @@ trait ITFixtures {
       nino = testNino,
       dateOfBirth = testDate
     ),
-    entity = LimitedCompany(
+    entity = IncorporatedEntity(
       companyName = testCompanyName,
       companyNumber = testCrn,
       dateOfIncorporation = testDateOfIncorp,
@@ -281,7 +281,7 @@ trait ITFixtures {
     identifiersMatch = true
   )
 
-  val testLtdCoEntity = LimitedCompany(
+  val testLtdCoEntity = IncorporatedEntity(
     companyName = testCompanyName,
     companyNumber = testCrn,
     ctutr = testUtr,
