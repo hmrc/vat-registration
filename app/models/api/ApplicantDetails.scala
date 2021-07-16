@@ -16,7 +16,7 @@
 
 package models.api
 
-import models.{LimitedCompany, GeneralPartnership, IncorporatedEntity, SoleTrader}
+import models.{BusinessEntity, GeneralPartnership, IncorporatedEntity, SoleTrader}
 import models.submission.{CustomerId, IdVerified, NinoIdType, RoleInBusiness}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -25,7 +25,7 @@ import utils.JsonUtilities
 import utils.JsonUtils.canParseTo
 
 case class ApplicantDetails(transactor: TransactorDetails,
-                            entity: LimitedCompany,
+                            entity: BusinessEntity,
                             currentAddress: Address,
                             previousAddress: Option[Address] = None,
                             contact: DigitalContactOptional,
@@ -42,7 +42,7 @@ object ApplicantDetails extends VatApplicantDetailsValidator
 
   implicit val format: Format[ApplicantDetails] = (
     (__ \ "transactor").format[TransactorDetails] and
-      (__ \ "entity").format[JsValue].inmap[LimitedCompany](parseToEntity, writeEntityToJson) and
+      (__ \ "entity").format[JsValue].inmap[BusinessEntity](parseToEntity, writeEntityToJson) and
       (__ \ "currentAddress").format[Address] and
       (__ \ "previousAddress").formatNullable[Address] and
       (__ \ "contact").format[DigitalContactOptional] and
@@ -50,13 +50,13 @@ object ApplicantDetails extends VatApplicantDetailsValidator
       (__ \ "roleInTheBusiness").format[RoleInBusiness]
     ) (ApplicantDetails.apply, unlift(ApplicantDetails.unapply))
 
-  private def parseToEntity(json: JsValue): LimitedCompany =
+  private def parseToEntity(json: JsValue): BusinessEntity =
     canParseTo[IncorporatedEntity] orElse
     canParseTo[SoleTrader] orElse
     canParseTo[GeneralPartnership] apply
     json
 
-  private def writeEntityToJson(entity: LimitedCompany): JsValue = entity match {
+  private def writeEntityToJson(entity: BusinessEntity): JsValue = entity match {
     case ltdCo @ IncorporatedEntity(_, _, _, _, _, _, _, _, _) =>
       Json.toJson(ltdCo)
     case soleTrader @ SoleTrader(_, _, _, _, _, _, _, _, _) =>
