@@ -23,7 +23,7 @@ import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
-sealed trait LimitedCompany {
+sealed trait BusinessEntity {
   def bpSafeId: Option[String]
   def businessVerification: BusinessVerificationStatus
   def registration: BusinessRegistrationStatus
@@ -41,11 +41,11 @@ sealed trait LimitedCompany {
     }
 }
 
-object LimitedCompany {
-  val reads: Reads[LimitedCompany] = Reads { json =>
+object BusinessEntity {
+  val reads: Reads[BusinessEntity] = Reads { json =>
     Json.fromJson(json)(IncorporatedEntity.format).orElse(Json.fromJson(json)(SoleTrader.format)).orElse(Json.fromJson(json)(GeneralPartnership.format))
   }
-  val writes: Writes[LimitedCompany] = Writes {
+  val writes: Writes[BusinessEntity] = Writes {
     case incorporatedEntity: IncorporatedEntity =>
       Json.toJson(incorporatedEntity)(IncorporatedEntity.format)
     case soleTrader@SoleTrader(_, _, _, _, _, _, _, _, _) =>
@@ -55,7 +55,7 @@ object LimitedCompany {
     case entity =>
       Json.obj()
   }
-  implicit val format: Format[LimitedCompany] = Format[LimitedCompany](reads, writes)
+  implicit val format: Format[BusinessEntity] = Format[BusinessEntity](reads, writes)
 }
 
 // Entity specific types
@@ -68,7 +68,7 @@ case class IncorporatedEntity(companyName: String,
                               countryOfIncorporation: String = "GB",
                               businessVerification: BusinessVerificationStatus,
                               registration: BusinessRegistrationStatus,
-                              identifiersMatch: Boolean) extends LimitedCompany {
+                              identifiersMatch: Boolean) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] = List(
     CustomerId(
@@ -99,7 +99,7 @@ case class SoleTrader(firstName: String,
                       bpSafeId: Option[String] = None,
                       businessVerification: BusinessVerificationStatus,
                       registration: BusinessRegistrationStatus,
-                      identifiersMatch: Boolean) extends LimitedCompany {
+                      identifiersMatch: Boolean) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] =
     List(sautr.map(utr =>
@@ -121,7 +121,7 @@ case class GeneralPartnership(sautr: Option[String],
                               bpSafeId: Option[String] = None,
                               businessVerification: BusinessVerificationStatus,
                               registration: BusinessRegistrationStatus,
-                              identifiersMatch: Boolean) extends LimitedCompany {
+                              identifiersMatch: Boolean) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] =
     List(sautr.map(utr =>

@@ -16,11 +16,11 @@
 
 package models.api
 
-import models.{LimitedCompany, GeneralPartnership, IncorporatedEntity, SoleTrader}
+import models.{BusinessEntity, GeneralPartnership, IncorporatedEntity, SoleTrader}
 import models.submission.{Individual, Partnership, PartyType, UkCompany}
 import play.api.libs.json.{JsError, JsPath, JsSuccess, JsValue, Json, JsonValidationError, Reads, Writes}
 
-case class Partner(details: LimitedCompany,
+case class Partner(details: BusinessEntity,
                    partyType: PartyType,
                    isLeadPartner: Boolean)
 
