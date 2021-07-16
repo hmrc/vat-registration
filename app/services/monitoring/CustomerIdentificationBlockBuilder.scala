@@ -17,7 +17,7 @@
 package services.monitoring
 
 import models.api.VatScheme
-import models.{GeneralPartnership, LimitedCompany, SoleTrader}
+import models.{GeneralPartnership, IncorporatedEntity, SoleTrader}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -34,7 +34,7 @@ class CustomerIdentificationBlockBuilder {
           "tradersPartyType" -> vatScheme.partyType,
           optional("identifiers" -> {
             applicantDetails.entity match {
-              case LimitedCompany(_, companyNumber, _, ctutr, _, _, _, _, _) =>
+              case IncorporatedEntity(_, companyNumber, _, ctutr, _, _, _, _, _) =>
                 Some(Json.obj(
                   "companyRegistrationNumber" -> companyNumber,
                   "ctUTR" -> ctutr
@@ -53,7 +53,7 @@ class CustomerIdentificationBlockBuilder {
           }),
           optional("shortOrgName" -> {
             applicantDetails.entity match {
-              case LimitedCompany(companyName, _, _, _, _, _, _, _, _) => Some(companyName)
+              case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _) => Some(companyName)
               case _ => None
             }
           }),

@@ -19,7 +19,7 @@ package models.monitoring
 import enums.VatRegStatus
 import fixtures.SubmissionAuditFixture
 import helpers.VatRegSpec
-import models.LimitedCompany
+import models.IncorporatedEntity
 import models.api.{BvFail, MTDfB, NotCalledStatus, VatScheme}
 import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation

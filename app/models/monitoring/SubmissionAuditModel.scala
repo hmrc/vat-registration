@@ -16,7 +16,7 @@
 
 package models.monitoring
 
-import models.{LimitedCompany, SoleTrader}
+import models.{IncorporatedEntity, SoleTrader}
 import models.api.{EligibilitySubmissionData, VatScheme}
 import play.api.libs.json.{JsValue, Json}
 import services.monitoring.AuditModel
@@ -58,7 +58,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           }),
           optional("corporateBodyRegistered" -> {
             applicantDetails.entity match {
-              case LimitedCompany(_, _, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _) =>
+              case IncorporatedEntity(_, _, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _) =>
                 Some(Json.obj(
                   "countryOfIncorporation" -> countryOfIncorporation,
                   "dateOfIncorporation" -> dateOfIncorporation
