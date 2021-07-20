@@ -25,9 +25,13 @@ import java.time.LocalDate
 
 sealed trait BusinessEntity {
   def bpSafeId: Option[String]
+
   def businessVerification: BusinessVerificationStatus
+
   def registration: BusinessRegistrationStatus
+
   def identifiersMatch: Boolean
+
   def identifiers: List[CustomerId]
 
   def idVerificationStatus: IdVerificationStatus =
@@ -63,26 +67,35 @@ object BusinessEntity {
 case class IncorporatedEntity(companyName: String,
                               companyNumber: String,
                               dateOfIncorporation: LocalDate,
-                              ctutr: String,
+                              ctutr: Option[String] = None,
                               bpSafeId: Option[String] = None,
                               countryOfIncorporation: String = "GB",
                               businessVerification: BusinessVerificationStatus,
                               registration: BusinessRegistrationStatus,
-                              identifiersMatch: Boolean) extends BusinessEntity {
+                              identifiersMatch: Boolean,
+                              chrn: Option[String] = None) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] = List(
-    CustomerId(
-      idValue = ctutr,
-      idType = UtrIdType,
-      IDsVerificationStatus = idVerificationStatus
-    ),
-    CustomerId(
+    ctutr.map(utr =>
+      CustomerId(
+        idValue = utr,
+        idType = UtrIdType,
+        IDsVerificationStatus = idVerificationStatus
+      )),
+    Some(CustomerId(
       idValue = companyNumber,
       idType = CrnIdType,
       IDsVerificationStatus = idVerificationStatus,
       date = Some(dateOfIncorporation)
+    )),
+    chrn.map(chrn =>
+      CustomerId(
+        idValue = chrn,
+        idType = CharityRefIdType,
+        IDsVerificationStatus = idVerificationStatus
+      )
     )
-  )
+  ).flatten
 
 }
 

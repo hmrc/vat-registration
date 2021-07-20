@@ -54,7 +54,8 @@ class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixt
       businessVerification = BvFail,
       registration = NotCalledStatus,
       identifiersMatch = true,
-      bpSafeId = Some(testBpSafeId)
+      bpSafeId = Some(testBpSafeId),
+      chrn = None
     ),
     currentAddress = testAddress,
     contact = testDigitalContactOptional,
