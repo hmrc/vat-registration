@@ -34,7 +34,7 @@ class CustomerIdentificationBlockBuilder {
           "tradersPartyType" -> vatScheme.partyType,
           optional("identifiers" -> {
             applicantDetails.entity match {
-              case IncorporatedEntity(_, companyNumber, _, ctutr, _, _, _, _, _) =>
+              case IncorporatedEntity(_, companyNumber, _, ctutr, _, _, _, _, _, _) =>
                 Some(Json.obj(
                   "companyRegistrationNumber" -> companyNumber,
                   "ctUTR" -> ctutr
@@ -53,7 +53,7 @@ class CustomerIdentificationBlockBuilder {
           }),
           optional("shortOrgName" -> {
             applicantDetails.entity match {
-              case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _) => Some(companyName)
+              case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => Some(companyName)
               case _ => None
             }
           }),

@@ -57,7 +57,7 @@ object ApplicantDetails extends VatApplicantDetailsValidator
     json
 
   private def writeEntityToJson(entity: BusinessEntity): JsValue = entity match {
-    case ltdCo @ IncorporatedEntity(_, _, _, _, _, _, _, _, _) =>
+    case ltdCo @ IncorporatedEntity(_, _, _, _, _, _, _, _, _, _) =>
       Json.toJson(ltdCo)
     case soleTrader @ SoleTrader(_, _, _, _, _, _, _, _, _) =>
       Json.toJson(soleTrader)

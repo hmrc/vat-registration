@@ -42,7 +42,7 @@ trait VatRegistrationFixture {
   lazy val testDateOfBirth = DateOfBirth(testDate)
   lazy val testCompanyName = "testCompanyName"
   lazy val testCrn = "testCrn"
-  lazy val testUtr = "testCtUtr"
+  lazy val testUtr = Some("testCtUtr")
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
   lazy val testAddress = Address("line1", "line2", None, None, Some("XX XX"), Some(Country(Some("GB"), None)), addressValidated = Some(true))
   lazy val testPostcode = "ZZ1 1ZZ"
@@ -93,7 +93,8 @@ trait VatRegistrationFixture {
     dateOfIncorporation = testDateOFIncorp,
     businessVerification = BvFail,
     registration = NotCalledStatus,
-    identifiersMatch = true
+    identifiersMatch = true,
+    chrn = None
   )
 
   val testSoleTraderEntity = SoleTrader(
@@ -101,14 +102,14 @@ trait VatRegistrationFixture {
     testLastName,
     testDate,
     testNino,
-    sautr = Some(testUtr),
+    sautr = testUtr,
     businessVerification = BvPass,
     registration = FailedStatus,
     identifiersMatch = true
   )
 
   val testGeneralPartnershipEntity = GeneralPartnership(
-    Some(testUtr),
+    testUtr,
     Some(testPostcode),
     Some(testBpSafeId),
     businessVerification = BvPass,

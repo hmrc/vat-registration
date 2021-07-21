@@ -93,7 +93,7 @@ trait ITFixtures {
   val testCompanyName = "testCompanyName"
   val testDateOfBirth = DateOfBirth(testDate)
   val testCrn = "testCrn"
-  val testCtUtr = "testCtUtr"
+  val testCtUtr = Some("testCtUtr")
   val testSaUtr = "testSaUtr"
   val testDateOfIncorp = LocalDate.of(2020, 1, 2)
   val testBpSafeId = "testBpSafeId"
@@ -115,7 +115,8 @@ trait ITFixtures {
       businessVerification = BvUnchallenged,
       registration = NotCalledStatus,
       identifiersMatch = true,
-      bpSafeId = None
+      bpSafeId = None,
+      chrn = None
     ),
     roleInBusiness = testRole,
     currentAddress = testFullAddress,
@@ -138,7 +139,8 @@ trait ITFixtures {
       identifiersMatch = true,
       businessVerification = BvPass,
       registration = RegisteredStatus,
-      bpSafeId = Some(testBpSafeId)
+      bpSafeId = Some(testBpSafeId),
+      chrn = None
     ),
     roleInBusiness = testRole,
     currentAddress = testAddress,
@@ -284,11 +286,12 @@ trait ITFixtures {
   val testLtdCoEntity = IncorporatedEntity(
     companyName = testCompanyName,
     companyNumber = testCrn,
-    ctutr = testUtr,
+    ctutr = Some(testUtr),
     dateOfIncorporation = testDateOfIncorp,
     businessVerification = BvFail,
     registration = NotCalledStatus,
-    identifiersMatch = true
+    identifiersMatch = true,
+    chrn = None
   )
 
   val testGeneralPartnershipEntity = GeneralPartnership(
