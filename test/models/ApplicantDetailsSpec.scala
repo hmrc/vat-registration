@@ -39,7 +39,14 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
 
     "parse successfully if the entity is a General Partnership" in {
       val generalPartnershipAppDetails = validApplicantDetails.copy(
-        entity = GeneralPartnership(testUtr, Some(testPostcode), Some(testBpSafeId), BvPass, RegisteredStatus, identifiersMatch = true)
+        entity = testGeneralPartnershipEntity
+      )
+      writeAndRead(generalPartnershipAppDetails) resultsIn generalPartnershipAppDetails
+    }
+
+    "parse successfully if the entity is a Trust" in {
+      val generalPartnershipAppDetails = validApplicantDetails.copy(
+        entity = testTrustEntity
       )
       writeAndRead(generalPartnershipAppDetails) resultsIn generalPartnershipAppDetails
     }

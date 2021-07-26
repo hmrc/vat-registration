@@ -17,8 +17,8 @@
 package services.monitoring
 
 import models.api.VatScheme
-import models.{GeneralPartnership, IncorporatedEntity, SoleTrader}
-import play.api.libs.json.{JsValue, Json}
+import models.{PartnershipIdEntity, IncorporatedEntity, SoleTrader}
+import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
 
@@ -34,18 +34,20 @@ class CustomerIdentificationBlockBuilder {
           "tradersPartyType" -> vatScheme.partyType,
           optional("identifiers" -> {
             applicantDetails.entity match {
-              case IncorporatedEntity(_, companyNumber, _, ctutr, _, _, _, _, _, _) =>
-                Some(Json.obj(
+              case IncorporatedEntity(_, companyNumber, _, optCtutr, _, _, _, _, _, optChrn) =>
+                Some(jsonObject(
                   "companyRegistrationNumber" -> companyNumber,
-                  "ctUTR" -> ctutr
+                  optional("ctUTR" -> optCtutr),
+                  optional("CHRN" -> optChrn)
                 ))
-              case SoleTrader(_, _, _, _, Some(utr), _, _, _, _) =>
-                Some(Json.obj(
-                  "saUTR" -> utr
+              case SoleTrader(_, _, _, _, optUtr, _, _, _, _) =>
+                Some(jsonObject(
+                  optional("saUTR" -> optUtr)
                 ))
-              case GeneralPartnership(Some(utr), _, _, _, _, _) =>
-                Some(Json.obj(
-                  "saUTR" -> utr
+              case PartnershipIdEntity(optUtr, _, optChrn, _, _, _, _) =>
+                Some(jsonObject(
+                  optional("saUTR" -> optUtr),
+                  optional("CHRN" -> optChrn)
                 ))
               case _ =>
                 None

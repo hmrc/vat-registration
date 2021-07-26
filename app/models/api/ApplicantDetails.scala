@@ -16,13 +16,11 @@
 
 package models.api
 
-import models.{BusinessEntity, GeneralPartnership, IncorporatedEntity, SoleTrader}
+import models.BusinessEntity
 import models.submission.{CustomerId, IdVerified, NinoIdType, RoleInBusiness}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtilities
-import utils.JsonUtils.canParseTo
 
 case class ApplicantDetails(transactor: TransactorDetails,
                             entity: BusinessEntity,
@@ -42,7 +40,7 @@ object ApplicantDetails extends VatApplicantDetailsValidator
 
   implicit val format: Format[ApplicantDetails] = (
     (__ \ "transactor").format[TransactorDetails] and
-      (__ \ "entity").format[JsValue].inmap[BusinessEntity](parseToEntity, writeEntityToJson) and
+      (__ \ "entity").format[BusinessEntity] and
       (__ \ "currentAddress").format[Address] and
       (__ \ "previousAddress").formatNullable[Address] and
       (__ \ "contact").format[DigitalContactOptional] and
@@ -50,20 +48,4 @@ object ApplicantDetails extends VatApplicantDetailsValidator
       (__ \ "roleInTheBusiness").format[RoleInBusiness]
     ) (ApplicantDetails.apply, unlift(ApplicantDetails.unapply))
 
-  private def parseToEntity(json: JsValue): BusinessEntity =
-    canParseTo[IncorporatedEntity] orElse
-    canParseTo[SoleTrader] orElse
-    canParseTo[GeneralPartnership] apply
-    json
-
-  private def writeEntityToJson(entity: BusinessEntity): JsValue = entity match {
-    case ltdCo @ IncorporatedEntity(_, _, _, _, _, _, _, _, _, _) =>
-      Json.toJson(ltdCo)
-    case soleTrader @ SoleTrader(_, _, _, _, _, _, _, _, _) =>
-      Json.toJson(soleTrader)
-    case generalPartnership @ GeneralPartnership(_, _, _, _, _, _) =>
-      Json.toJson(generalPartnership)
-    case _ =>
-      throw new InternalServerException("Unsupported entity")
-  }
 }

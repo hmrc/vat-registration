@@ -47,15 +47,15 @@ sealed trait BusinessEntity {
 
 object BusinessEntity {
   val reads: Reads[BusinessEntity] = Reads { json =>
-    Json.fromJson(json)(IncorporatedEntity.format).orElse(Json.fromJson(json)(SoleTrader.format)).orElse(Json.fromJson(json)(GeneralPartnership.format))
+    Json.fromJson(json)(IncorporatedEntity.format).orElse(Json.fromJson(json)(SoleTrader.format)).orElse(Json.fromJson(json)(PartnershipIdEntity.format))
   }
   val writes: Writes[BusinessEntity] = Writes {
     case incorporatedEntity: IncorporatedEntity =>
       Json.toJson(incorporatedEntity)(IncorporatedEntity.format)
     case soleTrader@SoleTrader(_, _, _, _, _, _, _, _, _) =>
       Json.toJson(soleTrader)(SoleTrader.format)
-    case generalPartnership@GeneralPartnership(_, _, _, _, _, _) =>
-      Json.toJson(generalPartnership)(GeneralPartnership.format)
+    case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _) =>
+      Json.toJson(partnershipIdEntity)(PartnershipIdEntity.format)
     case entity =>
       Json.obj()
   }
@@ -129,24 +129,30 @@ object SoleTrader {
   implicit val format: Format[SoleTrader] = Json.format[SoleTrader]
 }
 
-case class GeneralPartnership(sautr: Option[String],
-                              postCode: Option[String],
-                              bpSafeId: Option[String] = None,
-                              businessVerification: BusinessVerificationStatus,
-                              registration: BusinessRegistrationStatus,
-                              identifiersMatch: Boolean) extends BusinessEntity {
+case class PartnershipIdEntity(sautr: Option[String],
+                               postCode: Option[String],
+                               chrn: Option[String],
+                               bpSafeId: Option[String] = None,
+                               businessVerification: BusinessVerificationStatus,
+                               registration: BusinessRegistrationStatus,
+                               identifiersMatch: Boolean) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] =
-    List(sautr.map(utr =>
-      CustomerId(
+    List(
+      sautr.map(utr => CustomerId(
         idValue = utr,
         idType = UtrIdType,
         IDsVerificationStatus = idVerificationStatus
-      )
-    )).flatten
+      )),
+      chrn.map(chrn => CustomerId(
+        idValue = chrn,
+        idType = CharityRefIdType,
+        IDsVerificationStatus = idVerificationStatus
+      ))
+    ).flatten
 
 }
 
-object GeneralPartnership {
-  implicit val format: Format[GeneralPartnership] = Json.format[GeneralPartnership]
+object PartnershipIdEntity {
+  implicit val format: Format[PartnershipIdEntity] = Json.format[PartnershipIdEntity]
 }

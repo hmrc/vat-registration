@@ -70,21 +70,6 @@ class PartnerSpec extends VatRegSpec with VatRegistrationFixture {
         )
       )
     }
-    "successfully parse a partner without an index" in {
-      val testJson = Json.obj(
-        "details" -> Json.toJson(testGeneralPartnershipEntity),
-        "partyType" -> toJsString(Partnership),
-        "isLeadPartner" -> false
-      )
-
-      testJson.validate[Partner].asOpt mustBe Some(
-        Partner(
-          details = testGeneralPartnershipEntity,
-          partyType = Partnership,
-          isLeadPartner = false
-        )
-      )
-    }
     "fail to parse parse a partner if the details json is incorrect for the party type" in {
       val testJson = Json.obj(
         "details" -> Json.toJson(testLtdCoEntity),
@@ -124,19 +109,6 @@ class PartnerSpec extends VatRegSpec with VatRegistrationFixture {
       )
     }
     "successfully write a partner with valid Partnership details" in {
-      val entity = Partner(
-        details = testGeneralPartnershipEntity,
-        partyType = Partnership,
-        isLeadPartner = false
-      )
-
-      Json.toJson(entity) mustBe Json.obj(
-        "details" -> Json.toJson(testGeneralPartnershipEntity),
-        "partyType" -> toJsString(Partnership),
-        "isLeadPartner" -> false
-      )
-    }
-    "successfully write a partner without an index" in {
       val entity = Partner(
         details = testGeneralPartnershipEntity,
         partyType = Partnership,
