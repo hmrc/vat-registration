@@ -17,7 +17,7 @@ package itutil
 
 import common.TransactionId
 import enums.VatRegStatus
-import models.{GeneralPartnership, IncorporatedEntity, SoleTrader}
+import models.{PartnershipIdEntity, IncorporatedEntity, SoleTrader}
 import models.api.returns._
 import models.api.{returns, _}
 import models.submission.{DateOfBirth, Director, Individual, OwnerProprietor, Partnership, RoleInBusiness, UkCompany}
@@ -36,6 +36,7 @@ trait ITFixtures {
   val testDate: LocalDate = LocalDate.of(2017, 1, 1)
   val testUtr = "testUtr"
   val testPostcode = "TF1 1NT"
+  val testChrn = "testChrn"
   val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.of(0, 0))
   val startDate = testDate
   val testRegId = "regId"
@@ -93,7 +94,7 @@ trait ITFixtures {
   val testCompanyName = "testCompanyName"
   val testDateOfBirth = DateOfBirth(testDate)
   val testCrn = "testCrn"
-  val testCtUtr = Some("testCtUtr")
+  val testCtUtr = "testCtUtr"
   val testSaUtr = "testSaUtr"
   val testDateOfIncorp = LocalDate.of(2020, 1, 2)
   val testBpSafeId = "testBpSafeId"
@@ -111,7 +112,7 @@ trait ITFixtures {
       companyName = testCompanyName,
       companyNumber = testCrn,
       dateOfIncorporation = testDateOfIncorp,
-      ctutr = testCtUtr,
+      ctutr = Some(testCtUtr),
       businessVerification = BvUnchallenged,
       registration = NotCalledStatus,
       identifiersMatch = true,
@@ -135,7 +136,7 @@ trait ITFixtures {
       companyName = testCompanyName,
       companyNumber = testCrn,
       dateOfIncorporation = testDateOfIncorp,
-      ctutr = testCtUtr,
+      ctutr = Some(testCtUtr),
       identifiersMatch = true,
       businessVerification = BvPass,
       registration = RegisteredStatus,
@@ -272,6 +273,11 @@ trait ITFixtures {
       applicantDetails = Some(testRegisteredSoleTraderApplicantDetails)
     )
 
+  lazy val testMinimalVatSchemeWithTrust: VatScheme =
+    testMinimalVatSchemeWithRegisteredBusinessPartner.copy(
+      applicantDetails = Some(testRegisteredApplicantDetails.copy(entity = testTrustEntity))
+    )
+
   val testSoleTraderEntity = SoleTrader(
     testFirstName,
     testLastName,
@@ -294,9 +300,20 @@ trait ITFixtures {
     chrn = None
   )
 
-  val testGeneralPartnershipEntity = GeneralPartnership(
+  val testGeneralPartnershipEntity: PartnershipIdEntity = PartnershipIdEntity(
     Some(testUtr),
     Some(testPostcode),
+    None,
+    Some(testBpSafeId),
+    businessVerification = BvPass,
+    registration = RegisteredStatus,
+    identifiersMatch = true
+  )
+
+  val testTrustEntity: PartnershipIdEntity = PartnershipIdEntity(
+    Some(testUtr),
+    None,
+    Some(testChrn),
     Some(testBpSafeId),
     businessVerification = BvPass,
     registration = RegisteredStatus,

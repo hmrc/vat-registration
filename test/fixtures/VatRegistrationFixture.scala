@@ -21,7 +21,7 @@ import enums.VatRegStatus
 import models.api._
 import models.api.returns._
 import models.submission._
-import models.{GeneralPartnership, IncorporatedEntity, SoleTrader}
+import models.{IncorporatedEntity, PartnershipIdEntity, SoleTrader}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -42,7 +42,8 @@ trait VatRegistrationFixture {
   lazy val testDateOfBirth = DateOfBirth(testDate)
   lazy val testCompanyName = "testCompanyName"
   lazy val testCrn = "testCrn"
-  lazy val testUtr = Some("testCtUtr")
+  lazy val testUtr = "testUtr"
+  lazy val testChrn = "testChrn"
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
   lazy val testAddress = Address("line1", "line2", None, None, Some("XX XX"), Some(Country(Some("GB"), None)), addressValidated = Some(true))
   lazy val testPostcode = "ZZ1 1ZZ"
@@ -89,7 +90,7 @@ trait VatRegistrationFixture {
   val testLtdCoEntity = IncorporatedEntity(
     companyName = testCompanyName,
     companyNumber = testCrn,
-    ctutr = testUtr,
+    ctutr = Some(testUtr),
     dateOfIncorporation = testDateOFIncorp,
     businessVerification = BvFail,
     registration = NotCalledStatus,
@@ -102,15 +103,26 @@ trait VatRegistrationFixture {
     testLastName,
     testDate,
     testNino,
-    sautr = testUtr,
+    sautr = Some(testUtr),
     businessVerification = BvPass,
     registration = FailedStatus,
     identifiersMatch = true
   )
 
-  val testGeneralPartnershipEntity = GeneralPartnership(
-    testUtr,
+  val testGeneralPartnershipEntity: PartnershipIdEntity = PartnershipIdEntity(
+    Some(testUtr),
     Some(testPostcode),
+    None,
+    Some(testBpSafeId),
+    businessVerification = BvPass,
+    registration = RegisteredStatus,
+    identifiersMatch = true
+  )
+
+  val testTrustEntity: PartnershipIdEntity = PartnershipIdEntity(
+    Some(testUtr),
+    Some(testPostcode),
+    Some(testChrn),
     Some(testBpSafeId),
     businessVerification = BvPass,
     registration = RegisteredStatus,

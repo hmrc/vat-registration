@@ -53,7 +53,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
        |    "shortOrgName": "testCompanyName",
        |    "customerID": [
        |      {
-       |        "idValue": "testCtUtr",
+       |        "idValue": "testUtr",
        |        "idType": "UTR",
        |        "IDsVerificationStatus": "$idVerificationStatusCode"
        |      },
@@ -74,7 +74,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
        |    "tradersPartyType": "Z1",
        |    "customerID": [
        |      {
-       |        "idValue": "testCtUtr",
+       |        "idValue": "testUtr",
        |        "idType": "UTR",
        |        "IDsVerificationStatus": "1"
        |      }
