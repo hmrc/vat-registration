@@ -25,7 +25,6 @@ import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import services.monitoring.SubmissionAuditBlockBuilder
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.http.HeaderCarrier
 
 trait MockSubmissionAuditBlockBuilder extends MockitoSugar {
   self: Suite =>
@@ -42,8 +41,6 @@ trait MockSubmissionAuditBlockBuilder extends MockitoSugar {
       ArgumentMatchers.eq(authProviderId),
       ArgumentMatchers.eq(affinityGroup),
       ArgumentMatchers.eq(optAgentReferenceNumber)
-    )(
-      ArgumentMatchers.any[HeaderCarrier]
     )) thenReturn response
 
 }

@@ -23,10 +23,9 @@ import play.api.libs.json.JsObject
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
 
 @Singleton
-class AnnualAccountingAuditBlockBuilder @Inject()(implicit ec: ExecutionContext) {
+class AnnualAccountingAuditBlockBuilder @Inject()() {
 
   def buildAnnualAccountingAuditBlock(vatScheme: VatScheme): Option[JsObject] = {
     (vatScheme.returns, vatScheme.eligibilitySubmissionData) match {

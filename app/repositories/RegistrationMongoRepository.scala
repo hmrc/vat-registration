@@ -17,18 +17,14 @@
 package repositories
 
 import auth.{AuthorisationResource, CryptoSCRS}
-import cats.data.OptionT
-import cats.instances.future._
 import common.exceptions._
 import enums.VatRegStatus
-import models._
 import models.api._
 import models.api.returns.Returns
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.api.{Cursor, WriteConcern}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -153,32 +149,10 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
-  def updateByElement(regId: String, elementPath: ElementPath, value: String): Future[String] =
-    setElement(regId, elementPath.path, value)
-
-  private def setElement(regId: String, element: String, value: String): Future[String] =
-    OptionT(collection.findAndUpdate(
-      regIdSelector(regId),
-      BSONDocument("$set" -> BSONDocument(element -> value)),
-      fetchNewObject = false,
-      upsert = false,
-      sort = None,
-      fields = None,
-      bypassDocumentValidation = false,
-      writeConcern = WriteConcern.Default,
-      maxTime = None,
-      collation = None,
-      arrayFilters = Seq()
-    ).map(_.value))
-      .map(_ => value).getOrElse {
-      logger.error(s"[setElement] - There was a problem setting element $element for regId $regId")
-      throw UpdateFailed(regId, element)
-    }
-
   def prepareRegistrationSubmission(regId: String, ackRef: String, status: VatRegStatus.Value): Future[Boolean] = {
     val modifier = toBSON(Json.obj(
-      AcknowledgementReferencePath.path -> ackRef,
-      VatStatusPath.path -> (if (status == VatRegStatus.draft) VatRegStatus.locked else status)
+      "acknowledgementReference" -> ackRef,
+      "status" -> (if (status == VatRegStatus.draft) VatRegStatus.locked else status)
     )).get
 
     collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_.ok)
@@ -186,7 +160,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
 
   def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value): Future[VatRegStatus.Value] = {
     val modifier = toBSON(Json.obj(
-      VatStatusPath.path -> status
+      "status" -> status
     )).get
 
     collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_ => status)
@@ -194,7 +168,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
 
   def saveTransId(transId: String, regId: String): Future[String] = {
     val modifier = toBSON(Json.obj(
-      VatTransIdPath.path -> transId
+      "transactionId" -> transId
     )).get
 
     collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_ => transId)

@@ -52,7 +52,7 @@ class UpdateTrafficManagementController @Inject()(cc: ControllerComponents,
     }
   }
 
-  val clear: Action[AnyContent] = Action.async { implicit request =>
+  val clear: Action[AnyContent] = Action.async { _ =>
     trafficManagementRepository.removeAll().map (_ => NoContent)
   }
 

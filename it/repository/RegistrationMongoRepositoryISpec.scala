@@ -20,7 +20,6 @@ import common.TransactionId
 import common.exceptions._
 import enums.VatRegStatus
 import itutil.{FutureAssertions, ITFixtures, MongoBaseSpec}
-import models.AcknowledgementReferencePath
 import models.api._
 import models.api.returns._
 import play.api.libs.json._
@@ -163,17 +162,6 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       await(repository.retrieveVatScheme(testRegId)) mustBe None
       await(repository.clearDownDocument(testTransactionId)) mustBe true
       await(repository.retrieveVatScheme(testRegId)) mustBe None
-    }
-  }
-  "Calling updateByElement" should {
-    "update Element object when one exists" in new Setup {
-      val schemeWithAckRefNumber: VatScheme = vatScheme.copy(acknowledgementReference = Some(ACK_REF_NUM))
-      repository.insert(schemeWithAckRefNumber).flatMap(_ => repository.updateByElement(vatScheme.id,
-        AcknowledgementReferencePath, ACK_REF_NUM)) returns ACK_REF_NUM
-    }
-    "return a None when there is no corresponding VatScheme object" in new Setup {
-      repository.insert(vatScheme).flatMap(_ => repository.updateByElement("fakeRegId",
-        AcknowledgementReferencePath, ACK_REF_NUM)) failedWith classOf[UpdateFailed]
     }
   }
   "Calling prepareRegistrationSubmission" should {

@@ -4,7 +4,7 @@ package repository
 import itutil.{FakeTimeMachine, IntegrationStubbing}
 import models.api.DailyQuota
 import models.submission.UkCompany
-import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.json.JsString
 import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class DailyQuotaRepositoryISpec extends IntegrationStubbing {
 
   class Setup(hour: Int = 9) extends SetupHelper {
-   FakeTimeMachine.hour = hour
+    FakeTimeMachine.hour = hour
   }
 
   val testQuota = DailyQuota(testDate, UkCompany, isEnrolled = true)

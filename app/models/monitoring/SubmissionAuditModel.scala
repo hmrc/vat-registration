@@ -16,7 +16,7 @@
 
 package models.monitoring
 
-import models.{IncorporatedEntity, SoleTrader}
+import models.IncorporatedEntity
 import models.api.{EligibilitySubmissionData, VatScheme}
 import play.api.libs.json.{JsValue, Json}
 import services.monitoring.AuditModel
@@ -72,7 +72,8 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           "userEnteredDetails" -> userAnswers
         )
       case _ =>
-        throw new InternalServerException(s"""
+        throw new InternalServerException(
+          s"""
           [SubmissionAuditModel] Could not construct Audit JSON as required blocks are missing.
 
           eligibilitySubmissionData is present?   ${vatScheme.eligibilitySubmissionData.isDefined}

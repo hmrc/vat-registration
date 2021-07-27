@@ -28,7 +28,7 @@ class VatThresholdController @Inject()(val vatThresholdService: VatThresholdServ
                                        controllerComponents: ControllerComponents) extends BackendController(controllerComponents){
 
   def getThresholdForDate(date: String): Action[AnyContent] = Action {
-    implicit request =>
+    _ =>
       val inputDate = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(date)
       vatThresholdService.getThresholdForGivenDate(inputDate) match {
         case Some(vatThreshold) => Ok(Json.toJson(vatThreshold))

@@ -1,26 +1,22 @@
 
 package repository
 
-import java.time.{LocalDate, LocalDateTime, LocalTime}
-import itutil.{FakeTimeMachine, ITFixtures, IntegrationSpecBase, FutureAssertions}
+import itutil.{FakeTimeMachine, FutureAssertions, ITFixtures, IntegrationSpecBase}
 import models.api._
-import play.api.{Application, Configuration}
+import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.TimeMachine
 
+import java.time.{LocalDate, LocalDateTime, LocalTime}
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.scalatest.concurrent.Eventually._
-import reactivemongo.bson.BSONDocument.pretty
-import repositories.trafficmanagement.TrafficManagementRepository
-
-import scala.concurrent.duration._
 
 class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAssertions {
 
   class Setup(hour: Int = 9) extends SetupHelper with ITFixtures {
+
     class TimestampMachine extends FakeTimeMachine {
       override val timestamp = LocalDateTime.of(testDate, LocalTime.of(hour, 0))
     }

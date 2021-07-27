@@ -19,11 +19,10 @@ package services.monitoring
 import models.api.VatScheme
 import models.monitoring.SubmissionAuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
+import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
 
 @Singleton
 class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: SubscriptionBlockBuilder,
@@ -33,15 +32,14 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
                                             periodsAuditBlockBuilder: PeriodsAuditBlockBuilder,
                                             bankAuditBlockBuilder: BankAuditBlockBuilder,
                                             contactAuditBlockBuilder: ContactAuditBlockBuilder,
-                                            annualAccountingAuditBlockBuilder: AnnualAccountingAuditBlockBuilder)
-                                           (implicit ec: ExecutionContext) {
+                                            annualAccountingAuditBlockBuilder: AnnualAccountingAuditBlockBuilder) {
 
 
   def buildAuditJson(vatScheme: VatScheme,
                      authProviderId: String,
                      affinityGroup: AffinityGroup,
                      optAgentReferenceNumber: Option[String]
-                    )(implicit hc: HeaderCarrier): SubmissionAuditModel = {
+                    ): SubmissionAuditModel = {
     val details = jsonObject(
       "outsideEUSales" -> {
         vatScheme.tradingDetails.map(_.eoriRequested) match {
