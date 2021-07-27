@@ -146,7 +146,7 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
   }
 
   def clearDownDocument(transId: String): Action[AnyContent] = Action.async {
-    implicit request =>
+    _ =>
       registrationService.clearDownDocument(transId).map {
         case true => Ok
         case _ => InternalServerError

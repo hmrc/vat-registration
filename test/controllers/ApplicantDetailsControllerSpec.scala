@@ -20,7 +20,7 @@ import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.IncorporatedEntity
-import models.api.{ApplicantDetails, BvFail, BvPass, NotCalledStatus, RegisteredStatus, TransactorDetails}
+import models.api.{ApplicantDetails, BvFail, NotCalledStatus, TransactorDetails}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}

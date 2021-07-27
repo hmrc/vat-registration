@@ -19,7 +19,6 @@ package models.api
 import auth.CryptoSCRS
 import common.TransactionId
 import enums.VatRegStatus
-import models.BusinessEntity
 import models.api.returns.Returns
 import models.submission.PartyType
 import play.api.libs.functional.syntax._

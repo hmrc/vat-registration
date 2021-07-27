@@ -16,11 +16,10 @@
 
 package models.api
 
-import models.submission.PartyType
-
-import java.time.LocalDate
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
+
+import java.time.LocalDate
 
 case class Threshold(mandatoryRegistration: Boolean,
                      thresholdPreviousThirtyDays: Option[LocalDate] = None,

@@ -16,14 +16,11 @@
 
 package services
 
-import java.time.LocalDate
 import common.exceptions._
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models._
-import models.api.TurnoverEstimates
-import models.api.{Threshold, _}
+import models.api.{Threshold, TurnoverEstimates, _}
 import models.submission.UkCompany
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
@@ -32,6 +29,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.LocalDate
 import scala.concurrent.Future
 
 class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationFixture {
@@ -141,32 +139,6 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
 
         intercept[InvalidSubmissionStatus](await(service.deleteVatScheme(testRegId, VatRegStatus.draft, VatRegStatus.rejected)))
       }
-    }
-  }
-
-
-  "call to saveAcknowledgementReference" should {
-
-    val vatScheme = VatScheme(testRegId, testInternalid, None, None, None, status = VatRegStatus.draft)
-
-    "return Success response " in new Setup {
-      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatScheme)))
-      when(mockRegistrationMongoRepository.updateByElement(testRegId, AcknowledgementReferencePath, testAckReference))
-        .thenReturn(Future.successful(testAckReference))
-      service.saveAcknowledgementReference(testRegId, testAckReference) returnsRight testAckReference
-    }
-
-    val vatSchemeWithAckRefNum = vatScheme.copy(acknowledgementReference = Some(testAckReference))
-    "return Error response " in new Setup {
-      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatSchemeWithAckRefNum)))
-      service.saveAcknowledgementReference(testRegId, testAckReference) returnsLeft
-        AcknowledgementReferenceExists(s"""Registration ID $testRegId already has an acknowledgement reference of: $testAckReference""")
-    }
-
-    "return Error response for MissingVatSchemeDocument" in new Setup {
-      val fakeRegId = "fakeRegId"
-      when(mockRegistrationMongoRepository.retrieveVatScheme(fakeRegId)).thenReturn(Future.successful(None))
-      service.saveAcknowledgementReference(fakeRegId, testAckReference) returnsLeft ResourceNotFound(s"VatScheme ID: $fakeRegId missing")
     }
   }
 

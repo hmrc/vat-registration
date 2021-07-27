@@ -18,7 +18,6 @@ package services.monitoring
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.submission.UkCompany
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 

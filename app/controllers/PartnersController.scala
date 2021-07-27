@@ -19,7 +19,7 @@ package controllers
 import auth.{Authorisation, AuthorisationResource}
 import models.api.Partner
 import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.RegistrationMongoRepository
 import services.PartnersService
 import uk.gov.hmrc.auth.core.AuthConnector

@@ -23,7 +23,7 @@ import play.api.libs.json.{JsObject, Json}
 import play.api.test.Helpers._
 import services.monitoring.buildermocks.MockEntitiesBlockBuilder
 import services.submission.buildermocks._
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
+import uk.gov.hmrc.http.InternalServerException
 
 import scala.concurrent.Future
 

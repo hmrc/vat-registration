@@ -16,7 +16,7 @@
 
 package services.submission
 
-import models.{IncorporatedEntity, SoleTrader}
+import models.IncorporatedEntity
 import models.api.EligibilitySubmissionData._
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository

@@ -16,8 +16,7 @@
 
 package models.submission
 
-import play.api.libs.json.{Format, JsString, JsSuccess, Reads, Writes}
-import uk.gov.hmrc.http.InternalServerException
+import play.api.libs.json.{Format, JsString, Reads, Writes}
 
 sealed trait PartyType
 
@@ -81,6 +80,7 @@ object PartyType {
   val inverseStati = stati.map(_.swap)
 
   def fromString(value: String): PartyType = inverseStati(value)
+
   def toJsString(value: PartyType): JsString = JsString(stati(value))
 
   implicit val writes = Writes[PartyType] { partyType => toJsString(partyType) }

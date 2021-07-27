@@ -20,10 +20,10 @@ import models.api.{InProgress, UpscanDetails}
 import repositories.UpscanMongoRepository
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
-class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository)(implicit ec: ExecutionContext) {
+class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) {
 
   def getUpscanDetails(reference: String): Future[Option[UpscanDetails]] =
     upscanMongoRepository.getUpscanDetails(reference)

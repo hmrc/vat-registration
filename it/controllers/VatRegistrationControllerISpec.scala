@@ -212,7 +212,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       given
         .user.isAuthorised
         .regRepo.insertIntoDb(testVatSchemeWithPartners, repo.insert)
-      val blockBuilder = app.injector.instanceOf[SubmissionPayloadBuilder]
 
       stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderWithPartnerJson, OK, "")
 

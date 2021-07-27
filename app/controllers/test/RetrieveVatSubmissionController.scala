@@ -17,20 +17,19 @@
 package controllers.test
 
 import play.api.Logging
-import play.api.libs.json.{JsError, JsSuccess, JsValue}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.submission.SubmissionPayloadBuilder
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class RetrieveVatSubmissionController @Inject()(cc: ControllerComponents,
                                                 submissionPayloadBuilder: SubmissionPayloadBuilder
                                                )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
 
-  def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { implicit request =>
+  def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { _ =>
     submissionPayloadBuilder.buildSubmissionPayload(regId) map (Ok(_))
   }
 
