@@ -15,7 +15,6 @@
  */
 package itutil
 
-import common.TransactionId
 import enums.VatRegStatus
 import models.{PartnershipIdEntity, IncorporatedEntity, SoleTrader}
 import models.api.returns._
@@ -41,7 +40,6 @@ trait ITFixtures {
   val startDate = testDate
   val testRegId = "regId"
   val testInternalid = "INT-123-456-789"
-  val testTransactionId = "transId"
   val vatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft)
   val oldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   val testTradingName = "trading-name"
@@ -235,7 +233,6 @@ trait ITFixtures {
     VatScheme(
       id = testRegId,
       internalId = testInternalid,
-      transactionId = Some(TransactionId(testTransactionId)),
       tradingDetails = Some(testTradingDetails),
       returns = Some(testAASReturns),
       sicAndCompliance = Some(testSicAndCompliance),
@@ -254,7 +251,6 @@ trait ITFixtures {
     VatScheme(
       id = testRegId,
       internalId = testInternalid,
-      transactionId = Some(TransactionId(testTransactionId)),
       tradingDetails = Some(testTradingDetails),
       returns = Some(testReturns),
       sicAndCompliance = Some(testSicAndCompliance),

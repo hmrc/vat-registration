@@ -16,8 +16,6 @@
 
 package common.exceptions
 
-import common.TransactionId
-
 import scala.util.control.NoStackTrace
 
 sealed trait DBExceptions {
@@ -32,7 +30,6 @@ case class NoTransactionId(msg: String) extends NoStackTrace
 case class NoRegIdException(msg: String) extends NoStackTrace
 case class NoCompanyName(msg: String) extends NoStackTrace
 case class NoIncorpDate(msg: String) extends NoStackTrace
-case class NoVatSchemeWithTransId(id: TransactionId) extends NoStackTrace
 case class MissingRegDocument(id: String) extends NoStackTrace with DBExceptions {
   override def getMessage: String = s"No Registration document found for regId: ${id}"
 }

@@ -166,20 +166,6 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_ => status)
   }
 
-  def saveTransId(transId: String, regId: String): Future[String] = {
-    val modifier = toBSON(Json.obj(
-      "transactionId" -> transId
-    )).get
-
-    collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_ => transId)
-  }
-
-  def fetchRegByTxId(transId: String): Future[Option[VatScheme]] = {
-    collection.find[BSONDocument, VatScheme](tidSelector(transId), None).one[VatScheme]
-  }
-
-  private[repositories] def tidSelector(id: String) = BSONDocument("transactionId" -> id)
-
   def updateIVStatus(regId: String, ivStatus: Boolean): Future[Boolean] = {
     val querySelect = Json.obj("registrationId" -> regId, "applicantDetails" -> Json.obj("$exists" -> true))
     val setDoc = Json.obj("$set" -> Json.obj("applicantDetails.ivPassed" -> ivStatus))
@@ -302,13 +288,6 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
       case e =>
         logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] Unable to remove for regId: $regId, Error: ${e.getMessage}")
         throw e
-    }
-  }
-
-  def clearDownDocument(transId: String): Future[Boolean] = {
-    collection.delete.one(tidSelector(transId)) map { wr =>
-      if (!wr.ok) logger.error(s"[clearDownDocument] - Error deleting vat reg doc for txId $transId - Error: ${Message.unapply(wr)}")
-      wr.ok
     }
   }
 

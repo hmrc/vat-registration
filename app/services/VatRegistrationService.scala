@@ -98,10 +98,6 @@ class VatRegistrationService @Inject()(registrationRepository: RegistrationMongo
     } yield deleted
   }
 
-  def clearDownDocument(transId: String): Future[Boolean] = {
-    registrationRepository.clearDownDocument(transId)
-  }
-
   def retrieveAcknowledgementReference(regId: String): ServiceResult[String] = {
     retrieveVatScheme(regId).subflatMap(_.acknowledgementReference.toRight(ResourceNotFound("AcknowledgementId")))
   }

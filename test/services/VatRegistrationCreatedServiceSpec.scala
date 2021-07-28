@@ -187,15 +187,6 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
     }
   }
 
-  "call to clearDownDocument" should {
-    "pass" when {
-      "given a transactionid" in new Setup {
-        when(mockRegistrationMongoRepository.clearDownDocument(ArgumentMatchers.eq("testTransID"))).thenReturn(Future.successful(true))
-        await(service.clearDownDocument("testTransID")) mustBe true
-      }
-    }
-  }
-
   "call to getThresholds" should {
     val thresholdPreviousThirtyDays = LocalDate.of(2017, 5, 23)
     val thresholdInTwelveMonths = LocalDate.of(2017, 7, 16)
