@@ -16,7 +16,6 @@
 
 package fixtures
 
-import common.TransactionId
 import enums.VatRegStatus
 import models.api._
 import models.api.returns._
@@ -35,7 +34,6 @@ trait VatRegistrationFixture {
   lazy val testRole: RoleInBusiness = Director
   lazy val testRegId = "testRegId"
   lazy val testInternalid = "INT-123-456-789"
-  lazy val testTxId: TransactionId = TransactionId("1")
   lazy val testAckReference = "BRPY000000000001"
   lazy val testDate: LocalDate = LocalDate.of(2018, 1, 1)
   lazy val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.MIDNIGHT)

@@ -145,14 +145,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
       }
   }
 
-  def clearDownDocument(transId: String): Action[AnyContent] = Action.async {
-    _ =>
-      registrationService.clearDownDocument(transId).map {
-        case true => Ok
-        case _ => InternalServerError
-      }
-  }
-
   // TODO: this returns 404 when other methods return 204. Refactor to return 204 at some point
   def fetchBankAccountDetails(regId: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -183,16 +175,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
       isAuthorised(regId) { authResult =>
         authResult.ifAuthorised(regId, "VatRegistrationController", "getDocumentStatus") {
           registrationService.getStatus(regId).sendResult("getDocumentStatus", regId)
-        }
-      }
-  }
-
-  def saveTransId(regId: String): Action[JsValue] = Action.async(parse.json) {
-    implicit request =>
-      withJsonBody[JsValue] { json =>
-        val transId: String = (json \ "transactionID").as[String]
-        registrationRepository.saveTransId(transId, regId) map { _ =>
-          Ok
         }
       }
   }
