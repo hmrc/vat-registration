@@ -93,7 +93,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       given
         .user.isAuthorised
 
-      val testVatSchemeJson: JsValue = Json.toJson(testFullVatScheme)
+      val testVatSchemeJson: JsValue = Json.toJson(testFullVatScheme)(VatScheme.format())
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.insertVatScheme().url)
         .post(testVatSchemeJson)
       )

@@ -20,7 +20,7 @@ import enums.VatRegStatus
 import models.api._
 import models.api.returns._
 import models.submission._
-import models.{IncorporatedEntity, PartnershipIdEntity, SoleTrader}
+import models.{BusinessIdEntity, IncorporatedEntity, PartnershipIdEntity, SoleTrader}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -33,7 +33,7 @@ trait VatRegistrationFixture {
   lazy val testNino = "AB123456A"
   lazy val testRole: RoleInBusiness = Director
   lazy val testRegId = "testRegId"
-  lazy val testInternalid = "INT-123-456-789"
+  lazy val testInternalId = "INT-123-456-789"
   lazy val testAckReference = "BRPY000000000001"
   lazy val testDate: LocalDate = LocalDate.of(2018, 1, 1)
   lazy val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.MIDNIGHT)
@@ -42,6 +42,7 @@ trait VatRegistrationFixture {
   lazy val testCrn = "testCrn"
   lazy val testUtr = "testUtr"
   lazy val testChrn = "testChrn"
+  lazy val testCasc = "testCasc"
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
   lazy val testAddress = Address("line1", "line2", None, None, Some("XX XX"), Some(Country(Some("GB"), None)), addressValidated = Some(true))
   lazy val testPostcode = "ZZ1 1ZZ"
@@ -49,7 +50,7 @@ trait VatRegistrationFixture {
   lazy val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
   lazy val testOldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   lazy val testPreviousName = FormerName(name = Some(testOldName), change = Some(testDate))
-  lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft)
+  lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalId, status = VatRegStatus.draft)
   lazy val exception = new Exception("Exception")
   lazy val testVoluntaryThreshold = Threshold(mandatoryRegistration = false, None, None, None)
   lazy val testMandatoryThreshold = Threshold(
@@ -117,13 +118,14 @@ trait VatRegistrationFixture {
     identifiersMatch = true
   )
 
-  val testTrustEntity: PartnershipIdEntity = PartnershipIdEntity(
+  val testTrustEntity: BusinessIdEntity = BusinessIdEntity(
     Some(testUtr),
     Some(testPostcode),
     Some(testChrn),
-    Some(testBpSafeId),
+    Some(testCasc),
     businessVerification = BvPass,
     registration = RegisteredStatus,
+    bpSafeId = Some(testBpSafeId),
     identifiersMatch = true
   )
 

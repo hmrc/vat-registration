@@ -114,7 +114,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     )
 
     "build a full subscription json when all data is provided and user is mandatory on a forward look" in {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(Some(validApplicantDetails)))
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(Some(testReturns)))
@@ -133,7 +133,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     }
 
     "build a full subscription json when all data is provided and user is mandatory on a backward look" in {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(Some(validApplicantDetails)))
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(Some(testReturns)))
@@ -152,7 +152,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     }
 
     "build a minimal subscription json when minimum data is provided and user is voluntary" in {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(Some(validApplicantDetails)))
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(Some(testReturns)))
@@ -172,7 +172,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     }
 
     "build a minimal subscription json when no Flat Rate Scheme is provided" in {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(Some(validApplicantDetails)))
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(Some(testReturns)))
@@ -192,7 +192,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     }
 
     "fail if the Flat Rate Scheme is invalid" in {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(Some(validApplicantDetails)))
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(Some(testReturns)))
@@ -208,8 +208,8 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       intercept[InternalServerException](await(result)).message mustBe "[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true"
     }
 
-    "fail if all of the repository requests return nothing" in {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+    "fail if the party type cannot be retrieved from the eligibility data" in {
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(None))
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(None))
@@ -222,13 +222,11 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
       val result = TestService.buildSubscriptionBlock(testRegId)
 
-      intercept[InternalServerException](await(result)).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
-        "for submission because some of the data is missing: ApplicantDetails found - false, EligibilitySubmissionData found - false, " +
-        "Returns found - false, SicAndCompliance found - false."
+      intercept[InternalServerException](await(result)).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block due to missing party type"
     }
 
     "fail if any of the repository requests return nothing" in {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(Some(validApplicantDetails)))
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(None))

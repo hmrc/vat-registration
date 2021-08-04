@@ -17,20 +17,22 @@
 package controllers
 
 import auth.{Authorisation, AuthorisationResource}
-import javax.inject.{Inject, Singleton}
 import models.api.ApplicantDetails
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Reads}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import services.ApplicantDetailsService
+import services.{ApplicantDetailsService, VatRegistrationService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 @Singleton
 class ApplicantDetailsController @Inject()(val applicantDetailsService: ApplicantDetailsService,
-                                         val authConnector: AuthConnector,
-                                         controllerComponents: ControllerComponents) extends BackendController(controllerComponents) with Authorisation {
+                                           val authConnector: AuthConnector,
+                                           vatRegistrationService: VatRegistrationService,
+                                           controllerComponents: ControllerComponents) extends BackendController(controllerComponents) with Authorisation {
 
   val resourceConn: AuthorisationResource = applicantDetailsService.registrationRepository
 
@@ -38,7 +40,12 @@ class ApplicantDetailsController @Inject()(val applicantDetailsService: Applican
     implicit request =>
       isAuthorised(regId) { authResult =>
         authResult.ifAuthorised(regId, "ApplicantDetailsController", "getApplicantDetailsData") {
-          applicantDetailsService.getApplicantDetailsData(regId) sendResult("getApplicantDetailsData", regId)
+          vatRegistrationService.getPartyType(regId).flatMap {
+            case Some(partyType) =>
+              applicantDetailsService.getApplicantDetailsData(regId, partyType) sendResult("getApplicantDetailsData", regId)
+            case err =>
+              Future.successful(NotFound)
+          }
         }
       }
   }
@@ -47,10 +54,17 @@ class ApplicantDetailsController @Inject()(val applicantDetailsService: Applican
     implicit request =>
       isAuthorised(regId) { authResult =>
         authResult.ifAuthorised(regId, "ApplicantDetailsController", "updateApplicantDetailsData") {
-          withJsonBody[ApplicantDetails] { applicantDetails =>
-            applicantDetailsService.updateApplicantDetailsData(regId, applicantDetails) sendResult("updateApplicantDetailsData", regId)
+          vatRegistrationService.getPartyType(regId).flatMap {
+            case Some(partyType) =>
+              implicit val rds: Reads[ApplicantDetails] = ApplicantDetails.reads(partyType)
+              withJsonBody[ApplicantDetails] { applicantDetails =>
+                applicantDetailsService.updateApplicantDetailsData(regId, applicantDetails) sendResult("updateApplicantDetailsData", regId)
+              }
+            case _ =>
+              Future.successful(NotFound)
           }
         }
       }
   }
+
 }

@@ -46,42 +46,66 @@ case class VatScheme(id: String,
 
 object VatScheme {
 
-  implicit val apiFormat: OFormat[VatScheme] = (
-    (__ \ "registrationId").format[String] and
-      (__ \ "internalId").format[String] and
-      (__ \ "tradingDetails").formatNullable[TradingDetails] and
-      (__ \ "returns").formatNullable[Returns] and
-      (__ \ "sicAndCompliance").formatNullable[SicAndCompliance] and
-      (__ \ "businessContact").formatNullable[BusinessContact] and
-      (__ \ "bankAccount").formatNullable[BankAccount] and
-      (__ \ "acknowledgementReference").formatNullable[String] and
-      (__ \ "flatRateScheme").formatNullable[FlatRateScheme] and
-      (__ \ "status").format[VatRegStatus.Value] and
-      (__ \ "eligibilityData").formatNullable[JsObject] and
-      (__ \ "eligibilitySubmissionData").formatNullable[EligibilitySubmissionData] and
-      (__ \ "applicantDetails").formatNullable[ApplicantDetails] and
-      (__ \ "confirmInformationDeclaration").formatNullable[Boolean] and
-      (__ \ "nrsSubmissionPayload").formatNullable[String] and
-      (__ \ "partners").formatNullable[List[Partner]]
-    ) (VatScheme.apply, unlift(VatScheme.unapply))
+  def reads(crypto: Option[CryptoSCRS] = None): Reads[VatScheme] =
+    (__ \ "eligibilitySubmissionData" \ "partyType").readNullable[PartyType] flatMap {
+      case Some(partyType) => (
+        (__ \ "registrationId").read[String] and
+        (__ \ "internalId").read[String] and
+        (__ \ "tradingDetails").readNullable[TradingDetails] and
+        (__ \ "returns").readNullable[Returns] and
+        (__ \ "sicAndCompliance").readNullable[SicAndCompliance] and
+        (__ \ "businessContact").readNullable[BusinessContact] and
+        (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
+        (__ \ "acknowledgementReference").readNullable[String] and
+        (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
+        (__ \ "status").read[VatRegStatus.Value] and
+        (__ \ "eligibilityData").readNullable[JsObject] and
+        (__ \ "eligibilitySubmissionData").readNullable[EligibilitySubmissionData] and
+        (__ \ "applicantDetails").readNullable[ApplicantDetails](Format[ApplicantDetails](ApplicantDetails.reads(partyType), ApplicantDetails.writes)) and
+        (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
+        (__ \ "nrsSubmissionPayload").readNullable[String] and
+        (__ \ "partners").readNullable[List[Partner]]
+      )(VatScheme.apply _)
+      case _ => (
+        (__ \ "registrationId").read[String] and
+        (__ \ "internalId").read[String] and
+        (__ \ "tradingDetails").readNullable[TradingDetails] and
+        (__ \ "returns").readNullable[Returns] and
+        (__ \ "sicAndCompliance").readNullable[SicAndCompliance] and
+        (__ \ "businessContact").readNullable[BusinessContact] and
+        (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
+        (__ \ "acknowledgementReference").readNullable[String] and
+        (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
+        (__ \ "status").read[VatRegStatus.Value] and
+        (__ \ "eligibilityData").readNullable[JsObject] and
+        (__ \ "eligibilitySubmissionData").readNullable[EligibilitySubmissionData] and
+        Reads.pure(None) and
+        (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
+        (__ \ "nrsSubmissionPayload").readNullable[String] and
+        (__ \ "partners").readNullable[List[Partner]]
+      )(VatScheme.apply _)
+    }
 
-  def mongoFormat(crypto: CryptoSCRS): OFormat[VatScheme] = (
-    (__ \ "registrationId").format[String] and
-      (__ \ "internalId").format[String] and
-      (__ \ "tradingDetails").formatNullable[TradingDetails] and
-      (__ \ "returns").formatNullable[Returns] and
-      (__ \ "sicAndCompliance").formatNullable[SicAndCompliance] and
-      (__ \ "businessContact").formatNullable[BusinessContact] and
-      (__ \ "bankAccount").formatNullable[BankAccount](BankAccountMongoFormat.encryptedFormat(crypto)) and
-      (__ \ "acknowledgementReference").formatNullable[String] and
-      (__ \ "flatRateScheme").formatNullable[FlatRateScheme] and
-      (__ \ "status").format[VatRegStatus.Value] and
-      (__ \ "eligibilityData").formatNullable[JsObject] and
-      (__ \ "eligibilitySubmissionData").formatNullable[EligibilitySubmissionData] and
-      (__ \ "applicantDetails").formatNullable[ApplicantDetails] and
-      (__ \ "confirmInformationDeclaration").formatNullable[Boolean] and
-      (__ \ "nrsSubmissionPayload").formatNullable[String] and
-      (__ \ "partners").formatNullable[List[Partner]]
-    ) (VatScheme.apply, unlift(VatScheme.unapply))
+  def writes(crypto: Option[CryptoSCRS] = None): OWrites[VatScheme] = (
+    (__ \ "registrationId").write[String] and
+    (__ \ "internalId").write[String] and
+    (__ \ "tradingDetails").writeNullable[TradingDetails] and
+    (__ \ "returns").writeNullable[Returns] and
+    (__ \ "sicAndCompliance").writeNullable[SicAndCompliance] and
+    (__ \ "businessContact").writeNullable[BusinessContact] and
+    (__ \ "bankAccount").writeNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
+    (__ \ "acknowledgementReference").writeNullable[String] and
+    (__ \ "flatRateScheme").writeNullable[FlatRateScheme] and
+    (__ \ "status").write[VatRegStatus.Value] and
+    (__ \ "eligibilityData").writeNullable[JsObject] and
+    (__ \ "eligibilitySubmissionData").writeNullable[EligibilitySubmissionData] and
+    (__ \ "applicantDetails").writeNullable[ApplicantDetails] and
+    (__ \ "confirmInformationDeclaration").writeNullable[Boolean] and
+    (__ \ "nrsSubmissionPayload").writeNullable[String] and
+    (__ \ "partners").writeNullable[List[Partner]]
+  )(unlift(VatScheme.unapply))
+
+  def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =
+    OFormat[VatScheme](reads(crypto), writes(crypto))
 
 }

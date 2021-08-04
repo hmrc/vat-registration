@@ -40,7 +40,7 @@ class TradingDetailsControllerSpec extends VatRegSpec with VatRegistrationFixtur
 
   "fetchTradingDetails" should {
     "return an Ok with valid trading details json if the document contains it" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId,testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId,testInternalId)
       when(mockTradingDetailsService.retrieveTradingDetails(any()))
         .thenReturn(Future.successful(Some(validFullTradingDetails)))
 
@@ -50,7 +50,7 @@ class TradingDetailsControllerSpec extends VatRegSpec with VatRegistrationFixtur
     }
 
     "return a NoContent if the trading details block is not present in the document" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId,testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId,testInternalId)
       when(mockTradingDetailsService.retrieveTradingDetails(any()))
         .thenReturn(Future.successful(None))
 
@@ -59,7 +59,7 @@ class TradingDetailsControllerSpec extends VatRegSpec with VatRegistrationFixtur
     }
 
     "return NotFound if the registration document was not found for the regId provided" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId,testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId,testInternalId)
       when(mockTradingDetailsService.retrieveTradingDetails(any()))
         .thenReturn(Future.failed(MissingRegDocument(testRegId)))
 
@@ -79,7 +79,7 @@ class TradingDetailsControllerSpec extends VatRegSpec with VatRegistrationFixtur
   "updateTradingDetails" should {
 
     "returns Ok if successful" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId,testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId,testInternalId)
       when(mockTradingDetailsService.updateTradingDetails(any(), any()))
         .thenReturn(Future.successful(validFullTradingDetails))
 
@@ -90,7 +90,7 @@ class TradingDetailsControllerSpec extends VatRegSpec with VatRegistrationFixtur
     }
 
     "returns NotFound if the registration is not found" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId,testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId,testInternalId)
       when(mockTradingDetailsService.updateTradingDetails(any(), any()))
         .thenReturn(Future.failed(MissingRegDocument(testRegId)))
 
@@ -99,7 +99,7 @@ class TradingDetailsControllerSpec extends VatRegSpec with VatRegistrationFixtur
     }
 
     "returns InternalServerError if an error occurs" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId,testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId,testInternalId)
       when(mockTradingDetailsService.updateTradingDetails(any(), any()))
         .thenReturn(Future.failed(new Exception))
 

@@ -46,10 +46,8 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
   override val resourceConn: AuthorisationResource = registrationRepository
   val errorHandler: LeftState => Result = err => err.toResult
 
-  def newVatRegistration: Action[AnyContent] = Action.async { implicit request =>
+  def newVatRegistration(implicit format: Format[VatScheme] = VatScheme.format()): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
-      implicit val writes: OWrites[VatScheme] = VatScheme.apiFormat
-
       newRegistrationService.newRegistration(internalId) map { scheme =>
         Created(Json.toJson(scheme))
       } recover {
@@ -60,7 +58,7 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
     }
   }
 
-  def insertVatScheme: Action[VatScheme] = Action.async(parse.json[VatScheme]) { implicit request =>
+  def insertVatScheme(implicit format: Format[VatScheme] = VatScheme.format()): Action[VatScheme] = Action.async(parse.json[VatScheme]) { implicit request =>
     isAuthenticated { _ =>
       newRegistrationService.insertVatScheme(request.body).map { vatScheme =>
         Created(Json.toJson(vatScheme))
@@ -68,12 +66,10 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
     }
   }
 
-  def retrieveVatScheme(id: String): Action[AnyContent] = Action.async {
+  def retrieveVatScheme(id: String)(implicit format: Format[VatScheme] = VatScheme.format()): Action[AnyContent] = Action.async {
     implicit request =>
       isAuthorised(id) { authResult =>
         authResult.ifAuthorised(id, "VatRegistrationController", "retrieveVatScheme") {
-          implicit val writes: OWrites[VatScheme] = VatScheme.apiFormat
-
           registrationService.retrieveVatScheme(id).fold(errorHandler, vatScheme => Ok(Json.toJson(vatScheme)))
         }
       }
@@ -82,7 +78,7 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
   def retrieveVatSchemeByInternalId(): Action[AnyContent] = Action.async {
     implicit request =>
       isAuthenticated { internalId =>
-        implicit val writes: OWrites[VatScheme] = VatScheme.apiFormat
+        implicit val writes: OWrites[VatScheme] = VatScheme.writes()
 
         registrationService.retrieveVatSchemeByInternalId(internalId).fold(errorHandler, vatScheme => Ok(Json.toJson(vatScheme)))
       }

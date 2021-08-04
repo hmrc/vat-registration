@@ -30,7 +30,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
 
   val rootBlockTestVatScheme = VatScheme(
     id = testRegId,
-    internalId = testInternalid,
+    internalId = testInternalId,
     status = VatRegStatus.draft,
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     tradingDetails = Some(validFullTradingDetails),

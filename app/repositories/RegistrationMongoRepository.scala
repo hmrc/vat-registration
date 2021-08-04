@@ -21,6 +21,7 @@ import common.exceptions._
 import enums.VatRegStatus
 import models.api._
 import models.api.returns.Returns
+import models.submission.PartyType
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.commands.WriteResult.Message
@@ -41,7 +42,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   extends ReactiveRepository[VatScheme, BSONObjectID](
     collectionName = "registration-information",
     mongo = mongo.mongoConnector.db,
-    domainFormat = VatScheme.mongoFormat(crypto)
+    domainFormat = VatScheme.format(Some(crypto))
   ) with ReactiveMongoFormats with AuthorisationResource with JsonErrorUtil {
 
   startUp
@@ -122,7 +123,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   }
 
   def insertVatScheme(vatScheme: VatScheme): Future[VatScheme] = {
-    implicit val vatSchemeWrites: OWrites[VatScheme] = VatScheme.mongoFormat(crypto)
+    implicit val vatSchemeWrites: OWrites[VatScheme] = VatScheme.format(Some(crypto))
 
     collection.update.one(regIdSelector(vatScheme.id), vatScheme, upsert = true).map { writeResult =>
       logger.info(s"[RegistrationMongoRepository] [insertVatScheme] successfully stored a preexisting VatScheme")
@@ -135,10 +136,12 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   }
 
   def retrieveVatScheme(regId: String): Future[Option[VatScheme]] = {
-    collection.find[BSONDocument, VatScheme](regIdSelector(regId), None).one[VatScheme]
+    implicit val format = VatScheme.format(Some(crypto))
+    find("registrationId" -> regId).map(_.headOption)
   }
 
   def retrieveVatSchemeByInternalId(id: String): Future[Option[VatScheme]] = {
+    implicit val format = VatScheme.format(Some(crypto))
     collection.find[JsObject, VatScheme](Json.obj("internalId" -> id), None).sort(Json.obj("_id" -> -1)).one[VatScheme]
   }
 
@@ -236,12 +239,12 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
-  def getApplicantDetails(regId: String): Future[Option[ApplicantDetails]] = {
+  def getApplicantDetails(regId: String, partyType: PartyType): Future[Option[ApplicantDetails]] = {
     val projection = Json.obj("applicantDetails" -> 1, "_id" -> 0)
 
     collection.find(regIdSelector(regId), Some(projection)).one[JsObject].map { doc =>
       doc.fold[Option[ApplicantDetails]](throw MissingRegDocument(regId))(json =>
-        (json \ "applicantDetails").validateOpt[ApplicantDetails] match {
+        (json \ "applicantDetails").validateOpt[ApplicantDetails](ApplicantDetails.reads(partyType)) match {
           case JsSuccess(applicantDetails, _) =>
             applicantDetails
           case JsError(errors) =>

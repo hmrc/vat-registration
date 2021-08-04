@@ -98,6 +98,7 @@ trait IntegrationSpecBase extends PlaySpec
     await(upscanMongoRepository.ensureIndexes)
 
     def insertIntoDb(vatScheme: VatScheme): WriteResult = {
+      implicit val format = VatScheme.format()
       val count = await(repo.count)
       val res = await(repo.insert(vatScheme))
       await(repo.count) mustBe count + 1

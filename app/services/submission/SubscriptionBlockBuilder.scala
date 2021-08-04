@@ -33,7 +33,10 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
   def buildSubscriptionBlock(regId: String): Future[JsObject] = for {
     optEligibilityData <- registrationMongoRepository.fetchEligibilitySubmissionData(regId)
     optReturns <- registrationMongoRepository.fetchReturns(regId)
-    optApplicantDetails <- registrationMongoRepository.getApplicantDetails(regId)
+    partyType = optEligibilityData.map(_.partyType).getOrElse(
+      throw new InternalServerException("[SubscriptionBlockBuilder] Could not build subscription block due to missing party type")
+    )
+    optApplicantDetails <- registrationMongoRepository.getApplicantDetails(regId, partyType)
     optSicAndCompliance <- registrationMongoRepository.fetchSicAndCompliance(regId)
     optFlatRateScheme <- registrationMongoRepository.fetchFlatRateScheme(regId)
   } yield (optEligibilityData, optReturns, optApplicantDetails, optSicAndCompliance, optFlatRateScheme) match {

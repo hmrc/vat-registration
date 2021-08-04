@@ -287,7 +287,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "customerIdentification" -> Json.obj(
-      "tradersPartyType" -> "50",
+      "tradersPartyType" -> "Z1",
       "primeBPSafeID" -> testBpSafeId,
       "tradingName" -> testTradingDetails.tradingName.get
     ),
@@ -387,7 +387,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "customerIdentification" -> Json.obj(
-      "tradersPartyType" -> "50",
+      "tradersPartyType" -> "60",
       "primeBPSafeID" -> testBpSafeId,
       "tradingName" -> testTradingDetails.tradingName.get
     ),

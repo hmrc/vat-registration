@@ -18,6 +18,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import models.api.ApplicantDetails
+import models.submission.PartyType
 import repositories.RegistrationMongoRepository
 
 import scala.concurrent.Future
@@ -25,8 +26,8 @@ import scala.concurrent.Future
 @Singleton
 class ApplicantDetailsService @Inject()(val registrationRepository: RegistrationMongoRepository) {
 
-  def getApplicantDetailsData(regId: String): Future[Option[ApplicantDetails]] = {
-    registrationRepository.getApplicantDetails(regId)
+  def getApplicantDetailsData(regId: String, partyType: PartyType): Future[Option[ApplicantDetails]] = {
+    registrationRepository.getApplicantDetails(regId, partyType)
   }
 
   def updateApplicantDetailsData(regId: String, applicantDetails: ApplicantDetails): Future[ApplicantDetails] = {

@@ -23,18 +23,24 @@ import models.IncorporatedEntity
 import models.api.{ApplicantDetails, BvFail, NotCalledStatus, TransactorDetails}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.RegistrationMongoRepository
 
 import scala.concurrent.Future
+import models.submission._
 
 class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixture {
 
   class Setup {
-    val controller: ApplicantDetailsController = new ApplicantDetailsController(mockApplicantDetailsService, mockAuthConnector, stubControllerComponents()) {
+    val controller: ApplicantDetailsController = new ApplicantDetailsController(
+      mockApplicantDetailsService,
+      mockAuthConnector,
+      mockVatRegistrationService,
+      stubControllerComponents()
+    ) {
       override val resourceConn: RegistrationMongoRepository = mockRegistrationMongoRepository
     }
   }
@@ -63,82 +69,82 @@ class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixt
     previousAddress = None
   )
 
-  val upsertApplicantDetailsJson: JsValue = Json.toJson(upsertApplicantDetails)
-  val validApplicantDetailsJson: JsValue = Json.toJson(validApplicantDetails)
+  val upsertApplicantDetailsJson: JsValue = Json.toJson(upsertApplicantDetails)(ApplicantDetails.writes)
+  val validApplicantDetailsJson: JsValue = Json.toJson(validApplicantDetails)(ApplicantDetails.writes)
 
   "getApplicantDetailsData" should {
     "returns a valid json if found for id" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-      when(mockApplicantDetailsService.getApplicantDetailsData(any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails)))
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      when(mockApplicantDetailsService.getApplicantDetailsData(any(), any())).thenReturn(Future.successful(Some(validApplicantDetails)))
+      when(mockVatRegistrationService.getPartyType(any())).thenReturn(Future.successful(Some(UkCompany)))
 
       val result: Future[Result] = controller.getApplicantDetailsData(testRegId)(FakeRequest())
 
-      status(result) mustBe 200
+      status(result) mustBe OK
       contentAsJson(result) mustBe validApplicantDetailsJson
     }
 
-    "returns 204 if none found" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-      when(mockApplicantDetailsService.getApplicantDetailsData(any()))
-        .thenReturn(Future.successful(None))
+    "returns NO_CONTENT if none found" in new Setup {
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      when(mockApplicantDetailsService.getApplicantDetailsData(any(), any())).thenReturn(Future.successful(None))
+      when(mockVatRegistrationService.getPartyType(any())).thenReturn(Future.successful(Some(UkCompany)))
 
       val result: Future[Result] = controller.getApplicantDetailsData(testRegId)(FakeRequest())
 
-      status(result) mustBe 204
+      status(result) mustBe NO_CONTENT
     }
 
-    "returns 404 if none found" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-      when(mockApplicantDetailsService.getApplicantDetailsData(any()))
-        .thenReturn(Future.failed(MissingRegDocument(testRegId)))
+    "returns NOT_FOUND if none found" in new Setup {
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      when(mockApplicantDetailsService.getApplicantDetailsData(any(), any())).thenReturn(Future.failed(MissingRegDocument(testRegId)))
+      when(mockVatRegistrationService.getPartyType(any())).thenReturn(Future.successful(Some(UkCompany)))
 
       val result: Future[Result] = controller.getApplicantDetailsData(testRegId)(FakeRequest())
-      status(result) mustBe 404
+      status(result) mustBe NOT_FOUND
     }
 
-    "returns 403 if user is not authorised" in new Setup {
-      AuthorisationMocks.mockNotAuthorised(testRegId, testInternalid)
+    "returns FORBIDDEN if user is not authorised" in new Setup {
+      AuthorisationMocks.mockNotAuthorised(testRegId, testInternalId)
 
       val result: Future[Result] = controller.getApplicantDetailsData(testRegId)(FakeRequest())
-      status(result) mustBe 403
+      status(result) mustBe FORBIDDEN
     }
   }
 
   "updateApplicantDetailsData" should {
-    "returns 403 if user is not authorised" in new Setup {
-      AuthorisationMocks.mockNotAuthorised(testRegId, testInternalid)
+    "returns FORBIDDEN if user is not authorised" in new Setup {
+      AuthorisationMocks.mockNotAuthorised(testRegId, testInternalId)
 
       val result: Future[Result] = controller.updateApplicantDetailsData(testRegId)(FakeRequest().withBody(upsertApplicantDetailsJson))
-      status(result) mustBe 403
+      status(result) mustBe FORBIDDEN
     }
 
-    "returns 200 if successful" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-      when(mockApplicantDetailsService.updateApplicantDetailsData(any(), any()))
-        .thenReturn(Future.successful(upsertApplicantDetails))
+    "returns OK if successful" in new Setup {
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      when(mockApplicantDetailsService.updateApplicantDetailsData(any(), any())).thenReturn(Future.successful(upsertApplicantDetails))
+      when(mockVatRegistrationService.getPartyType(any())).thenReturn(Future.successful(Some(UkCompany)))
 
       val result: Future[Result] = controller.updateApplicantDetailsData(testRegId)(FakeRequest().withBody(upsertApplicantDetailsJson))
-      status(result) mustBe 200
+      status(result) mustBe OK
       contentAsJson(result) mustBe upsertApplicantDetailsJson
     }
 
-    "returns 404 if the registration is not found" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-      when(mockApplicantDetailsService.updateApplicantDetailsData(any(), any()))
-        .thenReturn(Future.failed(MissingRegDocument(testRegId)))
+    "returns NOT_FOUND if the registration is not found" in new Setup {
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      when(mockApplicantDetailsService.updateApplicantDetailsData(any(), any())).thenReturn(Future.failed(MissingRegDocument(testRegId)))
+      when(mockVatRegistrationService.getPartyType(any())).thenReturn(Future.successful(Some(UkCompany)))
 
       val result: Future[Result] = controller.updateApplicantDetailsData(testRegId)(FakeRequest().withBody(upsertApplicantDetailsJson))
-      status(result) mustBe 404
+      status(result) mustBe NOT_FOUND
     }
 
-    "returns 500 if an error occurs" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
-      when(mockApplicantDetailsService.updateApplicantDetailsData(any(), any()))
-        .thenReturn(Future.failed(new Exception))
+    "returns INTERNAL_SERVER_ERROR if an error occurs" in new Setup {
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      when(mockApplicantDetailsService.updateApplicantDetailsData(any(), any())).thenReturn(Future.failed(new Exception))
+      when(mockVatRegistrationService.getPartyType(any())).thenReturn(Future.successful(Some(UkCompany)))
 
       val result: Future[Result] = controller.updateApplicantDetailsData(testRegId)(FakeRequest().withBody(upsertApplicantDetailsJson))
-      status(result) mustBe 500
+      status(result) mustBe INTERNAL_SERVER_ERROR
     }
   }
 }

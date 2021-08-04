@@ -79,7 +79,7 @@ class SubmissionServiceSpec extends VatRegSpec
   }
 
   val testRegInfo: RegistrationInformation = RegistrationInformation(
-    internalId = testInternalid,
+    internalId = testInternalId,
     registrationId = testRegId,
     status = Submitted,
     regStartDate = testDate,
@@ -233,7 +233,7 @@ class SubmissionServiceSpec extends VatRegSpec
   }
 
   "ensureAcknowledgementReference" should {
-    val vatScheme = VatScheme(testRegId, testInternalid, None, None, None, status = VatRegStatus.draft, acknowledgementReference = Some("testref"))
+    val vatScheme = VatScheme(testRegId, testInternalId, None, None, None, status = VatRegStatus.draft, acknowledgementReference = Some("testref"))
     val sequenceNo = 1
     val formattedRefNumber = f"BRVT$sequenceNo%011d"
 
@@ -265,7 +265,7 @@ class SubmissionServiceSpec extends VatRegSpec
   "getValidDocumentStatus" should {
     val vatScheme = VatScheme(
       testRegId,
-      testInternalid,
+      testInternalId,
       None,
       None,
       None,

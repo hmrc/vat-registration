@@ -16,10 +16,10 @@
 package itutil
 
 import enums.VatRegStatus
-import models.{PartnershipIdEntity, IncorporatedEntity, SoleTrader}
+import models.{BusinessIdEntity, IncorporatedEntity, PartnershipIdEntity, SoleTrader}
 import models.api.returns._
 import models.api.{returns, _}
-import models.submission.{DateOfBirth, Director, Individual, OwnerProprietor, Partnership, RoleInBusiness, UkCompany}
+import models.submission.{DateOfBirth, Director, Individual, OwnerProprietor, Partnership, RoleInBusiness, Trust, UkCompany}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
@@ -36,6 +36,7 @@ trait ITFixtures {
   val testUtr = "testUtr"
   val testPostcode = "TF1 1NT"
   val testChrn = "testChrn"
+  val testCasc = "testCasc"
   val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.of(0, 0))
   val startDate = testDate
   val testRegId = "regId"
@@ -266,12 +267,14 @@ trait ITFixtures {
 
   lazy val testMinimalVatSchemeWithVerifiedSoleTrader: VatScheme =
     testMinimalVatSchemeWithRegisteredBusinessPartner.copy(
-      applicantDetails = Some(testRegisteredSoleTraderApplicantDetails)
+      applicantDetails = Some(testRegisteredSoleTraderApplicantDetails),
+      eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Individual))
     )
 
   lazy val testMinimalVatSchemeWithTrust: VatScheme =
     testMinimalVatSchemeWithRegisteredBusinessPartner.copy(
-      applicantDetails = Some(testRegisteredApplicantDetails.copy(entity = testTrustEntity))
+      applicantDetails = Some(testRegisteredApplicantDetails.copy(entity = testTrustEntity)),
+      eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Trust))
     )
 
   val testSoleTraderEntity = SoleTrader(
@@ -306,13 +309,14 @@ trait ITFixtures {
     identifiersMatch = true
   )
 
-  val testTrustEntity: PartnershipIdEntity = PartnershipIdEntity(
+  val testTrustEntity: BusinessIdEntity = BusinessIdEntity(
     Some(testUtr),
-    None,
+    Some(testPostcode),
     Some(testChrn),
-    Some(testBpSafeId),
+    Some(testCasc),
     businessVerification = BvPass,
     registration = RegisteredStatus,
+    bpSafeId = Some(testBpSafeId),
     identifiersMatch = true
   )
 
