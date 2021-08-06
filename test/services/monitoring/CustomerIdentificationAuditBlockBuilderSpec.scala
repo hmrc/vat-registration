@@ -21,12 +21,12 @@ import helpers.VatRegSpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
-class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
+class CustomerIdentificationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   "buildCustomerIdentificationBlock" when {
     "all required sections are present in the VAT scheme" when {
       "a trading name is present" must {
-        "return the correct JSON" in new CustomerIdentificationBlockBuilder {
+        "return the correct JSON" in new CustomerIdentificationAuditBlockBuilder {
           val res = buildCustomerIdentificationBlock(testFullVatScheme)
 
           res mustBe Json.obj(
@@ -42,7 +42,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
         }
       }
       "a trading name is not present" must {
-        "return the correct JSON" in new CustomerIdentificationBlockBuilder {
+        "return the correct JSON" in new CustomerIdentificationAuditBlockBuilder {
           val tradingDetails = validFullTradingDetails.copy(tradingName = None)
           val res = buildCustomerIdentificationBlock(testFullVatScheme.copy(tradingDetails = Some(tradingDetails)))
 
@@ -59,14 +59,14 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
       }
     }
     "the ApplicantDetails section is missing from the VAT scheme" must {
-      "throw an InternalServerException" in new CustomerIdentificationBlockBuilder {
+      "throw an InternalServerException" in new CustomerIdentificationAuditBlockBuilder {
         intercept[InternalServerException] {
           buildCustomerIdentificationBlock(testFullVatScheme.copy(applicantDetails = None))
         }
       }
     }
     "the TradingDetails section is missing from the VAT scheme" must {
-      "throw an InternalServerException" in new CustomerIdentificationBlockBuilder {
+      "throw an InternalServerException" in new CustomerIdentificationAuditBlockBuilder {
         intercept[InternalServerException] {
           buildCustomerIdentificationBlock(testFullVatScheme.copy(applicantDetails = None))
         }

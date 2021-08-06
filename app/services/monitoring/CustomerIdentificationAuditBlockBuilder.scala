@@ -25,7 +25,7 @@ import utils.JsonUtils._
 import javax.inject.Singleton
 
 @Singleton
-class CustomerIdentificationBlockBuilder {
+class CustomerIdentificationAuditBlockBuilder {
 
   def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsValue = {
     (vatScheme.applicantDetails, vatScheme.tradingDetails) match {
@@ -40,8 +40,9 @@ class CustomerIdentificationBlockBuilder {
                   optional("ctUTR" -> optCtutr),
                   optional("CHRN" -> optChrn)
                 ))
-              case SoleTrader(_, _, _, _, optUtr, _, _, _, _) =>
+              case SoleTrader(_, _, _, nino, optUtr, _, _, _, _) =>
                 Some(jsonObject(
+                  "NINO" -> nino,
                   optional("saUTR" -> optUtr)
                 ))
               case PartnershipIdEntity(optUtr, _, optChrn, _, _, _, _) =>

@@ -25,10 +25,10 @@ import utils.JsonUtils._
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: SubscriptionBlockBuilder,
-                                            declarationBlockBuilder: DeclarationBlockBuilder,
-                                            complianceBlockBuilder: ComplianceBlockBuilder,
-                                            customerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder,
+class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: SubscriptionAuditBlockBuilder,
+                                            declarationBlockBuilder: DeclarationAuditBlockBuilder,
+                                            complianceBlockBuilder: ComplianceAuditBlockBuilder,
+                                            customerIdentificationBlockBuilder: CustomerIdentificationAuditBlockBuilder,
                                             periodsAuditBlockBuilder: PeriodsAuditBlockBuilder,
                                             bankAuditBlockBuilder: BankAuditBlockBuilder,
                                             contactAuditBlockBuilder: ContactAuditBlockBuilder,

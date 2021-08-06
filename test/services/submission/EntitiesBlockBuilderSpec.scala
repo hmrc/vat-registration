@@ -117,7 +117,9 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
       }
       "an SA UTR was not provided" should {
         "return a JSON array containing a single partner without identifiers" in {
-          mockGetPartners(testRegId)(Future.successful(Some(List(testPartner.copy(details = testEntityNoSafeId.copy(sautr = None))))))
+          val testEntity = testSoleTraderEntity.copy(bpSafeId = None, sautr = None)
+          val testPartner = Partner(details = testEntity, partyType = Individual, isLeadPartner = true)
+          mockGetPartners(testRegId)(Future.successful(Some(List(testPartner))))
           mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact)))
 
           await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(
@@ -125,6 +127,9 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
               "action" -> "1",
               "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
               "tradersPartyType" -> Json.toJson[PartyType](Individual),
+              "customerIdentification" -> Json.obj(
+                "customerID" -> Json.toJson(testEntity.identifiers)
+              ),
               "businessContactDetails" -> Json.obj(
                 "address" -> Json.obj(
                   "line1" -> "line1",

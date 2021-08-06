@@ -25,9 +25,9 @@ import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
-class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
+class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
-  object TestService extends SubscriptionBlockBuilder
+  object TestService extends SubscriptionAuditBlockBuilder
 
   val fullSubscriptionBlockJson: JsValue = Json.parse(
     """
