@@ -46,13 +46,13 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
   //TODO - fix these tests when we define how to create new journeys
   "createNewRegistration" ignore {
 
-    val vatScheme = VatScheme(testRegId, testInternalid, None, None, None, status = VatRegStatus.draft)
+    val vatScheme = VatScheme(testRegId, testInternalId, None, None, None, status = VatRegStatus.draft, eligibilitySubmissionData = Some(testEligibilitySubmissionData))
 
     "return a existing VatScheme response " in new Setup {
 
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatScheme)))
 
-      service.createNewRegistration(testInternalid) returnsRight vatScheme
+      service.createNewRegistration(testInternalId) returnsRight vatScheme
     }
 
     "call to retrieveVatScheme return VatScheme from DB" in new Setup {
@@ -68,41 +68,41 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
     "return a new VatScheme response " in new Setup {
 
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(None))
-      when(mockRegistrationMongoRepository.createNewVatScheme(testRegId, testInternalid)).thenReturn(Future.successful(vatScheme))
+      when(mockRegistrationMongoRepository.createNewVatScheme(testRegId, testInternalId)).thenReturn(Future.successful(vatScheme))
 
-      await(service.createNewRegistration(testInternalid).value) mustBe Right(vatScheme)
+      await(service.createNewRegistration(testInternalId).value) mustBe Right(vatScheme)
     }
 
     "error when creating VatScheme" in new Setup {
       val t = new Exception("Exception")
 
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(None))
-      when(mockRegistrationMongoRepository.createNewVatScheme(testRegId, testInternalid)).thenReturn(Future.failed(t))
+      when(mockRegistrationMongoRepository.createNewVatScheme(testRegId, testInternalId)).thenReturn(Future.failed(t))
 
-      service.createNewRegistration(testInternalid) returnsLeft GenericError(t)
+      service.createNewRegistration(testInternalId) returnsLeft GenericError(t)
     }
 
     "error with the DB when creating VatScheme" in new Setup {
       val error: InsertFailed = InsertFailed("regId", "VatScheme")
 
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(None))
-      when(mockRegistrationMongoRepository.createNewVatScheme(testRegId, testInternalid)).thenReturn(Future.failed(error))
+      when(mockRegistrationMongoRepository.createNewVatScheme(testRegId, testInternalId)).thenReturn(Future.failed(error))
 
-      service.createNewRegistration(testInternalid) returnsLeft GenericDatabaseError(error, Some("regId"))
+      service.createNewRegistration(testInternalId) returnsLeft GenericDatabaseError(error, Some("regId"))
     }
 
     "call to business service return ForbiddenException response " in new Setup {
-      service.createNewRegistration(testInternalid) returnsLeft ForbiddenAccess("forbidden")
+      service.createNewRegistration(testInternalId) returnsLeft ForbiddenAccess("forbidden")
     }
 
     "call to business service return NotFoundException response " in new Setup {
-      service.createNewRegistration(testInternalid) returnsLeft ResourceNotFound("notfound")
+      service.createNewRegistration(testInternalId) returnsLeft ResourceNotFound("notfound")
     }
 
     "call to business service return ErrorResponse response " in new Setup {
       val t = new RuntimeException("Exception")
 
-      service.createNewRegistration(testInternalid) returnsLeft GenericError(t)
+      service.createNewRegistration(testInternalId) returnsLeft GenericError(t)
     }
 
   }
@@ -110,7 +110,7 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
   "call to deleteVatScheme" should {
     "return true" when {
       "the document has been deleted" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
+        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
         when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(testVatScheme)))
 
@@ -123,7 +123,7 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
 
     "throw a MissingRegDoc exception" when {
       "no reg doc is found" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
+        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
         when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.any()))
           .thenReturn(Future.successful(None))
 
@@ -133,7 +133,7 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
 
     "throw an InvalidSubmissionStatus exception" when {
       "the reg doc status is not valid for cancellation" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
+        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
         when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(testVatScheme.copy(status = VatRegStatus.submitted))))
 

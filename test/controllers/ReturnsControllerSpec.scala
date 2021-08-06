@@ -65,7 +65,7 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
 
   "getReturns" should {
     "return an OK with a full valid returns json if the document contains it" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       when(mockAnnualAccountingSchemeService.retrieveReturns(any()))
         .thenReturn(Future.successful(Some(testAnnualReturns)))
 
@@ -75,7 +75,7 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
     }
 
     "return a NoContent if the returns block is not present in the document" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       when(mockAnnualAccountingSchemeService.retrieveReturns(any()))
         .thenReturn(Future.successful(None))
 
@@ -86,7 +86,7 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
 
   "updateReturns" should {
     "returns Ok if successful with a full returns json" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       when(mockAnnualAccountingSchemeService.updateReturns(any(), any()))
         .thenReturn(Future.successful(testAnnualReturns))
 
@@ -96,7 +96,7 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
     }
 
     "returns InternalServerError if an error occurs" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalid)
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       when(mockAnnualAccountingSchemeService.updateReturns(any(), any()))
         .thenReturn(Future.failed(new Exception))
 
@@ -105,7 +105,7 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
     }
 
     "returns Forbidden if the user is not authorised" in new Setup {
-      AuthorisationMocks.mockNotAuthorised(testRegId, testInternalid)
+      AuthorisationMocks.mockNotAuthorised(testRegId, testInternalId)
 
       val result: Future[Result] = controller.updateReturns(testRegId)(FakeRequest().withBody[JsObject](validAnnualReturnsJson))
       status(result) mustBe 403

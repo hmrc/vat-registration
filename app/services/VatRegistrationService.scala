@@ -23,10 +23,11 @@ import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
 import models.api.{Threshold, TurnoverEstimates, VatScheme}
+import models.submission.PartyType
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
 import repositories.RegistrationMongoRepository
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.{HttpClient, InternalServerException}
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
@@ -100,6 +101,10 @@ class VatRegistrationService @Inject()(registrationRepository: RegistrationMongo
 
   def retrieveAcknowledgementReference(regId: String): ServiceResult[String] = {
     retrieveVatScheme(regId).subflatMap(_.acknowledgementReference.toRight(ResourceNotFound("AcknowledgementId")))
+  }
+
+  def getPartyType(regId: String): Future[Option[PartyType]] = {
+    registrationRepository.retrieveVatScheme(regId).map(_.flatMap(_.partyType))
   }
 
   def getThreshold(regId: String): Future[Option[Threshold]] = {

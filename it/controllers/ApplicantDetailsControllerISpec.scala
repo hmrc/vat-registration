@@ -24,7 +24,10 @@ class ApplicantDetailsControllerISpec extends IntegrationStubbing {
     "return OK" in new Setup {
       given.user.isAuthorised
 
-      insertIntoDb(testEmptyVatScheme(testRegId).copy(applicantDetails = Some(testUnregisteredApplicantDetails)))
+      insertIntoDb(testEmptyVatScheme(testRegId).copy(
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+        applicantDetails = Some(testUnregisteredApplicantDetails))
+      )
 
       val response: WSResponse = await(client(routes.ApplicantDetailsController.getApplicantDetailsData(testRegId).url).get())
 
@@ -35,7 +38,7 @@ class ApplicantDetailsControllerISpec extends IntegrationStubbing {
     "return NO_CONTENT" in new Setup {
       given.user.isAuthorised
 
-      insertIntoDb(testEmptyVatScheme(testRegId))
+      insertIntoDb(testEmptyVatScheme(testRegId).copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData)))
 
       val response: WSResponse = await(client(routes.ApplicantDetailsController.getApplicantDetailsData(testRegId).url).get())
 
@@ -62,7 +65,9 @@ class ApplicantDetailsControllerISpec extends IntegrationStubbing {
   "updateApplicantDetailsData" must {
     "return OK with a applicantDetails json body" in new Setup {
       given.user.isAuthorised
-      insertIntoDb(testEmptyVatScheme(testRegId))
+      insertIntoDb(testEmptyVatScheme(testRegId).copy(
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData)
+      ))
 
       val response: WSResponse = await(client(routes.ApplicantDetailsController.updateApplicantDetailsData(testRegId).url)
         .patch(testApplicantDetailsJson))
@@ -73,7 +78,9 @@ class ApplicantDetailsControllerISpec extends IntegrationStubbing {
 
     "return BAD_REQUEST if an invalid json body is posted" in new Setup {
       given.user.isAuthorised
-      insertIntoDb(testEmptyVatScheme(testRegId))
+      insertIntoDb(testEmptyVatScheme(testRegId).copy(
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData)
+      ))
 
       val response: WSResponse = await(client(routes.ApplicantDetailsController.updateApplicantDetailsData(testRegId).url)
         .patch(invalidTestApplicantDetailsJson))
@@ -92,7 +99,10 @@ class ApplicantDetailsControllerISpec extends IntegrationStubbing {
 
     "return OK if no data updated because data is same" in new Setup {
       given.user.isAuthorised
-      val scheme = testEmptyVatScheme(testRegId).copy(applicantDetails = Some(testUnregisteredApplicantDetails))
+      val scheme = testEmptyVatScheme(testRegId).copy(
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+        applicantDetails = Some(testUnregisteredApplicantDetails)
+      )
       insertIntoDb(scheme)
 
       val response: WSResponse = await(client(routes.ApplicantDetailsController.updateApplicantDetailsData(testRegId).url)

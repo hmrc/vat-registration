@@ -46,8 +46,14 @@ sealed trait BusinessEntity {
 }
 
 object BusinessEntity {
-  val reads: Reads[BusinessEntity] = Reads { json =>
-    Json.fromJson(json)(IncorporatedEntity.format).orElse(Json.fromJson(json)(SoleTrader.format)).orElse(Json.fromJson(json)(PartnershipIdEntity.format))
+  def reads(partyType: PartyType): Reads[BusinessEntity] = Reads { json =>
+    partyType match {
+      case UkCompany | RegSociety | CharitableOrg => Json.fromJson(json)(IncorporatedEntity.format)
+      case Individual => Json.fromJson(json)(SoleTrader.format)
+      case Partnership => Json.fromJson(json)(PartnershipIdEntity.format)
+      case UnincorpAssoc | Trust => Json.fromJson(json)(BusinessIdEntity.format)
+      case _ => throw new InternalServerException("Tried to parse business entity for an unsupported party type")
+    }
   }
   val writes: Writes[BusinessEntity] = Writes {
     case incorporatedEntity: IncorporatedEntity =>
@@ -56,10 +62,11 @@ object BusinessEntity {
       Json.toJson(soleTrader)(SoleTrader.format)
     case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _) =>
       Json.toJson(partnershipIdEntity)(PartnershipIdEntity.format)
+    case businessIdEntity: BusinessIdEntity =>
+      Json.toJson(businessIdEntity)(BusinessIdEntity.format)
     case entity =>
       Json.obj()
   }
-  implicit val format: Format[BusinessEntity] = Format[BusinessEntity](reads, writes)
 }
 
 // Entity specific types
@@ -155,4 +162,37 @@ case class PartnershipIdEntity(sautr: Option[String],
 
 object PartnershipIdEntity {
   implicit val format: Format[PartnershipIdEntity] = Json.format[PartnershipIdEntity]
+}
+
+case class BusinessIdEntity(sautr: Option[String],
+                            postCode: Option[String],
+                            chrn: Option[String],
+                            casc: Option[String],
+                            registration: BusinessRegistrationStatus,
+                            businessVerification: BusinessVerificationStatus,
+                            bpSafeId: Option[String] = None,
+                            identifiersMatch: Boolean) extends BusinessEntity {
+
+  override def identifiers: List[CustomerId] =
+    List(
+      sautr.map(utr => CustomerId(
+        idValue = utr,
+        idType = UtrIdType,
+        IDsVerificationStatus = idVerificationStatus
+      )),
+      chrn.map(chrn => CustomerId(
+        idValue = chrn,
+        idType = CharityRefIdType,
+        IDsVerificationStatus = idVerificationStatus
+      )),
+      casc.map(casc => CustomerId(
+        idValue = casc,
+        idType = CascIdType,
+        IDsVerificationStatus = idVerificationStatus
+      ))
+    ).flatten
+}
+
+object BusinessIdEntity {
+  implicit val format: Format[BusinessIdEntity] = Json.format[BusinessIdEntity]
 }

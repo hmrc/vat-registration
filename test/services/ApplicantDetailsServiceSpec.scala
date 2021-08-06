@@ -20,6 +20,7 @@ import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api.ApplicantDetails
+import models.submission.UkCompany
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
@@ -46,18 +47,18 @@ class ApplicantDetailsServiceSpec extends VatRegSpec with VatRegistrationFixture
 
   "getApplicantDetailsData" should {
     "return an applicant if found" in new Setup {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(Some(validApplicantDetails)))
 
-      val result: Option[ApplicantDetails] = await(service.getApplicantDetailsData("regId"))
+      val result: Option[ApplicantDetails] = await(service.getApplicantDetailsData("regId", UkCompany))
       result mustBe Some(validApplicantDetails)
     }
 
     "return None if none found matching regId" in new Setup {
-      when(mockRegistrationMongoRepository.getApplicantDetails(any()))
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
         .thenReturn(Future.successful(None))
 
-      val result: Option[ApplicantDetails] = await(service.getApplicantDetailsData("regId"))
+      val result: Option[ApplicantDetails] = await(service.getApplicantDetailsData("regId", UkCompany))
       result mustBe None
     }
   }

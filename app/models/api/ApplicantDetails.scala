@@ -17,7 +17,7 @@
 package models.api
 
 import models.BusinessEntity
-import models.submission.{CustomerId, IdVerified, NinoIdType, RoleInBusiness}
+import models.submission.{CustomerId, IdVerified, NinoIdType, PartyType, RoleInBusiness}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import utils.JsonUtilities
@@ -38,14 +38,26 @@ case class ApplicantDetails(transactor: TransactorDetails,
 object ApplicantDetails extends VatApplicantDetailsValidator
   with JsonUtilities {
 
-  implicit val format: Format[ApplicantDetails] = (
-    (__ \ "transactor").format[TransactorDetails] and
-      (__ \ "entity").format[BusinessEntity] and
-      (__ \ "currentAddress").format[Address] and
-      (__ \ "previousAddress").formatNullable[Address] and
-      (__ \ "contact").format[DigitalContactOptional] and
-      (__ \ "changeOfName").formatNullable[FormerName] and
-      (__ \ "roleInTheBusiness").format[RoleInBusiness]
-    ) (ApplicantDetails.apply, unlift(ApplicantDetails.unapply))
+  def reads(partyType: PartyType): Reads[ApplicantDetails] = (
+    (__ \ "transactor").read[TransactorDetails] and
+      (__ \ "entity").read[BusinessEntity](BusinessEntity.reads(partyType)) and
+      (__ \ "currentAddress").read[Address] and
+      (__ \ "previousAddress").readNullable[Address] and
+      (__ \ "contact").read[DigitalContactOptional] and
+      (__ \ "changeOfName").readNullable[FormerName] and
+      (__ \ "roleInTheBusiness").read[RoleInBusiness]
+    ) (ApplicantDetails.apply _
+  )
+
+  implicit val writes: Writes[ApplicantDetails] = (
+    (__ \ "transactor").write[TransactorDetails] and
+      (__ \ "entity").write[BusinessEntity](BusinessEntity.writes) and
+      (__ \ "currentAddress").write[Address] and
+      (__ \ "previousAddress").writeNullable[Address] and
+      (__ \ "contact").write[DigitalContactOptional] and
+      (__ \ "changeOfName").writeNullable[FormerName] and
+      (__ \ "roleInTheBusiness").write[RoleInBusiness]
+    ) (unlift(ApplicantDetails.unapply)
+  )
 
 }
