@@ -159,6 +159,22 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       res.status mustBe OK
     }
 
+    "return OK if the submission is successful for a sole trader without a bpSafeId" in new Setup {
+      enable(StubSubmission)
+
+      given
+        .user.isAuthorised
+        .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
+
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, "")
+
+      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+        .put(Json.obj())
+      )
+
+      res.status mustBe OK
+    }
+
     "return OK if the submission is successful for a trust with a bpSafeId" in new Setup {
       enable(StubSubmission)
 
@@ -214,6 +230,22 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .regRepo.insertIntoDb(testVatSchemeWithPartners, repo.insert)
 
       stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderWithPartnerJson, OK, "")
+
+      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+        .put(Json.obj())
+      )
+
+      res.status mustBe OK
+    }
+
+    "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
+      enable(StubSubmission)
+
+      given
+        .user.isAuthorised
+        .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
+
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, "")
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())

@@ -16,7 +16,7 @@
 
 package services.submission
 
-import models.IncorporatedEntity
+import models.{IncorporatedEntity, SoleTrader}
 import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -52,7 +52,20 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
           case _ =>
             Json.obj()
         }
+      } ++ {
+        applicantDetails.entity match {
+          case SoleTrader(firstName, lastName, dateOfBirth, _, _, bpSafeId, _, _, _) if bpSafeId.isEmpty =>
+            jsonObject(
+              "name" -> jsonObject(
+                "firstName" -> firstName,
+                "lastName" -> lastName
+              ),
+              "dateOfBirth" -> dateOfBirth
+            )
+          case _ => jsonObject()
+        }
       }
+
     case (None, _, _) =>
       throw new InternalServerException("Could not retrieve VAT scheme")
     case (_, None, _) =>

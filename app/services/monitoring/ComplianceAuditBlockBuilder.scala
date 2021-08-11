@@ -24,7 +24,7 @@ import utils.JsonUtils._
 import javax.inject.Singleton
 
 @Singleton
-class ComplianceBlockBuilder {
+class ComplianceAuditBlockBuilder {
 
   def buildComplianceBlock(vatScheme: VatScheme): Option[JsObject] = {
     vatScheme.sicAndCompliance match {

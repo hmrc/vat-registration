@@ -24,7 +24,7 @@ import utils.JsonUtils._
 import javax.inject.Singleton
 
 @Singleton
-class SubscriptionBlockBuilder {
+class SubscriptionAuditBlockBuilder {
 
   def buildSubscriptionBlock(vatScheme: VatScheme): JsObject =
     (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.sicAndCompliance, vatScheme.flatRateScheme) match {

@@ -67,12 +67,39 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
        |}
        |""".stripMargin).as[JsObject]
 
-  val soleTraderBlockJson = Json.parse(
+  val soleTraderBlockJson = Json.obj(
+    "tradersPartyType" -> "Z1",
+    "tradingName" -> testTradingName,
+    "customerID" -> Json.arr(
+      Json.obj(
+        "idType" -> "NINO",
+        "idValue" -> testNino,
+        "IDsVerificationStatus" -> "1"
+      ),
+      Json.obj(
+        "idType" -> "UTR",
+        "idValue" -> testUtr,
+        "IDsVerificationStatus" -> "1"
+      )
+    ),
+    "name" -> Json.obj(
+      "firstName" -> testFirstName,
+      "lastName" -> testLastName
+    ),
+    "dateOfBirth" -> testDateOfBirth
+  )
+
+  Json.parse(
     s"""
        |{
        |    "tradingName": "trading-name",
        |    "tradersPartyType": "Z1",
        |    "customerID": [
+       |      {
+       |        "idValue": "AB123456A",
+       |        "idType": "NINO",
+       |        "IDsVerificationStatus": "1"
+       |      },
        |      {
        |        "idValue": "testUtr",
        |        "idType": "UTR",

@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.InternalServerException
 
 class ComplianceBlockBuilderSpec extends VatRegSpec with MockRegistrationRepository with VatRegistrationFixture {
 
-  object TestBuilder extends ComplianceBlockBuilder
+  object TestBuilder extends ComplianceAuditBlockBuilder
 
   "The compliance block builder" must {
     "build the correct json when only the supplyWorkers flag is set" in {

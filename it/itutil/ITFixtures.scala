@@ -165,6 +165,22 @@ trait ITFixtures {
       roleInBusiness = OwnerProprietor
     )
 
+  val testRegisteredSoleTraderApplicantDetailsNoBpSafeId: ApplicantDetails =
+    testRegisteredApplicantDetails.copy(
+      entity = SoleTrader(
+        testFirstName,
+        testLastName,
+        testDate,
+        testNino,
+        sautr = Some(testSaUtr),
+        bpSafeId = None,
+        businessVerification = BvPass,
+        registration = FailedStatus,
+        identifiersMatch = true
+      ),
+      roleInBusiness = OwnerProprietor
+    )
+
   val testBusinessContactDetails = BusinessContact(digitalContact = testContactDetails, website = None, ppob = testFullAddress, commsPreference = Email)
   val testFullBusinessContactDetails = BusinessContact(digitalContact = testContactDetails, website = Some(testWebsite), ppob = testFullAddress, commsPreference = Email)
 
@@ -210,6 +226,14 @@ trait ITFixtures {
     estimates = TurnoverEstimates(123456),
     customerStatus = MTDfB,
     partyType = UkCompany
+  )
+
+  val testEligibilitySubmissionDataSoleTrader: EligibilitySubmissionData = EligibilitySubmissionData(
+    threshold = testThreshold,
+    exceptionOrExemption = "0",
+    estimates = TurnoverEstimates(123456),
+    customerStatus = MTDfB,
+    partyType = Individual
   )
 
   val testNrsSubmissionPayload = "testNrsSubmissionPayload"
@@ -275,6 +299,12 @@ trait ITFixtures {
     testMinimalVatSchemeWithRegisteredBusinessPartner.copy(
       applicantDetails = Some(testRegisteredApplicantDetails.copy(entity = testTrustEntity)),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Trust))
+    )
+
+  lazy val testSoleTraderVatScheme: VatScheme =
+    testFullVatScheme.copy(
+      applicantDetails = Some(testRegisteredSoleTraderApplicantDetailsNoBpSafeId),
+      eligibilitySubmissionData = Some(testEligibilitySubmissionDataSoleTrader)
     )
 
   val testSoleTraderEntity = SoleTrader(

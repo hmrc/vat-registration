@@ -122,13 +122,19 @@ case class SoleTrader(firstName: String,
                       identifiersMatch: Boolean) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] =
-    List(sautr.map(utr =>
-      CustomerId(
-        idValue = utr,
-        idType = UtrIdType,
+    List(
+      Some(CustomerId(
+        idValue = nino,
+        idType = NinoIdType,
         IDsVerificationStatus = idVerificationStatus
-      )
-    )).flatten
+      )),
+      sautr.map(utr =>
+        CustomerId(
+          idValue = utr,
+          idType = UtrIdType,
+          IDsVerificationStatus = idVerificationStatus
+        ))
+    ).flatten
 
 }
 

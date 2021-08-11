@@ -23,9 +23,9 @@ import models.api.{ApplicantDetails, DigitalContactOptional, VatScheme}
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
-class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationRepository {
+class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationRepository {
 
-  object TestBuilder extends DeclarationBlockBuilder
+  object TestBuilder extends DeclarationAuditBlockBuilder
 
   val testApplicantDetails: ApplicantDetails = validApplicantDetails.copy(changeOfName = None)
   val declarationVatScheme: VatScheme = testVatScheme.copy(

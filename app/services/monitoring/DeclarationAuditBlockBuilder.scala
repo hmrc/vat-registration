@@ -24,7 +24,7 @@ import utils.JsonUtils.{jsonObject, _}
 import javax.inject.Singleton
 
 @Singleton
-class DeclarationBlockBuilder {
+class DeclarationAuditBlockBuilder {
 
   def buildDeclarationBlock(vatScheme: VatScheme): JsObject = {
     (vatScheme.applicantDetails, vatScheme.confirmInformationDeclaration) match {
