@@ -19,7 +19,7 @@ package controllers
 import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.IncorporatedEntity
+import models.IncorporatedIdEntity
 import models.api.{ApplicantDetails, BvFail, NotCalledStatus, TransactorDetails}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
@@ -49,10 +49,10 @@ class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixt
     roleInBusiness = testRole,
     transactor = TransactorDetails(
       name = testName,
-      nino = testNino,
+      nino = Some(testNino),
       dateOfBirth = testDate
     ),
-    entity = IncorporatedEntity(
+    entity = IncorporatedIdEntity(
       companyName = testCompanyName,
       companyNumber = testCrn,
       ctutr = Some(testUtr),

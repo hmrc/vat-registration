@@ -17,7 +17,7 @@
 package services.monitoring
 
 import models.api.VatScheme
-import models.{PartnershipIdEntity, IncorporatedEntity, SoleTrader}
+import models.{PartnershipIdEntity, IncorporatedIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -34,15 +34,15 @@ class CustomerIdentificationAuditBlockBuilder {
           "tradersPartyType" -> vatScheme.partyType,
           optional("identifiers" -> {
             applicantDetails.entity match {
-              case IncorporatedEntity(_, companyNumber, _, optCtutr, _, _, _, _, _, optChrn) =>
+              case IncorporatedIdEntity(_, companyNumber, _, optCtutr, _, _, _, _, _, optChrn) =>
                 Some(jsonObject(
                   "companyRegistrationNumber" -> companyNumber,
                   optional("ctUTR" -> optCtutr),
                   optional("CHRN" -> optChrn)
                 ))
-              case SoleTrader(_, _, _, nino, optUtr, _, _, _, _) =>
+              case SoleTraderIdEntity(_, _, _, optNino, optUtr, _, _, _, _, _) =>
                 Some(jsonObject(
-                  "NINO" -> nino,
+                  optional("NINO" -> optNino),
                   optional("saUTR" -> optUtr)
                 ))
               case PartnershipIdEntity(optUtr, _, optChrn, _, _, _, _) =>
@@ -56,7 +56,7 @@ class CustomerIdentificationAuditBlockBuilder {
           }),
           optional("shortOrgName" -> {
             applicantDetails.entity match {
-              case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => Some(companyName)
+              case IncorporatedIdEntity(companyName, _, _, _, _, _, _, _, _, _) => Some(companyName)
               case _ => None
             }
           }),

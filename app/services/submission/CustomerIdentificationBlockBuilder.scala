@@ -16,7 +16,7 @@
 
 package services.submission
 
-import models.{IncorporatedEntity, SoleTrader}
+import models.{IncorporatedIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -40,7 +40,7 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
       jsonObject(
         "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map(_.partyType),
         optional("shortOrgName" -> Option(applicantDetails.entity).collect {
-          case IncorporatedEntity(companyName, _, _, _, None, _, _, _, _, _) => StringNormaliser.normaliseString(companyName) //Don't send company name when safeId is present
+          case IncorporatedIdEntity(companyName, _, _, _, None, _, _, _, _, _) => StringNormaliser.normaliseString(companyName) //Don't send company name when safeId is present
         }),
         optional("tradingName" -> tradingDetails.tradingName.map(StringNormaliser.normaliseString))
       ) ++ {
@@ -54,7 +54,7 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
         }
       } ++ {
         applicantDetails.entity match {
-          case SoleTrader(firstName, lastName, dateOfBirth, _, _, bpSafeId, _, _, _) if bpSafeId.isEmpty =>
+          case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, bpSafeId, _, _, _) if bpSafeId.isEmpty =>
             jsonObject(
               "name" -> jsonObject(
                 "firstName" -> firstName,

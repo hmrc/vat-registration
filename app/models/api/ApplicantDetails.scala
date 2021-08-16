@@ -17,7 +17,7 @@
 package models.api
 
 import models.BusinessEntity
-import models.submission.{CustomerId, IdVerified, NinoIdType, PartyType, RoleInBusiness}
+import models.submission._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import utils.JsonUtilities
@@ -31,7 +31,14 @@ case class ApplicantDetails(transactor: TransactorDetails,
                             roleInBusiness: RoleInBusiness) {
 
   def personalIdentifiers: List[CustomerId] =
-    List(CustomerId(transactor.nino, NinoIdType, IdVerified, date = Some(transactor.dateOfBirth)))
+    List(transactor.nino.map(nino =>
+      CustomerId(
+        nino,
+        NinoIdType,
+        IdVerified,
+        date = Some(transactor.dateOfBirth)
+      ))
+    ).flatten
 
 }
 
