@@ -18,8 +18,11 @@ package services
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import models.api.{TurnoverEstimates, VatScheme}
+import models.submission.RegSociety
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
+import org.mockito.{ArgumentMatchers, Mockito}
 import play.api.libs.json.{JsArray, JsObject, JsResultException, Json}
 import play.api.test.Helpers._
 
@@ -82,8 +85,67 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
         .thenReturn(Future.successful(testEligibilitySubmissionData))
       when(mockRegistrationMongoRepository.updateEligibilityData(any(), any()))
         .thenReturn(Future.successful(eligibilityData))
+      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
+        .thenReturn(Future.successful(None))
 
       val result: JsObject = await(service.updateEligibilityData("regId", eligibilityData))
+
+      result mustBe eligibilityData
+    }
+
+    "return eligibility data and clear user's vat scheme if the partytype is changed" in new Setup {
+      when(mockRegistrationMongoRepository.updateEligibilitySubmissionData(any(), any()))
+        .thenReturn(Future.successful(testEligibilitySubmissionData))
+      when(mockRegistrationMongoRepository.updateEligibilityData(any(), any()))
+        .thenReturn(Future.successful(eligibilityData))
+      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
+        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(partyType = RegSociety))))
+      when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+        .thenReturn(Future.successful(Some(testFullVatScheme)))
+      when(mockRegistrationMongoRepository.insertVatScheme(ArgumentMatchers.eq(testVatScheme)))
+        .thenReturn(Future.successful(testVatScheme))
+
+      val result: JsObject = await(service.updateEligibilityData("regId", eligibilityData))
+
+      result mustBe eligibilityData
+      verify(mockRegistrationMongoRepository, Mockito.times(1))
+        .insertVatScheme(ArgumentMatchers.eq(testVatScheme))
+    }
+
+    "return eligibility data and clear user's frs and aas scheme if the turnover is changed part the thresholds" in new Setup {
+      val vatSchemeWithFRSandAAS: VatScheme = testFullVatScheme.copy(returns = Some(validAASReturns))
+      val vatSchemeWithoutFRSorAAS: VatScheme = testFullVatScheme.copy(flatRateScheme = None, returns = None)
+
+      when(mockRegistrationMongoRepository.updateEligibilitySubmissionData(any(), any()))
+        .thenReturn(Future.successful(testEligibilitySubmissionData))
+      when(mockRegistrationMongoRepository.updateEligibilityData(any(), any()))
+        .thenReturn(Future.successful(eligibilityData))
+      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
+        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(estimates = TurnoverEstimates(1500000L)))))
+      when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+        .thenReturn(Future.successful(Some(vatSchemeWithFRSandAAS)))
+      when(mockRegistrationMongoRepository.insertVatScheme(ArgumentMatchers.eq(vatSchemeWithoutFRSorAAS)))
+        .thenReturn(Future.successful(vatSchemeWithoutFRSorAAS))
+
+      val result: JsObject = await(service.updateEligibilityData("regId", eligibilityData))
+
+      result mustBe eligibilityData
+      verify(mockRegistrationMongoRepository, Mockito.times(1))
+        .insertVatScheme(ArgumentMatchers.eq(vatSchemeWithoutFRSorAAS))
+    }
+
+    "return eligibility data and not clear any vatscheme fields where eligibility data is unchanged" in new Setup {
+      when(mockRegistrationMongoRepository.updateEligibilitySubmissionData(any(), any()))
+        .thenReturn(Future.successful(testEligibilitySubmissionData))
+      when(mockRegistrationMongoRepository.updateEligibilityData(any(), any()))
+        .thenReturn(Future.successful(eligibilityData))
+      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
+        .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
+      when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+        .thenReturn(Future.successful(Some(testFullVatScheme)))
+
+      val result: JsObject = await(service.updateEligibilityData("regId", eligibilityData))
+
       result mustBe eligibilityData
     }
 

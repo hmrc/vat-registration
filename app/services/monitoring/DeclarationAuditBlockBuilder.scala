@@ -47,7 +47,7 @@ class DeclarationAuditBlockBuilder {
               optional("mobileNumber" -> applicantDetails.contact.mobile)
             ),
             "identifiers" -> jsonObject(
-              "nationalInsuranceNumber" -> applicantDetails.transactor.nino
+              optional("nationalInsuranceNumber" -> applicantDetails.transactor.nino)
             )
           )
         )

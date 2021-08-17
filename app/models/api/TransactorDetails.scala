@@ -16,11 +16,12 @@
 
 package models.api
 
+import play.api.libs.json.{Format, Json}
+
 import java.time.LocalDate
-import play.api.libs.json.{Json, Format}
 
 case class TransactorDetails(name: Name,
-                             nino: String,
+                             nino: Option[String],
                              dateOfBirth: LocalDate)
 
 object TransactorDetails {

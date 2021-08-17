@@ -48,18 +48,19 @@ sealed trait BusinessEntity {
 object BusinessEntity {
   def reads(partyType: PartyType): Reads[BusinessEntity] = Reads { json =>
     partyType match {
-      case UkCompany | RegSociety | CharitableOrg => Json.fromJson(json)(IncorporatedEntity.format)
-      case Individual => Json.fromJson(json)(SoleTrader.format)
+      case UkCompany | RegSociety | CharitableOrg => Json.fromJson(json)(IncorporatedIdEntity.format)
+      case Individual | NETP => Json.fromJson(json)(SoleTraderIdEntity.format)
       case Partnership => Json.fromJson(json)(PartnershipIdEntity.format)
       case UnincorpAssoc | Trust => Json.fromJson(json)(BusinessIdEntity.format)
       case _ => throw new InternalServerException("Tried to parse business entity for an unsupported party type")
     }
   }
+
   val writes: Writes[BusinessEntity] = Writes {
-    case incorporatedEntity: IncorporatedEntity =>
-      Json.toJson(incorporatedEntity)(IncorporatedEntity.format)
-    case soleTrader@SoleTrader(_, _, _, _, _, _, _, _, _) =>
-      Json.toJson(soleTrader)(SoleTrader.format)
+    case incorporatedEntity: IncorporatedIdEntity =>
+      Json.toJson(incorporatedEntity)(IncorporatedIdEntity.format)
+    case soleTrader@SoleTraderIdEntity(_, _, _, _, _, _, _, _, _, _) =>
+      Json.toJson(soleTrader)(SoleTraderIdEntity.format)
     case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _) =>
       Json.toJson(partnershipIdEntity)(PartnershipIdEntity.format)
     case businessIdEntity: BusinessIdEntity =>
@@ -71,16 +72,18 @@ object BusinessEntity {
 
 // Entity specific types
 
-case class IncorporatedEntity(companyName: String,
-                              companyNumber: String,
-                              dateOfIncorporation: LocalDate,
-                              ctutr: Option[String] = None,
-                              bpSafeId: Option[String] = None,
-                              countryOfIncorporation: String = "GB",
-                              businessVerification: BusinessVerificationStatus,
-                              registration: BusinessRegistrationStatus,
-                              identifiersMatch: Boolean,
-                              chrn: Option[String] = None) extends BusinessEntity {
+// IncorporatedIdEntity supports UK Companies, Registered Societies and Charitable Organisations
+
+case class IncorporatedIdEntity(companyName: String,
+                                companyNumber: String,
+                                dateOfIncorporation: LocalDate,
+                                ctutr: Option[String] = None,
+                                bpSafeId: Option[String] = None,
+                                countryOfIncorporation: String = "GB",
+                                businessVerification: BusinessVerificationStatus,
+                                registration: BusinessRegistrationStatus,
+                                identifiersMatch: Boolean,
+                                chrn: Option[String] = None) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] = List(
     ctutr.map(utr =>
@@ -106,41 +109,52 @@ case class IncorporatedEntity(companyName: String,
 
 }
 
-object IncorporatedEntity {
-  implicit val format: Format[IncorporatedEntity] = Json.format[IncorporatedEntity]
+object IncorporatedIdEntity {
+  implicit val format: Format[IncorporatedIdEntity] = Json.format[IncorporatedIdEntity]
 }
 
+// SoleTraderIdEntity supports Sole Traders and NETP
 
-case class SoleTrader(firstName: String,
-                      lastName: String,
-                      dateOfBirth: LocalDate,
-                      nino: String,
-                      sautr: Option[String] = None,
-                      bpSafeId: Option[String] = None,
-                      businessVerification: BusinessVerificationStatus,
-                      registration: BusinessRegistrationStatus,
-                      identifiersMatch: Boolean) extends BusinessEntity {
+case class SoleTraderIdEntity(firstName: String,
+                              lastName: String,
+                              dateOfBirth: LocalDate,
+                              nino: Option[String] = None,
+                              sautr: Option[String] = None,
+                              trn: Option[String] = None,
+                              bpSafeId: Option[String] = None,
+                              businessVerification: BusinessVerificationStatus,
+                              registration: BusinessRegistrationStatus,
+                              identifiersMatch: Boolean) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] =
     List(
-      Some(CustomerId(
-        idValue = nino,
-        idType = NinoIdType,
-        IDsVerificationStatus = idVerificationStatus
-      )),
+      nino.map(nino =>
+        CustomerId(
+          idValue = nino,
+          idType = NinoIdType,
+          IDsVerificationStatus = idVerificationStatus
+        )),
       sautr.map(utr =>
         CustomerId(
           idValue = utr,
           idType = UtrIdType,
+          IDsVerificationStatus = idVerificationStatus
+        )),
+      trn.map(trn =>
+        CustomerId(
+          idValue = trn,
+          idType = TempNinoIDType,
           IDsVerificationStatus = idVerificationStatus
         ))
     ).flatten
 
 }
 
-object SoleTrader {
-  implicit val format: Format[SoleTrader] = Json.format[SoleTrader]
+object SoleTraderIdEntity {
+  implicit val format: Format[SoleTraderIdEntity] = Json.format[SoleTraderIdEntity]
 }
+
+// PartnershipIdEntity supports Partnerships
 
 case class PartnershipIdEntity(sautr: Option[String],
                                postCode: Option[String],
@@ -169,6 +183,8 @@ case class PartnershipIdEntity(sautr: Option[String],
 object PartnershipIdEntity {
   implicit val format: Format[PartnershipIdEntity] = Json.format[PartnershipIdEntity]
 }
+
+// BusinessIdEntity supports Unincorporated Associations and Trusts
 
 case class BusinessIdEntity(sautr: Option[String],
                             postCode: Option[String],

@@ -62,7 +62,7 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
     "fail with a JsonValidationError" when {
       "NINO is invalid" in {
         implicit val fmt = format(UkCompany)
-        val applicantDetails = validApplicantDetails.copy(transactor = validApplicantDetails.transactor.copy(nino = "NB888"))
+        val applicantDetails = validApplicantDetails.copy(transactor = validApplicantDetails.transactor.copy(nino = Some("NB888")))
         writeAndRead(applicantDetails) shouldHaveErrors (JsPath() \ "transactor" \ "nino" -> JsonValidationError("error.pattern"))
       }
 

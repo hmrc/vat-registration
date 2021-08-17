@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package itutil
 
 import enums.VatRegStatus
-import models.{BusinessIdEntity, IncorporatedEntity, PartnershipIdEntity, SoleTrader}
+import models.{BusinessIdEntity, IncorporatedIdEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import models.api.returns._
-import models.api.{returns, _}
+import models.api._
 import models.submission.{DateOfBirth, Director, Individual, OwnerProprietor, Partnership, RoleInBusiness, Trust, UkCompany}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -104,10 +105,10 @@ trait ITFixtures {
   val testUnregisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
     transactor = TransactorDetails(
       name = testName,
-      nino = testNino,
+      nino = Some(testNino),
       dateOfBirth = testDate
     ),
-    entity = IncorporatedEntity(
+    entity = IncorporatedIdEntity(
       companyName = testCompanyName,
       companyNumber = testCrn,
       dateOfIncorporation = testDateOfIncorp,
@@ -128,10 +129,10 @@ trait ITFixtures {
   val testRegisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
     transactor = TransactorDetails(
       name = testName,
-      nino = testNino,
+      nino = Some(testNino),
       dateOfBirth = testDate
     ),
-    entity = IncorporatedEntity(
+    entity = IncorporatedIdEntity(
       companyName = testCompanyName,
       companyNumber = testCrn,
       dateOfIncorporation = testDateOfIncorp,
@@ -151,12 +152,13 @@ trait ITFixtures {
 
   val testRegisteredSoleTraderApplicantDetails: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
-      entity = SoleTrader(
+      entity = SoleTraderIdEntity(
         testFirstName,
         testLastName,
         testDate,
-        testNino,
+        Some(testNino),
         sautr = Some(testSaUtr),
+        trn = None,
         bpSafeId = Some(testBpSafeId),
         businessVerification = BvPass,
         registration = RegisteredStatus,
@@ -167,12 +169,13 @@ trait ITFixtures {
 
   val testRegisteredSoleTraderApplicantDetailsNoBpSafeId: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
-      entity = SoleTrader(
+      entity = SoleTraderIdEntity(
         testFirstName,
         testLastName,
         testDate,
-        testNino,
+        Some(testNino),
         sautr = Some(testSaUtr),
+        trn = None,
         bpSafeId = None,
         businessVerification = BvPass,
         registration = FailedStatus,
@@ -307,18 +310,19 @@ trait ITFixtures {
       eligibilitySubmissionData = Some(testEligibilitySubmissionDataSoleTrader)
     )
 
-  val testSoleTraderEntity = SoleTrader(
+  val testSoleTraderEntity = SoleTraderIdEntity(
     testFirstName,
     testLastName,
     testDate,
-    testNino,
+    Some(testNino),
     sautr = Some(testUtr),
+    trn = None,
     businessVerification = BvPass,
     registration = FailedStatus,
     identifiersMatch = true
   )
 
-  val testLtdCoEntity = IncorporatedEntity(
+  val testLtdCoEntity = IncorporatedIdEntity(
     companyName = testCompanyName,
     companyNumber = testCrn,
     ctutr = Some(testUtr),

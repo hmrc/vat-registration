@@ -20,7 +20,7 @@ import enums.VatRegStatus
 import models.api._
 import models.api.returns._
 import models.submission._
-import models.{BusinessIdEntity, IncorporatedEntity, PartnershipIdEntity, SoleTrader}
+import models.{BusinessIdEntity, IncorporatedIdEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -86,7 +86,7 @@ trait VatRegistrationFixture {
     partyType = UkCompany
   )
 
-  val testLtdCoEntity = IncorporatedEntity(
+  val testLtdCoEntity = IncorporatedIdEntity(
     companyName = testCompanyName,
     companyNumber = testCrn,
     ctutr = Some(testUtr),
@@ -97,11 +97,11 @@ trait VatRegistrationFixture {
     chrn = None
   )
 
-  val testSoleTraderEntity = SoleTrader(
+  val testSoleTraderEntity = SoleTraderIdEntity(
     testFirstName,
     testLastName,
     testDate,
-    testNino,
+    Some(testNino),
     sautr = Some(testUtr),
     businessVerification = BvPass,
     registration = FailedStatus,
@@ -132,7 +132,7 @@ trait VatRegistrationFixture {
   lazy val validApplicantDetails: ApplicantDetails = ApplicantDetails(
     transactor = TransactorDetails(
       name = testName,
-      nino = testNino,
+      nino = Some(testNino),
       dateOfBirth = testDate
     ),
     entity = testLtdCoEntity,

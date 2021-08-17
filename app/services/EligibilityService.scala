@@ -16,12 +16,12 @@
 
 package services
 
-import javax.inject.{Inject, Singleton}
-import models.api.EligibilitySubmissionData
+import models.api.{EligibilitySubmissionData, VatScheme}
 import play.api.libs.json.{JsObject, JsResultException}
 import repositories.RegistrationMongoRepository
 import utils.EligibilityDataJsonUtils
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -35,9 +35,52 @@ class EligibilityService @Inject()(val registrationRepository: RegistrationMongo
       .validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads).fold(
       invalid => throw JsResultException(invalid),
       eligibilitySubmissionData => for {
+        _ <- registrationRepository.fetchEligibilitySubmissionData(regId).map {
+          case Some(oldEligibilitySubmissionData) =>
+            removeInvalidFields(regId, eligibilitySubmissionData, oldEligibilitySubmissionData)
+          case None =>
+            Future.successful()
+        }
         _ <- registrationRepository.updateEligibilitySubmissionData(regId, eligibilitySubmissionData)
         result <- registrationRepository.updateEligibilityData(regId, eligibilityData)
       } yield result
     )
+  }
+
+  private def removeInvalidFields(regId: String,
+                                  eligibilityData: EligibilitySubmissionData,
+                                  oldEligibilityData: EligibilitySubmissionData
+                                 )(implicit executionContext: ExecutionContext): Future[VatScheme] = {
+
+    registrationRepository.retrieveVatScheme(regId).flatMap {
+      case Some(vatScheme) =>
+        oldEligibilityData match {
+          case EligibilitySubmissionData(_, _, _, _, oldPartyType) if !oldPartyType.equals(eligibilityData.partyType) =>
+            registrationRepository.insertVatScheme(VatScheme(
+              id = vatScheme.id,
+              internalId = vatScheme.internalId,
+              status = vatScheme.status
+            ))
+
+          case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _) if !oldTurnoverEstimates.equals(eligibilityData.estimates) =>
+            val clearedFRS = if (oldTurnoverEstimates.turnoverEstimate > 150000L) {
+              None
+            } else {
+              vatScheme.flatRateScheme
+            }
+
+            val clearedReturns = if (oldTurnoverEstimates.turnoverEstimate > 1350000L &&
+              vatScheme.returns.map(_.annualAccountingDetails).isDefined) {
+              None
+            } else {
+              vatScheme.returns
+            }
+
+            registrationRepository.insertVatScheme(vatScheme.copy(flatRateScheme = clearedFRS, returns = clearedReturns))
+
+          case _ =>
+            Future.successful(vatScheme)
+        }
+    }
   }
 }

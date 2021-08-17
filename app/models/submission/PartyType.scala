@@ -54,6 +54,7 @@ case object AdminDivision extends PartyType
 
 case object Individual extends PartyType
 
+case object NETP extends PartyType // Pseudo party type for NETPs, submission still has to use Individual ID
 
 object PartyType {
 
@@ -74,7 +75,8 @@ object PartyType {
     UnincorpAssoc -> "63",
     TaxGroups -> "64",
     AdminDivision -> "65",
-    Individual -> "Z1"
+    Individual -> "Z1",
+    NETP -> "NETP"
   )
 
   val inverseStati = stati.map(_.swap)

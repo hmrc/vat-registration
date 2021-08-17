@@ -16,7 +16,7 @@
 
 package services.submission
 
-import models.IncorporatedEntity
+import models.IncorporatedIdEntity
 import models.api.EligibilitySubmissionData._
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
@@ -54,7 +54,7 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
         "exemptionOrException" -> eligibilityData.exceptionOrExemption
       ),
       optional("corporateBodyRegistered" -> Option(applicantDetails.entity).collect {
-        case IncorporatedEntity(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
+        case IncorporatedIdEntity(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
           Some(jsonObject(
             "companyRegistrationNumber" -> companyNumber,
             "dateOfIncorporation" -> dateOfIncorporation,
