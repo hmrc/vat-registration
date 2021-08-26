@@ -164,7 +164,7 @@ class SubmissionServiceSpec extends VatRegSpec
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testSubmissionPayload),
         ArgumentMatchers.eq(testDateTime),
-        ArgumentMatchers.eq(testPostcode),
+        ArgumentMatchers.eq(testFormBundleId),
         ArgumentMatchers.eq(testUserHeaders)
       )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)))
 
@@ -187,7 +187,7 @@ class SubmissionServiceSpec extends VatRegSpec
           ArgumentMatchers.eq(testRegId),
           ArgumentMatchers.eq(testSubmissionPayload),
           ArgumentMatchers.eq(testDateTime),
-          ArgumentMatchers.eq(testPostcode),
+          ArgumentMatchers.eq(testFormBundleId),
           ArgumentMatchers.eq(testUserHeaders)
         )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
       }

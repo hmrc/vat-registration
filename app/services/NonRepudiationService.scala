@@ -40,10 +40,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationConnector,
                                       auditService: AuditService,
                                       val authConnector: AuthConnector)(implicit ec: ExecutionContext) extends AuthorisedFunctions {
+
   def submitNonRepudiation(registrationId: String,
                            payloadString: String,
                            submissionTimestamp: LocalDateTime,
-                           postCode: String,
+                           formBundleId: String,
                            userHeaders: Map[String, String]
                           )(implicit hc: HeaderCarrier, request: Request[_]): Future[NonRepudiationSubmissionAccepted] = for {
     identityData <- retrieveIdentityData()
@@ -63,7 +64,7 @@ class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationCon
       identityData,
       userAuthToken,
       userHeaders,
-      Map("postCode" -> postCode)
+      Map("formBundleId" -> formBundleId)
     )
     encodedPayloadString = Base64.getEncoder.encodeToString(payloadString.getBytes(StandardCharsets.UTF_8))
     nonRepudiationSubmissionResponse <- nonRepudiationConnector.submitNonRepudiation(encodedPayloadString, nonRepudiationMetadata).map {
