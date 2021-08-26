@@ -22,10 +22,10 @@ object AppDependencies {
 
 object CompileDependencies {
   val domainVersion = "5.11.0-play-27"
-  val bootstrapVersion = "4.2.0"
+  val bootstrapVersion = "5.12.0"
   val simpleReactiveMongoVersion = "8.0.0-play-27"
   val catsVersion = "1.0.0"
-  private val authClientVersion = "3.2.0-play-27"
+
   private val playJsonVersion = "2.9.2"
   val pegdownVersion = "1.6.0"
 
@@ -34,7 +34,6 @@ object CompileDependencies {
     "uk.gov.hmrc" %% "bootstrap-backend-play-27" % bootstrapVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
     "org.typelevel" %% "cats-core" % catsVersion,
-    "uk.gov.hmrc" %% "auth-client" % authClientVersion,
     "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
     "org.openapi4j" % "openapi-operation-validator" % "1.0.5",
     "org.openapi4j" % "openapi-parser" % "1.0.5",
