@@ -32,7 +32,7 @@ trait MockBankDetailsBlockBuilder extends MockitoSugar {
   val mockBankDetailsBlockBuilder: BankDetailsBlockBuilder = mock[BankDetailsBlockBuilder]
 
   def mockBuildBankDetailsBlock(regId: String)
-                               (response: Future[JsObject]): OngoingStubbing[Future[JsObject]] =
+                               (response: Future[Option[JsObject]]): OngoingStubbing[Future[Option[JsObject]]] =
     when(mockBankDetailsBlockBuilder.buildBankDetailsBlock(ArgumentMatchers.eq(regId)))
       .thenReturn(response)
 

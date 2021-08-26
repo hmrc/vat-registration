@@ -141,7 +141,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
       }
   }
 
-  // TODO: this returns 404 when other methods return 204. Refactor to return 204 at some point
   def fetchBankAccountDetails(regId: String): Action[AnyContent] = Action.async {
     implicit request =>
       isAuthorised(regId) { authResult =>

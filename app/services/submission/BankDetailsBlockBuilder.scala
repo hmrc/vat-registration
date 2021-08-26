@@ -16,43 +16,48 @@
 
 package services.submission
 
+import models.api.BankAccount
+import models.api.NoUKBankAccount.reasonId
+import models.submission.NETP
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.jsonObject
-import javax.inject.{Inject, Singleton}
-import models.api.NoUKBankAccount
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository)(implicit ec: ExecutionContext) {
 
-  def buildBankDetailsBlock(regId: String): Future[JsObject] = for {
+  def buildBankDetailsBlock(regId: String): Future[Option[JsObject]] = for {
     optBankAccount <- registrationMongoRepository.fetchBankAccount(regId)
-  } yield optBankAccount match {
-    case Some(bankAccount) =>
-      if (bankAccount.isProvided) {
-        bankAccount.details match {
-          case Some(bankAccountDetails) =>
-            jsonObject(
-              "UK" -> jsonObject(
-                "accountName" -> bankAccountDetails.name,
-                "sortCode" -> bankAccountDetails.sortCode.replaceAll("-", ""),
-                "accountNumber" -> bankAccountDetails.number
-              )
-            )
-          case None => throw new InternalServerException("Could not build bank details block for submission due to missing bank account details")
-        }
-      }
-      else {
-        jsonObject(
-          "UK" -> jsonObject(
-            "reasonBankAccNotProvided" -> bankAccount.reason.map(NoUKBankAccount.reasonId)
-          )
+    optPartyType <- registrationMongoRepository.fetchEligibilitySubmissionData(regId).map(_.map(_.partyType))
+  } yield (optBankAccount, optPartyType) match {
+    case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) if partyType != NETP =>
+      Some(jsonObject(
+        "UK" -> jsonObject(
+          "accountName" -> details.name,
+          "sortCode" -> details.sortCode.replaceAll("-", ""),
+          "accountNumber" -> details.number
         )
-      }
-    case None => throw new InternalServerException("Could not build bank details block for submission due to missing bank account")
+      ))
+    case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(partyType@NETP)) =>
+      Some(jsonObject(
+        "Overseas" -> jsonObject(
+          "name" -> overseasDetails.name,
+          "bic" -> overseasDetails.bic,
+          "iban" -> overseasDetails.iban
+        )
+      ))
+    case (Some(BankAccount(false, _, _, Some(reason))), _) =>
+      Some(jsonObject(
+        "UK" -> jsonObject(
+          "reasonBankAccNotProvided" -> reasonId(reason)
+        )
+      ))
+    case (None, Some(partyType@NETP)) =>
+      None
+    case _ => throw new InternalServerException("Could not build bank details block for submission due to missing bank account")
   }
-
 }

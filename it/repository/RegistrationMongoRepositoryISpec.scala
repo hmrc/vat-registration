@@ -65,7 +65,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
   val encryptedAccountNumber = "V0g2RXVUcUZpSUk4STgvbGNFdlAydz09"
   val sortCode = "12-34-56"
   val bankAccountDetails: BankAccountDetails = BankAccountDetails("testAccountName", sortCode, accountNumber)
-  val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails), None)
+  val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails),None ,None)
 
   val vatSchemeWithEligibilityData = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, eligibilitySubmissionData = Some(testEligibilitySubmissionData))
 

@@ -219,7 +219,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildSubscriptionBlock(testRegId)(Future.successful(testSubscriptionBlockJson))
 
-        mockBuildBankDetailsBlock(testRegId)(Future.successful(testBankDetailsBlockJson))
+        mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
 
         mockBuildComplianceBlock(testRegId)(Future.successful(Some(testComplianceJson)))
 
@@ -242,7 +242,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildContactBlock(testRegId)(Future.successful(testContactBlockJson))
 
-        mockBuildBankDetailsBlock(testRegId)(Future.successful(testBankDetailsBlockJson))
+        mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
 
         mockBuildSubscriptionBlock(testRegId)(Future.successful(testSubscriptionBlockJson))
 
@@ -267,7 +267,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildSubscriptionBlock(testRegId)(Future.successful(testSubscriptionBlockJson))
 
-        mockBuildBankDetailsBlock(testRegId)(Future.successful(testBankDetailsBlockJson))
+        mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
 
         mockBuildComplianceBlock(testRegId)(Future.successful(Some(testComplianceJson)))
 
