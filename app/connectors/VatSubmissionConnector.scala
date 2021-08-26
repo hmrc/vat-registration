@@ -29,7 +29,7 @@ class VatSubmissionConnector @Inject()(appConfig: BackendConfig,
                                        http: HttpClient
                                       )(implicit executionContext: ExecutionContext) {
 
-  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[String] = {
 
     val submissionHeaders = Seq(
       "Authorization" -> appConfig.urlHeaderAuthorization,
@@ -39,7 +39,7 @@ class VatSubmissionConnector @Inject()(appConfig: BackendConfig,
       "Content-Type" -> "application/json"
     ) ++ hc.headers(Seq("X-Session-ID"))
 
-    http.POST[JsObject, HttpResponse](
+    http.POST[JsObject, String](
       url = appConfig.vatSubmissionUrl,
       body = submissionData,
       headers = submissionHeaders

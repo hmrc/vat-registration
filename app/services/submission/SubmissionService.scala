@@ -61,7 +61,7 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
       vatScheme <- registrationRepository.retrieveVatScheme(regId)
         .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
       submission <- submissionPayloadBuilder.buildSubmissionPayload(regId)
-      _ <- submit(submission, vatScheme, regId, userHeaders) // TODO refactor so this returns a value from the VatRegStatus enum or maybe an ADT
+      formBundleId <- submit(submission, vatScheme, regId, userHeaders) // TODO refactor so this returns a value from the VatRegStatus enum or maybe an ADT
       _ <- registrationRepository.finishRegistrationSubmission(regId, VatRegStatus.submitted)
       _ <- trafficManagementService.updateStatus(regId, Submitted)
     } yield {
@@ -75,7 +75,7 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
                                regId: String,
                                userHeaders: Map[String, String]
                               )(implicit hc: HeaderCarrier,
-                                request: Request[_]): Future[HttpResponse] = {
+                                request: Request[_]): Future[String] = {
 
     val correlationId = idGenerator.createId
     logger.info(s"VAT Submission API Correlation Id: $correlationId for the following regId: $regId")
@@ -83,7 +83,7 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
     authorised().retrieve(credentials and affinityGroup and agentCode) {
       case Some(credentials) ~ Some(affinity) ~ optAgentCode =>
         vatSubmissionConnector.submit(submission, correlationId, credentials.providerId).map {
-          response =>
+          formBundleId =>
             auditService.audit(
               submissionAuditBlockBuilder.buildAuditJson(
                 vatScheme = vatScheme,
@@ -111,7 +111,7 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
               nonRepudiationService.submitNonRepudiation(regId, Json.toJson(submission).toString, timeMachine.timestamp, nonRepudiationPostcode, userHeaders)
             }
 
-            response
+            formBundleId
         }
     }
   }

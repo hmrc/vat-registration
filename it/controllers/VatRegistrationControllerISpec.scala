@@ -75,6 +75,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     "metadata" -> testNonRepudiationMetadata
   )
 
+  val testSubmissionResponse = Json.obj("formBundle" -> "1234")
+
   "POST /new" should {
     "return CREATED if the daily quota has not been met" in new Setup {
       given
@@ -111,7 +113,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .user.isAuthorised
         .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -129,7 +131,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
 
       stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
-      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
       stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -150,7 +152,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .user.isAuthorised
         .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJson, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJson, OK, Json.stringify(testSubmissionResponse))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -166,7 +168,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .user.isAuthorised
         .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -182,7 +184,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .user.isAuthorised
         .regRepo.insertIntoDb(testMinimalVatSchemeWithTrust, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedTrustJson, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedTrustJson, OK, Json.stringify(testSubmissionResponse))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -198,7 +200,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .user.isAuthorised
         .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -214,7 +216,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .user.isAuthorised
         .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner.copy(flatRateScheme = None), repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -229,7 +231,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .user.isAuthorised
         .regRepo.insertIntoDb(testVatSchemeWithPartners, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderWithPartnerJson, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderWithPartnerJson, OK, Json.stringify(testSubmissionResponse))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -245,7 +247,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .user.isAuthorised
         .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, "")
+      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())

@@ -26,10 +26,12 @@ class VatSubmissionHttpParserSpec extends PlaySpec {
 
   val testHttpVerb = "POST"
   val testUri = "/"
+  val testFormBundleId = "testFormBundleId"
+  val testResponse = Json.obj("formBundle" -> testFormBundleId)
 
   "VatSubmissionHttpParser" should {
-    "successfully parse the response with status OK" in {
-      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, "")).status mustBe OK
+    "successfully parse the formBundleId with status OK" in {
+      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, Json.stringify(testResponse))) mustBe testFormBundleId
     }
 
     "fail when parsing the response with status BAD_REQUEST" when {
