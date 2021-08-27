@@ -64,7 +64,7 @@ trait VatRegistrationFixture {
   lazy val testBankDetails = BankAccountDetails("Test Bank Account", "010203", "01023456")
   lazy val testBankDetailsOverseas = BankAccountOverseasDetails("Test Overseas Bank Account", "010203", "01023456")
   lazy val testFormerName = FormerName(Some(testName), Some(testDate))
-  lazy val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None)
+  lazy val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None)
   lazy val zeroRatedSupplies: BigDecimal = 12.99
   lazy val testBpSafeId = "testBpSafeId"
   lazy val testFirstName = "testFirstName"
@@ -176,7 +176,8 @@ trait VatRegistrationFixture {
     Annual,
     JanDecStagger,
     Some(testDate),
-    Some(validAASDetails)
+    Some(validAASDetails),
+    None
   )
 
   lazy val validFullFRSDetails: FRSDetails =

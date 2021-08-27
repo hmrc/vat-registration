@@ -26,7 +26,8 @@ case class Returns(zeroRatedSupplies: Option[BigDecimal],
                    returnsFrequency: ReturnsFrequency,
                    staggerStart: Stagger,
                    startDate: Option[LocalDate],
-                   annualAccountingDetails: Option[AASDetails])
+                   annualAccountingDetails: Option[AASDetails],
+                   overseasCompliance: Option[OverseasCompliance])
 
 object Returns extends JsonUtilities {
   implicit val format: Format[Returns] = Json.format[Returns]
@@ -37,4 +38,37 @@ case class AASDetails(paymentMethod: PaymentMethod,
 
 object AASDetails {
   implicit val format: Format[AASDetails] = Json.format[AASDetails]
+}
+
+case class OverseasCompliance(goodsToOverseas: Boolean,
+                              goodsToEu: Option[Boolean],
+                              storingGoodsForDispatch: StoringGoodsForDispatch,
+                              usingWarehouse: Option[Boolean],
+                              fulfilmentWarehouseNumber: Option[String])
+
+object OverseasCompliance {
+  implicit val format: Format[OverseasCompliance] = Json.format[OverseasCompliance]
+}
+
+sealed trait StoringGoodsForDispatch
+case object StoringWithinUk extends StoringGoodsForDispatch
+case object StoringOverseas extends StoringGoodsForDispatch
+
+object StoringGoodsForDispatch {
+  val statusMap: Map[StoringGoodsForDispatch, String] = Map(
+    StoringWithinUk -> "UK",
+    StoringOverseas -> "OVERSEAS"
+  )
+  val inverseMap: Map[String, StoringGoodsForDispatch] = statusMap.map(_.swap)
+
+  def fromString(value: String): StoringGoodsForDispatch = inverseMap(value)
+  def toJsString(value: StoringGoodsForDispatch): JsString = JsString(statusMap(value))
+
+  val writes: Writes[StoringGoodsForDispatch] = Writes[StoringGoodsForDispatch] { storingGoods =>
+    toJsString(storingGoods)
+  }
+  val reads: Reads[StoringGoodsForDispatch] = Reads[StoringGoodsForDispatch] { storingGoods =>
+    storingGoods.validate[String] map fromString
+  }
+  implicit val format: Format[StoringGoodsForDispatch] = Format(reads, writes)
 }

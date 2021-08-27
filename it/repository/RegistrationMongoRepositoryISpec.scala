@@ -333,7 +333,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     val otherUsersVatScheme = vatSchemeWithEligibilityDataJson(otherRegId)
     val dateValue = LocalDate of(1990, 10, 10)
     val startDate = dateValue
-    val returns: Returns = Returns(Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None)
+    val returns: Returns = Returns(Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None, None)
     val vatSchemeWithEligibilityDataWithReturns = Json.parse(
       s"""
          |{

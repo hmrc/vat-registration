@@ -22,18 +22,12 @@ sealed trait DBExceptions {
   val id: String
 }
 
-case class NoReturns() extends NoStackTrace
-case class NoTradingDetails(msg: String) extends NoStackTrace
-case class InvalidSubmissionStatus(msg: String) extends NoStackTrace
-case class UnknownIncorpStatus(msg: String) extends NoStackTrace
-case class NoTransactionId(msg: String) extends NoStackTrace
-case class NoRegIdException(msg: String) extends NoStackTrace
-case class NoCompanyName(msg: String) extends NoStackTrace
-case class NoIncorpDate(msg: String) extends NoStackTrace
+case class InvalidSubmissionStatus(msg: String) extends NoStackTrace {
+  override def getMessage: String = msg
+}
 case class MissingRegDocument(id: String) extends NoStackTrace with DBExceptions {
   override def getMessage: String = s"No Registration document found for regId: ${id}"
 }
-case class InvalidEligibilityDataToConvertModel(msg: String) extends NoStackTrace
 
 case class UpdateFailed(id: String, attemptedModel: String) extends NoStackTrace with DBExceptions
 case class InsertFailed(id: String, attemptedModel: String) extends NoStackTrace with DBExceptions
