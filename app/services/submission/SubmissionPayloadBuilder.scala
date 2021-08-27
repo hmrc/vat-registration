@@ -54,7 +54,7 @@ class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
     "contact" -> contactBlock,
     "subscription" -> subscriptionBlock,
     "periods" -> periodsBlock,
-    "bankDetails" -> bankDetailsBlock,
+    optional("bankDetails" -> bankDetailsBlock),
     optional("joinAA" -> annualAccountingBlockBuilder),
     optional("compliance" -> complianceBlock),
     optional("entities" -> entities)
