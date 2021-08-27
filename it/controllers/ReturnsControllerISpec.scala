@@ -20,7 +20,8 @@ class ReturnsControllerISpec extends IntegrationStubbing {
     Annual,
     JanDecStagger,
     Some(testDate),
-    Some(AASDetails(BankGIRO, MonthlyPayment))
+    Some(AASDetails(BankGIRO, MonthlyPayment)),
+    None
   )
 
   val validAnnualReturnsJson: JsObject = Json.obj(

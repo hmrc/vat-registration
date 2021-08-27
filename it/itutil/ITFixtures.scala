@@ -54,7 +54,8 @@ trait ITFixtures {
     returnsFrequency = Quarterly,
     staggerStart = JanuaryStagger,
     startDate = Some(startDate),
-    annualAccountingDetails = None
+    annualAccountingDetails = None,
+    overseasCompliance = None
   )
 
   val frsDetails = FRSDetails(
@@ -76,7 +77,8 @@ trait ITFixtures {
     returnsFrequency = Annual,
     staggerStart = JanDecStagger,
     startDate = Some(startDate),
-    annualAccountingDetails = Some(aasDetails)
+    annualAccountingDetails = Some(aasDetails),
+    overseasCompliance = None
   )
 
   val testFlatRateScheme = FlatRateScheme(joinFrs = true, Some(frsDetails))

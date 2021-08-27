@@ -26,6 +26,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
 
   val testZeroRatedSupplies = 10000.5
   val testDate: LocalDate = LocalDate.now()
+  val testWarehouseNumber = "test12345678"
 
   val testMonthlyReturns: Returns = Returns(
     Some(testZeroRatedSupplies),
@@ -33,6 +34,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     Monthly,
     MonthlyStagger,
     Some(testDate),
+    None,
     None
   )
 
@@ -42,6 +44,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     Quarterly,
     JanuaryStagger,
     Some(testDate),
+    None,
     None
   )
 
@@ -51,8 +54,17 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     Annual,
     JanDecStagger,
     Some(testDate),
-    Some(AASDetails(BankGIRO, MonthlyPayment))
+    Some(AASDetails(BankGIRO, MonthlyPayment)),
+    None
   )
+
+  val testOverseasReturns: Returns = testQuarterlyReturns.copy(overseasCompliance = Some(OverseasCompliance(
+    goodsToOverseas = true,
+    goodsToEu = Some(true),
+    storingGoodsForDispatch = StoringWithinUk,
+    usingWarehouse = Some(true),
+    fulfilmentWarehouseNumber = Some(testWarehouseNumber)
+  )))
 
   val validMonthlyReturnsJson: JsObject = Json.obj(
     "zeroRatedSupplies" -> testZeroRatedSupplies,
@@ -94,6 +106,20 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     )
   )
 
+  val validOverseasJson: JsObject = Json.obj(
+    "zeroRatedSupplies" -> testZeroRatedSupplies,
+    "reclaimVatOnMostReturns" -> false,
+    "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
+    "staggerStart" -> Json.toJson[Stagger](JanuaryStagger),
+    "startDate" -> testDate,
+    "overseasCompliance" -> Json.obj(
+      "goodsToOverseas" -> true,
+      "goodsToEu" -> true,
+      "storingGoodsForDispatch" -> Json.toJson[StoringGoodsForDispatch](StoringWithinUk),
+      "usingWarehouse" -> true,
+      "fulfilmentWarehouseNumber" -> testWarehouseNumber
+    ))
+
   "Parsing Returns" should {
     "succeed" when {
       "full monthly json is present" in {
@@ -108,8 +134,12 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
         Json.fromJson[Returns](validAnnualReturnsJson()) mustBe JsSuccess(testAnnualReturns)
       }
 
-      "full json is present without startDate" in {
+      "full annual json is present without startDate" in {
         Json.fromJson[Returns](validAnnualReturnsJson(None)) mustBe JsSuccess(testAnnualReturns.copy(startDate = None))
+      }
+
+      "full overseas json is present" in {
+        Json.fromJson[Returns](validOverseasJson) mustBe JsSuccess(testOverseasReturns)
       }
     }
 

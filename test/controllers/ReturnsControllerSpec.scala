@@ -46,7 +46,8 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
     Annual,
     JanDecStagger,
     Some(testDate),
-    Some(AASDetails(BankGIRO, MonthlyPayment))
+    Some(AASDetails(BankGIRO, MonthlyPayment)),
+    None
   )
 
   val validAnnualReturnsJson: JsObject = Json.obj(
