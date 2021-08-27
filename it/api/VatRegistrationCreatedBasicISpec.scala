@@ -39,6 +39,8 @@ class VatRegistrationCreatedBasicISpec extends IntegrationStubbing with FeatureS
     "ENG"
   )
 
+  val testSubmissionResponse = Json.obj("formBundle" -> "1234")
+
   "/vatreg/new (create registration)" when {
     "the user is authorised" should {
       "Return CREATED" in new Setup {
@@ -73,7 +75,7 @@ class VatRegistrationCreatedBasicISpec extends IntegrationStubbing with FeatureS
       disable(StubSubmission)
       given.user.isAuthorised
 
-      stubVatSubmission(OK)()
+      stubVatSubmission(OK)(testSubmissionResponse)
 
       await(repo.insert(testFullVatSchemeWithUnregisteredBusinessPartner))
 
@@ -92,7 +94,7 @@ class VatRegistrationCreatedBasicISpec extends IntegrationStubbing with FeatureS
     "mock the return if the stub submission flag is on" in new Setup {
       enable(StubSubmission)
       given.user.isAuthorised
-      stubVatSubmission(OK)()
+      stubVatSubmission(OK)(testSubmissionResponse)
 
       await(repo.insert(testFullVatSchemeWithUnregisteredBusinessPartner))
 

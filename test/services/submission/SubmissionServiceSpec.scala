@@ -95,13 +95,15 @@ class SubmissionServiceSpec extends VatRegSpec
     disable(CheckYourAnswersNrsSubmission)
   }
 
+  val testFormBundleId = "testFormBundleId"
+
   "submitVatRegistration" when {
     "successfully submit and return an acknowledgment reference" in new Setup {
       when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
       when(mockSequenceRepository.getNext(any())).thenReturn(Future.successful(100))
       when(mockRegistrationMongoRepository.prepareRegistrationSubmission(anyString(), any(), any())).thenReturn(Future.successful(true))
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(testFormBundleId))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any())).thenReturn(Future.successful(VatRegStatus.submitted))
       mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
@@ -150,7 +152,7 @@ class SubmissionServiceSpec extends VatRegSpec
         .thenReturn(Future.successful(Some(testFullVatScheme)))
       when(mockSequenceRepository.getNext(any())).thenReturn(Future.successful(100))
       when(mockRegistrationMongoRepository.prepareRegistrationSubmission(anyString(), any(), any())).thenReturn(Future.successful(true))
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(testFormBundleId))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any())).thenReturn(Future.successful(VatRegStatus.submitted))
       mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
@@ -194,7 +196,7 @@ class SubmissionServiceSpec extends VatRegSpec
 
   "submit" should {
     "return a 200 response and successfully audit when all calls succeed" in new Setup {
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(200, "{}")))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(testFormBundleId))
       mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
         Future.successful(
           Some(testCredentials) ~ Some(testAffinityGroup) ~ None
@@ -202,7 +204,8 @@ class SubmissionServiceSpec extends VatRegSpec
       )
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testFullVatScheme, testRegId, testUserHeaders)).status mustBe OK
+      await(service.submit(vatSubmissionJson.as[JsObject], testFullVatScheme, testRegId, testUserHeaders)) mustBe testFormBundleId
+
       verifyAudit(SubmissionAuditModel(
         detailBlockAnswers,
         testFullVatScheme,
@@ -213,7 +216,7 @@ class SubmissionServiceSpec extends VatRegSpec
     }
 
     "return a 502 response and successfully audit when submission fails with a 502" in new Setup {
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(HttpResponse(502, "{}")))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(testFormBundleId))
       mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
         Future.successful(
           Some(testCredentials) ~ Some(testAffinityGroup) ~ None
@@ -221,7 +224,8 @@ class SubmissionServiceSpec extends VatRegSpec
       )
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testFullVatScheme, testRegId, testUserHeaders)).status mustBe BAD_GATEWAY
+      await(service.submit(vatSubmissionJson.as[JsObject], testFullVatScheme, testRegId, testUserHeaders)) mustBe testFormBundleId
+
       verifyAudit(SubmissionAuditModel(
         detailBlockAnswers,
         testFullVatScheme,

@@ -26,12 +26,14 @@ object VatSubmissionHttpParser {
   val InvalidPayloadKey = "INVALID_PAYLOAD"
   val InvalidSessionIdKey = "INVALID_SESSIONID"
   val InvalidCredentialIdKey = "INVALID_CREDENTIALID"
+  val FormBundleIdKey = "formBundle"
 
-  implicit object VatSubmissionHttpReads extends HttpReads[HttpResponse] {
-    override def read(method: String, url: String, response: HttpResponse): HttpResponse = {
+  implicit object VatSubmissionHttpReads extends HttpReads[String] {
+    override def read(method: String, url: String, response: HttpResponse): String = {
       response.status match {
         case OK =>
-          response
+          (response.json \ FormBundleIdKey).validate[String]
+            .getOrElse(throw new InternalServerException("VAT submission API - no form bundle ID in response"))
         case BAD_REQUEST =>
           (response.json \ CodeKey).validate[String] match {
             case JsSuccess(InvalidPayloadKey, _) =>
