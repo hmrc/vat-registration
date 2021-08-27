@@ -20,7 +20,7 @@ import cats.instances.FutureInstances
 import common.exceptions._
 import connectors.VatSubmissionConnector
 import enums.VatRegStatus
-import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching}
+import featureswitch.core.config.FeatureSwitching
 import models.api.{Submitted, VatScheme}
 import play.api.Logging
 import play.api.libs.json.{JsObject, Json}
@@ -31,9 +31,8 @@ import services.{NonRepudiationService, TrafficManagementService}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, InternalServerException}
+import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 import utils.{IdGenerator, TimeMachine}
-
 import java.util.Base64
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -93,19 +92,11 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
               )
             )
 
-            if (isEnabled(CheckYourAnswersNrsSubmission)) {
               val encodedHtml = vatScheme.nrsSubmissionPayload
                 .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
               val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
 
               nonRepudiationService.submitNonRepudiation(regId, payloadString, timeMachine.timestamp, formBundleId, userHeaders)
-            }
-            else {
-              val nonRepudiationPostcode = vatScheme.businessContact.flatMap(_.ppob.postcode).getOrElse("NoPostcodeSupplied")
-              //TODO - Confirm what to send when postcode is not available
-
-              nonRepudiationService.submitNonRepudiation(regId, Json.toJson(submission).toString, timeMachine.timestamp, nonRepudiationPostcode, userHeaders)
-            }
 
             formBundleId
         }
