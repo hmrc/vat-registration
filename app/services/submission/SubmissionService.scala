@@ -97,12 +97,8 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
               val encodedHtml = vatScheme.nrsSubmissionPayload
                 .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
               val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
-              val postCode = vatScheme.businessContact
-                .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing business contact details"))
-                .ppob.postcode.getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing postcode"))
-              //TODO - Confirm what to send when postcode is not available
 
-              nonRepudiationService.submitNonRepudiation(regId, payloadString, timeMachine.timestamp, postCode, userHeaders)
+              nonRepudiationService.submitNonRepudiation(regId, payloadString, timeMachine.timestamp, formBundleId, userHeaders)
             }
             else {
               val nonRepudiationPostcode = vatScheme.businessContact.flatMap(_.ppob.postcode).getOrElse("NoPostcodeSupplied")

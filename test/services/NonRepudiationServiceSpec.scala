@@ -48,6 +48,8 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
   implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization(testAuthToken)))
   implicit val request: Request[AnyContent] = FakeRequest()
 
+  val testFormBundleId = "testFormBundleId"
+
   "submitNonRepudiation" should {
     "call the nonRepudiationConnector with the correctly formatted metadata" in {
       val testSubmissionId = "testSubmissionId"
@@ -70,7 +72,7 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
         identityData = testNonRepudiationIdentityData,
         userAuthToken = testAuthToken,
         headerData = testUserHeaders,
-        searchKeys = Map("postCode" -> testPostcode)
+        searchKeys = Map("formBundleId" -> testFormBundleId)
       )
 
       when(mockNonRepudiationConnector.submitNonRepudiation(
@@ -85,7 +87,7 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
         ))(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(executionContext))
       ).thenReturn(Future.successful(testAuthRetrievals))
 
-      val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testPostcode, testUserHeaders)
+      val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testFormBundleId, testUserHeaders)
 
       await(res) mustBe NonRepudiationSubmissionAccepted(testSubmissionId)
 
@@ -113,7 +115,7 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
         identityData = testNonRepudiationIdentityData,
         userAuthToken = testAuthToken,
         headerData = testUserHeaders,
-        searchKeys = Map("postCode" -> testPostcode)
+        searchKeys = Map("formBundleId" -> testFormBundleId)
       )
 
       val testExceptionMessage = "testExceptionMessage"
@@ -130,7 +132,7 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
       )(ArgumentMatchers.eq(hc)))
         .thenReturn(Future.failed(new NotFoundException(testExceptionMessage)))
 
-      val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testPostcode, testUserHeaders)
+      val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testFormBundleId, testUserHeaders)
 
       intercept[NotFoundException](await(res))
 
