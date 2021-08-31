@@ -19,7 +19,7 @@ package controllers
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo, verify}
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import enums.VatRegStatus
-import featureswitch.core.config.{CheckYourAnswersNrsSubmission, FeatureSwitching, StubSubmission}
+import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
 import models.api.VatScheme
 import models.nonrepudiation.NonRepudiationMetadata
@@ -27,8 +27,6 @@ import org.scalatest.concurrent.Eventually.eventually
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
-import services.submission.SubmissionPayloadBuilder
-
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Base64
@@ -40,11 +38,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   override lazy val additionalConfig = Map("microservice.services.non-repudiation.api-key" -> testNonRepudiationApiKey)
 
   class Setup extends SetupHelper
-
-  override def afterEach(): Unit = {
-    super.afterEach()
-    disable(CheckYourAnswersNrsSubmission)
-  }
 
   def testEncodedPayload(payload: String): String = Base64.getEncoder.encodeToString(payload.getBytes(StandardCharsets.UTF_8))
 
@@ -122,29 +115,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       res.status mustBe OK
     }
 
-    "return OK if the submission is successful with an unregistered business partner when the nrs feature switch is on" in new Setup {
-      enable(StubSubmission)
-      enable(CheckYourAnswersNrsSubmission)
-
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
-
-      stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
-      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
-      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
-
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .withHttpHeaders("authorization" -> testAuthToken)
-        .put(Json.obj("userHeaders" -> headerData))
-      )
-
-      eventually {
-        verify(postRequestedFor(urlEqualTo("/submission")))
-      }
-      res.status mustBe OK
-    }
-
     "return OK if the submission is successful for a sole trader with a bpSafeId" in new Setup {
       enable(StubSubmission)
 
@@ -153,6 +123,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader, repo.insert)
 
       stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJson, OK, Json.stringify(testSubmissionResponse))
+      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -185,6 +156,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .regRepo.insertIntoDb(testMinimalVatSchemeWithTrust, repo.insert)
 
       stubPost("/vatreg/test-only/vat/subscription", testVerifiedTrustJson, OK, Json.stringify(testSubmissionResponse))
+      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -201,6 +173,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner, repo.insert)
 
       stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -217,6 +190,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner.copy(flatRateScheme = None), repo.insert)
 
       stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())

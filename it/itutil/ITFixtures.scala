@@ -291,25 +291,29 @@ trait ITFixtures {
       status = VatRegStatus.draft,
       applicantDetails = Some(testRegisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-      confirmInformationDeclaration = Some(true)
+      confirmInformationDeclaration = Some(true),
+      nrsSubmissionPayload = Some(testEncodedPayload)
     )
 
   lazy val testMinimalVatSchemeWithVerifiedSoleTrader: VatScheme =
     testMinimalVatSchemeWithRegisteredBusinessPartner.copy(
       applicantDetails = Some(testRegisteredSoleTraderApplicantDetails),
-      eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Individual))
+      eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Individual)),
+      nrsSubmissionPayload = Some(testEncodedPayload)
     )
 
   lazy val testMinimalVatSchemeWithTrust: VatScheme =
     testMinimalVatSchemeWithRegisteredBusinessPartner.copy(
       applicantDetails = Some(testRegisteredApplicantDetails.copy(entity = testTrustEntity)),
-      eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Trust))
+      eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Trust)),
+      nrsSubmissionPayload = Some(testEncodedPayload)
     )
 
   lazy val testSoleTraderVatScheme: VatScheme =
     testFullVatScheme.copy(
       applicantDetails = Some(testRegisteredSoleTraderApplicantDetailsNoBpSafeId),
-      eligibilitySubmissionData = Some(testEligibilitySubmissionDataSoleTrader)
+      eligibilitySubmissionData = Some(testEligibilitySubmissionDataSoleTrader),
+      nrsSubmissionPayload = Some(testEncodedPayload)
     )
 
   val testSoleTraderEntity = SoleTraderIdEntity(
