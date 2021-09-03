@@ -66,7 +66,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
   val bankDetailsOverseasNotProvidedBlockJson: JsObject = Json.parse(
     """
-      |{ "Overseas":
+      |{ "UK":
       |  {
       |     "reasonBankAccNotProvided": "3"
       |  }
@@ -147,7 +147,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(partyType = NETP))))
 
         val result: Option[JsObject] = await(service.buildBankDetailsBlock(testRegId))
-        result mustBe None
+        result mustBe Some(bankDetailsOverseasNotProvidedBlockJson)
       }
 
     }

@@ -16,7 +16,7 @@
 
 package services.submission
 
-import models.api.BankAccount
+import models.api.{BankAccount, OverseasAccount}
 import models.api.NoUKBankAccount.reasonId
 import models.submission.NETP
 import play.api.libs.json.JsObject
@@ -57,7 +57,9 @@ class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: Registratio
         )
       ))
     case (None, Some(partyType@NETP)) =>
-      None
+      Some(jsonObject("UK" -> jsonObject(
+        "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
+      )))
     case _ => throw new InternalServerException("Could not build bank details block for submission due to missing bank account")
   }
 }
