@@ -44,7 +44,8 @@ case class OverseasCompliance(goodsToOverseas: Boolean,
                               goodsToEu: Option[Boolean],
                               storingGoodsForDispatch: StoringGoodsForDispatch,
                               usingWarehouse: Option[Boolean],
-                              fulfilmentWarehouseNumber: Option[String])
+                              fulfilmentWarehouseNumber: Option[String],
+                              fulfilmentWarehouseName: Option[String])
 
 object OverseasCompliance {
   implicit val format: Format[OverseasCompliance] = Json.format[OverseasCompliance]

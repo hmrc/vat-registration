@@ -27,6 +27,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   val testZeroRatedSupplies = 10000.5
   val testDate: LocalDate = LocalDate.now()
   val testWarehouseNumber = "test12345678"
+  val testWarehouseName = "testWarehouseName"
 
   val testMonthlyReturns: Returns = Returns(
     Some(testZeroRatedSupplies),
@@ -63,7 +64,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     goodsToEu = Some(true),
     storingGoodsForDispatch = StoringWithinUk,
     usingWarehouse = Some(true),
-    fulfilmentWarehouseNumber = Some(testWarehouseNumber)
+    fulfilmentWarehouseNumber = Some(testWarehouseNumber),
+    fulfilmentWarehouseName = Some(testWarehouseName)
   )))
 
   val validMonthlyReturnsJson: JsObject = Json.obj(
@@ -117,7 +119,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
       "goodsToEu" -> true,
       "storingGoodsForDispatch" -> Json.toJson[StoringGoodsForDispatch](StoringWithinUk),
       "usingWarehouse" -> true,
-      "fulfilmentWarehouseNumber" -> testWarehouseNumber
+      "fulfilmentWarehouseNumber" -> testWarehouseNumber,
+      "fulfilmentWarehouseName" -> testWarehouseName
     ))
 
   "Parsing Returns" should {
