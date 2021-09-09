@@ -18,7 +18,7 @@ package services
 
 import config.BackendConfig
 import models.api._
-import models.submission.{Individual, PartyType, UkCompany}
+import models.submission._
 import play.api.libs.json.Json
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import utils.TimeMachine
@@ -39,6 +39,8 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       case UkCompany => config.DailyQuotas.ukCompany
       case Individual if isEnrolled => config.DailyQuotas.enrolledSoleTrader
       case Individual => config.DailyQuotas.soleTrader
+      case NETP if isEnrolled => config.DailyQuotas.enrolledNetp
+      case NETP => config.DailyQuotas.netp
     }
 
   def currentHour: Int = timeMachine.timestamp.getHour

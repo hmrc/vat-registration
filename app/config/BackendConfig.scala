@@ -52,6 +52,8 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
     val ukCompany = servicesConfig.getInt("traffic-management.quotas.uk-company")
     val enrolledSoleTrader = servicesConfig.getInt("traffic-management.quotas.sole-trader-enrolled")
     val soleTrader = servicesConfig.getInt("traffic-management.quotas.sole-trader")
+    val enrolledNetp = servicesConfig.getInt("traffic-management.quotas.netp-enrolled")
+    val netp = servicesConfig.getInt("traffic-management.quotas.netp")
   }
 
   lazy val nonRepudiationSubmissionUrl: String = servicesConfig.baseUrl("non-repudiation") + "/submission"
