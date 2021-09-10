@@ -49,6 +49,7 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       |      "line2": "line2",
       |      "line3": "line3",
       |      "line4": "line4",
+      |      "line5": "line5",
       |      "postcode": "ZZ1 1ZZ",
       |      "countryCode": "GB"
       |    },
@@ -69,7 +70,7 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
         businessContact = Some(BusinessContact(
           digitalContact = DigitalContact("email@email.com", None, None),
           website = None,
-          ppob = Address("line1", "line2", None, None, None, None, None),
+          ppob = Address("line1", Some("line2"), None, None, None, None, None),
           commsPreference = Email
         )))
 
@@ -83,7 +84,7 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
         businessContact = Some(BusinessContact(
           digitalContact = DigitalContact("email@email.com", Some("12345"), None),
           website = Some("www.foo.com"),
-          ppob = Address("line1", "line2", Some("line3"), Some("line4"), Some(testPostcode), Some(Country(Some("GB"), None))),
+          ppob = Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some(testPostcode), Some(Country(Some("GB"), None))),
           commsPreference = Email
         )))
 

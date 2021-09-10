@@ -80,9 +80,10 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: Registratio
 
   private def formatAddress(address: Address): JsObject = jsonObject(
     "line1" -> address.line1,
-    "line2" -> address.line2,
+    optional("line2" -> address.line2),
     optional("line3" -> address.line3),
     optional("line4" -> address.line4),
+    optional("line5" -> address.line5),
     optional("postCode" -> address.postcode),
     optional("countryCode" -> address.country.flatMap(_.code)),
     optional("addressValidated" -> address.addressValidated)

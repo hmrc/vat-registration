@@ -44,7 +44,7 @@ trait VatRegistrationFixture {
   lazy val testChrn = "testChrn"
   lazy val testCasc = "testCasc"
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
-  lazy val testAddress = Address("line1", "line2", None, None, Some("XX XX"), Some(Country(Some("GB"), None)), addressValidated = Some(true))
+  lazy val testAddress = Address("line1", Some("line2"), None, None, None, Some("XX XX"), Some(Country(Some("GB"), None)), addressValidated = Some(true))
   lazy val testPostcode = "ZZ1 1ZZ"
   lazy val testSicCode = SicCode("88888", "description", "displayDetails")
   lazy val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
@@ -157,7 +157,7 @@ trait VatRegistrationFixture {
   lazy val testBusinessContact = Some(BusinessContact(
     digitalContact = DigitalContact("email@email.com", Some("12345"), Some("54321")),
     website = Some("www.foo.com"),
-    ppob = Address("line1", "line2", None, None, Some(testPostcode), Some(Country(Some("GB"), None))),
+    ppob = Address("line1", Some("line2"), None, None, None, Some(testPostcode), Some(Country(Some("GB"), None))),
     commsPreference = Email
   ))
 
@@ -198,7 +198,7 @@ trait VatRegistrationFixture {
     website = Some("www.foo.com"),
     ppob = Address(
       line1 = "line1",
-      line2 = "line2",
+      line2 = Some("line2"),
       postcode = Some(testPostcode),
       country = Some(Country(code = Some("GB"), name = Some("UK")))),
     commsPreference = Email)

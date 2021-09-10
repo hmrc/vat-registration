@@ -510,7 +510,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       val amendedModel: BusinessContact = testBusinessContactDetails.copy(
         digitalContact = DigitalContact("foozle", Some("2434738"), Some("37483784")),
         website = Some("myLittleWebsite"),
-        ppob = Address("lino1", "lino2", None, None, None, Some(testCountry))
+        ppob = Address("lino1", Some("lino2"), None, None, None, None, Some(testCountry))
       )
       val result: Future[BusinessContact] = for {
         _ <- repository.insert(vatSchemeWithEligibilityData.copy(businessContact = Some(testBusinessContactDetails)))

@@ -32,9 +32,10 @@ class ContactAuditBlockBuilder {
         jsonObject(
           "address" -> jsonObject(
             "line1" -> businessContact.ppob.line1,
-            "line2" -> businessContact.ppob.line2,
+            optional("line2" -> businessContact.ppob.line2),
             optional("line3" -> businessContact.ppob.line3),
             optional("line4" -> businessContact.ppob.line4),
+            optional("line5" -> businessContact.ppob.line5),
             optional("postcode" -> businessContact.ppob.postcode),
             optional("countryCode" -> businessContact.ppob.country.flatMap(_.code))
           ),
