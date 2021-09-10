@@ -107,7 +107,7 @@ trait IntegrationSpecBase extends PlaySpec
 
     lazy val ws: WSClient = app.injector.instanceOf(classOf[WSClient])
 
-    def client(path: String): WSRequest = ws.url(s"http://localhost:$port$path").withFollowRedirects(false)
+    def client(path: String): WSRequest = ws.url(s"http://localhost:$port/vatreg${path.replace("/vatreg", "")}").withFollowRedirects(false)
   }
 
   override def beforeEach(): Unit = {
