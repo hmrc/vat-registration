@@ -50,10 +50,10 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           "eoriRequested" -> tradingDetails.eoriRequested,
           "registrationReason" -> eligibilityData.reasonForRegistration(humanReadable = true),
           optional("registrationRelevantDate" -> {
-            if (eligibilityData.reasonForRegistration() == EligibilitySubmissionData.voluntaryKey) {
-              returns.startDate
-            } else {
-              Some(eligibilityData.earliestDate)
+            eligibilityData.reasonForRegistration() match {
+              case EligibilitySubmissionData.voluntaryKey => returns.startDate
+              case EligibilitySubmissionData.nonUkKey => eligibilityData.threshold.thresholdOverseas
+              case _ => Some(eligibilityData.earliestDate)
             }
           }),
           optional("corporateBodyRegistered" -> {

@@ -48,6 +48,7 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
             case `voluntaryKey` => returns.startDate
             case `backwardLookKey` => eligibilityData.threshold.thresholdInTwelveMonths
             case `forwardLookKey` => Some(eligibilityData.earliestDate)
+            case `nonUkKey` => eligibilityData.threshold.thresholdOverseas
           }
         },
         optional("voluntaryOrEarlierDate" -> returns.startDate),
