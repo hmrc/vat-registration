@@ -61,3 +61,5 @@ GET         /:regId/partners/:index                 controllers.PartnersControll
 PUT         /:regId/partners/:index                 controllers.PartnersController.upsertPartner(regId: String, index: Int)
 DELETE      /:regId/partners/:index                 controllers.PartnersController.deletePartner(regId: String, index: Int)
 GET         /:regId/partners                        controllers.PartnersController.getPartners(regId: String)
+
+GET         /:regId/attachments                     controllers.AttachmentsController.getAttachmentList(regId: String)
