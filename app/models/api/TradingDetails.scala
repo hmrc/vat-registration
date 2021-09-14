@@ -20,13 +20,13 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class TradingDetails(tradingName: Option[String],
-                          eoriRequested: Boolean)
+                          eoriRequested: Option[Boolean])
 
 object TradingDetails {
 
   implicit val format: OFormat[TradingDetails] = (
     (__ \ "tradingName").formatNullable[String] and
-      (__ \ "eoriRequested").format[Boolean]
+      (__ \ "eoriRequested").formatNullable[Boolean]
     ) (TradingDetails.apply, unlift(TradingDetails.unapply))
 
 }

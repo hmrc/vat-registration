@@ -266,7 +266,7 @@ trait VatRegistrationFixture {
        |}
     """.stripMargin).as[JsObject]
 
-  lazy val validFullTradingDetails: TradingDetails = TradingDetails(tradingName = Some(testTradingName), eoriRequested = true)
+  lazy val validFullTradingDetails: TradingDetails = TradingDetails(tradingName = Some(testTradingName), eoriRequested = Some(true))
   lazy val validFullTradingDetailsJson: JsObject = Json.parse(
     s"""
        |{

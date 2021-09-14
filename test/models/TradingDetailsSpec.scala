@@ -30,7 +30,7 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
       |}
          """.stripMargin
   )
-  val fullModel: TradingDetails = TradingDetails(Some("test-name"), true)
+  val fullModel: TradingDetails = TradingDetails(Some("test-name"), Some(true))
 
   val noNameJson: JsValue = Json.parse(
     """
@@ -39,7 +39,7 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
       |}
     """.stripMargin
   )
-  val noNameModel: TradingDetails = TradingDetails(None, true)
+  val noNameModel: TradingDetails = TradingDetails(None, Some(true))
 
   val noEoriJson: JsValue = Json.parse(
     """
@@ -49,6 +49,8 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
     """.stripMargin
   )
 
+  val noEoriModel: TradingDetails = TradingDetails(Some("test-name"), None)
+
   val emptyJson: JsValue = Json.parse(
     """
       |{
@@ -57,6 +59,8 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
     """.stripMargin
   )
 
+  val emptyModel: TradingDetails = TradingDetails(None, None)
+
   "Creating a TradingDetails model from Json" should {
     "complete successfully from full Json" in {
       Json.fromJson[TradingDetails](fullJson) mustBe JsSuccess(fullModel)
@@ -64,13 +68,11 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
     "complete successfully without a trading name" in {
       Json.fromJson[TradingDetails](noNameJson) mustBe JsSuccess(noNameModel)
     }
-    "be unsuccessful" when {
-      "json is without eori-requested" in {
-        Json.fromJson[TradingDetails](noEoriJson) shouldHaveErrors (JsPath() \ "eoriRequested" -> JsonValidationError("error.path.missing"))
-      }
-      "json is without any details" in {
-        Json.fromJson[TradingDetails](emptyJson) shouldHaveErrors (JsPath() \ "eoriRequested" -> JsonValidationError("error.path.missing"))
-      }
+    "complete successfully without eori-requested" in {
+      Json.fromJson[TradingDetails](noEoriJson) mustBe JsSuccess(noEoriModel)
+    }
+    "complete successfully when json is without any details" in {
+      Json.fromJson[TradingDetails](emptyJson) mustBe JsSuccess(emptyModel)
     }
   }
 

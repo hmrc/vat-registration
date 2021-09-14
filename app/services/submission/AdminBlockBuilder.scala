@@ -19,6 +19,7 @@ package services.submission
 import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
+import utils.JsonUtils.{jsonObject, optional}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,8 +37,8 @@ class AdminBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongo
         "additionalInformation" -> Json.obj(
           "customerStatus" -> eligibilityData.customerStatus
         ),
-        "attachments" -> Json.obj(
-          "EORIrequested" -> tradingDetails.eoriRequested
+        "attachments" -> jsonObject(
+          optional("EORIrequested" -> tradingDetails.eoriRequested)
         )
       )
     case (None, Some(_)) =>
