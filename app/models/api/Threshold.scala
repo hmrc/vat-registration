@@ -24,7 +24,8 @@ import java.time.LocalDate
 case class Threshold(mandatoryRegistration: Boolean,
                      thresholdPreviousThirtyDays: Option[LocalDate] = None,
                      thresholdInTwelveMonths: Option[LocalDate] = None,
-                     thresholdNextThirtyDays: Option[LocalDate] = None)
+                     thresholdNextThirtyDays: Option[LocalDate] = None,
+                     thresholdOverseas: Option[LocalDate] = None)
 
 object Threshold {
 
@@ -33,26 +34,33 @@ object Threshold {
       (json \ "voluntaryRegistration").validateOpt[Boolean],
       (json \ "thresholdPreviousThirtyDays-optionalData").validateOpt[LocalDate],
       (json \ "thresholdInTwelveMonths-optionalData").validateOpt[LocalDate],
-      (json \ "thresholdNextThirtyDays-optionalData").validateOpt[LocalDate]
+      (json \ "thresholdNextThirtyDays-optionalData").validateOpt[LocalDate],
+      (json \ "thresholdTaxableSupplies-value").validateOpt[LocalDate]
     ) match {
       case (JsSuccess(voluntaryRegistration, _), JsSuccess(thresholdPreviousThirtyDays, _),
-      JsSuccess(thresholdInTwelveMonths, _), JsSuccess(thresholdNextThirtyDays, _)) =>
+      JsSuccess(thresholdInTwelveMonths, _), JsSuccess(thresholdNextThirtyDays, _), JsSuccess(thresholdOverseas, _)) =>
         if (!voluntaryRegistration.getOrElse(false) &
-          Seq(thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdPreviousThirtyDays).flatten.isEmpty) {
+          Seq(thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdPreviousThirtyDays, thresholdOverseas).flatten.isEmpty) {
           throw new InternalServerException("[Threshold][eligibilityDataJsonReads] mandatory user missing thresholds")
+        }
+
+        if (thresholdOverseas.nonEmpty & Seq(thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdPreviousThirtyDays).flatten.nonEmpty) {
+          throw new InternalServerException("[Threshold][eligibilityDataJsonReads] overseas user has more than one threshold date")
         }
 
         JsSuccess(Threshold(
           !voluntaryRegistration.getOrElse(false),
           thresholdPreviousThirtyDays,
           thresholdInTwelveMonths,
-          thresholdNextThirtyDays
+          thresholdNextThirtyDays,
+          thresholdOverseas
         ))
-      case (voluntaryRegistration, thresholdPreviousThirtyDays, thresholdInTwelveMonths, thresholdNextThirtyDays) =>
+      case (voluntaryRegistration, thresholdPreviousThirtyDays, thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdOverseas) =>
         val seqErrors = voluntaryRegistration.fold(identity, _ => Seq.empty) ++
           thresholdPreviousThirtyDays.fold(identity, _ => Seq.empty) ++
           thresholdInTwelveMonths.fold(identity, _ => Seq.empty) ++
-          thresholdNextThirtyDays.fold(identity, _ => Seq.empty)
+          thresholdNextThirtyDays.fold(identity, _ => Seq.empty) ++
+          thresholdOverseas.fold(identity, _ => Seq.empty)
 
         JsError(seqErrors)
     }

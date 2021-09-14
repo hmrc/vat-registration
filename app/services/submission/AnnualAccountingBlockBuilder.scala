@@ -46,6 +46,7 @@ class AnnualAccountingBlockBuilder @Inject()(registrationMongoRepository: Regist
                 case `voluntaryKey` => returns.startDate
                 case `backwardLookKey` => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
                 case `forwardLookKey` => Some(eligibilitySubmissionData.earliestDate)
+                case `nonUkKey` => eligibilitySubmissionData.threshold.thresholdOverseas
               }
             }
           )
