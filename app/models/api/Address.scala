@@ -26,9 +26,10 @@ object Country {
 }
 
 case class Address(line1: String,
-                   line2: String,
+                   line2: Option[String] = None,
                    line3: Option[String] = None,
                    line4: Option[String] = None,
+                   line5: Option[String] = None,
                    postcode: Option[String] = None,
                    country: Option[Country] = None,
                    addressValidated: Option[Boolean] = None)
@@ -39,9 +40,10 @@ object Address {
 
   val auditFormat: Format[Address] = (
     (__ \ "line1").format[String] and
-      (__ \ "line2").format[String] and
+      (__ \ "line2").formatNullable[String] and
       (__ \ "line3").formatNullable[String] and
       (__ \ "line4").formatNullable[String] and
+      (__ \ "line5").formatNullable[String] and
       (__ \ "postcode").formatNullable[String] and
       (__ \ "countryCode").formatNullable[String]
         .inmap[Option[Country]](

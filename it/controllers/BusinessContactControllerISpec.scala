@@ -19,7 +19,7 @@ class BusinessContactControllerISpec extends IntegrationStubbing {
   val validBusinessContact: Option[BusinessContact] = Some(BusinessContact(
     digitalContact = DigitalContact("email@email.com",Some("12345"),Some("54321")),
     website = Some("www.foo.com"),
-    ppob = Address("line1","line2",None,None,None,Some(testCountry)),
+    ppob = Address("line1", Some("line2"), None, None, None, None, Some(testCountry)),
     commsPreference = Letter
   ))
 

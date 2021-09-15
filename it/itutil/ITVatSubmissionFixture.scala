@@ -44,7 +44,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line2" -> testFullAddress.line2,
         "line3" -> testFullAddress.line3,
         "line4" -> testFullAddress.line4,
-        //line5 not supplied by ALF
+        "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
         "addressValidated" -> true //false if manually entered by user
@@ -132,6 +132,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "line2" -> testFullAddress.line2,
           "line3" -> testFullAddress.line3,
           "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
           "postCode" -> testAddress.postcode,
           "countryCode" -> "GB",
           "addressValidated" -> true
@@ -141,6 +142,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "line2" -> testFullAddress.line2,
           "line3" -> testFullAddress.line3,
           "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
           "postCode" -> testAddress.postcode,
           "countryCode" -> "GB",
           "addressValidated" -> true
@@ -188,7 +190,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line2" -> testFullAddress.line2,
         "line3" -> testFullAddress.line3,
         "line4" -> testFullAddress.line4,
-        //line5 not supplied by ALF
+        "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
         "addressValidated" -> true //false if manually entered by user
@@ -297,6 +299,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line2" -> testFullAddress.line2,
         "line3" -> testFullAddress.line3,
         "line4" -> testFullAddress.line4,
+        "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
         "addressValidated" -> true
@@ -413,6 +416,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line2" -> testFullAddress.line2,
         "line3" -> testFullAddress.line3,
         "line4" -> testFullAddress.line4,
+        "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
         "addressValidated" -> true
@@ -524,6 +528,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line2" -> testFullAddress.line2,
         "line3" -> testFullAddress.line3,
         "line4" -> testFullAddress.line4,
+        "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
         "addressValidated" -> true
@@ -631,7 +636,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line2" -> testFullAddress.line2,
         "line3" -> testFullAddress.line3,
         "line4" -> testFullAddress.line4,
-        //line5 not supplied by ALF
+        "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
         "addressValidated" -> true //false if manually entered by user
@@ -706,7 +711,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "line2" -> testFullAddress.line2,
           "line3" -> testFullAddress.line3,
           "line4" -> testFullAddress.line4,
-          //line5 not supplied by ALF
+          "line5" -> testFullAddress.line5,
           "postCode" -> testFullAddress.postcode,
           "countryCode" -> "GB",
           "addressValidated" -> true //false if manually entered by user
@@ -716,7 +721,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "line2" -> testFullAddress.line2,
           "line3" -> testFullAddress.line3,
           "line4" -> testFullAddress.line4,
-          //line5 not supplied by ALF
+          "line5" -> testFullAddress.line5,
           "postCode" -> testFullAddress.postcode,
           "countryCode" -> "GB",
           "addressValidated" -> true //false if manually entered by user
@@ -766,7 +771,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
             "line2" -> testFullAddress.line2,
             "line3" -> testFullAddress.line3,
             "line4" -> testFullAddress.line4,
-            //line5 not supplied by ALF
+            "line5" -> testFullAddress.line5,
             "postCode" -> testFullAddress.postcode,
             "countryCode" -> "GB"
           ),
