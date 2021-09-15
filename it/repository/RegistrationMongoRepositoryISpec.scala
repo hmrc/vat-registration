@@ -194,7 +194,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     }
   }
   "updateTradingDetails" should {
-    val tradingDetails = TradingDetails(Some("trading-name"), true)
+    val tradingDetails = TradingDetails(Some("trading-name"), Some(true))
 
     "update tradingDetails block in registration when there is no tradingDetails data" in new Setup {
       val result: Future[Option[TradingDetails]] = for {
@@ -224,7 +224,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     }
   }
   "Calling retrieveTradingDetails" should {
-    val tradingDetails = TradingDetails(Some("trading-name"), true)
+    val tradingDetails = TradingDetails(Some("trading-name"), Some(true))
 
     "return trading details data from an existing registration containing data" in new Setup {
       val result: Future[Option[TradingDetails]] = for {
