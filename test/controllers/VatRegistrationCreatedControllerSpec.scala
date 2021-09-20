@@ -258,13 +258,13 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders)
       )(any[HeaderCarrier], any[Request[_]]))
-        .thenReturn(Future.successful("BRVT00000000001"))
+        .thenReturn(Future.successful("VRS00000000001"))
 
       val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
         Json.obj("userHeaders" -> testUserHeaders)
       ))
       status(response) mustBe Status.OK
-      contentAsJson(response) mustBe Json.toJson("BRVT00000000001")
+      contentAsJson(response) mustBe Json.toJson("VRS00000000001")
     }
     "return an Ok response with acknowledgement reference for a valid submission with partners" in new Setup {
       val testPartner = Partner(testSoleTraderEntity, Individual, isLeadPartner = true)
@@ -275,13 +275,13 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders)
       )(any[HeaderCarrier], any[Request[_]]))
-        .thenReturn(Future.successful("BRVT00000000001"))
+        .thenReturn(Future.successful("VRS00000000001"))
 
       val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
         Json.obj("userHeaders" -> testUserHeaders)
       ))
       status(response) mustBe Status.OK
-      contentAsJson(response) mustBe Json.toJson("BRVT00000000001")
+      contentAsJson(response) mustBe Json.toJson("VRS00000000001")
     }
   }
 

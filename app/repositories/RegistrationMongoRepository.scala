@@ -48,6 +48,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   startUp
 
   private val bankAccountCryptoFormatter = BankAccountMongoFormat.encryptedFormat(crypto)
+  private val acknowledgementRefPrefix = "VRS"
 
   def startUp: Future[Unit] = collection.indexesManager.list() map { indexes =>
     logger.info("[Startup] Outputting current indexes")
@@ -152,40 +153,21 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
-  def prepareRegistrationSubmission(regId: String, ackRef: String, status: VatRegStatus.Value): Future[Boolean] = {
+  def lockSubmission(regId: String): Future[Boolean] = {
     val modifier = toBSON(Json.obj(
-      "acknowledgementReference" -> ackRef,
-      "status" -> (if (status == VatRegStatus.draft) VatRegStatus.locked else status)
+      "status" -> VatRegStatus.locked
     )).get
 
     collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_.ok)
   }
 
-  def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value): Future[VatRegStatus.Value] = {
+  def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value, formBundleId: String): Future[VatRegStatus.Value] = {
     val modifier = toBSON(Json.obj(
-      "status" -> status
+      "status" -> status,
+      "acknowledgementReference" -> s"$acknowledgementRefPrefix$formBundleId"
     )).get
 
     collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_ => status)
-  }
-
-  def updateIVStatus(regId: String, ivStatus: Boolean): Future[Boolean] = {
-    val querySelect = Json.obj("registrationId" -> regId, "applicantDetails" -> Json.obj("$exists" -> true))
-    val setDoc = Json.obj("$set" -> Json.obj("applicantDetails.ivPassed" -> ivStatus))
-
-    collection.update.one(querySelect, setDoc) map { updateResult =>
-      if (updateResult.n == 0) {
-        logger.warn(s"[ApplicantDetails] updating ivPassed for regId : $regId - No document found or the document does not have applicantDetails defined")
-        throw MissingRegDocument(regId)
-      } else {
-        logger.info(s"[ApplicantDetails] updating ivPassed for regId : $regId - documents modified : ${updateResult.nModified}")
-        ivStatus
-      }
-    } recover {
-      case e =>
-        logger.warn(s"Unable to update ivPassed in ApplicantDetails for regId: $regId, Error: ${e.getMessage}")
-        throw e
-    }
   }
 
   def fetchReturns(regId: String): Future[Option[Returns]] = {

@@ -23,7 +23,7 @@ import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import models.api.{Submitted, VatScheme}
 import play.api.Logging
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import repositories._
 import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
@@ -33,13 +33,13 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 import utils.{IdGenerator, TimeMachine}
+
 import java.util.Base64
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoRepository,
-                                  registrationRepository: RegistrationMongoRepository,
+class SubmissionService @Inject()(registrationRepository: RegistrationMongoRepository,
                                   vatSubmissionConnector: VatSubmissionConnector,
                                   nonRepudiationService: NonRepudiationService,
                                   trafficManagementService: TrafficManagementService,
@@ -55,16 +55,20 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
                            (implicit hc: HeaderCarrier,
                             request: Request[_]): Future[String] = {
     for {
-      status <- getValidDocumentStatus(regId)
-      ackRefs <- ensureAcknowledgementReference(regId, status)
       vatScheme <- registrationRepository.retrieveVatScheme(regId)
         .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
+      _ <- vatScheme.status match {
+        case VatRegStatus.draft | VatRegStatus.locked =>
+          registrationRepository.lockSubmission(regId)
+        case _ =>
+          throw InvalidSubmissionStatus(s"VAT submission status was in a ${vatScheme.status} state")
+      }
       submission <- submissionPayloadBuilder.buildSubmissionPayload(regId)
       formBundleId <- submit(submission, vatScheme, regId, userHeaders) // TODO refactor so this returns a value from the VatRegStatus enum or maybe an ADT
-      _ <- registrationRepository.finishRegistrationSubmission(regId, VatRegStatus.submitted)
+      _ <- registrationRepository.finishRegistrationSubmission(regId, VatRegStatus.submitted, formBundleId)
       _ <- trafficManagementService.updateStatus(regId, Submitted)
     } yield {
-      ackRefs
+      formBundleId
     }
   }
 
@@ -81,48 +85,24 @@ class SubmissionService @Inject()(sequenceMongoRepository: SequenceMongoReposito
 
     authorised().retrieve(credentials and affinityGroup and agentCode) {
       case Some(credentials) ~ Some(affinity) ~ optAgentCode =>
-        vatSubmissionConnector.submit(submission, correlationId, credentials.providerId).map {
-          formBundleId =>
-            auditService.audit(
-              submissionAuditBlockBuilder.buildAuditJson(
-                vatScheme = vatScheme,
-                authProviderId = credentials.providerId,
-                affinityGroup = affinity,
-                optAgentReferenceNumber = optAgentCode
-              )
+        vatSubmissionConnector.submit(submission, correlationId, credentials.providerId).map { formBundleId =>
+          auditService.audit(
+            submissionAuditBlockBuilder.buildAuditJson(
+              vatScheme = vatScheme,
+              authProviderId = credentials.providerId,
+              affinityGroup = affinity,
+              optAgentReferenceNumber = optAgentCode
             )
+          )
 
-              val encodedHtml = vatScheme.nrsSubmissionPayload
-                .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
-              val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
+          val encodedHtml = vatScheme.nrsSubmissionPayload
+            .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
+          val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
 
-              nonRepudiationService.submitNonRepudiation(regId, payloadString, timeMachine.timestamp, formBundleId, userHeaders)
+          nonRepudiationService.submitNonRepudiation(regId, payloadString, timeMachine.timestamp, formBundleId, userHeaders)
 
-            formBundleId
+          formBundleId
         }
-    }
-  }
-
-  private[services] def ensureAcknowledgementReference(regId: String,
-                                                       status: VatRegStatus.Value): Future[String] = {
-    registrationRepository.retrieveVatScheme(regId) flatMap {
-      case Some(vs) => vs.acknowledgementReference.fold(
-        for {
-          newAckref <- sequenceMongoRepository.getNext("AcknowledgementID").map(ref => f"BRVT$ref%011d")
-          _ <- registrationRepository.prepareRegistrationSubmission(regId, newAckref, status)
-        } yield newAckref
-      )(ar => Future.successful(ar))
-      case _ => throw MissingRegDocument(regId)
-    }
-  }
-
-  private[services] def getValidDocumentStatus(regID: String): Future[VatRegStatus.Value] = {
-    registrationRepository.retrieveVatScheme(regID) map {
-      case Some(registration) => registration.status match {
-        case VatRegStatus.draft | VatRegStatus.locked => registration.status
-        case _ => throw InvalidSubmissionStatus(s"VAT submission status was in a ${registration.status} state")
-      }
-      case _ => throw MissingRegDocument(regID)
     }
   }
 
