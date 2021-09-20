@@ -50,6 +50,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
   val registrationId: String = "reg-12345"
   val otherRegId = "other-reg-12345"
   val jsonEligiblityData = Json.obj("foo" -> "bar")
+  val testFormBundleId = "testFormBundleId"
 
   def vatSchemeWithEligibilityDataJson(regId: String = registrationId): JsObject = Json.parse(
     s"""
@@ -152,32 +153,23 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
       repository.insert(vatSchemeWithEligibilityData).flatMap(_ => repository.deleteVatScheme(vatSchemeWithEligibilityData.id)) returns true
     }
   }
-  "Calling prepareRegistrationSubmission" should {
+  "Calling lockSubmission" should {
     val testAckRef = "testAckRef"
-    "update the vat scheme with the provided ackref" in new Setup {
-      val result: Future[(VatRegStatus.Value, Option[String])] = for {
+    "lock the vat scheme" in new Setup {
+      val result: Future[VatRegStatus.Value] = for {
         insert <- repository.insert(vatSchemeWithEligibilityData)
-        update <- repository.prepareRegistrationSubmission(vatSchemeWithEligibilityData.id, testAckRef, VatRegStatus.draft)
+        update <- repository.lockSubmission(vatSchemeWithEligibilityData.id)
         Some(updatedScheme) <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.id)
-      } yield (updatedScheme.status, updatedScheme.acknowledgementReference)
+      } yield updatedScheme.status
 
-      await(result) mustBe(VatRegStatus.locked, Some(testAckRef))
-    }
-    "update the vat scheme with the provided ackref on a topup" in new Setup {
-      val result: Future[(VatRegStatus.Value, Option[String])] = for {
-        insert <- repository.insert(vatSchemeWithEligibilityData)
-        update <- repository.prepareRegistrationSubmission(vatSchemeWithEligibilityData.id, testAckRef, VatRegStatus.held)
-        Some(updatedScheme) <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.id)
-      } yield (updatedScheme.status, updatedScheme.acknowledgementReference)
-
-      await(result) mustBe(VatRegStatus.held, Some(testAckRef))
+      await(result) mustBe VatRegStatus.locked
     }
   }
   "Calling finishRegistrationSubmission" should {
     "update the vat scheme to submitted with the provided ackref" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
         insert <- repository.insert(vatSchemeWithEligibilityData)
-        update <- repository.finishRegistrationSubmission(vatSchemeWithEligibilityData.id, VatRegStatus.submitted)
+        update <- repository.finishRegistrationSubmission(vatSchemeWithEligibilityData.id, VatRegStatus.submitted, testFormBundleId)
         Some(updatedScheme) <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.id)
       } yield updatedScheme.status
 
@@ -186,7 +178,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     "update the vat scheme to held with the provided ackref" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
         insert <- repository.insert(vatSchemeWithEligibilityData)
-        update <- repository.finishRegistrationSubmission(vatSchemeWithEligibilityData.id, VatRegStatus.held)
+        update <- repository.finishRegistrationSubmission(vatSchemeWithEligibilityData.id, VatRegStatus.held, testFormBundleId)
         Some(updatedScheme) <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.id)
       } yield updatedScheme.status
 

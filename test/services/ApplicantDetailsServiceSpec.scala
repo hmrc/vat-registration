@@ -34,15 +34,6 @@ class ApplicantDetailsServiceSpec extends VatRegSpec with VatRegistrationFixture
     val service: ApplicantDetailsService = new ApplicantDetailsService(
       registrationRepository = mockRegistrationMongoRepository
     )
-
-    def updateIVPassedToMongo(): OngoingStubbing[Future[Boolean]] = when(mockRegistrationMongoRepository.updateIVStatus(any(),any()))
-      .thenReturn(Future.successful(true))
-
-    def updateIVPassedToMongoFail(): OngoingStubbing[Future[Boolean]] = when(mockRegistrationMongoRepository.updateIVStatus(any(),any()))
-      .thenReturn(Future.failed(new Exception("")))
-
-    def updateIVPassedToMongoNoRegDoc(): OngoingStubbing[Future[Boolean]] = when(mockRegistrationMongoRepository.updateIVStatus(any(),any()))
-      .thenReturn(Future.failed(MissingRegDocument(testRegId)))
   }
 
   "getApplicantDetailsData" should {
