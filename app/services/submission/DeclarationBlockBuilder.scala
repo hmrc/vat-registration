@@ -53,7 +53,7 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: Registratio
                   optional("telephone" -> applicantDetails.contact.tel),
                   optional("mobileNumber" -> applicantDetails.contact.mobile)
                 ),
-                "identifiers" -> applicantDetails.personalIdentifiers
+                conditional(applicantDetails.personalIdentifiers.nonEmpty)("identifiers" -> applicantDetails.personalIdentifiers)
               )
             )
           case _ =>

@@ -69,7 +69,13 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
           optional("mainCode2" -> sicAndCompliance.otherBusinessActivities.headOption.map(_.id)),
           optional("mainCode3" -> sicAndCompliance.otherBusinessActivities.lift(1).map(_.id)),
           optional("mainCode4" -> sicAndCompliance.otherBusinessActivities.lift(2).map(_.id))
-        )
+        ),
+        optional("goodsToOverseas" -> returns.overseasCompliance.map(_.goodsToOverseas)),
+        optional("goodsToCustomerEU" -> returns.overseasCompliance.flatMap(_.goodsToEu)),
+        optional("storingGoodsForDispatch" -> returns.overseasCompliance.map(_.storingGoodsForDispatch)),
+        optional("fulfilmentWarehouse" -> returns.overseasCompliance.flatMap(_.usingWarehouse)),
+        optional("FHDDSWarehouseNumber" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseNumber)),
+        optional("nameOfWarehouse" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
       ),
       "yourTurnover" -> jsonObject(
         "turnoverNext12Months" -> eligibilityData.estimates.turnoverEstimate,

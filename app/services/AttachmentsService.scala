@@ -16,7 +16,7 @@
 
 package services
 
-import models.api.{AttachmentType, IdentityEvidence}
+import models.api.{AttachmentType, IdentityEvidence, VatScheme}
 import models.submission.NETP
 import repositories.RegistrationMongoRepository
 
@@ -29,11 +29,13 @@ class AttachmentsService @Inject()(val registrationRepository: RegistrationMongo
 
   def getAttachmentList(regId: String): Future[List[AttachmentType]] =
     registrationRepository.retrieveVatScheme(regId).map {
-      case Some(vatScheme) =>
-        val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(_.partyType.equals(NETP))
-
-        if (needIdentityDoc) List(IdentityEvidence) else Nil
+      case Some(vatScheme) => attachmentList(vatScheme)
       case None => Nil
     }
 
+  def attachmentList(vatScheme: VatScheme): List[AttachmentType] = {
+    val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(_.partyType.equals(NETP))
+
+    if (needIdentityDoc) List(IdentityEvidence) else Nil
+  }
 }

@@ -20,7 +20,7 @@ import enums.VatRegStatus
 import models.{BusinessIdEntity, IncorporatedIdEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import models.api.returns._
 import models.api._
-import models.submission.{DateOfBirth, Director, Individual, OwnerProprietor, Partnership, RoleInBusiness, Trust, UkCompany}
+import models.submission.{DateOfBirth, Director, Individual, NETP, OwnerProprietor, Partnership, RoleInBusiness, Trust, UkCompany}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
@@ -47,6 +47,8 @@ trait ITFixtures {
   val testTradingName = "trading-name"
   val testTradingDetails = TradingDetails(Some(testTradingName), Some(true))
   val testAuthProviderId = "authProviderId"
+  val testWarehouseNumber = "tst123456789012"
+  val testWarehouseName = "testWarehouseName"
 
   val testReturns: Returns = Returns(
     zeroRatedSupplies = Some(12.99),
@@ -87,9 +89,11 @@ trait ITFixtures {
   val testCountry = Country(Some("GB"), None)
   val testAddress = Address("line1", Some("line2"), None, None, None, Some("XX XX"), Some(testCountry), addressValidated = Some(true))
   val testFullAddress = Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some("XX XX"), Some(testCountry), addressValidated = Some(true))
+  val testOverseasAddress = testFullAddress.copy(country = Some(Country(Some("EE"), None)), addressValidated = Some(false))
   val testContactDetails = DigitalContact("test@test.com", Some("12345678910"), Some("12345678910"))
   val testDigitalContactOptional = DigitalContactOptional(Some("skylake@vilikariet.com"), Some("1234567890"), Some("1234567890"), Some(true))
   val testNino = "NB686868C"
+  val testTrn = "testTrn"
   val testRole: RoleInBusiness = Director
   val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
   val testFormerName = FormerName(name = Some(oldName), change = Some(testDate))
@@ -467,4 +471,70 @@ trait ITFixtures {
         testLoginTimes
   }
 
+  val testNetpReturns: Returns = Returns(
+    zeroRatedSupplies = Some(12.99),
+    reclaimVatOnMostReturns = true,
+    returnsFrequency = Quarterly,
+    staggerStart = JanuaryStagger,
+    startDate = None,
+    annualAccountingDetails = None,
+    overseasCompliance = Some(OverseasCompliance(
+      true,
+      Some(true),
+      StoringWithinUk,
+      Some(true),
+      Some(testWarehouseNumber),
+      Some(testWarehouseName)
+    ))
+  )
+
+  val testNetpTradingDetails: TradingDetails = TradingDetails(
+    Some(testTradingName),
+    None
+  )
+
+  val testNetpEntity = SoleTraderIdEntity(
+    testFirstName,
+    testLastName,
+    testDate,
+    None,
+    Some(testSaUtr),
+    Some(testTrn),
+    businessVerification = BvPass,
+    registration = FailedStatus,
+    identifiersMatch = true
+  )
+
+  val testNetpEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
+    threshold = Threshold(mandatoryRegistration = true, None, None, None, Some(testDate)),
+    exceptionOrExemption = "0",
+    estimates = TurnoverEstimates(123456),
+    customerStatus = MTDfB,
+    partyType = NETP
+  )
+
+  val testNetpApplicantDetails: ApplicantDetails =
+    testRegisteredApplicantDetails.copy(
+      entity = testNetpEntity,
+      transactor = testRegisteredApplicantDetails.transactor.copy(
+        nino = None
+      ),
+      currentAddress = testOverseasAddress,
+      roleInBusiness = OwnerProprietor
+    )
+
+  val testNetpBusinessContact: BusinessContact = testFullBusinessContactDetails.copy(
+    ppob = testOverseasAddress
+  )
+
+  lazy val testNetpVatScheme: VatScheme =
+    testFullVatScheme.copy(
+      applicantDetails = Some(testNetpApplicantDetails),
+      bankAccount = None,
+      eligibilitySubmissionData = Some(testNetpEligibilitySubmissionData),
+      returns = Some(testNetpReturns),
+      tradingDetails = Some(testNetpTradingDetails),
+      flatRateScheme = None,
+      businessContact = Some(testNetpBusinessContact)
+    )
 }

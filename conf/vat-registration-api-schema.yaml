@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: VAT Subscription Create
-  version: 1.5.0
+  version: 2.0.0
 servers:
   - url: 'http://hostname:port'
 paths:
@@ -59,6 +59,8 @@ components:
           uniqueItems: true
           items:
             $ref: '#/components/schemas/entityType'
+        controllingBody:
+          $ref: '#/components/schemas/controllingBodyType'
         joinAA:
           $ref: '#/components/schemas/joinAAType'
       required:
@@ -85,7 +87,7 @@ components:
             properties:
               idType:
                 type: string
-                pattern: '^[A-Z0-9]{1,6}$'
+                pattern: '^[a-zA-Z0-9]{1,6}$'
               idValue:
                 type: string
                 pattern: '^[A-Za-z0-9]{1,60}$'
@@ -105,14 +107,14 @@ components:
           $ref: '#/components/schemas/safeIDType'
         shortOrgName:
           type: string
-          pattern: '^[A-Za-z0-9 ,.&''\/-]{1,105}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         name:
           $ref: '#/components/schemas/nameType'
         dateOfBirth:
           $ref: '#/components/schemas/dateString'
         tradingName:
           type: string
-          pattern: '^[A-Za-z0-9 ,.&''\/-]{1,160}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
       additionalProperties: false
     contactType:
       type: object
@@ -239,19 +241,19 @@ components:
       properties:
         line1:
           type: string
-          pattern: '^[A-Za-z0-9 \-,.&''\/()!]{1,35}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,35}$'
         line2:
           type: string
-          pattern: '^[A-Za-z0-9 \-,.&''\/()!]{1,35}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,35}$'
         line3:
           type: string
-          pattern: '^[A-Za-z0-9 \-,.&''\/()!]{1,35}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,35}$'
         line4:
           type: string
-          pattern: '^[A-Za-z0-9 \-,.&''\/()!]{1,35}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,35}$'
         line5:
           type: string
-          pattern: '^[A-Za-z0-9 \-,.&''\/()!]{1,35}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,35}$'
         postCode:
           type: string
           pattern: '^[A-Za-z0-9 \-,.&''\/()!]{1,10}$'
@@ -311,7 +313,9 @@ components:
           type: boolean
         webAddress:
           type: string
-          pattern: '^(((HTTP|http)(S|s)?\:\/\/((WWW|www)\.)?)|((WWW|www)\.))?[a-zA-Z0-9\[_~\:\/?#\]@!&''()*+,;=% ]+\.[a-zA-Z]{2,5}(\.[a-zA-Z]{2,5})?(\:[0-9]{1,5})?(\/[a-zA-Z0-9_-]+(\/)?)*$'
+          pattern: >-
+            ^(((HTTP|http)(S|s)?\:\/\/((WWW|www)\.)?)|((WWW|www)\.))?[a-zA-Z0-9\[_~\:\/?#\]@!&'()*+,;=%
+            ]+\.[a-zA-Z]{2,5}(\.[a-zA-Z]{2,5})?(\:[0-9]{1,5})?(\/[a-zA-Z0-9_-]+(\/)?)*$
         commsPreference:
           $ref: '#/components/schemas/commsPreferenceType'
       additionalProperties: false
@@ -391,10 +395,10 @@ components:
       properties:
         businessName:
           type: string
-          pattern: '^[A-Za-z0-9 ,.&''\/-]{1,105}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         idType:
           type: string
-          pattern: '^[A-Z0-9]{1,6}$'
+          pattern: '^[a-zA-Z0-9]{1,6}$'
         idValue:
           type: string
           pattern: '^[A-Za-z0-9]{1,60}$'
@@ -406,7 +410,7 @@ components:
       properties:
         prevOwnerName:
           type: string
-          pattern: '^[A-Za-z0-9 ,.&''\/-]{1,105}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         prevOwnerVATNumber:
           type: string
           pattern: '^[0-9]{1,9}$'
@@ -501,7 +505,7 @@ components:
       properties:
         accountName:
           type: string
-          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,60}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,60}$'
         accountNumber:
           type: string
           pattern: '^[0-9]{8}$'
@@ -590,7 +594,7 @@ components:
         properties:
           idType:
             type: string
-            pattern: '^[A-Z0-9]{1,6}$'
+            pattern: '^[a-zA-Z0-9]{1,6}$'
           idValue:
             type: string
             pattern: '^[A-Za-z0-9]{1,60}$'
@@ -621,7 +625,7 @@ components:
           $ref: '#/components/schemas/nameType'
         organisationName:
           type: string
-          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,160}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
         identification:
           type: array
           minItems: 1
@@ -631,7 +635,7 @@ components:
             properties:
               idType:
                 type: string
-                pattern: '^[A-Z0-9]{1,6}$'
+                pattern: '^[a-zA-Z0-9]{1,6}$'
               idValue:
                 type: string
                 pattern: '^[A-Za-z0-9]{1,60}$'
@@ -696,11 +700,14 @@ components:
           type: boolean
         meetsControlConditions:
           type: boolean
-        controllerName:
+        controlConditionDetails:
           type: string
-          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,100}$'
-        EDRDateOfReceipt:
-          type: boolean
+          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,500}$'
+        isControllingBody:
+          type: string
+          pattern: '^[1-9]{1}$'
+      required:
+        - isControllingBody
       additionalProperties: false
     LnPType:
       type: object
@@ -876,7 +883,7 @@ components:
       properties:
         nameOfSupplier:
           type: string
-          pattern: '^[A-Za-z0-9 ,.&''\/-]{1,105}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         VRN:
           type: string
           pattern: '^[0-9]{9}$'
@@ -908,7 +915,7 @@ components:
           $ref: '#/components/schemas/entityCustomerIdentificationType'
         tradingName:
           type: string
-          pattern: '^[A-Za-z0-9 ,.&''\/-]{1,160}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
         businessContactDetails:
           $ref: '#/components/schemas/contactType'
         groupRelevant:
@@ -928,7 +935,7 @@ components:
             properties:
               idType:
                 type: string
-                pattern: '^[A-Z0-9]{1,6}$'
+                pattern: '^[a-zA-Z0-9]{1,6}$'
               idValue:
                 type: string
                 pattern: '^[A-Za-z0-9]{1,60}$'
@@ -948,7 +955,7 @@ components:
           $ref: '#/components/schemas/safeIDType'
         shortOrgName:
           type: string
-          pattern: '^[A-Za-z0-9 ,.&''\/-]{1,105}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         name:
           $ref: '#/components/schemas/nameType'
         dateOfBirth:
@@ -970,18 +977,121 @@ components:
           $ref: '#/components/schemas/decimalType'
         arePartiallyExempt:
           type: boolean
+        exemptionLevelDetails:
+          type: string
+          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,500}$'
         haveAPartiallyExemptionSpecialMethod:
           type: boolean
+        specialExemptionLevelDetails:
+          type: string
+          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,500}$'
         specifiedCapitalAssetsWithin3Years:
           type: boolean
+        capitalAssetsDetails:
+          type: string
+          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,500}$'
         specifiedCapitalGoodsScheme:
           type: boolean
+        capitalGoodsSchemeDetails:
+          type: string
+          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,500}$'
         specifiedPrePayments:
           type: boolean
+        prePaymentsDetails:
+          type: string
+          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,500}$'
+        landOrBuildingWithVATBearing:
+          type: boolean
+        landOrBuildingWithVATBearingDetails:
+          type: string
+          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,500}$'
         ACKReferenceIfInTheProcessOfRegisteringForVAT:
           type: string
           pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,16}$'
       additionalProperties: false
+    controllingBodyType:
+      type: object
+      properties:
+        customerIdentification:
+          type: object
+          properties:
+            partyType:
+              $ref: '#/components/schemas/partyTypeType'
+            identifiers:
+              $ref: '#/components/schemas/controllingBodyIdentifiersType'
+            organisationName:
+              type: string
+              pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
+            name:
+              $ref: '#/components/schemas/nameType'
+            dateOfBirth:
+              $ref: '#/components/schemas/dateString'
+        businessContactDetails:
+          type: object
+          properties:
+            address:
+              $ref: '#/components/schemas/addressType'
+            commDetails:
+              type: object
+              properties:
+                telephone:
+                  type: string
+                  minLength: 1
+                  maxLength: 24
+                  pattern: '^[A-Z0-9 )/(*#+-]+$'
+                mobileNumber:
+                  type: string
+                  minLength: 1
+                  maxLength: 24
+                  pattern: '^[A-Z0-9 )/(*#+-]+$'
+                faxNumber:
+                  type: string
+                  minLength: 1
+                  maxLength: 24
+                  pattern: '^[A-Z0-9 )/(*#+-]+$'
+                email:
+                  type: string
+                  minLength: 3
+                  maxLength: 132
+                  format: email
+                webAddress:
+                  type: string
+                  pattern: >-
+                    ^(((HTTP|http)(S|s)?\:\/\/((WWW|www)\.)?)|((WWW|www)\.))?[a-zA-Z0-9\[_~\:\/?#\]@!&'()*+,;=%
+                    ]+\.[a-zA-Z]{2,5}(\.[a-zA-Z]{2,5})?(\:[0-9]{1,5})?(\/[a-zA-Z0-9_-]+(\/)?)*$
+        aboutBusiness:
+          type: object
+          properties:
+            SICCode:
+              type: string
+              pattern: '^\d{5}$'
+            totalExpectedAnnualTaxableTurnover:
+              $ref: '#/components/schemas/decimalType'
+            totalExpectedNonTaxableTurnover:
+              $ref: '#/components/schemas/decimalType'
+            totalExpectedAnnualValueOfTaxableSupplies:
+              $ref: '#/components/schemas/decimalType'
+            totalExpectedAnnualValueOfNonTaxableSupplies:
+              $ref: '#/components/schemas/decimalType'
+      additionalProperties: false
+    controllingBodyIdentifiersType:
+      type: array
+      minItems: 1
+      uniqueItems: true
+      items:
+        type: object
+        properties:
+          idType:
+            type: string
+            pattern: '^[a-zA-Z0-9]{1,6}$'
+          idValue:
+            type: string
+            pattern: '^[A-Za-z0-9]{1,60}$'
+          countryOfIncorporation:
+            $ref: '#/components/schemas/countryType'
+          date:
+            $ref: '#/components/schemas/dateString'
+        additionalProperties: false
     joinAAType:
       type: object
       properties:

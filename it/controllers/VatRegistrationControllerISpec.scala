@@ -148,6 +148,22 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       res.status mustBe OK
     }
 
+    "return OK if the submission is successful for a NETP without a bpSafeId" in new Setup {
+      enable(StubSubmission)
+
+      given
+        .user.isAuthorised
+        .regRepo.insertIntoDb(testNetpVatScheme, repo.insert)
+
+      stubPost("/vatreg/test-only/vat/subscription", testNetpJson, OK, Json.stringify(testSubmissionResponse))
+
+      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+        .put(Json.obj())
+      )
+
+      res.status mustBe OK
+    }
+
     "return OK if the submission is successful for a trust with a bpSafeId" in new Setup {
       enable(StubSubmission)
 

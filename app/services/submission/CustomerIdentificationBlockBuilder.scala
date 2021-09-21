@@ -16,6 +16,7 @@
 
 package services.submission
 
+import models.submission.{Individual, NETP}
 import models.{IncorporatedIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
@@ -38,7 +39,10 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
   } yield (optVatScheme, optApplicantDetails, optTradingDetails) match {
     case (Some(vatScheme), Some(applicantDetails), Some(tradingDetails)) =>
       jsonObject(
-        "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map(_.partyType),
+        "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map{ data =>
+          if(data.partyType.equals(NETP)) Individual
+          else data.partyType
+        },
         optional("shortOrgName" -> Option(applicantDetails.entity).collect {
           case IncorporatedIdEntity(companyName, _, _, _, None, _, _, _, _, _) => StringNormaliser.normaliseString(companyName) //Don't send company name when safeId is present
         }),
