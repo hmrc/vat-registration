@@ -68,7 +68,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     "metadata" -> testNonRepudiationMetadata
   )
 
-  val testSubmissionResponse = Json.obj("formBundle" -> "1234")
+  val testSubmissionResponse = Json.obj("formBundle" -> "123412341234")
 
   "POST /new" should {
     "return CREATED if the daily quota has not been met" in new Setup {
