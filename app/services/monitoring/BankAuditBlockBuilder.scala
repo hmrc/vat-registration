@@ -16,7 +16,8 @@
 
 package services.monitoring
 
-import models.api.VatScheme
+import models.api.{OverseasAccount, VatScheme}
+import models.submission.NETP
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.jsonObject
@@ -46,6 +47,10 @@ class BankAuditBlockBuilder {
             "reasonBankAccNotProvided" -> bankAccount.reason
           )
         }
+      case None if vatScheme.eligibilitySubmissionData.exists(_.partyType.equals(NETP)) =>
+        jsonObject(
+          "reasonBankAccNotProvided" -> "3"
+        )
       case None =>
         throw new InternalServerException("BankAuditBlockBuilder: Could not build bank details block for audit due to missing bank account")
     }

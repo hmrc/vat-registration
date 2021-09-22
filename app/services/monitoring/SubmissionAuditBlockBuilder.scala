@@ -16,8 +16,9 @@
 
 package services.monitoring
 
-import models.api.VatScheme
+import models.api.{AttachmentType, Post, VatScheme}
 import models.monitoring.SubmissionAuditModel
+import services.AttachmentsService
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -32,7 +33,8 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
                                             periodsAuditBlockBuilder: PeriodsAuditBlockBuilder,
                                             bankAuditBlockBuilder: BankAuditBlockBuilder,
                                             contactAuditBlockBuilder: ContactAuditBlockBuilder,
-                                            annualAccountingAuditBlockBuilder: AnnualAccountingAuditBlockBuilder) {
+                                            annualAccountingAuditBlockBuilder: AnnualAccountingAuditBlockBuilder,
+                                            attachmentsService: AttachmentsService) {
 
 
   def buildAuditJson(vatScheme: VatScheme,
@@ -40,6 +42,7 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
                      affinityGroup: AffinityGroup,
                      optAgentReferenceNumber: Option[String]
                     ): SubmissionAuditModel = {
+    val attachmentList = attachmentsService.attachmentList(vatScheme)
     val details = jsonObject(
       "outsideEUSales" -> {
         vatScheme.tradingDetails.map(_.eoriRequested) match {
@@ -54,7 +57,8 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
       "businessContact" -> contactAuditBlockBuilder.buildContactBlock(vatScheme),
       "bankDetails" -> bankAuditBlockBuilder.buildBankAuditBlock(vatScheme),
       "periods" -> periodsAuditBlockBuilder.buildPeriodsBlock(vatScheme),
-      optional("joinAA" -> annualAccountingAuditBlockBuilder.buildAnnualAccountingAuditBlock(vatScheme))
+      optional("joinAA" -> annualAccountingAuditBlockBuilder.buildAnnualAccountingAuditBlock(vatScheme)),
+      conditional(attachmentList.nonEmpty)("attachments" -> AttachmentType.submissionWrites(Post).writes(attachmentList))
     )
 
     SubmissionAuditModel(

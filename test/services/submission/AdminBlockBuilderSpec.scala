@@ -18,6 +18,9 @@ package services.submission
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import mocks.MockAttachmentsService
+import models.api.{AttachmentOptions, IdentityEvidence, Post}
+import models.submission.NETP
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.libs.json.{JsObject, Json}
@@ -26,9 +29,14 @@ import uk.gov.hmrc.http.InternalServerException
 
 import scala.concurrent.Future
 
-class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
+class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockAttachmentsService {
 
-  object TestBuilder extends AdminBlockBuilder(mockRegistrationMongoRepository)
+  object TestBuilder extends AdminBlockBuilder(mockRegistrationMongoRepository, mockAttachmentService)
+
+  override def beforeEach(): Unit = {
+    reset(mockAttachmentService)
+    super.afterEach()
+  }
 
   val expectedJson: JsObject =
     Json.obj(
@@ -40,19 +48,44 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       )
     )
 
+  val expectedNetpJson: JsObject =
+    Json.obj(
+      "additionalInformation" -> Json.obj(
+        "customerStatus" -> "2",
+        "overseasTrader" -> true
+      ),
+      "attachments" -> Json.obj(
+        "EORIrequested" -> true,
+        "identityEvidence" -> Json.toJson[AttachmentOptions](Post)
+      )
+    )
+
   "buildAdminBlock" should {
     "return an admin block json object" when {
       "both eligibility and trading details data are in the database" in {
         when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
-
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Nil))
 
         val result = await(TestBuilder.buildAdminBlock(testRegId))
 
         result mustBe expectedJson
+      }
 
+      "both NETP eligibility and trading details data are in the database" in {
+        when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(partyType = NETP))))
+        when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(List(IdentityEvidence)))
+
+        val result = await(TestBuilder.buildAdminBlock(testRegId))
+
+        result mustBe expectedNetpJson
       }
     }
 
@@ -60,22 +93,23 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       "the eligibility data is missing from the database" in {
         when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(None))
-
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Nil))
 
         intercept[InternalServerException] {
           await(TestBuilder.buildAdminBlock(testRegId))
         }
-
       }
 
       "the trading details data is missing from the database" in {
         when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
-
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(None))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Nil))
 
         intercept[InternalServerException] {
           await(TestBuilder.buildAdminBlock(testRegId))
@@ -85,14 +119,14 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       "there is no eligibility data or trading details data in the database" in {
         when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(None))
-
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(None))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Nil))
 
         intercept[InternalServerException] {
           await(TestBuilder.buildAdminBlock(testRegId))
         }
-
       }
     }
   }

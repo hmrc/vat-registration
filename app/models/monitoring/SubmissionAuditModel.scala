@@ -18,6 +18,7 @@ package models.monitoring
 
 import models.IncorporatedIdEntity
 import models.api.{EligibilitySubmissionData, VatScheme}
+import models.submission.NETP
 import play.api.libs.json.{JsValue, Json}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -47,6 +48,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           optional("agentReferenceNumber" -> optAgentReferenceNumber.filterNot(_ == "")),
           "messageType" -> messageType,
           "customerStatus" -> eligibilityData.customerStatus.toString,
+          conditional(eligibilityData.partyType.equals(NETP))("overseasTrader" -> true),
           "eoriRequested" -> tradingDetails.eoriRequested,
           "registrationReason" -> eligibilityData.reasonForRegistration(humanReadable = true),
           optional("registrationRelevantDate" -> {

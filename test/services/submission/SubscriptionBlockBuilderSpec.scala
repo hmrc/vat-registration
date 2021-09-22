@@ -19,7 +19,8 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api._
-import models.api.returns.{JanuaryStagger, Quarterly, Returns}
+import models.api.returns._
+import models.submission.NETP
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
@@ -98,6 +99,40 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       |}""".stripMargin
   )
 
+  def fullNetpSubscriptionBlockJson: JsValue = Json.obj(
+    "reasonForSubscription" -> Json.obj(
+      "relevantDate" -> "2020-10-01",
+      "registrationReason" -> EligibilitySubmissionData.nonUkKey,
+      "exemptionOrException" -> "0"
+    ),
+    "yourTurnover" -> Json.obj(
+      "VATRepaymentExpected" -> false,
+      "turnoverNext12Months" -> 123456,
+      "zeroRatedSupplies" -> 12.99
+    ),
+    "schemes" -> Json.obj(
+      "startDate" -> "2018-01-01",
+      "FRSCategory" -> "testCategory",
+      "FRSPercentage" -> 15,
+      "limitedCostTrader" -> false
+    ),
+    "businessActivities" -> Json.obj(
+      "SICCodes" -> Json.obj(
+        "primaryMainCode" -> "12345",
+        "mainCode2" -> "00002",
+        "mainCode3" -> "00003",
+        "mainCode4" -> "00004"
+      ),
+      "description" -> "testDescription",
+      "goodsToOverseas" -> true,
+      "goodsToCustomerEU" -> true,
+      "storingGoodsForDispatch" -> Json.toJson[StoringGoodsForDispatch](StoringWithinUk),
+      "fulfilmentWarehouse" -> true,
+      "FHDDSWarehouseNumber" -> testWarehouseNumber,
+      "nameOfWarehouse" -> testWarehouseName
+    )
+  )
+
   "buildSubscriptionBlock" should {
     val testDate = LocalDate.of(2020, 2, 2)
     val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None)
@@ -149,6 +184,33 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       val result = await(TestService.buildSubscriptionBlock(testRegId))
 
       result mustBe fullSubscriptionBlockJson(reason = EligibilitySubmissionData.backwardLookKey)
+    }
+
+    "build a full subscription json when all data is provided and user is NETP" in {
+      when(mockRegistrationMongoRepository.getApplicantDetails(any(), any()))
+        .thenReturn(Future.successful(Some(validApplicantDetails.copy(
+          entity = testSoleTraderEntity.copy(
+            nino = None,
+            trn = Some(testTrn)
+          )
+        ))))
+      when(mockRegistrationMongoRepository.fetchReturns(any()))
+        .thenReturn(Future.successful(Some(testOverseasReturns)))
+      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
+        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+          threshold = Threshold(
+            mandatoryRegistration = true, None, None, None, Some(LocalDate.of(2020, 10, 1))
+          ),
+          partyType = NETP
+        ))))
+      when(mockRegistrationMongoRepository.fetchFlatRateScheme(any()))
+        .thenReturn(Future.successful(Some(validFullFlatRateScheme)))
+      when(mockRegistrationMongoRepository.fetchSicAndCompliance(any()))
+        .thenReturn(Future.successful(Some(testSicAndCompliance)))
+
+      val result = await(TestService.buildSubscriptionBlock(testRegId))
+
+      result mustBe fullNetpSubscriptionBlockJson
     }
 
     "build a minimal subscription json when minimum data is provided and user is voluntary" in {

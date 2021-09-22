@@ -62,7 +62,7 @@ class StubVatSubmissionController @Inject()(cc: ControllerComponents) extends Ba
       } match {
         case Success(_) => Future.successful(Ok(Json.stringify(Json.obj("formBundle" -> "1234"))))
         case Failure(exception: ValidationException) =>
-          logger.warn(s"[StubVatSubmissionController][processSubmission] ${exception.results().toString}")
+          logger.error(s"[StubVatSubmissionController][processSubmission] ${exception.results().toString}")
           Future.successful(BadRequest)
       }
   }

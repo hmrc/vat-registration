@@ -43,6 +43,7 @@ trait VatRegistrationFixture {
   lazy val testUtr = "testUtr"
   lazy val testChrn = "testChrn"
   lazy val testCasc = "testCasc"
+  lazy val testTrn = "testTrn"
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
   lazy val testAddress = Address("line1", Some("line2"), None, None, None, Some("XX XX"), Some(Country(Some("GB"), None)), addressValidated = Some(true))
   lazy val testPostcode = "ZZ1 1ZZ"
@@ -161,7 +162,7 @@ trait VatRegistrationFixture {
     commsPreference = Email
   ))
 
-  lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None , None)
+  lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None, None)
   lazy val testBankAccountOverseas = BankAccount(isProvided = true, None, overseasDetails = Some(testBankDetailsOverseas), None)
   lazy val testBankAccountNotProvided = BankAccount(isProvided = false, details = None, overseasDetails = None, reason = Some(BeingSetup))
 
@@ -179,6 +180,19 @@ trait VatRegistrationFixture {
     Some(validAASDetails),
     None
   )
+
+  val testWarehouseNumber = "test12345678"
+  val testWarehouseName = "testWarehouseName"
+  val testOverseasReturns: Returns = testReturns.copy(
+    startDate = None,
+    overseasCompliance = Some(OverseasCompliance(
+      goodsToOverseas = true,
+      goodsToEu = Some(true),
+      storingGoodsForDispatch = StoringWithinUk,
+      usingWarehouse = Some(true),
+      fulfilmentWarehouseNumber = Some(testWarehouseNumber),
+      fulfilmentWarehouseName = Some(testWarehouseName)
+    )))
 
   lazy val validFullFRSDetails: FRSDetails =
     FRSDetails(
