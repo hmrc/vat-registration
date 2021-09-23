@@ -23,6 +23,8 @@ import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 
 trait SubmissionAuditFixture extends VatRegistrationFixture {
 
+  val testFormBundleId = "testFormBundleId"
+
   val testAddressJson = Json.obj(
     "line1" -> "line1",
     "line2" -> "line2",

@@ -18,8 +18,8 @@ package models.monitoring
 
 import models.IncorporatedIdEntity
 import models.api.{EligibilitySubmissionData, VatScheme}
-import models.submission.NETP
-import play.api.libs.json.{JsValue, Json}
+import models.submission.{IdVerificationStatus, NETP}
+import play.api.libs.json.{JsString, JsValue, Json}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.InternalServerException
@@ -29,10 +29,11 @@ case class SubmissionAuditModel(userAnswers: JsValue,
                                 vatScheme: VatScheme,
                                 authProviderId: String,
                                 affinityGroup: AffinityGroup,
-                                optAgentReferenceNumber: Option[String]) extends AuditModel {
+                                optAgentReferenceNumber: Option[String],
+                                formBundleId: String) extends AuditModel {
 
   private val messageType = "SubscriptionCreate"
-  private val idsVerificationStatus: String = "1"
+  private val registeredStatus = "0"
   private val cidVerificationStatus: String = "1"
 
   override val auditType: String = "SubscriptionSubmitted"
@@ -45,6 +46,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           "authProviderId" -> authProviderId,
           "journeyId" -> vatScheme.id,
           "userType" -> affinityGroup.toString,
+          "formBundleId" -> formBundleId,
           optional("agentReferenceNumber" -> optAgentReferenceNumber.filterNot(_ == "")),
           "messageType" -> messageType,
           "customerStatus" -> eligibilityData.customerStatus.toString,
@@ -68,7 +70,9 @@ case class SubmissionAuditModel(userAnswers: JsValue,
               case _ => None
             }
           }),
-          "idsVerificationStatus" -> idsVerificationStatus,
+          "idsVerificationStatus" -> applicantDetails.entity.bpSafeId.fold(
+            IdVerificationStatus.toJsString(applicantDetails.entity.idVerificationStatus)
+          )(_ => JsString(registeredStatus)),
           "cidVerification" -> cidVerificationStatus,
           optional("businessPartnerReference" -> applicantDetails.entity.bpSafeId),
           "userEnteredDetails" -> userAnswers

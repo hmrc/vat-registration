@@ -40,7 +40,8 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
   def buildAuditJson(vatScheme: VatScheme,
                      authProviderId: String,
                      affinityGroup: AffinityGroup,
-                     optAgentReferenceNumber: Option[String]
+                     optAgentReferenceNumber: Option[String],
+                     formBundleId: String
                     ): SubmissionAuditModel = {
     val attachmentList = attachmentsService.attachmentList(vatScheme)
     val details = jsonObject(
@@ -66,7 +67,8 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
       vatScheme = vatScheme,
       authProviderId = authProviderId,
       affinityGroup = affinityGroup,
-      optAgentReferenceNumber = optAgentReferenceNumber
+      optAgentReferenceNumber = optAgentReferenceNumber,
+      formBundleId = formBundleId
     )
   }
 

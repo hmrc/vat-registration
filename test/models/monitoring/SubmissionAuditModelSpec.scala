@@ -43,7 +43,8 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
     vatScheme = vatScheme,
     affinityGroup = Organisation,
     authProviderId = testProviderId,
-    optAgentReferenceNumber = None
+    optAgentReferenceNumber = None,
+    formBundleId = testFormBundleId
   )
 
   "buildRootBlock" when {
@@ -57,6 +58,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             "authProviderId" -> "testProviderID",
             "journeyId" -> "testRegId",
             "userType" -> "Organisation",
+            "formBundleId" -> "testFormBundleId",
             "registrationReason" -> "Forward Look",
             "registrationRelevantDate" -> "2020-10-07",
             "messageType" -> "SubscriptionCreate",
@@ -66,7 +68,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
               "dateOfIncorporation" -> testDateOFIncorp,
               "countryOfIncorporation" -> "GB"
             ),
-            "idsVerificationStatus" -> "1",
+            "idsVerificationStatus" -> "3",
             "cidVerification" -> "1",
             "userEnteredDetails" -> Json.obj(
               "user" -> "answers"
@@ -81,6 +83,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             "authProviderId" -> "testProviderID",
             "journeyId" -> "testRegId",
             "userType" -> "Organisation",
+            "formBundleId" -> "testFormBundleId",
             "registrationReason" -> "Forward Look",
             "registrationRelevantDate" -> "2020-10-07",
             "messageType" -> "SubscriptionCreate",
@@ -90,7 +93,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
               "dateOfIncorporation" -> testDateOFIncorp,
               "countryOfIncorporation" -> "GB"
             ),
-            "idsVerificationStatus" -> "1",
+            "idsVerificationStatus" -> "0",
             "cidVerification" -> "1",
             "businessPartnerReference" -> testBpSafeId,
             "userEnteredDetails" -> Json.obj(
@@ -113,6 +116,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             "authProviderId" -> "testProviderID",
             "journeyId" -> "testRegId",
             "userType" -> "Organisation",
+            "formBundleId" -> "testFormBundleId",
             "registrationReason" -> "Backward Look",
             "registrationRelevantDate" -> "2020-12-01",
             "userType" -> "Organisation",
@@ -123,7 +127,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
               "dateOfIncorporation" -> testDateOFIncorp,
               "countryOfIncorporation" -> "GB"
             ),
-            "idsVerificationStatus" -> "1",
+            "idsVerificationStatus" -> "3",
             "cidVerification" -> "1",
             "userEnteredDetails" -> Json.obj(
               "user" -> "answers"
@@ -140,6 +144,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             "authProviderId" -> "testProviderID",
             "journeyId" -> "testRegId",
             "userType" -> "Organisation",
+            "formBundleId" -> "testFormBundleId",
             "registrationReason" -> "Voluntary",
             "registrationRelevantDate" -> "2018-01-01",
             "messageType" -> "SubscriptionCreate",
@@ -150,7 +155,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
               "dateOfIncorporation" -> testDateOFIncorp,
               "countryOfIncorporation" -> "GB"
             ),
-            "idsVerificationStatus" -> "1",
+            "idsVerificationStatus" -> "3",
             "cidVerification" -> "1",
             "userEnteredDetails" -> Json.obj(
               "user" -> "answers"

@@ -89,8 +89,6 @@ class SubmissionServiceSpec extends VatRegSpec
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "testUrl")
 
-  val testFormBundleId = "testFormBundleId"
-
   "submitVatRegistration" when {
     "successfully submit and return an acknowledgment reference" in new Setup {
       when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
@@ -99,7 +97,7 @@ class SubmissionServiceSpec extends VatRegSpec
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any())).thenReturn(Future.successful(testFormBundleId))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any())).thenReturn(Future.successful(VatRegStatus.submitted))
       mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
-      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testRegId)).thenReturn(Future.successful(vatSubmissionVoluntaryJson.as[JsObject]))
       val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
@@ -125,7 +123,8 @@ class SubmissionServiceSpec extends VatRegSpec
           testFullVatScheme,
           testProviderId,
           testAffinityGroup,
-          None
+          None,
+          testFormBundleId
         ))
         verify(mockNonRepudiationService).submitNonRepudiation(
           ArgumentMatchers.eq(testRegId),
@@ -146,7 +145,7 @@ class SubmissionServiceSpec extends VatRegSpec
           Some(testCredentials) ~ Some(testAffinityGroup) ~ None
         )
       )
-      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
 
       await(service.submit(vatSubmissionJson.as[JsObject], testFullVatScheme, testRegId, testUserHeaders)) mustBe testFormBundleId
 
@@ -155,7 +154,8 @@ class SubmissionServiceSpec extends VatRegSpec
         testFullVatScheme,
         testProviderId,
         testAffinityGroup,
-        None
+        None,
+        testFormBundleId
       ))
     }
 
@@ -166,7 +166,7 @@ class SubmissionServiceSpec extends VatRegSpec
           Some(testCredentials) ~ Some(testAffinityGroup) ~ None
         )
       )
-      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
 
       await(service.submit(vatSubmissionJson.as[JsObject], testFullVatScheme, testRegId, testUserHeaders)) mustBe testFormBundleId
 
@@ -175,7 +175,8 @@ class SubmissionServiceSpec extends VatRegSpec
         testFullVatScheme,
         testProviderId,
         testAffinityGroup,
-        None
+        None,
+        testFormBundleId
       ))
     }
   }

@@ -91,7 +91,8 @@ class SubmissionService @Inject()(registrationRepository: RegistrationMongoRepos
               vatScheme = vatScheme,
               authProviderId = credentials.providerId,
               affinityGroup = affinity,
-              optAgentReferenceNumber = optAgentCode
+              optAgentReferenceNumber = optAgentCode,
+              formBundleId = formBundleId
             )
           )
 
