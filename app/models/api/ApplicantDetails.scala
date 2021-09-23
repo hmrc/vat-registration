@@ -31,13 +31,21 @@ case class ApplicantDetails(transactor: TransactorDetails,
                             roleInBusiness: RoleInBusiness) {
 
   def personalIdentifiers: List[CustomerId] =
-    List(transactor.nino.map(nino =>
-      CustomerId(
-        nino,
-        NinoIdType,
-        IdVerified,
-        date = Some(transactor.dateOfBirth)
-      ))
+    List(
+      transactor.nino.map(nino =>
+        CustomerId(
+          nino,
+          NinoIdType,
+          if (transactor.identifiersMatch) IdVerified else IdVerificationFailed,
+          date = Some(transactor.dateOfBirth)
+        )),
+      transactor.trn.map(trn =>
+        CustomerId(
+          trn,
+          TempNinoIDType,
+          IdUnverifiable,
+          date = Some(transactor.dateOfBirth)
+        ))
     ).flatten
 
 }

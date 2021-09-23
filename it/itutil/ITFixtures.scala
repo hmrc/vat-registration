@@ -112,6 +112,8 @@ trait ITFixtures {
     transactor = TransactorDetails(
       name = testName,
       nino = Some(testNino),
+      trn = None,
+      identifiersMatch = true,
       dateOfBirth = testDate
     ),
     entity = IncorporatedIdEntity(
@@ -136,6 +138,8 @@ trait ITFixtures {
     transactor = TransactorDetails(
       name = testName,
       nino = Some(testNino),
+      trn = None,
+      identifiersMatch = true,
       dateOfBirth = testDate
     ),
     entity = IncorporatedIdEntity(
@@ -513,12 +517,18 @@ trait ITFixtures {
     partyType = NETP
   )
 
+  val testNetpTransactorDetails: TransactorDetails = TransactorDetails(
+    name = testName,
+    nino = None,
+    trn = Some(testTrn),
+    identifiersMatch = false,
+    dateOfBirth = testDate
+  )
+
   val testNetpApplicantDetails: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
       entity = testNetpEntity,
-      transactor = testRegisteredApplicantDetails.transactor.copy(
-        nino = None
-      ),
+      transactor = testNetpTransactorDetails,
       currentAddress = testOverseasAddress,
       roleInBusiness = OwnerProprietor
     )
@@ -535,6 +545,6 @@ trait ITFixtures {
       returns = Some(testNetpReturns),
       tradingDetails = Some(testNetpTradingDetails),
       flatRateScheme = None,
-      businessContact = Some(testNetpBusinessContact)
+      businessContact = Some(testNetpBusinessContact),
     )
 }
