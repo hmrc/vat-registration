@@ -22,6 +22,8 @@ import java.time.LocalDate
 
 case class TransactorDetails(name: Name,
                              nino: Option[String],
+                             trn: Option[String],
+                             identifiersMatch: Boolean,
                              dateOfBirth: LocalDate)
 
 object TransactorDetails {

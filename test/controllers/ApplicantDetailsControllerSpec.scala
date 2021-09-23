@@ -50,6 +50,8 @@ class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixt
     transactor = TransactorDetails(
       name = testName,
       nino = Some(testNino),
+      trn = None,
+      identifiersMatch = true,
       dateOfBirth = testDate
     ),
     entity = IncorporatedIdEntity(
