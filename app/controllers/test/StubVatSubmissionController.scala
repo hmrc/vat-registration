@@ -60,7 +60,7 @@ class StubVatSubmissionController @Inject()(cc: ControllerComponents) extends Ba
       Try {
         requestValidator.validate(openApiRequest)
       } match {
-        case Success(_) => Future.successful(Ok(Json.stringify(Json.obj("formBundle" -> "1234"))))
+        case Success(_) => Future.successful(Ok(Json.stringify(Json.obj("formBundle" -> "123412341234"))))
         case Failure(exception: ValidationException) =>
           logger.error(s"[StubVatSubmissionController][processSubmission] ${exception.results().toString}")
           Future.successful(BadRequest)

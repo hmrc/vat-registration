@@ -39,7 +39,7 @@ class VatRegistrationCreatedBasicISpec extends IntegrationStubbing with FeatureS
     "ENG"
   )
 
-  val testSubmissionResponse = Json.obj("formBundle" -> "1234")
+  val testSubmissionResponse = Json.obj("formBundle" -> "123412341234")
 
   "/vatreg/new (create registration)" when {
     "the user is authorised" should {
