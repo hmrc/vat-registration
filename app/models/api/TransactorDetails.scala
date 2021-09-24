@@ -16,7 +16,8 @@
 
 package models.api
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
 import java.time.LocalDate
 
@@ -27,5 +28,11 @@ case class TransactorDetails(name: Name,
                              dateOfBirth: LocalDate)
 
 object TransactorDetails {
-  implicit val format: Format[TransactorDetails] = Json.format[TransactorDetails]
+  implicit val format: Format[TransactorDetails] = (
+    (__ \ "name").format[Name] and
+      (__ \ "nino").formatNullable[String] and
+      (__ \ "trn").formatNullable[String] and
+      (__ \ "identifiersMatch").formatWithDefault[Boolean](true) and
+      (__ \ "dateOfBirth").format[LocalDate]
+    ) (TransactorDetails.apply, unlift(TransactorDetails.unapply))
 }
