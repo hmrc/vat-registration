@@ -82,7 +82,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
         "zeroRatedSupplies" -> 12.99,
-        "VATRepaymentExpected" -> true
+        "VATRepaymentExpected" -> true,
+        "goodsFromOtherEU" -> testTurnover,
+        "goodsSoldToOtherEU" -> testTurnover
       ),
       "schemes" -> Json.obj(
         "FRSCategory" -> frsDetails.categoryOfBusiness.get,
@@ -228,7 +230,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
         "zeroRatedSupplies" -> 12.99,
-        "VATRepaymentExpected" -> true
+        "VATRepaymentExpected" -> true,
+        "goodsFromOtherEU" -> testTurnover,
+        "goodsSoldToOtherEU" -> testTurnover
       )
     ),
     "periods" -> Json.obj(
@@ -329,7 +333,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
         "zeroRatedSupplies" -> 12.99,
-        "VATRepaymentExpected" -> true
+        "VATRepaymentExpected" -> true,
+        "goodsFromOtherEU" -> testTurnover,
+        "goodsSoldToOtherEU" -> testTurnover
       )
     ),
     "periods" -> Json.obj(
@@ -584,7 +590,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
         "zeroRatedSupplies" -> 12.99,
-        "VATRepaymentExpected" -> true
+        "VATRepaymentExpected" -> true,
+        "goodsFromOtherEU" -> testTurnover,
+        "goodsSoldToOtherEU" -> testTurnover
       )
     ),
     "periods" -> Json.obj(
@@ -687,7 +695,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
         "zeroRatedSupplies" -> 12.99,
-        "VATRepaymentExpected" -> true
+        "VATRepaymentExpected" -> true,
+        "goodsFromOtherEU" -> testTurnover,
+        "goodsSoldToOtherEU" -> testTurnover
       )
     ),
     "periods" -> Json.obj(
@@ -801,7 +811,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
         "zeroRatedSupplies" -> 12.99,
-        "VATRepaymentExpected" -> true
+        "VATRepaymentExpected" -> true,
+        "goodsFromOtherEU" -> testTurnover,
+        "goodsSoldToOtherEU" -> testTurnover
       ),
       "schemes" -> Json.obj(
         "FRSCategory" -> "123",

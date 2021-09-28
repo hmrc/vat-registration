@@ -17,6 +17,7 @@
 package services.monitoring
 
 import models.api.VatScheme
+import models.api.returns.NIPCompliance
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -55,11 +56,19 @@ class SubscriptionAuditBlockBuilder {
           optional("FHDDSWarehouseNumber" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseNumber)),
           optional("nameOfWarehouse" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
         ),
-        "yourTurnover" -> jsonObject(
+        "yourTurnover" -> (jsonObject(
           "turnoverNext12Months" -> eligibilityData.estimates.turnoverEstimate,
           "zeroRatedSupplies" -> returns.zeroRatedSupplies,
           "vatRepaymentExpected" -> returns.reclaimVatOnMostReturns
-        ),
+        ) ++ {
+          returns.northernIrelandProtocol match {
+            case Some(NIPCompliance(goodsToEU, goodsFromEU)) => jsonObject(
+              conditional(goodsFromEU.answer)("goodsFromOtherEU" -> goodsFromEU.value),
+              conditional(goodsToEU.answer)("goodsSoldToOtherEU" -> goodsToEU.value)
+            )
+            case None => jsonObject()
+          }
+        }),
         optional("schemes" -> optFlatRateScheme.flatMap { flatRateScheme =>
           (flatRateScheme.joinFrs, flatRateScheme.frsDetails) match {
             case (true, Some(details)) =>

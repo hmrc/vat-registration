@@ -135,7 +135,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   "buildSubscriptionBlock" should {
     val testDate = LocalDate.of(2020, 2, 2)
-    val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None)
+    val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
     val otherActivities = List(
       SicCode("00002", "testBusiness 2", "testDetails"),
       SicCode("00003", "testBusiness 3", "testDetails"),
