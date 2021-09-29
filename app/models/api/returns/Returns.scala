@@ -27,7 +27,8 @@ case class Returns(zeroRatedSupplies: Option[BigDecimal],
                    staggerStart: Stagger,
                    startDate: Option[LocalDate],
                    annualAccountingDetails: Option[AASDetails],
-                   overseasCompliance: Option[OverseasCompliance])
+                   overseasCompliance: Option[OverseasCompliance],
+                   northernIrelandProtocol: Option[NIPCompliance])
 
 object Returns extends JsonUtilities {
   implicit val format: Format[Returns] = Json.format[Returns]

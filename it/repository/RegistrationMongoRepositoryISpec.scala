@@ -66,7 +66,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
   val encryptedAccountNumber = "V0g2RXVUcUZpSUk4STgvbGNFdlAydz09"
   val sortCode = "12-34-56"
   val bankAccountDetails: BankAccountDetails = BankAccountDetails("testAccountName", sortCode, accountNumber)
-  val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails),None ,None)
+  val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails), None, None)
 
   val vatSchemeWithEligibilityData = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, eligibilitySubmissionData = Some(testEligibilitySubmissionData))
 
@@ -86,20 +86,27 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
        |}
       """.stripMargin).as[JsObject]
 
-  val vatSchemeWithEligibilityDataWithReturns: JsObject = Json.parse(
-    s"""
-       |{
-       |  "registrationId":"$registrationId",
-       |  "status": "draft",
-       |  "returns": {
-       |    "reclaimVatOnMostReturns": true,
-       |    "returnsFrequency": ${Json.toJson[ReturnsFrequency](Quarterly)},
-       |    "staggerStart": ${Json.toJson[Stagger](JanuaryStagger)},
-       |    "startDate": "$testDate",
-       |    "zeroRatedSupplies": 12.99
-       |  }
-       |}
-     """.stripMargin).as[JsObject]
+  val vatSchemeWithEligibilityDataWithReturns: JsObject = Json.obj(
+    "registrationId" -> registrationId,
+    "status" -> "draft",
+    "returns" -> Json.obj(
+      "zeroRatedSupplies" -> 12.99,
+      "reclaimVatOnMostReturns" -> true,
+      "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
+      "staggerStart" -> Json.toJson[Stagger](JanuaryStagger),
+      "startDate" -> testDate,
+      "northernIrelandProtocol" -> Json.obj(
+        "goodsToEU" -> Json.obj(
+          "answer" -> true,
+          "value" -> testTurnover
+        ),
+        "goodsFromEU" -> Json.obj(
+          "answer" -> true,
+          "value" -> testTurnover
+        )
+      )
+    )
+  )
 
 
   val vatTaxable = 1000L
@@ -325,7 +332,7 @@ class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertio
     val otherUsersVatScheme = vatSchemeWithEligibilityDataJson(otherRegId)
     val dateValue = LocalDate of(1990, 10, 10)
     val startDate = dateValue
-    val returns: Returns = Returns(Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None, None)
+    val returns: Returns = Returns(Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None, None, None)
     val vatSchemeWithEligibilityDataWithReturns = Json.parse(
       s"""
          |{

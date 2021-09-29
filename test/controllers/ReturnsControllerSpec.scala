@@ -47,6 +47,7 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
     JanDecStagger,
     Some(testDate),
     Some(AASDetails(BankGIRO, MonthlyPayment)),
+    None,
     None
   )
 

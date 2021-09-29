@@ -49,6 +49,11 @@ trait ITFixtures {
   val testAuthProviderId = "authProviderId"
   val testWarehouseNumber = "tst123456789012"
   val testWarehouseName = "testWarehouseName"
+  val testTurnover = 10000
+  val testNorthernIrelandProtocol: NIPCompliance = NIPCompliance(
+    ConditionalValue(answer = true, Some(testTurnover)),
+    ConditionalValue(answer = true, Some(testTurnover))
+  )
 
   val testReturns: Returns = Returns(
     zeroRatedSupplies = Some(12.99),
@@ -57,7 +62,8 @@ trait ITFixtures {
     staggerStart = JanuaryStagger,
     startDate = Some(startDate),
     annualAccountingDetails = None,
-    overseasCompliance = None
+    overseasCompliance = None,
+    northernIrelandProtocol = Some(testNorthernIrelandProtocol)
   )
 
   val frsDetails = FRSDetails(
@@ -80,7 +86,8 @@ trait ITFixtures {
     staggerStart = JanDecStagger,
     startDate = Some(startDate),
     annualAccountingDetails = Some(aasDetails),
-    overseasCompliance = None
+    overseasCompliance = None,
+    northernIrelandProtocol = Some(testNorthernIrelandProtocol)
   )
 
   val testFlatRateScheme = FlatRateScheme(joinFrs = true, Some(frsDetails))
@@ -489,7 +496,8 @@ trait ITFixtures {
       Some(true),
       Some(testWarehouseNumber),
       Some(testWarehouseName)
-    ))
+    )),
+    None
   )
 
   val testNetpTradingDetails: TradingDetails = TradingDetails(
@@ -545,6 +553,6 @@ trait ITFixtures {
       returns = Some(testNetpReturns),
       tradingDetails = Some(testNetpTradingDetails),
       flatRateScheme = None,
-      businessContact = Some(testNetpBusinessContact),
+      businessContact = Some(testNetpBusinessContact)
     )
 }
