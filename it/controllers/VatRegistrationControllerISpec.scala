@@ -222,16 +222,14 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       "return OK if the submission is successful with overseas details" in new Setup {
         enable(StubSubmission)
 
-        val testOverseasDetails = OverseasIdentifierDetails("1234", "FR")
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(
-            testNetpVatScheme.copy(
-              applicantDetails = Some(testNetpApplicantDetails.copy(entity = testNetpEntity.copy(overseas = Some(testOverseasDetails))))),
+            testNetpVatScheme.copy(applicantDetails = Some(testNetpApplicantDetails.copy(entity = testNetpEntityOverseas))),
             repo.insert
           )
 
-        stubPost("/vatreg/test-only/vat/subscription", testNetpJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testNetpJsonOverseas, OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())

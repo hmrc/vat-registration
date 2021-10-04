@@ -17,7 +17,7 @@
 package itutil
 
 import enums.VatRegStatus
-import models.{BusinessIdEntity, IncorporatedIdEntity, PartnershipIdEntity, SoleTraderIdEntity}
+import models.{BusinessIdEntity, IncorporatedIdEntity, OverseasIdentifierDetails, PartnershipIdEntity, SoleTraderIdEntity}
 import models.api.returns._
 import models.api._
 import models.submission.{DateOfBirth, Director, Individual, NETP, OwnerProprietor, Partnership, RoleInBusiness, Trust, UkCompany}
@@ -515,6 +515,19 @@ trait ITFixtures {
     businessVerification = BvPass,
     registration = FailedStatus,
     identifiersMatch = true
+  )
+
+  val testNetpEntityOverseas = SoleTraderIdEntity(
+    testFirstName,
+    testLastName,
+    testDate,
+    None,
+    Some(testSaUtr),
+    Some(testTrn),
+    businessVerification = BvUnchallenged,
+    registration = NotCalledStatus,
+    identifiersMatch = true,
+    overseas = Some(OverseasIdentifierDetails("1234", "FR"))
   )
 
   val testNetpEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
