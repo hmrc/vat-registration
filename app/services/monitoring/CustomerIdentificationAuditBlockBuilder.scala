@@ -40,7 +40,7 @@ class CustomerIdentificationAuditBlockBuilder {
                   optional("ctUTR" -> optCtutr),
                   optional("CHRN" -> optChrn)
                 ))
-              case SoleTraderIdEntity(_, _, _, optNino, optUtr, _, _, _, _, _) =>
+              case SoleTraderIdEntity(_, _, _, optNino, optUtr, _, _, _, _, _, _) =>
                 Some(jsonObject(
                   optional("NINO" -> optNino),
                   optional("saUTR" -> optUtr)

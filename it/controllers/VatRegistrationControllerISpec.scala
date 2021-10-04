@@ -16,17 +16,17 @@
 
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo, verify}
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
+import models.OverseasIdentifierDetails
 import models.api.VatScheme
 import models.nonrepudiation.NonRepudiationMetadata
-import org.scalatest.concurrent.Eventually.eventually
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
+
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Base64
@@ -98,152 +98,184 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     }
   }
 
-  "PUT /:regID/submit-registration" should {
-    "return OK if the submission is successful with an unregistered business partner" in new Setup {
-      enable(StubSubmission)
+  "PUT /:regID/submit-registration" when {
+    "the user is a Sole Trader" should {
+      "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
+        enable(StubSubmission)
 
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
 
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
 
-      res.status mustBe OK
+        res.status mustBe OK
+      }
+
+      "return OK if the submission is successful with a bpSafeId" in new Setup {
+        enable(StubSubmission)
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader, repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJson, OK, Json.stringify(testSubmissionResponse))
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+      }
+
+      "return OK if the submission is successful without a bpSafeId" in new Setup {
+        enable(StubSubmission)
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+      }
     }
 
-    "return OK if the submission is successful for a sole trader with a bpSafeId" in new Setup {
-      enable(StubSubmission)
+    "the user is a Limited Company" should {
+      "return OK if the submission is successful with an unregistered business partner" in new Setup {
+        enable(StubSubmission)
 
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader, repo.insert)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJson, OK, Json.stringify(testSubmissionResponse))
-      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
+        stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
 
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
 
-      res.status mustBe OK
+        res.status mustBe OK
+      }
+
+      "return OK if the submission is successful where the business partner is already registered" in new Setup {
+        enable(StubSubmission)
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner, repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+      }
+
+      "return OK if the submission is successful where the business partner is already registered when the frs data is completely missing" in new Setup {
+        enable(StubSubmission)
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner.copy(flatRateScheme = None), repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+      }
     }
 
-    "return OK if the submission is successful for a sole trader without a bpSafeId" in new Setup {
-      enable(StubSubmission)
+    "the user is a NETP" should {
+      "return OK if the submission is successful without a bpSafeId" in new Setup {
+        enable(StubSubmission)
 
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testNetpVatScheme, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testNetpJson, OK, Json.stringify(testSubmissionResponse))
 
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
 
-      res.status mustBe OK
+        res.status mustBe OK
+      }
+
+      "return OK if the submission is successful with overseas details" in new Setup {
+        enable(StubSubmission)
+
+        val testOverseasDetails = OverseasIdentifierDetails("1234", "FR")
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(
+            testNetpVatScheme.copy(
+              applicantDetails = Some(testNetpApplicantDetails.copy(entity = testNetpEntity.copy(overseas = Some(testOverseasDetails))))),
+            repo.insert
+          )
+
+        stubPost("/vatreg/test-only/vat/subscription", testNetpJson, OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+      }
     }
 
-    "return OK if the submission is successful for a NETP without a bpSafeId" in new Setup {
-      enable(StubSubmission)
+    "the user is a Trust" should {
+      "return OK if the submission is successful with a bpSafeId" in new Setup {
+        enable(StubSubmission)
 
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testNetpVatScheme, repo.insert)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testMinimalVatSchemeWithTrust, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testNetpJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testVerifiedTrustJson, OK, Json.stringify(testSubmissionResponse))
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
 
-      res.status mustBe OK
+        res.status mustBe OK
+      }
     }
 
-    "return OK if the submission is successful for a trust with a bpSafeId" in new Setup {
-      enable(StubSubmission)
+    "the user is a General Partnership" should {
+      "return OK if the submission is successful where the submission contains partners" in new Setup {
+        enable(StubSubmission)
 
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testMinimalVatSchemeWithTrust, repo.insert)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testVatSchemeWithPartners, repo.insert)
 
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedTrustJson, OK, Json.stringify(testSubmissionResponse))
-      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
+        stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderWithPartnerJson, OK, Json.stringify(testSubmissionResponse))
 
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
 
-      res.status mustBe OK
-    }
-
-    "return OK if the submission is successful where the business partner is already registered" in new Setup {
-      enable(StubSubmission)
-
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner, repo.insert)
-
-      stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
-      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
-
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
-
-      res.status mustBe OK
-    }
-
-    "return OK if the submission is successful where the business partner is already registered when the frs data is completely missing" in new Setup {
-      enable(StubSubmission)
-
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner.copy(flatRateScheme = None), repo.insert)
-
-      stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
-      stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
-
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
-
-      res.status mustBe OK
-    }
-    "return OK if the submission is successful where the submission contains partners" in new Setup {
-      enable(StubSubmission)
-
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testVatSchemeWithPartners, repo.insert)
-
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderWithPartnerJson, OK, Json.stringify(testSubmissionResponse))
-
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
-
-      res.status mustBe OK
-    }
-
-    "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
-      enable(StubSubmission)
-
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
-
-      stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
-
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-        .put(Json.obj())
-      )
-
-      res.status mustBe OK
+        res.status mustBe OK
+      }
     }
 
     "return INTERNAL_SERVER_ERROR if the VAT scheme is missing data" in new Setup {
