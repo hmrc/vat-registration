@@ -18,6 +18,7 @@ package services.submission
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import models.OverseasIdentifierDetails
 import models.api.{BvCtEnrolled, BvPass, BvUnchallenged, FailedStatus}
 import models.submission.{Individual, NETP}
 import org.mockito.ArgumentMatchers.any
@@ -111,6 +112,34 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     "dateOfBirth" -> testDateOfBirth
   )
 
+  val netpBlockJsonWithOverseas: JsObject = Json.obj(
+    "tradersPartyType" -> "Z1",
+    "tradingName" -> testTradingName,
+    "customerID" -> Json.arr(
+      Json.obj(
+        "idType" -> "UTR",
+        "idValue" -> testUtr,
+        "IDsVerificationStatus" -> "1"
+      ),
+      Json.obj(
+        "idType" -> "TEMPNI",
+        "idValue" -> testTrn,
+        "IDsVerificationStatus" -> "1"
+      ),
+      Json.obj(
+        "idType" -> "OTHER",
+        "idValue" -> "1234",
+        "countryOfIncorporation" -> "FR",
+        "IDsVerificationStatus" -> "1"
+      )
+    ),
+    "name" -> Json.obj(
+      "firstName" -> testFirstName,
+      "lastName" -> testLastName
+    ),
+    "dateOfBirth" -> testDateOfBirth
+  )
+
   Json.parse(
     s"""
        |{
@@ -157,6 +186,26 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
       val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
       result mustBe netpBlockJson
+    }
+
+    "build the correct json for a NETP entity type with overseas details" in new Setup {
+      val appDetails = validApplicantDetails.copy(
+        entity = testSoleTraderEntity.copy(
+          nino = None,
+          trn = Some(testTrn),
+          overseas = Some(OverseasIdentifierDetails(
+            taxIdentifier = "1234",
+            country = "FR"
+          ))
+        )
+      )
+      val eligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
+
+      when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+        .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData)))))
+
+      val result: JsObject = await(service.buildCustomerIdentificationBlock(testRegId))
+      result mustBe netpBlockJsonWithOverseas
     }
 
     "return Status Code 1" when {

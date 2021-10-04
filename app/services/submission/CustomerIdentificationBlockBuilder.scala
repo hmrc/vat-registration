@@ -58,7 +58,7 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
         }
       } ++ {
         applicantDetails.entity match {
-          case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, bpSafeId, _, _, _) if bpSafeId.isEmpty =>
+          case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, bpSafeId, _, _, _, _) if bpSafeId.isEmpty =>
             jsonObject(
               "name" -> jsonObject(
                 "firstName" -> firstName,

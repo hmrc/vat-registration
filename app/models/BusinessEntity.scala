@@ -59,7 +59,7 @@ object BusinessEntity {
   val writes: Writes[BusinessEntity] = Writes {
     case incorporatedEntity: IncorporatedIdEntity =>
       Json.toJson(incorporatedEntity)(IncorporatedIdEntity.format)
-    case soleTrader@SoleTraderIdEntity(_, _, _, _, _, _, _, _, _, _) =>
+    case soleTrader@SoleTraderIdEntity(_, _, _, _, _, _, _, _, _, _, _) =>
       Json.toJson(soleTrader)(SoleTraderIdEntity.format)
     case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _) =>
       Json.toJson(partnershipIdEntity)(PartnershipIdEntity.format)
@@ -124,6 +124,7 @@ case class SoleTraderIdEntity(firstName: String,
                               bpSafeId: Option[String] = None,
                               businessVerification: BusinessVerificationStatus,
                               registration: BusinessRegistrationStatus,
+                              overseas: Option[OverseasIdentifierDetails] = None,
                               identifiersMatch: Boolean) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] =
@@ -145,6 +146,13 @@ case class SoleTraderIdEntity(firstName: String,
           idValue = trn,
           idType = TempNinoIDType,
           IDsVerificationStatus = idVerificationStatus
+        )),
+      overseas.map(details =>
+        CustomerId(
+          idType = OtherIdType,
+          idValue = details.taxIdentifier,
+          countryOfIncorporation = Some(details.country),
+          IDsVerificationStatus = idVerificationStatus
         ))
     ).flatten
 
@@ -152,6 +160,12 @@ case class SoleTraderIdEntity(firstName: String,
 
 object SoleTraderIdEntity {
   implicit val format: Format[SoleTraderIdEntity] = Json.format[SoleTraderIdEntity]
+}
+
+case class OverseasIdentifierDetails(taxIdentifier: String, country: String)
+
+object OverseasIdentifierDetails {
+  implicit val format: Format[OverseasIdentifierDetails] = Json.format[OverseasIdentifierDetails]
 }
 
 // PartnershipIdEntity supports Partnerships
