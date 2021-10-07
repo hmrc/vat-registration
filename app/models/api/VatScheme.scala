@@ -38,7 +38,8 @@ case class VatScheme(id: String,
                      applicantDetails: Option[ApplicantDetails] = None,
                      confirmInformationDeclaration: Option[Boolean] = None,
                      nrsSubmissionPayload: Option[String] = None,
-                     partners: Option[List[Partner]] = None) {
+                     partners: Option[List[Partner]] = None,
+                     attachments: Option[Attachments] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -64,7 +65,8 @@ object VatScheme {
         (__ \ "applicantDetails").readNullable[ApplicantDetails](Format[ApplicantDetails](ApplicantDetails.reads(partyType), ApplicantDetails.writes)) and
         (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
         (__ \ "nrsSubmissionPayload").readNullable[String] and
-        (__ \ "partners").readNullable[List[Partner]]
+        (__ \ "partners").readNullable[List[Partner]] and
+        (__ \ "attachments").readNullable[Attachments]
       )(VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
@@ -82,7 +84,8 @@ object VatScheme {
         Reads.pure(None) and
         (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
         (__ \ "nrsSubmissionPayload").readNullable[String] and
-        (__ \ "partners").readNullable[List[Partner]]
+        (__ \ "partners").readNullable[List[Partner]] and
+        (__ \ "attachments").readNullable[Attachments]
       )(VatScheme.apply _)
     }
 
@@ -102,7 +105,8 @@ object VatScheme {
     (__ \ "applicantDetails").writeNullable[ApplicantDetails] and
     (__ \ "confirmInformationDeclaration").writeNullable[Boolean] and
     (__ \ "nrsSubmissionPayload").writeNullable[String] and
-    (__ \ "partners").writeNullable[List[Partner]]
+    (__ \ "partners").writeNullable[List[Partner]] and
+    (__ \ "attachments").writeNullable[Attachments]
   )(unlift(VatScheme.unapply))
 
   def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =

@@ -63,3 +63,4 @@ DELETE      /:regId/partners/:index                 controllers.PartnersControll
 GET         /:regId/partners                        controllers.PartnersController.getPartners(regId: String)
 
 GET         /:regId/attachments                     controllers.AttachmentsController.getAttachmentList(regId: String)
+PUT         /:regId/attachments                     controllers.AttachmentsController.storeAttachmentDetails(regId: String)

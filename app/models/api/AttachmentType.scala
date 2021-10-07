@@ -52,30 +52,30 @@ object AttachmentType {
     Writes[AttachmentType](attachmentType => JsString(map(attachmentType)))
   )
 
-  def submissionWrites(attachmentOption: AttachmentOptions): Writes[List[AttachmentType]] = Writes { attachments =>
+  def submissionWrites(attachmentOption: AttachmentMethod): Writes[List[AttachmentType]] = Writes { attachments =>
     Json.toJson(
       attachments.map { attachmentType =>
-        map(attachmentType) -> Json.toJson[AttachmentOptions](attachmentOption)
+        map(attachmentType) -> Json.toJson[AttachmentMethod](attachmentOption)
       }.toMap
     )
   }
 }
 
-sealed trait AttachmentOptions
-case object Other extends AttachmentOptions
-case object Attached extends AttachmentOptions
-case object Post extends AttachmentOptions
+sealed trait AttachmentMethod
+case object Other extends AttachmentMethod
+case object Attached extends AttachmentMethod
+case object Post extends AttachmentMethod
 
-object AttachmentOptions {
-  val map: Map[AttachmentOptions, String] = Map(
+object AttachmentMethod {
+  val map: Map[AttachmentMethod, String] = Map(
     Other -> "1",
     Attached -> "2",
     Post -> "3"
   )
-  val inverseMap: Map[String, AttachmentOptions] = map.map(_.swap)
+  val inverseMap: Map[String, AttachmentMethod] = map.map(_.swap)
 
-  implicit val format: Format[AttachmentOptions] = Format(
-    Reads[AttachmentOptions](json => json.validate[String].map(string => inverseMap(string))),
-    Writes[AttachmentOptions](attachmentOption => JsString(map(attachmentOption)))
+  implicit val format: Format[AttachmentMethod] = Format(
+    Reads[AttachmentMethod](json => json.validate[String].map(string => inverseMap(string))),
+    Writes[AttachmentMethod](attachmentOption => JsString(map(attachmentOption)))
   )
 }

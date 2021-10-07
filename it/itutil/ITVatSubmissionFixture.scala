@@ -2,7 +2,7 @@
 package itutil
 
 import models.api.returns.{StoringGoodsForDispatch, StoringWithinUk}
-import models.api.{AttachmentOptions, Post}
+import models.api.{AttachmentMethod, Post}
 import models.submission._
 import play.api.libs.json.{JsObject, Json}
 
@@ -395,7 +395,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "overseasTrader" -> true
       ),
       "attachments" -> Json.obj(
-        "identityEvidence" -> Json.toJson[AttachmentOptions](Post)
+        "identityEvidence" -> Json.toJson[AttachmentMethod](Post)
       )
     ),
     "customerIdentification" -> Json.obj(
@@ -524,7 +524,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "overseasTrader" -> true
       ),
       "attachments" -> Json.obj(
-        "identityEvidence" -> Json.toJson[AttachmentOptions](Post)
+        "identityEvidence" -> Json.toJson[AttachmentMethod](Post)
       )
     ),
     "customerIdentification" -> Json.obj(
