@@ -17,15 +17,16 @@
 package controllers
 
 import auth.{Authorisation, AuthorisationResource}
-import models.api.AttachmentType
-import play.api.libs.json.{JsArray, Json}
+import models.api.Attachments
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.AttachmentsService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class AttachmentsController @Inject()(controllerComponents: ControllerComponents,
@@ -38,10 +39,33 @@ class AttachmentsController @Inject()(controllerComponents: ControllerComponents
   def getAttachmentList(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthorised(regId) { authResult =>
       authResult.ifAuthorised(regId, "AttachmentsController", "getAttachmentList") {
-        attachmentsService.getAttachmentList(regId).map { attachmentList =>
-          Ok(Json.toJson(attachmentList))
+        for {
+          attachmentList <- attachmentsService.getAttachmentList(regId)
+          optAttachmentDetails <- attachmentsService.getAttachmentDetails(regId)
+        } yield Ok(
+          jsonObject(
+            optional("method" -> optAttachmentDetails.map(_.method)),
+            "attachments" -> Json.toJson(attachmentList)
+          )
+        )
+      }
+    }
+  }
+
+  def storeAttachmentDetails(regId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    isAuthorised(regId) { authResult =>
+      authResult.ifAuthorised(regId, "AttachmentsController", "storeAttachmentDetails") {
+        request.body.validate[Attachments] match {
+          case JsSuccess(value, _) =>
+            attachmentsService.storeAttachmentDetails(regId, value).map { attachmentDetails =>
+              Ok(Json.toJson(attachmentDetails))
+            }
+          case JsError(errors) =>
+            logger.debug(errors.toString())
+            Future.successful(BadRequest)
         }
       }
     }
   }
+
 }

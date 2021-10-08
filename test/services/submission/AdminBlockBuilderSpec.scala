@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockAttachmentsService
-import models.api.{AttachmentOptions, IdentityEvidence, Post}
+import models.api.{AttachmentMethod, IdentityEvidence, Post}
 import models.submission.NETP
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -56,7 +56,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       ),
       "attachments" -> Json.obj(
         "EORIrequested" -> true,
-        "identityEvidence" -> Json.toJson[AttachmentOptions](Post)
+        "identityEvidence" -> Json.toJson[AttachmentMethod](Post)
       )
     )
 

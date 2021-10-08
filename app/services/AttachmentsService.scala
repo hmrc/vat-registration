@@ -16,7 +16,7 @@
 
 package services
 
-import models.api.{AttachmentType, IdentityEvidence, VatScheme}
+import models.api.{Attachments, AttachmentMethod, AttachmentType, IdentityEvidence, VatScheme}
 import models.submission.NETP
 import repositories.RegistrationMongoRepository
 
@@ -26,6 +26,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class AttachmentsService @Inject()(val registrationRepository: RegistrationMongoRepository
                                   )(implicit executionContext: ExecutionContext) {
+
+  private val attachmentDetailsKey = "attachments"
 
   def getAttachmentList(regId: String): Future[List[AttachmentType]] =
     registrationRepository.retrieveVatScheme(regId).map {
@@ -38,4 +40,11 @@ class AttachmentsService @Inject()(val registrationRepository: RegistrationMongo
 
     if (needIdentityDoc) List(IdentityEvidence) else Nil
   }
+
+  def getAttachmentDetails(regId: String): Future[Option[Attachments]] =
+    registrationRepository.fetchBlock[Attachments](regId, attachmentDetailsKey)
+
+  def storeAttachmentDetails(regId: String, attachmentDetails: Attachments): Future[Attachments] =
+    registrationRepository.updateBlock[Attachments](regId, attachmentDetails, attachmentDetailsKey)
+
 }
