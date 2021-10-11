@@ -20,8 +20,8 @@ import enums.VatRegStatus
 import models.api._
 import models.api.returns._
 import models.submission._
-import models.{BusinessIdEntity, IncorporatedIdEntity, PartnershipIdEntity, SoleTraderIdEntity}
-import play.api.libs.json.{JsObject, Json}
+import models.{IncorporatedIdEntity, MinorEntityIdEntity, PartnershipIdEntity, SoleTraderIdEntity}
+import play.api.libs.json.{JsObject, Json, __}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 
@@ -120,8 +120,10 @@ trait VatRegistrationFixture {
     identifiersMatch = true
   )
 
-  val testTrustEntity: BusinessIdEntity = BusinessIdEntity(
+  val testTrustEntity: MinorEntityIdEntity = MinorEntityIdEntity(
     Some(testUtr),
+    None,
+    None,
     Some(testPostcode),
     Some(testChrn),
     Some(testCasc),

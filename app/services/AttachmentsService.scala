@@ -16,8 +16,8 @@
 
 package services
 
-import models.api.{Attachments, AttachmentMethod, AttachmentType, IdentityEvidence, VatScheme}
-import models.submission.NETP
+import models.api.{AttachmentType, Attachments, IdentityEvidence, VatScheme}
+import models.submission.{NETP, NonUkNonEstablished}
 import repositories.RegistrationMongoRepository
 
 import javax.inject.{Inject, Singleton}
@@ -36,7 +36,7 @@ class AttachmentsService @Inject()(val registrationRepository: RegistrationMongo
     }
 
   def attachmentList(vatScheme: VatScheme): List[AttachmentType] = {
-    val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(_.partyType.equals(NETP))
+    val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType))
 
     if (needIdentityDoc) List(IdentityEvidence) else Nil
   }

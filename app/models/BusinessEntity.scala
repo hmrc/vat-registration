@@ -51,7 +51,7 @@ object BusinessEntity {
       case UkCompany | RegSociety | CharitableOrg => Json.fromJson(json)(IncorporatedIdEntity.format)
       case Individual | NETP => Json.fromJson(json)(SoleTraderIdEntity.format)
       case Partnership => Json.fromJson(json)(PartnershipIdEntity.format)
-      case UnincorpAssoc | Trust => Json.fromJson(json)(BusinessIdEntity.format)
+      case UnincorpAssoc | Trust | NonUkNonEstablished => Json.fromJson(json)(MinorEntityIdEntity.format)
       case _ => throw new InternalServerException("Tried to parse business entity for an unsupported party type")
     }
   }
@@ -63,8 +63,8 @@ object BusinessEntity {
       Json.toJson(soleTrader)(SoleTraderIdEntity.format)
     case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _) =>
       Json.toJson(partnershipIdEntity)(PartnershipIdEntity.format)
-    case businessIdEntity: BusinessIdEntity =>
-      Json.toJson(businessIdEntity)(BusinessIdEntity.format)
+    case minorEntity: MinorEntityIdEntity =>
+      Json.toJson(minorEntity)(MinorEntityIdEntity.format)
     case entity =>
       Json.obj()
   }
@@ -198,22 +198,35 @@ object PartnershipIdEntity {
   implicit val format: Format[PartnershipIdEntity] = Json.format[PartnershipIdEntity]
 }
 
-// BusinessIdEntity supports Unincorporated Associations and Trusts
+// MinorEntityIdEntity supports Unincorporated Associations, Trusts and Non UK Companies
 
-case class BusinessIdEntity(sautr: Option[String],
-                            postCode: Option[String],
-                            chrn: Option[String],
-                            casc: Option[String],
-                            registration: BusinessRegistrationStatus,
-                            businessVerification: BusinessVerificationStatus,
-                            bpSafeId: Option[String] = None,
-                            identifiersMatch: Boolean) extends BusinessEntity {
+case class MinorEntityIdEntity(sautr: Option[String],
+                               ctutr: Option[String],
+                               overseas: Option[OverseasIdentifierDetails],
+                               postCode: Option[String],
+                               chrn: Option[String],
+                               casc: Option[String],
+                               registration: BusinessRegistrationStatus,
+                               businessVerification: BusinessVerificationStatus,
+                               bpSafeId: Option[String] = None,
+                               identifiersMatch: Boolean) extends BusinessEntity {
 
   override def identifiers: List[CustomerId] =
     List(
       sautr.map(utr => CustomerId(
         idValue = utr,
         idType = UtrIdType,
+        IDsVerificationStatus = idVerificationStatus
+      )),
+      ctutr.map(utr => CustomerId(
+        idValue = utr,
+        idType = UtrIdType,
+        IDsVerificationStatus = idVerificationStatus
+      )),
+      overseas.map(details => CustomerId(
+        idType = OtherIdType,
+        idValue = details.taxIdentifier,
+        countryOfIncorporation = Some(details.country),
         IDsVerificationStatus = idVerificationStatus
       )),
       chrn.map(chrn => CustomerId(
@@ -229,6 +242,6 @@ case class BusinessIdEntity(sautr: Option[String],
     ).flatten
 }
 
-object BusinessIdEntity {
-  implicit val format: Format[BusinessIdEntity] = Json.format[BusinessIdEntity]
+object MinorEntityIdEntity {
+  implicit val format: Format[MinorEntityIdEntity] = Json.format[MinorEntityIdEntity]
 }

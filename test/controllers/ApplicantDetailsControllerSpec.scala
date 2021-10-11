@@ -23,7 +23,7 @@ import models.IncorporatedIdEntity
 import models.api.{ApplicantDetails, BvFail, NotCalledStatus, TransactorDetails}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
-import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._

@@ -18,7 +18,6 @@ package services.submission
 
 import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
-import common.exceptions._
 import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}

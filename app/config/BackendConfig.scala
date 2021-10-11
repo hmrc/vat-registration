@@ -17,9 +17,10 @@
 package config
 
 import featureswitch.core.config.{FeatureSwitching, StubSubmission}
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
@@ -54,6 +55,8 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
     val soleTrader = servicesConfig.getInt("traffic-management.quotas.sole-trader")
     val enrolledNetp = servicesConfig.getInt("traffic-management.quotas.netp-enrolled")
     val netp = servicesConfig.getInt("traffic-management.quotas.netp")
+    val enrolledNonUkCompany = servicesConfig.getInt("traffic-management.quotas.non-uk-company-enrolled")
+    val nonUkCompany = servicesConfig.getInt("traffic-management.quotas.non-uk-company")
   }
 
   lazy val nonRepudiationSubmissionUrl: String = servicesConfig.baseUrl("non-repudiation") + "/submission"

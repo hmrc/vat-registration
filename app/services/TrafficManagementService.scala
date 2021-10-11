@@ -41,6 +41,8 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       case Individual => config.DailyQuotas.soleTrader
       case NETP if isEnrolled => config.DailyQuotas.enrolledNetp
       case NETP => config.DailyQuotas.netp
+      case NonUkNonEstablished if isEnrolled => config.DailyQuotas.enrolledNonUkCompany
+      case NonUkNonEstablished => config.DailyQuotas.nonUkCompany
     }
 
   def currentHour: Int = timeMachine.timestamp.getHour
