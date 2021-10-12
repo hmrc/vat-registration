@@ -105,6 +105,19 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
             "method" -> "1"
           )
         }
+        "return OK for the Email psuedo-type" in new Setup {
+          given.user.isAuthorised
+          insertIntoDb(testSoleTraderVatScheme)
+
+          val response = await(client(attachmentsUrl).put(Json.obj(
+            "method" -> "email"
+          )))
+
+          response.status mustBe OK
+          response.json mustBe Json.obj(
+            "method" -> "email"
+          )
+        }
       }
       "mongo holds an existing attachment method" must {
         "return OK with the updated value" in new Setup {

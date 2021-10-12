@@ -55,7 +55,14 @@ object AttachmentType {
   def submissionWrites(attachmentOption: AttachmentMethod): Writes[List[AttachmentType]] = Writes { attachments =>
     Json.toJson(
       attachments.map { attachmentType =>
-        map(attachmentType) -> Json.toJson[AttachmentMethod](attachmentOption)
+        map(attachmentType) -> {
+          if (attachmentOption == EmailMethod) {
+            Json.toJson[AttachmentMethod](Post)
+          }
+          else {
+            Json.toJson[AttachmentMethod](attachmentOption)
+          }
+        }
       }.toMap
     )
   }
@@ -65,12 +72,14 @@ sealed trait AttachmentMethod
 case object Other extends AttachmentMethod
 case object Attached extends AttachmentMethod
 case object Post extends AttachmentMethod
+case object EmailMethod extends AttachmentMethod
 
 object AttachmentMethod {
   val map: Map[AttachmentMethod, String] = Map(
     Other -> "1",
     Attached -> "2",
-    Post -> "3"
+    Post -> "3",
+    EmailMethod -> "email"
   )
   val inverseMap: Map[String, AttachmentMethod] = map.map(_.swap)
 
