@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockAttachmentsService
-import models.api.{AttachmentMethod, IdentityEvidence, Post}
+import models.api.{AttachmentMethod, Attachments, EmailMethod, IdentityEvidence, Post}
 import models.submission.NETP
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -69,6 +69,8 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Nil))
+        when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(Attachments(Post))))
 
         val result = await(TestBuilder.buildAdminBlock(testRegId))
 
@@ -82,6 +84,23 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(List(IdentityEvidence)))
+        when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(Attachments(Post))))
+
+        val result = await(TestBuilder.buildAdminBlock(testRegId))
+
+        result mustBe expectedNetpJson
+      }
+
+      "NETP the attachment method is Email" in {
+        when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(partyType = NETP))))
+        when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(validFullTradingDetails)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(List(IdentityEvidence)))
+        when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(Attachments(EmailMethod))))
 
         val result = await(TestBuilder.buildAdminBlock(testRegId))
 
@@ -97,6 +116,8 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Nil))
+        when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(Attachments(Post))))
 
         intercept[InternalServerException] {
           await(TestBuilder.buildAdminBlock(testRegId))
@@ -110,6 +131,8 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
           .thenReturn(Future.successful(None))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Nil))
+        when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(Attachments(Post))))
 
         intercept[InternalServerException] {
           await(TestBuilder.buildAdminBlock(testRegId))
@@ -123,6 +146,8 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
           .thenReturn(Future.successful(None))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Nil))
+        when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
+          .thenReturn(Future.successful(Some(Attachments(Post))))
 
         intercept[InternalServerException] {
           await(TestBuilder.buildAdminBlock(testRegId))

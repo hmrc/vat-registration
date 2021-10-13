@@ -568,7 +568,8 @@ trait ITFixtures {
       returns = Some(testNetpReturns),
       tradingDetails = Some(testNetpTradingDetails),
       flatRateScheme = None,
-      businessContact = Some(testNetpBusinessContact)
+      businessContact = Some(testNetpBusinessContact),
+      attachments = Some(Attachments(Post))
     )
 
   lazy val testNonUkCompanyEligibilitySubmissionData: EligibilitySubmissionData =

@@ -16,9 +16,9 @@
 
 package services.submission
 
-import models.api.{AttachmentType, Post}
+import models.api.AttachmentType
 import models.submission.{NETP, NonUkNonEstablished}
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
 import services.AttachmentsService
 import uk.gov.hmrc.http.InternalServerException
@@ -36,6 +36,7 @@ class AdminBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongo
     optEligibilityData <- registrationMongoRepository.fetchEligibilitySubmissionData(regId)
     optTradingDetails <- registrationMongoRepository.retrieveTradingDetails(regId)
     attachments <- attachmentsService.getAttachmentList(regId)
+    optAttachmentMethod <- attachmentsService.getAttachmentDetails(regId).map(_.map(_.method))
   } yield (optEligibilityData, optTradingDetails) match {
     case (Some(eligibilityData), Some(tradingDetails)) =>
       jsonObject(
@@ -46,8 +47,12 @@ class AdminBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongo
           )
         ),
         "attachments" -> (jsonObject(
-          optional("EORIrequested" -> tradingDetails.eoriRequested)
-        ) ++ AttachmentType.submissionWrites(Post).writes(attachments).as[JsObject])
+          optional("EORIrequested" -> tradingDetails.eoriRequested)) ++ {
+          optAttachmentMethod match {
+            case Some(attachmentMethod) => AttachmentType.submissionWrites(attachmentMethod).writes(attachments).as[JsObject]
+            case None => Json.obj()
+          }
+        })
       )
     case (None, Some(_)) =>
       throw new InternalServerException("Could not build admin block for submission due to missing eligibility data")
