@@ -17,10 +17,10 @@
 package itutil
 
 import enums.VatRegStatus
-import models.{BusinessIdEntity, IncorporatedIdEntity, OverseasIdentifierDetails, PartnershipIdEntity, SoleTraderIdEntity}
-import models.api.returns._
+import models._
 import models.api._
-import models.submission.{DateOfBirth, Director, Individual, NETP, OwnerProprietor, Partnership, RoleInBusiness, Trust, UkCompany}
+import models.api.returns._
+import models.submission._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
@@ -265,7 +265,7 @@ trait ITFixtures {
     tradingDetails = Some(testTradingDetails),
     sicAndCompliance = Some(testFullSicAndCompliance),
     businessContact = Some(testFullBusinessContactDetails),
-    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails),None , None)),
+    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -282,7 +282,7 @@ trait ITFixtures {
       returns = Some(testAASReturns),
       sicAndCompliance = Some(testSicAndCompliance),
       businessContact = Some(testBusinessContactDetails),
-      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails),None , None)),
+      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
       status = VatRegStatus.draft,
@@ -364,8 +364,10 @@ trait ITFixtures {
     identifiersMatch = true
   )
 
-  val testTrustEntity: BusinessIdEntity = BusinessIdEntity(
+  val testTrustEntity: MinorEntityIdEntity = MinorEntityIdEntity(
     Some(testUtr),
+    None,
+    None,
     Some(testPostcode),
     Some(testChrn),
     Some(testCasc),
@@ -567,5 +569,36 @@ trait ITFixtures {
       tradingDetails = Some(testNetpTradingDetails),
       flatRateScheme = None,
       businessContact = Some(testNetpBusinessContact)
+    )
+
+  lazy val testNonUkCompanyEligibilitySubmissionData: EligibilitySubmissionData =
+    testNetpEligibilitySubmissionData.copy(
+      partyType = NonUkNonEstablished
+    )
+
+  lazy val testNonUkCompanyEntity = MinorEntityIdEntity(
+    Some(testCtUtr),
+    None,
+    Some(OverseasIdentifierDetails("1234", "FR")),
+    None,
+    None,
+    None,
+    businessVerification = BvUnchallenged,
+    registration = NotCalledStatus,
+    identifiersMatch = true
+  )
+
+  lazy val testNonUkCompanyApplicantDetails: ApplicantDetails =
+    testRegisteredApplicantDetails.copy(
+      entity = testNonUkCompanyEntity,
+      transactor = testNetpTransactorDetails,
+      currentAddress = testOverseasAddress,
+      roleInBusiness = Director
+    )
+
+  lazy val testNonUkCompanyVatScheme: VatScheme =
+    testNetpVatScheme.copy(
+      applicantDetails = Some(testNonUkCompanyApplicantDetails),
+      eligibilitySubmissionData = Some(testNonUkCompanyEligibilitySubmissionData)
     )
 }

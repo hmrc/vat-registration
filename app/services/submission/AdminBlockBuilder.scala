@@ -17,8 +17,8 @@
 package services.submission
 
 import models.api.{AttachmentType, Post}
-import models.submission.NETP
-import play.api.libs.json.{JsObject, Json}
+import models.submission.{NETP, NonUkNonEstablished}
+import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import services.AttachmentsService
 import uk.gov.hmrc.http.InternalServerException
@@ -41,7 +41,9 @@ class AdminBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongo
       jsonObject(
         "additionalInformation" -> jsonObject(
           "customerStatus" -> eligibilityData.customerStatus,
-          conditional(eligibilityData.partyType.equals(NETP))("overseasTrader" -> true)
+          conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
+            "overseasTrader" -> true
+          )
         ),
         "attachments" -> (jsonObject(
           optional("EORIrequested" -> tradingDetails.eoriRequested)

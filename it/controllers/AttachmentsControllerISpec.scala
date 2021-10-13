@@ -19,7 +19,7 @@ package controllers
 import itutil.IntegrationStubbing
 import models.api._
 import models.submission.NETP
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
 

@@ -16,8 +16,8 @@
 
 package services.monitoring
 
-import models.api.{OverseasAccount, VatScheme}
-import models.submission.NETP
+import models.api.VatScheme
+import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.jsonObject
@@ -47,7 +47,7 @@ class BankAuditBlockBuilder {
             "reasonBankAccNotProvided" -> bankAccount.reason
           )
         }
-      case None if vatScheme.eligibilitySubmissionData.exists(_.partyType.equals(NETP)) =>
+      case None if vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType)) =>
         jsonObject(
           "reasonBankAccNotProvided" -> "3"
         )

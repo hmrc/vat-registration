@@ -16,9 +16,9 @@
 
 package services.submission
 
-import models.api.{BankAccount, OverseasAccount}
 import models.api.NoUKBankAccount.reasonId
-import models.submission.NETP
+import models.api.{BankAccount, OverseasAccount}
+import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -34,7 +34,7 @@ class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: Registratio
     optBankAccount <- registrationMongoRepository.fetchBankAccount(regId)
     optPartyType <- registrationMongoRepository.fetchEligibilitySubmissionData(regId).map(_.map(_.partyType))
   } yield (optBankAccount, optPartyType) match {
-    case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) if partyType != NETP =>
+    case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) if !List(NETP, NonUkNonEstablished).contains(partyType) =>
       Some(jsonObject(
         "UK" -> jsonObject(
           "accountName" -> details.name,
@@ -42,7 +42,7 @@ class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: Registratio
           "accountNumber" -> details.number
         )
       ))
-    case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(partyType@NETP)) =>
+    case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(partyType@(NETP | NonUkNonEstablished))) =>
       Some(jsonObject(
         "Overseas" -> jsonObject(
           "name" -> overseasDetails.name,
@@ -56,7 +56,7 @@ class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: Registratio
           "reasonBankAccNotProvided" -> reasonId(reason)
         )
       ))
-    case (None, Some(partyType@NETP)) =>
+    case (None, Some(partyType@(NETP | NonUkNonEstablished))) =>
       Some(jsonObject("UK" -> jsonObject(
         "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
       )))

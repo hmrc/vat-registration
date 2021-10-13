@@ -20,7 +20,6 @@ import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
-import models.OverseasIdentifierDetails
 import models.api.VatScheme
 import models.nonrepudiation.NonRepudiationMetadata
 import play.api.libs.json.{JsObject, JsValue, Json}
@@ -230,6 +229,24 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           )
 
         stubPost("/vatreg/test-only/vat/subscription", testNetpJsonOverseas, OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+      }
+    }
+
+    "the user is a Non UK Company" should {
+      "return OK if the submission is successful without a bpSafeId" in new Setup {
+        enable(StubSubmission)
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testNonUkCompanyVatScheme, repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testNonUkCompanyJson, OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())

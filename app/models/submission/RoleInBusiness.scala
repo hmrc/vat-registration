@@ -21,7 +21,7 @@ import play.api.libs.json.{Format, JsString, Reads, Writes}
 sealed trait RoleInBusiness
 
 case object OwnerProprietor extends RoleInBusiness
-case object Partner extends RoleInBusiness
+case object PartnerRole extends RoleInBusiness
 case object Director extends RoleInBusiness
 case object CompanySecretary extends RoleInBusiness
 case object Trustee extends RoleInBusiness
@@ -36,7 +36,7 @@ object RoleInBusiness {
 
   val stati: Map[RoleInBusiness, String] = Map[RoleInBusiness, String] (
     OwnerProprietor -> "01",
-    Partner -> "02",
+    PartnerRole -> "02",
     Director -> "03",
     CompanySecretary -> "04",
     Trustee -> "05",

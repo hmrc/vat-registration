@@ -516,6 +516,131 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
+  val testNonUkCompanyJson: JsObject = Json.obj(
+    "messageType" -> "SubscriptionCreate",
+    "admin" -> Json.obj(
+      "additionalInformation" -> Json.obj(
+        "customerStatus" -> "2",
+        "overseasTrader" -> true
+      ),
+      "attachments" -> Json.obj(
+        "identityEvidence" -> Json.toJson[AttachmentMethod](Post)
+      )
+    ),
+    "customerIdentification" -> Json.obj(
+      "tradersPartyType" -> "55",
+      "customerID" -> Json.arr(
+        Json.obj(
+          "idType" -> "UTR",
+          "idValue" -> testCtUtr,
+          "IDsVerificationStatus" -> "3"
+        ),
+        Json.obj(
+          "countryOfIncorporation" -> "FR",
+          "IDsVerificationStatus" -> "3",
+          "idType" -> "OTHER",
+          "idValue" -> "1234"
+        )
+      ),
+      "tradingName" -> testTradingDetails.tradingName.get
+    ),
+    "contact" -> Json.obj(
+      "address" -> Json.obj(
+        "line1" -> testFullAddress.line1,
+        "line2" -> testFullAddress.line2,
+        "line3" -> testFullAddress.line3,
+        "line4" -> testFullAddress.line4,
+        "line5" -> testFullAddress.line5,
+        "postCode" -> testFullAddress.postcode,
+        "countryCode" -> "EE",
+        "addressValidated" -> false
+      ),
+      "commDetails" -> Json.obj(
+        "telephone" -> testContactDetails.tel,
+        "mobileNumber" -> testContactDetails.mobile,
+        "email" -> testContactDetails.email,
+        "commsPreference" -> "ZEL"
+      )
+    ),
+    "subscription" -> Json.obj(
+      "reasonForSubscription" -> Json.obj(
+        "registrationReason" -> "0003",
+        "relevantDate" -> testDate,
+        "exemptionOrException" -> "0"
+      ),
+      "businessActivities" -> Json.obj(
+        "description" -> testSicAndCompliance.businessDescription,
+        "SICCodes" -> Json.obj(
+          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
+          "mainCode2" -> "00002",
+          "mainCode3" -> "00003",
+          "mainCode4" -> "00004"
+        ),
+        "goodsToOverseas" -> true,
+        "goodsToCustomerEU" -> true,
+        "storingGoodsForDispatch" -> Json.toJson[StoringGoodsForDispatch](StoringWithinUk),
+        "fulfilmentWarehouse" -> true,
+        "FHDDSWarehouseNumber" -> testWarehouseNumber,
+        "nameOfWarehouse" -> testWarehouseName
+      ),
+      "yourTurnover" -> Json.obj(
+        "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
+        "zeroRatedSupplies" -> 12.99,
+        "VATRepaymentExpected" -> true
+      )
+    ),
+    "periods" -> Json.obj(
+      "customerPreferredPeriodicity" -> "MA"
+    ),
+    "bankDetails" -> Json.obj(
+      "UK" -> Json.obj(
+        "reasonBankAccNotProvided" -> "3"
+      )
+    ),
+    "compliance" -> Json.obj(
+      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
+      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+    ),
+    "declaration" -> Json.obj(
+      "applicantDetails" -> Json.obj(
+        "roleInBusiness" -> Json.toJson(Director)(RoleInBusiness.toJsString),
+        "name" -> Json.obj(
+          "firstName" -> testName.first,
+          "lastName" -> testName.last
+        ),
+        "currAddress" -> Json.obj(
+          "line1" -> testFullAddress.line1,
+          "line2" -> testFullAddress.line2,
+          "line3" -> testFullAddress.line3,
+          "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
+          "postCode" -> testFullAddress.postcode,
+          "countryCode" -> "EE",
+          "addressValidated" -> false
+        ),
+        "commDetails" -> Json.obj(
+          "email" -> testDigitalContactOptional.email.get,
+          "telephone" -> testDigitalContactOptional.tel,
+          "mobileNumber" -> testDigitalContactOptional.mobile
+        ),
+        "dateOfBirth" -> testDate,
+        "identifiers" -> Json.arr(
+          Json.obj(
+            "date" -> testDate,
+            "idType" -> "TEMPNI",
+            "idValue" -> testTrn,
+            "IDsVerificationStatus" -> "2"
+          )
+        )
+      ),
+      "declarationSigning" -> Json.obj(
+        "confirmInformationDeclaration" -> true,
+        "declarationCapacity" -> Json.toJson(Director)(RoleInBusiness.toJsString)
+      )
+    )
+  )
+
   val testNetpJsonOverseas: JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> Json.obj(

@@ -40,7 +40,7 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
     case (Some(vatScheme), Some(applicantDetails), Some(tradingDetails)) =>
       jsonObject(
         "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map{ data =>
-          if(data.partyType.equals(NETP)) Individual
+          if (data.partyType.equals(NETP)) Individual
           else data.partyType
         },
         optional("shortOrgName" -> Option(applicantDetails.entity).collect {
