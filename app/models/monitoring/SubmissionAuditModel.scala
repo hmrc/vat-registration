@@ -16,9 +16,9 @@
 
 package models.monitoring
 
-import models.IncorporatedIdEntity
-import models.api.{EligibilitySubmissionData, VatScheme}
+import models.api.VatScheme
 import models.submission.{IdVerificationStatus, NETP, NonUkNonEstablished}
+import models.{IncorporatedIdEntity, NonUk, SuppliesOutsideUk, Voluntary}
 import play.api.libs.json.{JsString, JsValue, Json}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -54,12 +54,12 @@ case class SubmissionAuditModel(userAnswers: JsValue,
             "overseasTrader" -> true
           ),
           "eoriRequested" -> tradingDetails.eoriRequested,
-          "registrationReason" -> eligibilityData.reasonForRegistration(humanReadable = true),
+          "registrationReason" -> eligibilityData.registrationReason.humanReadableKey,
           optional("registrationRelevantDate" -> {
-            eligibilityData.reasonForRegistration() match {
-              case EligibilitySubmissionData.voluntaryKey => returns.startDate
-              case EligibilitySubmissionData.nonUkKey => eligibilityData.threshold.thresholdOverseas
-              case _ => Some(eligibilityData.earliestDate)
+            eligibilityData.registrationReason match {
+              case Voluntary | SuppliesOutsideUk => returns.startDate
+              case NonUk => eligibilityData.threshold.thresholdOverseas
+              case _ => Some(eligibilityData.threshold.earliestDate)
             }
           }),
           optional("corporateBodyRegistered" -> {

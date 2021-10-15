@@ -55,14 +55,14 @@ class EligibilityService @Inject()(val registrationRepository: RegistrationMongo
     registrationRepository.retrieveVatScheme(regId).flatMap {
       case Some(vatScheme) =>
         oldEligibilityData match {
-          case EligibilitySubmissionData(_, _, _, _, oldPartyType) if !oldPartyType.equals(eligibilityData.partyType) =>
+          case EligibilitySubmissionData(_, _, _, _, oldPartyType, _) if !oldPartyType.equals(eligibilityData.partyType) =>
             registrationRepository.insertVatScheme(VatScheme(
               id = vatScheme.id,
               internalId = vatScheme.internalId,
               status = vatScheme.status
             ))
 
-          case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _) if !oldTurnoverEstimates.equals(eligibilityData.estimates) =>
+          case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _, _) if !oldTurnoverEstimates.equals(eligibilityData.estimates) =>
             val clearedFRS = if (oldTurnoverEstimates.turnoverEstimate > 150000L) {
               None
             } else {

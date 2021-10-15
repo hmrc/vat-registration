@@ -245,7 +245,8 @@ trait ITFixtures {
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
     customerStatus = MTDfB,
-    partyType = UkCompany
+    partyType = UkCompany,
+    registrationReason = ForwardLook
   )
 
   val testEligibilitySubmissionDataSoleTrader: EligibilitySubmissionData = EligibilitySubmissionData(
@@ -253,7 +254,8 @@ trait ITFixtures {
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
     customerStatus = MTDfB,
-    partyType = Individual
+    partyType = Individual,
+    registrationReason = ForwardLook
   )
 
   val testNrsSubmissionPayload = "testNrsSubmissionPayload"
@@ -537,7 +539,8 @@ trait ITFixtures {
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
     customerStatus = MTDfB,
-    partyType = NETP
+    partyType = NETP,
+    registrationReason = NonUk
   )
 
   val testNetpTransactorDetails: TransactorDetails = TransactorDetails(

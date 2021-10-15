@@ -16,52 +16,29 @@
 
 package models.api
 
-import models.api.EligibilitySubmissionData._
+import models._
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
 
-import java.time.LocalDate
-
 case class EligibilitySubmissionData(threshold: Threshold,
                                      exceptionOrExemption: String,
                                      estimates: TurnoverEstimates,
                                      customerStatus: CustomerStatus,
-                                     partyType: PartyType) {
-
-  def earliestDate: LocalDate = Seq(
-    threshold.thresholdPreviousThirtyDays,
-    threshold.thresholdInTwelveMonths.map(_.withDayOfMonth(1).plusMonths(2)),
-    threshold.thresholdNextThirtyDays
-  ).flatten.minBy(date => date.toEpochDay)
-
-  def reasonForRegistration(humanReadable: Boolean = false): String = threshold match {
-    case Threshold(true, _, _, _, Some(thresholdOverseas)) =>
-      if (humanReadable) nonUkHumanReadable else nonUkKey
-    case Threshold(false, _, _, _, _) =>
-      if (humanReadable) voluntaryHumanReadable else voluntaryKey
-    case Threshold(true, forwardLook1, _, forwardLook2, _) if forwardLook1.contains(earliestDate) || forwardLook2.contains(earliestDate) =>
-      if (humanReadable) forwardLookHumanReadable else forwardLookKey
-    case _ =>
-      if (humanReadable) backwardLookHumanReadable else backwardLookKey
-  }
-}
+                                     partyType: PartyType,
+                                     registrationReason: RegistrationReason)
 
 object EligibilitySubmissionData {
-  val voluntaryKey = "0018"
-  val forwardLookKey = "0016"
-  val backwardLookKey = "0015"
-  val nonUkKey = "0003"
-
-  val voluntaryHumanReadable = "Voluntary"
-  val forwardLookHumanReadable = "Forward Look"
-  val backwardLookHumanReadable = "Backward Look"
-  val nonUkHumanReadable = "Non-UK"
-
   val exceptionKey = "2"
   val exemptionKey = "1"
   val nonExceptionOrExemptionKey = "0"
+
+  val sellingGoodsAndServices = "selling-goods-and-services"
+  val takingOverBusiness = "taking-over-business"
+  val changingLegalEntityOfBusiness = "changing-legal-entity"
+  val settingUpVatGroup = "setting-up-vat-group"
+  val ukEstablishedOverseasExporter = "overseas-exporter"
 
   val eligibilityReads: Reads[EligibilitySubmissionData] = Reads { json =>
     (
@@ -80,8 +57,32 @@ object EligibilitySubmissionData {
         ) and
         json.validate[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads) and
         json.validate[CustomerStatus](CustomerStatus.eligibilityDataJsonReads) and
-        (json \ "businessEntity-value").validate[PartyType]
-      ) (EligibilitySubmissionData.apply _)
+        (json \ "businessEntity-value").validate[PartyType] and
+        (json \ "registrationReason-value").validateOpt[String]
+      ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason) =>
+      EligibilitySubmissionData(
+        threshold,
+        exceptionOrException,
+        turnoverEstimates,
+        customerStatus,
+        businessEntity,
+        registrationReason match {
+          case Some(`sellingGoodsAndServices`) | None => threshold match {
+            case Threshold(true, _, _, _, Some(thresholdOverseas)) =>
+              NonUk
+            case Threshold(false, _, _, _, _) =>
+              Voluntary
+            case Threshold(true, forwardLook1, _, forwardLook2, _)
+              if forwardLook1.contains(threshold.earliestDate) || forwardLook2.contains(threshold.earliestDate) =>
+              ForwardLook
+            case _ =>
+              BackwardLook
+          }
+          case Some(`takingOverBusiness`) | Some(`changingLegalEntityOfBusiness`) => TransferOfAGoingConcern
+          case Some(`settingUpVatGroup`) => GroupRegistration
+          case Some(`ukEstablishedOverseasExporter`) => SuppliesOutsideUk
+        }
+      ))
   }
 
   implicit val format: Format[EligibilitySubmissionData] = Json.format[EligibilitySubmissionData]

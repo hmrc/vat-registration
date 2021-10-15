@@ -20,6 +20,7 @@ import common.exceptions._
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import models.{ForwardLook, Voluntary}
 import models.api.{Threshold, TurnoverEstimates, _}
 import models.submission.UkCompany
 import org.mockito.ArgumentMatchers
@@ -208,7 +209,8 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(123456),
         customerStatus = MTDfB,
-        partyType = UkCompany
+        partyType = UkCompany,
+        registrationReason = ForwardLook
       )
 
       val expected: Threshold = Threshold(
@@ -239,7 +241,8 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(10001),
         customerStatus = MTDfB,
-        partyType = UkCompany
+        partyType = UkCompany,
+        registrationReason = Voluntary
       )
 
       val expected: TurnoverEstimates = TurnoverEstimates(turnoverEstimate = 10001)

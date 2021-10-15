@@ -25,7 +25,15 @@ case class Threshold(mandatoryRegistration: Boolean,
                      thresholdPreviousThirtyDays: Option[LocalDate] = None,
                      thresholdInTwelveMonths: Option[LocalDate] = None,
                      thresholdNextThirtyDays: Option[LocalDate] = None,
-                     thresholdOverseas: Option[LocalDate] = None)
+                     thresholdOverseas: Option[LocalDate] = None) {
+
+  def earliestDate: LocalDate = Seq(
+    thresholdPreviousThirtyDays,
+    thresholdInTwelveMonths.map(_.withDayOfMonth(1).plusMonths(2)),
+    thresholdNextThirtyDays
+  ).flatten.minBy(date => date.toEpochDay)
+
+}
 
 object Threshold {
 
@@ -39,9 +47,13 @@ object Threshold {
     ) match {
       case (JsSuccess(voluntaryRegistration, _), JsSuccess(thresholdPreviousThirtyDays, _),
       JsSuccess(thresholdInTwelveMonths, _), JsSuccess(thresholdNextThirtyDays, _), JsSuccess(thresholdOverseas, _)) =>
-        if (!voluntaryRegistration.getOrElse(false) &
-          Seq(thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdPreviousThirtyDays, thresholdOverseas).flatten.isEmpty) {
-          throw new InternalServerException("[Threshold][eligibilityDataJsonReads] mandatory user missing thresholds")
+        val isMandatory = voluntaryRegistration match {
+          case None if Seq(thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdPreviousThirtyDays, thresholdOverseas).flatten.isEmpty =>
+            false // SuppliesOutsideUk journey
+          case None =>
+            true // Mandatory journey
+          case Some(isVoluntary) =>
+            !isVoluntary // Will only ever come back as false in this case as otherwise voluntary answer not provided
         }
 
         if (thresholdOverseas.nonEmpty & Seq(thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdPreviousThirtyDays).flatten.nonEmpty) {
@@ -49,7 +61,7 @@ object Threshold {
         }
 
         JsSuccess(Threshold(
-          !voluntaryRegistration.getOrElse(false),
+          isMandatory,
           thresholdPreviousThirtyDays,
           thresholdInTwelveMonths,
           thresholdNextThirtyDays,

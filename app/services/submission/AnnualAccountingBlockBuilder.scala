@@ -16,8 +16,8 @@
 
 package services.submission
 
-import models.api.EligibilitySubmissionData._
 import models.api.returns.Annual
+import models.{BackwardLook, ForwardLook, NonUk, SuppliesOutsideUk, Voluntary}
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import utils.JsonUtils.jsonObject
@@ -42,11 +42,11 @@ class AnnualAccountingBlockBuilder @Inject()(registrationMongoRepository: Regist
             "paymentFrequency" -> details.paymentFrequency,
             "estimatedTurnover" -> eligibilitySubmissionData.estimates.turnoverEstimate,
             "reqStartDate" -> {
-              eligibilitySubmissionData.reasonForRegistration() match {
-                case `voluntaryKey` => returns.startDate
-                case `backwardLookKey` => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
-                case `forwardLookKey` => Some(eligibilitySubmissionData.earliestDate)
-                case `nonUkKey` => eligibilitySubmissionData.threshold.thresholdOverseas
+              eligibilitySubmissionData.registrationReason match {
+                case Voluntary | SuppliesOutsideUk => returns.startDate
+                case BackwardLook => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
+                case ForwardLook => Some(eligibilitySubmissionData.threshold.earliestDate)
+                case NonUk => eligibilitySubmissionData.threshold.thresholdOverseas
               }
             }
           )
