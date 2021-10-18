@@ -70,7 +70,7 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
       Json.obj("questionId" -> "voluntaryRegistration", "question" -> "Some Question", "answer" -> "Some Answer", "answerValue" -> true),
       Json.obj("questionId" -> "voluntaryInformation", "question" -> "Some Question", "answer" -> "Some Answer", "answerValue" -> true),
       Json.obj("questionId" -> "applicantUKNino-optionalData", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "JW778877A"),
-      Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "Some Question 21", "answer" -> "Some Answer 21", "answerValue" -> 12345),
+      Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "Some Question 21", "answer" -> "Some Answer 21", "answerValue" -> 123456),
       Json.obj("questionId" -> "testQId22", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "val22"),
       Json.obj("questionId" -> "registeringBusiness", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> true),
       Json.obj("questionId" -> "businessEntity-value", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "50")
@@ -142,7 +142,7 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
       when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
         .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
       when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
-        .thenReturn(Future.successful(Some(testFullVatScheme)))
+        .thenReturn(Future.successful(Some(testFullVatScheme.copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData)))))
 
       val result: JsObject = await(service.updateEligibilityData("regId", eligibilityData))
 

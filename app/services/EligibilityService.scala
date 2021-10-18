@@ -35,7 +35,7 @@ class EligibilityService @Inject()(val registrationRepository: RegistrationMongo
       .validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads).fold(
       invalid => throw JsResultException(invalid),
       eligibilitySubmissionData => for {
-        _ <- registrationRepository.fetchEligibilitySubmissionData(regId).map {
+        _ <- registrationRepository.fetchEligibilitySubmissionData(regId).flatMap {
           case Some(oldEligibilitySubmissionData) =>
             removeInvalidFields(regId, eligibilitySubmissionData, oldEligibilitySubmissionData)
           case None =>
