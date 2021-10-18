@@ -22,7 +22,7 @@ class StubVatSubmissionControllerISpec extends IntegrationStubbing with ITVatSub
     "return OK if the json is a valid VatSubmission" in new Setup() {
       stubAudit(OK)
 
-      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission().url).post(testSubmissionJson))
+      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission.url).post(testSubmissionJson))
 
       response.status mustBe OK
     }
@@ -30,7 +30,7 @@ class StubVatSubmissionControllerISpec extends IntegrationStubbing with ITVatSub
     "return OK if the json is a valid VatSubmission for sole trader" in new Setup() {
       stubAudit(OK)
 
-      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission().url).post(testVerifiedSoleTraderJson))
+      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission.url).post(testVerifiedSoleTraderJson))
 
       response.status mustBe OK
     }
@@ -38,7 +38,7 @@ class StubVatSubmissionControllerISpec extends IntegrationStubbing with ITVatSub
     "return OK if the json is a valid VatSubmission for NETP" in new Setup() {
       stubAudit(OK)
 
-      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission().url).post(testNetpJson))
+      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission.url).post(testNetpJson))
 
       response.status mustBe OK
     }
@@ -46,7 +46,7 @@ class StubVatSubmissionControllerISpec extends IntegrationStubbing with ITVatSub
     "return OK if the json is a valid VatSubmission for Non UK Company" in new Setup() {
       stubAudit(OK)
 
-      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission().url).post(testNonUkCompanyJson))
+      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission.url).post(testNonUkCompanyJson))
 
       response.status mustBe OK
     }
@@ -54,7 +54,7 @@ class StubVatSubmissionControllerISpec extends IntegrationStubbing with ITVatSub
     "fail if the json is not a valid VatSubmission" in new Setup() {
       stubAudit(OK)
 
-      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission().url).post(""))
+      val response: WSResponse = await(client(routes.StubVatSubmissionController.processSubmission.url).post(""))
 
       response.status mustBe UNSUPPORTED_MEDIA_TYPE
     }

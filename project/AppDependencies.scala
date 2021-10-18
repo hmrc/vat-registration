@@ -21,9 +21,9 @@ object AppDependencies {
 }
 
 object CompileDependencies {
-  val domainVersion = "5.11.0-play-27"
-  val bootstrapVersion = "5.12.0"
-  val simpleReactiveMongoVersion = "8.0.0-play-27"
+  val domainVersion = "6.2.0-play-28"
+  val bootstrapVersion = "5.16.0"
+  val simpleReactiveMongoVersion = "8.0.0-play-28"
   val catsVersion = "1.0.0"
 
   private val playJsonVersion = "2.9.2"
@@ -31,7 +31,7 @@ object CompileDependencies {
 
   val compile = Seq(
     "uk.gov.hmrc" %% "simple-reactivemongo" % simpleReactiveMongoVersion,
-    "uk.gov.hmrc" %% "bootstrap-backend-play-27" % bootstrapVersion,
+    "uk.gov.hmrc" %% "bootstrap-backend-play-28" % bootstrapVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
     "org.typelevel" %% "cats-core" % catsVersion,
     "com.typesafe.play" %% "play-json-joda" % playJsonVersion,
@@ -61,7 +61,7 @@ object UnitTestDependencies extends CommonTestDependencies {
 object IntegrationTestDependencies extends CommonTestDependencies {
   override val scope: Configuration = IntegrationTest
 
-  val wireMockVersion = "2.26.3"
+  val wireMockVersion = "2.27.2"
 
   override val testDependencies: Seq[ModuleID] = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
@@ -74,9 +74,9 @@ object IntegrationTestDependencies extends CommonTestDependencies {
 }
 
 trait CommonTestDependencies {
-  val scalaTestPlusVersion = "4.0.3"
+  val scalaTestPlusVersion = "5.0.0"
   val scoverageVersion = "1.4.1"
-  val reactiveMongoTestVersion = "5.0.0-play-27"
+  val reactiveMongoTestVersion = "5.0.0-play-28"
   val scope: Configuration
   val testDependencies: Seq[ModuleID]
 }
