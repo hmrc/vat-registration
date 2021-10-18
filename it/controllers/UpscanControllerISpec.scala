@@ -81,7 +81,7 @@ class UpscanControllerISpec extends IntegrationStubbing {
       stubPost("/write/audit", OK, """{"x":2}""")
       stubPost("/write/audit/merged", OK, """{"x":2}""")
 
-      val res: WSResponse = await(client(controllers.routes.UpscanController.upscanDetailsCallback().url)
+      val res: WSResponse = await(client(controllers.routes.UpscanController.upscanDetailsCallback.url)
         .post(Json.toJson(testCallbackJson(testReference))))
 
       res.status mustBe OK
@@ -91,7 +91,7 @@ class UpscanControllerISpec extends IntegrationStubbing {
       stubPost("/write/audit", OK, """{"x":2}""")
       stubPost("/write/audit/merged", OK, """{"x":2}""")
 
-      val res: WSResponse = await(client(controllers.routes.UpscanController.upscanDetailsCallback().url)
+      val res: WSResponse = await(client(controllers.routes.UpscanController.upscanDetailsCallback.url)
         .post(testCallbackJson(testReference)))
 
       res.status mustBe INTERNAL_SERVER_ERROR

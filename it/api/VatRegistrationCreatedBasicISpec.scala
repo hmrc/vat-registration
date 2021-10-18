@@ -46,7 +46,7 @@ class VatRegistrationCreatedBasicISpec extends IntegrationStubbing with FeatureS
       "Return CREATED" in new Setup {
         given.user.isAuthorised
 
-        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.newVatRegistration().url).post("test"))
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.newVatRegistration.url).post("test"))
 
         res.status mustBe CREATED
       }
@@ -63,7 +63,7 @@ class VatRegistrationCreatedBasicISpec extends IntegrationStubbing with FeatureS
         given.user.isNotAuthorised
         stubBusinessReg(OK)(Some(validBusinessRegistrationResponse))
 
-        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.newVatRegistration().url).post("test"))
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.newVatRegistration.url).post("test"))
 
         res.status mustBe FORBIDDEN
       }

@@ -125,7 +125,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
         .user.isAuthorised
         .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
 
-      val res = await(client(controllers.routes.TrafficManagementController.clearDocument().url).delete())
+      val res = await(client(controllers.routes.TrafficManagementController.clearDocument.url).delete())
 
       res.status mustBe NO_CONTENT
     }
