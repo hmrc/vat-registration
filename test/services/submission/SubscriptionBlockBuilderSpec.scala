@@ -21,6 +21,7 @@ import helpers.VatRegSpec
 import models.api._
 import models.api.returns._
 import models.submission.NETP
+import models.{BackwardLook, ForwardLook, NonUk, RegistrationReason, Voluntary}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
@@ -102,7 +103,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
   def fullNetpSubscriptionBlockJson: JsValue = Json.obj(
     "reasonForSubscription" -> Json.obj(
       "relevantDate" -> "2020-10-01",
-      "registrationReason" -> EligibilitySubmissionData.nonUkKey,
+      "registrationReason" -> Json.toJson[RegistrationReason](NonUk),
       "exemptionOrException" -> "0"
     ),
     "yourTurnover" -> Json.obj(
@@ -154,9 +155,12 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(Some(testReturns)))
       when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(threshold = Threshold(
-          mandatoryRegistration = true, Some(LocalDate.of(2020, 10, 1)), None, None
-        )))))
+        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+          threshold = Threshold(
+            mandatoryRegistration = true, Some(LocalDate.of(2020, 10, 1)), None, None
+          ),
+          registrationReason = ForwardLook
+        ))))
       when(mockRegistrationMongoRepository.fetchFlatRateScheme(any()))
         .thenReturn(Future.successful(Some(validFullFlatRateScheme)))
       when(mockRegistrationMongoRepository.fetchSicAndCompliance(any()))
@@ -164,7 +168,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
       val result = await(TestService.buildSubscriptionBlock(testRegId))
 
-      result mustBe fullSubscriptionBlockJson(reason = EligibilitySubmissionData.forwardLookKey)
+      result mustBe fullSubscriptionBlockJson(reason = ForwardLook.key)
     }
 
     "build a full subscription json when all data is provided and user is mandatory on a backward look" in {
@@ -173,9 +177,12 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       when(mockRegistrationMongoRepository.fetchReturns(any()))
         .thenReturn(Future.successful(Some(testReturns)))
       when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(threshold = Threshold(
-          mandatoryRegistration = true, None, Some(LocalDate.of(2020, 10, 1)), None
-        )))))
+        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+          threshold = Threshold(
+            mandatoryRegistration = true, None, Some(LocalDate.of(2020, 10, 1)), None
+          ),
+          registrationReason = BackwardLook
+        ))))
       when(mockRegistrationMongoRepository.fetchFlatRateScheme(any()))
         .thenReturn(Future.successful(Some(validFullFlatRateScheme)))
       when(mockRegistrationMongoRepository.fetchSicAndCompliance(any()))
@@ -183,7 +190,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
       val result = await(TestService.buildSubscriptionBlock(testRegId))
 
-      result mustBe fullSubscriptionBlockJson(reason = EligibilitySubmissionData.backwardLookKey)
+      result mustBe fullSubscriptionBlockJson(reason = BackwardLook.key)
     }
 
     "build a full subscription json when all data is provided and user is NETP" in {
@@ -201,7 +208,8 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           threshold = Threshold(
             mandatoryRegistration = true, None, None, None, Some(LocalDate.of(2020, 10, 1))
           ),
-          partyType = NETP
+          partyType = NETP,
+          registrationReason = NonUk
         ))))
       when(mockRegistrationMongoRepository.fetchFlatRateScheme(any()))
         .thenReturn(Future.successful(Some(validFullFlatRateScheme)))
@@ -221,7 +229,8 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
         .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          exceptionOrExemption = "1"
+          exceptionOrExemption = "1",
+          registrationReason = Voluntary
         ))))
       when(mockRegistrationMongoRepository.fetchFlatRateScheme(any()))
         .thenReturn(Future.successful(Some(validEmptyFlatRateScheme)))
@@ -241,7 +250,8 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
         .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          exceptionOrExemption = "1"
+          exceptionOrExemption = "1",
+          registrationReason = Voluntary
         ))))
       when(mockRegistrationMongoRepository.fetchFlatRateScheme(any()))
         .thenReturn(Future.successful(None))

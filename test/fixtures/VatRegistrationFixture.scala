@@ -20,7 +20,7 @@ import enums.VatRegStatus
 import models.api._
 import models.api.returns._
 import models.submission._
-import models.{IncorporatedIdEntity, MinorEntityIdEntity, PartnershipIdEntity, SoleTraderIdEntity}
+import models.{BackwardLook, ForwardLook, IncorporatedIdEntity, MinorEntityIdEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, Json, __}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -85,7 +85,8 @@ trait VatRegistrationFixture {
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
     customerStatus = MTDfB,
-    partyType = UkCompany
+    partyType = UkCompany,
+    registrationReason = ForwardLook
   )
 
   val testLtdCoEntity = IncorporatedIdEntity(

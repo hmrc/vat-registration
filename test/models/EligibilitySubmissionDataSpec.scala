@@ -64,7 +64,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(123456),
         customerStatus = MTDfB,
-        partyType = UkCompany
+        partyType = UkCompany,
+        registrationReason = ForwardLook
       ))
 
       result mustBe expected
@@ -85,7 +86,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           "turnoverEstimate" -> 123456
         ),
         "customerStatus" -> "2",
-        "partyType" -> "50"
+        "partyType" -> "50",
+        "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook)
       )
 
       val expected = JsSuccess(EligibilitySubmissionData(
@@ -98,7 +100,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(123456),
         customerStatus = MTDfB,
-        partyType = UkCompany
+        partyType = UkCompany,
+        registrationReason = ForwardLook
       ))
 
       EligibilitySubmissionData.format.reads(json) mustBe expected
@@ -117,7 +120,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(123456),
         customerStatus = MTDfB,
-        partyType = UkCompany
+        partyType = UkCompany,
+        registrationReason = ForwardLook
       )
 
       val expected = Json.obj(
@@ -132,7 +136,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           "turnoverEstimate" -> 123456
         ),
         "customerStatus" -> "2",
-        "partyType" -> "50"
+        "partyType" -> "50",
+        "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook)
       )
 
       EligibilitySubmissionData.format.writes(model) mustBe expected

@@ -19,6 +19,7 @@ package models.monitoring
 import enums.VatRegStatus
 import fixtures.SubmissionAuditFixture
 import helpers.VatRegSpec
+import models.{BackwardLook, Voluntary}
 import models.api.{MTDfB, VatScheme}
 import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
@@ -109,7 +110,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             thresholdPreviousThirtyDays = Some(LocalDate.of(2021, 1, 12))
           )
 
-          val eligibilityData = testEligibilitySubmissionData.copy(threshold = threshold)
+          val eligibilityData = testEligibilitySubmissionData.copy(threshold = threshold, registrationReason = BackwardLook)
           val res = model(rootBlockTestVatScheme.copy(eligibilitySubmissionData = Some(eligibilityData)))
 
           res.detail mustBe Json.obj(
@@ -137,7 +138,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
       }
       "registering voluntarily" should {
         "return the correct json" in {
-          val eligibilityData = testEligibilitySubmissionData.copy(threshold = testVoluntaryThreshold)
+          val eligibilityData = testEligibilitySubmissionData.copy(threshold = testVoluntaryThreshold, registrationReason = Voluntary)
           val res = model(rootBlockTestVatScheme.copy(eligibilitySubmissionData = Some(eligibilityData)))
 
           res.detail mustBe Json.obj(

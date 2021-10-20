@@ -16,9 +16,8 @@
 
 package services.submission
 
-import models.IncorporatedIdEntity
-import models.api.EligibilitySubmissionData._
 import models.api.returns.NIPCompliance
+import models._
 import play.api.libs.json.JsObject
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -43,13 +42,13 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
   } yield (optEligibilityData, optReturns, optApplicantDetails, optSicAndCompliance, optFlatRateScheme) match {
     case (Some(eligibilityData), Some(returns), Some(applicantDetails), Some(sicAndCompliance), optFlatRateScheme) => jsonObject(
       "reasonForSubscription" -> jsonObject(
-        "registrationReason" -> eligibilityData.reasonForRegistration(),
+        "registrationReason" -> eligibilityData.registrationReason.key,
         "relevantDate" -> {
-          eligibilityData.reasonForRegistration() match {
-            case `voluntaryKey` => returns.startDate
-            case `backwardLookKey` => eligibilityData.threshold.thresholdInTwelveMonths
-            case `forwardLookKey` => Some(eligibilityData.earliestDate)
-            case `nonUkKey` => eligibilityData.threshold.thresholdOverseas
+          eligibilityData.registrationReason match {
+            case Voluntary | SuppliesOutsideUk => returns.startDate
+            case BackwardLook => eligibilityData.threshold.thresholdInTwelveMonths
+            case ForwardLook => Some(eligibilityData.threshold.earliestDate)
+            case NonUk => eligibilityData.threshold.thresholdOverseas
           }
         },
         optional("voluntaryOrEarlierDate" -> returns.startDate),
