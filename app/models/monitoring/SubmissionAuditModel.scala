@@ -65,9 +65,9 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           optional("corporateBodyRegistered" -> {
             applicantDetails.entity match {
               case IncorporatedIdEntity(_, _, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
-                Some(Json.obj(
+                Some(jsonObject(
                   "countryOfIncorporation" -> countryOfIncorporation,
-                  "dateOfIncorporation" -> dateOfIncorporation
+                  optional("dateOfIncorporation" -> dateOfIncorporation)
                 ))
               case _ => None
             }

@@ -58,7 +58,7 @@ class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixt
       companyName = testCompanyName,
       companyNumber = testCrn,
       ctutr = Some(testUtr),
-      dateOfIncorporation = testDateOFIncorp,
+      dateOfIncorporation = Some(testDateOFIncorp),
       businessVerification = BvFail,
       registration = NotCalledStatus,
       identifiersMatch = true,

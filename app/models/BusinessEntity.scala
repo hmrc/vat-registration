@@ -76,7 +76,7 @@ object BusinessEntity {
 
 case class IncorporatedIdEntity(companyName: String,
                                 companyNumber: String,
-                                dateOfIncorporation: LocalDate,
+                                dateOfIncorporation: Option[LocalDate],
                                 ctutr: Option[String] = None,
                                 bpSafeId: Option[String] = None,
                                 countryOfIncorporation: String = "GB",
@@ -96,7 +96,7 @@ case class IncorporatedIdEntity(companyName: String,
       idValue = companyNumber,
       idType = CrnIdType,
       IDsVerificationStatus = idVerificationStatus,
-      date = Some(dateOfIncorporation)
+      date = dateOfIncorporation
     )),
     chrn.map(chrn =>
       CustomerId(
