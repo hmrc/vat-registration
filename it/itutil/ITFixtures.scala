@@ -126,7 +126,7 @@ trait ITFixtures {
     entity = IncorporatedIdEntity(
       companyName = testCompanyName,
       companyNumber = testCrn,
-      dateOfIncorporation = testDateOfIncorp,
+      dateOfIncorporation = Some(testDateOfIncorp),
       ctutr = Some(testCtUtr),
       businessVerification = BvUnchallenged,
       registration = NotCalledStatus,
@@ -152,7 +152,7 @@ trait ITFixtures {
     entity = IncorporatedIdEntity(
       companyName = testCompanyName,
       companyNumber = testCrn,
-      dateOfIncorporation = testDateOfIncorp,
+      dateOfIncorporation = Some(testDateOfIncorp),
       ctutr = Some(testCtUtr),
       identifiersMatch = true,
       businessVerification = BvPass,
@@ -349,7 +349,7 @@ trait ITFixtures {
     companyName = testCompanyName,
     companyNumber = testCrn,
     ctutr = Some(testUtr),
-    dateOfIncorporation = testDateOfIncorp,
+    dateOfIncorporation = Some(testDateOfIncorp),
     businessVerification = BvFail,
     registration = NotCalledStatus,
     identifiersMatch = true,

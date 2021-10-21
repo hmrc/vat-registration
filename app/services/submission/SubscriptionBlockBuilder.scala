@@ -58,7 +58,7 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
         case IncorporatedIdEntity(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
           Some(jsonObject(
             "companyRegistrationNumber" -> companyNumber,
-            "dateOfIncorporation" -> dateOfIncorporation,
+            optional("dateOfIncorporation" -> dateOfIncorporation),
             "countryOfIncorporation" -> countryOfIncorporation
           ))
       }),
