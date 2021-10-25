@@ -16,8 +16,9 @@
 
 package services.submission
 
-import models.api.{Address, FormerName, Name}
-import play.api.libs.json.{JsObject, Json}
+import models.api.{Address, FormerName, Name, PersonalDetails}
+import models.submission.CustomerId
+import play.api.libs.json.{JsArray, JsObject, Json, Writes}
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{jsonObject, _}
@@ -25,6 +26,7 @@ import utils.JsonUtils.{jsonObject, _}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+// scalastyle:off
 @Singleton
 class DeclarationBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository)
                                        (implicit ec: ExecutionContext) {
@@ -34,18 +36,20 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: Registratio
       vatScheme <- registrationMongoRepository.retrieveVatScheme(regId)
     } yield vatScheme match {
       case Some(scheme) =>
-        (scheme.applicantDetails, scheme.confirmInformationDeclaration) match {
-          case (Some(applicantDetails), Some(declaration)) =>
+        (scheme.applicantDetails, scheme.confirmInformationDeclaration, scheme.transactorDetails) match {
+          case (Some(applicantDetails), Some(declaration), optTransactorDetails) =>
             jsonObject(
-              "declarationSigning" -> Json.obj(
+              "declarationSigning" -> jsonObject(
                 "confirmInformationDeclaration" -> declaration,
-                "declarationCapacity" -> applicantDetails.roleInBusiness
+                "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity).getOrElse(
+                  applicantDetails.roleInBusiness.toDeclarationCapacity
+                )
               ),
               "applicantDetails" -> jsonObject(
                 "roleInBusiness" -> applicantDetails.roleInBusiness,
-                "name" -> formatName(applicantDetails.transactor.name),
+                "name" -> formatName(applicantDetails.personalDetails.name),
                 optional("prevName" -> applicantDetails.changeOfName.map(formatFormerName)),
-                "dateOfBirth" -> applicantDetails.transactor.dateOfBirth,
+                "dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth,
                 "currAddress" -> formatAddress(applicantDetails.currentAddress),
                 optional("prevAddress" -> applicantDetails.previousAddress.map(formatAddress)),
                 "commDetails" -> jsonObject(
@@ -53,8 +57,26 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: Registratio
                   optional("telephone" -> applicantDetails.contact.tel),
                   optional("mobileNumber" -> applicantDetails.contact.mobile)
                 ),
-                conditional(applicantDetails.personalIdentifiers.nonEmpty)("identifiers" -> applicantDetails.personalIdentifiers)
-              )
+                conditional(applicantDetails.personalDetails.personalIdentifiers.nonEmpty)(
+                  "identifiers" -> applicantDetails.personalDetails.personalIdentifiers
+                )
+              ),
+              optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>
+                jsonObject(
+                  "individualName" -> formatName(transactorDetails.personalDetails.name),
+                  conditional(transactorDetails.isPartOfOrganisation)("organisationName" -> transactorDetails.organisationName),
+                  "commDetails" -> jsonObject(
+                    "telephone" -> transactorDetails.telephone,
+                    "email" -> transactorDetails.email
+                  ),
+                  "address" -> formatAddress(transactorDetails.address),
+                  conditional(transactorDetails.personalDetails.personalIdentifiers.nonEmpty)(
+                    "identification" -> transactorDetails.personalDetails.personalIdentifiers.map(identifier =>
+                      Json.toJson(identifier)(CustomerId.transactorWrites)
+                    )
+                  )
+                )
+              })
             )
           case _ =>
             val appDetailsMissing = scheme.applicantDetails.map(_ => "applicantDetails")

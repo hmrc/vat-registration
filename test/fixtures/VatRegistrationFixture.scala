@@ -31,7 +31,7 @@ import java.util.Base64
 
 trait VatRegistrationFixture {
   lazy val testNino = "AB123456A"
-  lazy val testRole: RoleInBusiness = Director
+  lazy val testRole = Director
   lazy val testRegId = "testRegId"
   lazy val testInternalId = "INT-123-456-789"
   lazy val testAckReference = "BRPY000000000001"
@@ -135,7 +135,7 @@ trait VatRegistrationFixture {
   )
 
   lazy val validApplicantDetails: ApplicantDetails = ApplicantDetails(
-    transactor = TransactorDetails(
+    personalDetails = PersonalDetails(
       name = testName,
       nino = Some(testNino),
       trn = None,
@@ -148,6 +148,25 @@ trait VatRegistrationFixture {
     contact = testDigitalContactOptional,
     changeOfName = Some(testFormerName),
     previousAddress = None
+  )
+
+  lazy val testEmail = "test@test.com"
+  lazy val testTelephone = "1234567890"
+  lazy val testOrgName = "testOrganisationName"
+  lazy val validTransactorDetails: TransactorDetails = TransactorDetails(
+    personalDetails = PersonalDetails(
+      name = testName,
+      nino = Some(testNino),
+      trn = None,
+      identifiersMatch = true,
+      dateOfBirth = testDate
+    ),
+    isPartOfOrganisation = true,
+    organisationName = Some(testOrgName),
+    telephone = testTelephone,
+    email = testEmail,
+    address = testAddress,
+    declarationCapacity = AuthorisedEmployee
   )
 
   lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =

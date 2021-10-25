@@ -173,6 +173,194 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
+  val testTransactorSubmissionJson: JsObject = Json.obj(
+    "messageType" -> "SubscriptionCreate",
+    "admin" -> Json.obj(
+      "additionalInformation" -> Json.obj(
+        "customerStatus" -> "2"
+      ),
+      "attachments" -> Json.obj(
+        "EORIrequested" -> true
+      )
+    ),
+    "customerIdentification" -> Json.obj(
+      "tradersPartyType" -> "50",
+      "customerID" -> Json.arr(
+        Json.obj(
+          "idType" -> "UTR",
+          "idValue" -> testCtUtr,
+          "IDsVerificationStatus" -> "3"
+        ),
+        Json.obj(
+          "idType" -> "CRN",
+          "idValue" -> testCrn,
+          "date" -> testDateOfIncorp,
+          "IDsVerificationStatus" -> "3"
+        )
+      ),
+      "shortOrgName" -> testCompanyName,
+      "tradingName" -> testTradingDetails.tradingName.get
+    ),
+    "contact" -> Json.obj(
+      "address" -> Json.obj(
+        "line1" -> testFullAddress.line1,
+        "line2" -> testFullAddress.line2,
+        "line3" -> testFullAddress.line3,
+        "line4" -> testFullAddress.line4,
+        "line5" -> testFullAddress.line5,
+        "postCode" -> testFullAddress.postcode,
+        "countryCode" -> "GB",
+        "addressValidated" -> true
+      ),
+      "commDetails" -> Json.obj(
+        "telephone" -> testContactDetails.tel,
+        "mobileNumber" -> testContactDetails.mobile,
+        "email" -> testContactDetails.email,
+        //"webAddress" -> Do we need this?
+        "commsPreference" -> "ZEL" //electronic
+      )
+    ),
+    "subscription" -> Json.obj(
+      "reasonForSubscription" -> Json.obj(
+        "registrationReason" -> "0016",
+        "relevantDate" -> testDate,
+        "voluntaryOrEarlierDate" -> testDate,
+        "exemptionOrException" -> "0"
+      ),
+      "corporateBodyRegistered" -> Json.obj(
+        "companyRegistrationNumber" -> testCrn,
+        "dateOfIncorporation" -> testDateOfIncorp,
+        "countryOfIncorporation" -> "GB"
+      ),
+      "businessActivities" -> Json.obj(
+        "description" -> testSicAndCompliance.businessDescription,
+        "SICCodes" -> Json.obj(
+          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id
+        )
+      ),
+      "yourTurnover" -> Json.obj(
+        "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
+        "zeroRatedSupplies" -> 12.99,
+        "VATRepaymentExpected" -> true,
+        "goodsFromOtherEU" -> testTurnover,
+        "goodsSoldToOtherEU" -> testTurnover
+      ),
+      "schemes" -> Json.obj(
+        "FRSCategory" -> frsDetails.categoryOfBusiness.get,
+        "FRSPercentage" -> frsDetails.percent,
+        "startDate" -> frsDetails.startDate.get,
+        "limitedCostTrader" -> frsDetails.limitedCostTrader.get
+      )
+    ),
+    "periods" -> Json.obj(
+      "customerPreferredPeriodicity" -> "YA"
+    ),
+    "bankDetails" -> Json.obj(
+      "UK" -> Json.obj(
+        "accountName" -> testBankDetails.name,
+        "accountNumber" -> testBankDetails.number,
+        "sortCode" -> testSubmittedSortCode
+        // Missing bank account reason is being developed
+      )
+    ),
+    "joinAA" -> Json.obj(
+      "submissionType" -> "1",
+      "customerRequest" -> Json.obj(
+        "paymentMethod" -> "01",
+        "annualStagger" -> "YA",
+        "paymentFrequency" -> "M",
+        "estimatedTurnover" -> 123456.00,
+        "reqStartDate" -> "2017-01-01"
+      )
+    ),
+    "compliance" -> Json.obj(
+      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
+      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+    ),
+    "declaration" -> Json.obj(
+      "agentOrCapacitor" -> Json.obj(
+        "individualName" -> Json.obj(
+          "firstName" -> testFirstName,
+          "lastName" -> testLastName
+        ),
+        "organisationName" -> testOrganisationName,
+        "identification" -> Json.arr(
+          Json.obj(
+            "date" -> testDate,
+            "idType" -> "NINO",
+            "idValue" -> testNino,
+            "IDsFailedOnlineVerification" -> "1"
+          )
+        ),
+        "commDetails" -> Json.obj(
+          "telephone" -> testTelephone,
+          "email" -> testEmail
+        ),
+        "address" -> Json.obj(
+          "line1" -> testFullAddress.line1,
+          "line2" -> testFullAddress.line2,
+          "line3" -> testFullAddress.line3,
+          "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
+          "postCode" -> testAddress.postcode,
+          "countryCode" -> "GB",
+          "addressValidated" -> true
+        )
+      ),
+      "applicantDetails" -> Json.obj(
+        "roleInBusiness" -> "03",
+        "name" -> Json.obj(
+          "firstName" -> testName.first,
+          "lastName" -> testName.last
+        ),
+        "prevName" -> Json.obj(
+          "firstName" -> testFormerName.name.get.first,
+          "lastName" -> testFormerName.name.get.last,
+          "nameChangeDate" -> testDate
+        ),
+        "currAddress" -> Json.obj(
+          "line1" -> testFullAddress.line1,
+          "line2" -> testFullAddress.line2,
+          "line3" -> testFullAddress.line3,
+          "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
+          "postCode" -> testAddress.postcode,
+          "countryCode" -> "GB",
+          "addressValidated" -> true
+        ),
+        "prevAddress" -> Json.obj(
+          "line1" -> testFullAddress.line1,
+          "line2" -> testFullAddress.line2,
+          "line3" -> testFullAddress.line3,
+          "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
+          "postCode" -> testAddress.postcode,
+          "countryCode" -> "GB",
+          "addressValidated" -> true
+        ),
+        "commDetails" -> Json.obj(
+          "email" -> testDigitalContactOptional.email.get,
+          "telephone" -> testDigitalContactOptional.tel,
+          "mobileNumber" -> testDigitalContactOptional.mobile
+        ),
+        "dateOfBirth" -> testDate,
+        "identifiers" -> Json.arr(
+          Json.obj(
+            "date" -> testDate,
+            "idType" -> "NINO",
+            "idValue" -> testNino,
+            "IDsVerificationStatus" -> "1"
+          )
+        )
+      ),
+      "declarationSigning" -> Json.obj(
+        "confirmInformationDeclaration" -> true,
+        "declarationCapacity" -> Json.toJson[DeclarationCapacity](AuthorisedEmployee)
+      )
+    )
+  )
+
   val testRegisteredBusinessPartnerSubmissionJson: JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> Json.obj(
@@ -353,7 +541,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
-        "roleInBusiness" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString),
+        "roleInBusiness" -> Json.toJson(OwnerProprietor)(DeclarationCapacity.toJsString),
         "name" -> Json.obj(
           "firstName" -> testName.first,
           "lastName" -> testName.last
@@ -382,7 +570,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString)
+        "declarationCapacity" -> Json.toJson(OwnerProprietor)(DeclarationCapacity.toJsString)
       )
     )
   )
@@ -479,7 +667,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
-        "roleInBusiness" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString),
+        "roleInBusiness" -> Json.toJson(OwnerProprietor)(DeclarationCapacity.toJsString),
         "name" -> Json.obj(
           "firstName" -> testName.first,
           "lastName" -> testName.last
@@ -511,7 +699,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString)
+        "declarationCapacity" -> Json.toJson(OwnerProprietor)(DeclarationCapacity.toJsString)
       )
     )
   )
@@ -604,7 +792,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
-        "roleInBusiness" -> Json.toJson(Director)(RoleInBusiness.toJsString),
+        "roleInBusiness" -> Json.toJson(Director)(DeclarationCapacity.toJsString),
         "name" -> Json.obj(
           "firstName" -> testName.first,
           "lastName" -> testName.last
@@ -636,7 +824,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> Json.toJson(Director)(RoleInBusiness.toJsString)
+        "declarationCapacity" -> Json.toJson(Director)(DeclarationCapacity.toJsString)
       )
     )
   )
@@ -739,7 +927,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
-        "roleInBusiness" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString),
+        "roleInBusiness" -> Json.toJson(OwnerProprietor)(DeclarationCapacity.toJsString),
         "name" -> Json.obj(
           "firstName" -> testName.first,
           "lastName" -> testName.last
@@ -771,7 +959,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString)
+        "declarationCapacity" -> Json.toJson(OwnerProprietor)(DeclarationCapacity.toJsString)
       )
     )
   )
@@ -872,7 +1060,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
-        "roleInBusiness" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString),
+        "roleInBusiness" -> Json.toJson(OwnerProprietor)(DeclarationCapacity.toJsString),
         "name" -> Json.obj(
           "firstName" -> testName.first,
           "lastName" -> testName.last
@@ -901,7 +1089,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> Json.toJson(OwnerProprietor)(RoleInBusiness.toJsString)
+        "declarationCapacity" -> Json.toJson(OwnerProprietor)(DeclarationCapacity.toJsString)
       )
     )
   )
@@ -975,7 +1163,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
-        "roleInBusiness" -> Json.toJson(Director)(RoleInBusiness.toJsString),
+        "roleInBusiness" -> Json.toJson(Director)(DeclarationCapacity.toJsString),
         "name" -> Json.obj(
           "firstName" -> testName.first,
           "lastName" -> testName.last
@@ -1004,7 +1192,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> Json.toJson(Director)(RoleInBusiness.toJsString)
+        "declarationCapacity" -> Json.toJson(Director)(DeclarationCapacity.toJsString)
       )
     )
   )

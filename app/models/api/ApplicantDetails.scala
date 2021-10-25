@@ -22,56 +22,37 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import utils.JsonUtilities
 
-case class ApplicantDetails(transactor: TransactorDetails,
+case class ApplicantDetails(personalDetails: PersonalDetails,
                             entity: BusinessEntity,
                             currentAddress: Address,
                             previousAddress: Option[Address] = None,
                             contact: DigitalContactOptional,
                             changeOfName: Option[FormerName] = None,
-                            roleInBusiness: RoleInBusiness) {
-
-  def personalIdentifiers: List[CustomerId] =
-    List(
-      transactor.nino.map(nino =>
-        CustomerId(
-          nino,
-          NinoIdType,
-          if (transactor.identifiersMatch) IdVerified else IdVerificationFailed,
-          date = Some(transactor.dateOfBirth)
-        )),
-      transactor.trn.map(trn =>
-        CustomerId(
-          trn,
-          TempNinoIDType,
-          IdUnverifiable,
-          date = Some(transactor.dateOfBirth)
-        ))
-    ).flatten
-
-}
+                            roleInBusiness: RoleInTheBusiness)
 
 object ApplicantDetails extends VatApplicantDetailsValidator
   with JsonUtilities {
 
+  //TODO Remove transactor .orElse a few weeks after this commit goes live as it's there just to support old journeys
   def reads(partyType: PartyType): Reads[ApplicantDetails] = (
-    (__ \ "transactor").read[TransactorDetails] and
+    (__ \ "personalDetails").read[PersonalDetails].orElse((__ \ "transactor").read[PersonalDetails]) and
       (__ \ "entity").read[BusinessEntity](BusinessEntity.reads(partyType)) and
       (__ \ "currentAddress").read[Address] and
       (__ \ "previousAddress").readNullable[Address] and
       (__ \ "contact").read[DigitalContactOptional] and
       (__ \ "changeOfName").readNullable[FormerName] and
-      (__ \ "roleInTheBusiness").read[RoleInBusiness]
+      (__ \ "roleInTheBusiness").read[RoleInTheBusiness]
     ) (ApplicantDetails.apply _
   )
 
   implicit val writes: Writes[ApplicantDetails] = (
-    (__ \ "transactor").write[TransactorDetails] and
+    (__ \ "personalDetails").write[PersonalDetails] and
       (__ \ "entity").write[BusinessEntity](BusinessEntity.writes) and
       (__ \ "currentAddress").write[Address] and
       (__ \ "previousAddress").writeNullable[Address] and
       (__ \ "contact").write[DigitalContactOptional] and
       (__ \ "changeOfName").writeNullable[FormerName] and
-      (__ \ "roleInTheBusiness").write[RoleInBusiness]
+      (__ \ "roleInTheBusiness").write[RoleInTheBusiness]
     ) (unlift(ApplicantDetails.unapply)
   )
 

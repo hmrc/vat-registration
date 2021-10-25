@@ -16,23 +16,17 @@
 
 package models.api
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import models.submission.DeclarationCapacity
+import play.api.libs.json.{Format, Json}
 
-import java.time.LocalDate
-
-case class TransactorDetails(name: Name,
-                             nino: Option[String],
-                             trn: Option[String],
-                             identifiersMatch: Boolean,
-                             dateOfBirth: LocalDate)
+case class TransactorDetails(personalDetails: PersonalDetails,
+                             isPartOfOrganisation: Boolean,
+                             organisationName: Option[String] = None,
+                             telephone: String,
+                             email: String,
+                             address: Address,
+                             declarationCapacity: DeclarationCapacity)
 
 object TransactorDetails {
-  implicit val format: Format[TransactorDetails] = (
-    (__ \ "name").format[Name] and
-      (__ \ "nino").formatNullable[String] and
-      (__ \ "trn").formatNullable[String] and
-      (__ \ "identifiersMatch").formatWithDefault[Boolean](true) and
-      (__ \ "dateOfBirth").format[LocalDate]
-    ) (TransactorDetails.apply, unlift(TransactorDetails.unapply))
+  implicit val format: Format[TransactorDetails] = Json.format[TransactorDetails]
 }

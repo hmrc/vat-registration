@@ -3,6 +3,7 @@ package controllers
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import itutil.IntegrationStubbing
+import models.submission.RoleInTheBusiness
 import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
@@ -17,7 +18,7 @@ class ApplicantDetailsControllerISpec extends IntegrationStubbing {
 
   val invalidTestApplicantDetailsJson = Json.obj(
     "nino" -> testNino,
-    "role" -> Json.toJson(testRole)
+    "role" -> Json.toJson[RoleInTheBusiness](testRole)
   )
 
   "getApplicantDetailsData" must {

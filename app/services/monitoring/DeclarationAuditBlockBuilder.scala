@@ -27,29 +27,45 @@ import javax.inject.Singleton
 class DeclarationAuditBlockBuilder {
 
   def buildDeclarationBlock(vatScheme: VatScheme): JsObject = {
-    (vatScheme.applicantDetails, vatScheme.confirmInformationDeclaration) match {
-      case (Some(applicantDetails), Some(declaration)) =>
+    (vatScheme.applicantDetails, vatScheme.confirmInformationDeclaration, vatScheme.transactorDetails) match {
+      case (Some(applicantDetails), Some(declaration), optTransactorDetails) =>
         jsonObject(
-          "declarationSigning" -> Json.obj(
+          "declarationSigning" -> jsonObject(
             "confirmInformationDeclaration" -> declaration,
-            "declarationCapacity" -> applicantDetails.roleInBusiness.toString
+            "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity).getOrElse(
+              applicantDetails.roleInBusiness.toDeclarationCapacity
+            ).toString
           ),
           "applicant" -> jsonObject(
             "roleInBusiness" -> applicantDetails.roleInBusiness.toString,
-            "name" -> formatName(applicantDetails.transactor.name),
+            "name" -> formatName(applicantDetails.personalDetails.name),
             optional("previousName" -> applicantDetails.changeOfName.map(formatFormerName)),
             "currentAddress" -> formatAddress(applicantDetails.currentAddress),
             optional("previousAddress" -> applicantDetails.previousAddress.map(formatAddress)),
-            "dateOfBirth" -> applicantDetails.transactor.dateOfBirth,
+            "dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth,
             "communicationDetails" -> jsonObject(
               optional("emailAddress" -> applicantDetails.contact.email),
               optional("telephone" -> applicantDetails.contact.tel),
               optional("mobileNumber" -> applicantDetails.contact.mobile)
             ),
             "identifiers" -> jsonObject(
-              optional("nationalInsuranceNumber" -> applicantDetails.transactor.nino)
+              optional("nationalInsuranceNumber" -> applicantDetails.personalDetails.nino)
             )
-          )
+          ),
+          optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>
+            jsonObject(
+              "individualName" -> formatName(transactorDetails.personalDetails.name),
+              conditional(transactorDetails.isPartOfOrganisation)("organisationName" -> transactorDetails.organisationName),
+              "commDetails" -> jsonObject(
+                "telephone" -> transactorDetails.telephone,
+                "email" -> transactorDetails.email
+              ),
+              "address" -> formatAddress(transactorDetails.address),
+              conditional(transactorDetails.personalDetails.personalIdentifiers.nonEmpty)(
+                "identification" -> transactorDetails.personalDetails.personalIdentifiers
+              )
+            )
+          })
         )
       case _ =>
         throw new InternalServerException(

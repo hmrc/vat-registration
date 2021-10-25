@@ -42,7 +42,6 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
     )).thenReturn(response)
 
 
-  val testEmail = "test@test.com"
   val testPhone = "01234 567890"
   val testContact = DigitalContact(
     email = testEmail,
