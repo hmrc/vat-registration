@@ -16,9 +16,10 @@
 
 package models.submission
 
-import java.time.LocalDate
+import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
-import play.api.libs.json.Json
+import java.time.LocalDate
 
 case class CustomerId(idValue: String,
                       idType: IdType,
@@ -29,7 +30,17 @@ case class CustomerId(idValue: String,
                       partyType: Option[PartyType] = None)
 
 object CustomerId {
-  implicit val format = Json.format[CustomerId]
+  implicit val format: OFormat[CustomerId] = Json.format[CustomerId]
+  val transactorWrites: Writes[CustomerId] = (
+    (__ \ "idValue").write[String] and
+    (__ \ "idType").write[IdType] and
+    (__ \ "IDsFailedOnlineVerification").write[IdVerificationStatus] and
+    (__ \ "countryOfIncorporation").writeNullable[String] and
+    (__ \ "date").writeNullable[LocalDate] and
+    (__ \ "safeIDBPFound").writeNullable[String] and
+    (__ \ "partyType").writeNullable[PartyType]
+  ) (unlift(CustomerId.unapply))
+
 }
 
 

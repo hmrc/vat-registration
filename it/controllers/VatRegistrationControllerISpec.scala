@@ -166,6 +166,25 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         res.status mustBe OK
       }
 
+      "return OK if the submission is successful with an unregistered business partner and transactor details" in new Setup {
+        enable(StubSubmission)
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(
+          testFullVatSchemeWithUnregisteredBusinessPartner.copy(transactorDetails = Some(testTransactorDetails)),
+          repo.insert
+        )
+
+        stubPost("/vatreg/test-only/vat/subscription", testTransactorSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+      }
+
       "return OK if the submission is successful where the business partner is already registered" in new Setup {
         enable(StubSubmission)
 

@@ -20,7 +20,7 @@ import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.IncorporatedIdEntity
-import models.api.{ApplicantDetails, BvFail, NotCalledStatus, TransactorDetails}
+import models.api.{ApplicantDetails, BvFail, NotCalledStatus, PersonalDetails}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
@@ -47,7 +47,7 @@ class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixt
 
   val upsertApplicantDetails: ApplicantDetails = ApplicantDetails(
     roleInBusiness = testRole,
-    transactor = TransactorDetails(
+    personalDetails = PersonalDetails(
       name = testName,
       nino = Some(testNino),
       trn = None,

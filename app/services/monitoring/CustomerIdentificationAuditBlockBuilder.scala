@@ -60,7 +60,7 @@ class CustomerIdentificationAuditBlockBuilder {
               case _ => None
             }
           }),
-          "dateOfBirth" -> applicantDetails.transactor.dateOfBirth,
+          "dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth,
           optional("tradingName" -> tradingDetails.tradingName)
         )
       case (None, _) =>

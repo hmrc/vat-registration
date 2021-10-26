@@ -36,6 +36,7 @@ case class VatScheme(id: String,
                      eligibilityData: Option[JsObject] = None,
                      eligibilitySubmissionData: Option[EligibilitySubmissionData] = None,
                      applicantDetails: Option[ApplicantDetails] = None,
+                     transactorDetails: Option[TransactorDetails] = None,
                      confirmInformationDeclaration: Option[Boolean] = None,
                      nrsSubmissionPayload: Option[String] = None,
                      partners: Option[List[Partner]] = None,
@@ -63,11 +64,12 @@ object VatScheme {
         (__ \ "eligibilityData").readNullable[JsObject] and
         (__ \ "eligibilitySubmissionData").readNullable[EligibilitySubmissionData] and
         (__ \ "applicantDetails").readNullable[ApplicantDetails](Format[ApplicantDetails](ApplicantDetails.reads(partyType), ApplicantDetails.writes)) and
+        (__ \ "transactorDetails").readNullable[TransactorDetails] and
         (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
         (__ \ "nrsSubmissionPayload").readNullable[String] and
         (__ \ "partners").readNullable[List[Partner]] and
         (__ \ "attachments").readNullable[Attachments]
-      )(VatScheme.apply _)
+        ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
@@ -82,11 +84,12 @@ object VatScheme {
         (__ \ "eligibilityData").readNullable[JsObject] and
         (__ \ "eligibilitySubmissionData").readNullable[EligibilitySubmissionData] and
         Reads.pure(None) and
+        (__ \ "transactorDetails").readNullable[TransactorDetails] and
         (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
         (__ \ "nrsSubmissionPayload").readNullable[String] and
         (__ \ "partners").readNullable[List[Partner]] and
         (__ \ "attachments").readNullable[Attachments]
-      )(VatScheme.apply _)
+        ) (VatScheme.apply _)
     }
 
   def writes(crypto: Option[CryptoSCRS] = None): OWrites[VatScheme] = (
@@ -103,11 +106,12 @@ object VatScheme {
     (__ \ "eligibilityData").writeNullable[JsObject] and
     (__ \ "eligibilitySubmissionData").writeNullable[EligibilitySubmissionData] and
     (__ \ "applicantDetails").writeNullable[ApplicantDetails] and
+    (__ \ "transactorDetails").writeNullable[TransactorDetails] and
     (__ \ "confirmInformationDeclaration").writeNullable[Boolean] and
     (__ \ "nrsSubmissionPayload").writeNullable[String] and
     (__ \ "partners").writeNullable[List[Partner]] and
     (__ \ "attachments").writeNullable[Attachments]
-  )(unlift(VatScheme.unapply))
+    ) (unlift(VatScheme.unapply))
 
   def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =
     OFormat[VatScheme](reads(crypto), writes(crypto))

@@ -101,7 +101,7 @@ trait ITFixtures {
   val testDigitalContactOptional = DigitalContactOptional(Some("skylake@vilikariet.com"), Some("1234567890"), Some("1234567890"), Some(true))
   val testNino = "NB686868C"
   val testTrn = "testTrn"
-  val testRole: RoleInBusiness = Director
+  val testRole = Director
   val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
   val testFormerName = FormerName(name = Some(oldName), change = Some(testDate))
   val testCompanyName = "testCompanyName"
@@ -114,9 +114,12 @@ trait ITFixtures {
   val testWebsite = "www.foo.com"
   lazy val testFirstName = "testFirstName"
   lazy val testLastName = "testLastName"
+  lazy val testOrganisationName = "testOrganisationName"
+  lazy val testEmail = "test@test.com"
+  lazy val testTelephone = "1234567890"
 
   val testUnregisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
-    transactor = TransactorDetails(
+    personalDetails = PersonalDetails(
       name = testName,
       nino = Some(testNino),
       trn = None,
@@ -142,7 +145,7 @@ trait ITFixtures {
   )
 
   val testRegisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
-    transactor = TransactorDetails(
+    personalDetails = PersonalDetails(
       name = testName,
       nino = Some(testNino),
       trn = None,
@@ -543,7 +546,7 @@ trait ITFixtures {
     registrationReason = NonUk
   )
 
-  val testNetpTransactorDetails: TransactorDetails = TransactorDetails(
+  val testNetpTransactorDetails: PersonalDetails = PersonalDetails(
     name = testName,
     nino = None,
     trn = Some(testTrn),
@@ -554,7 +557,7 @@ trait ITFixtures {
   val testNetpApplicantDetails: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
       entity = testNetpEntity,
-      transactor = testNetpTransactorDetails,
+      personalDetails = testNetpTransactorDetails,
       currentAddress = testOverseasAddress,
       roleInBusiness = OwnerProprietor
     )
@@ -595,7 +598,7 @@ trait ITFixtures {
   lazy val testNonUkCompanyApplicantDetails: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
       entity = testNonUkCompanyEntity,
-      transactor = testNetpTransactorDetails,
+      personalDetails = testNetpTransactorDetails,
       currentAddress = testOverseasAddress,
       roleInBusiness = Director
     )
@@ -605,4 +608,25 @@ trait ITFixtures {
       applicantDetails = Some(testNonUkCompanyApplicantDetails),
       eligibilitySubmissionData = Some(testNonUkCompanyEligibilitySubmissionData)
     )
+
+  lazy val testTransactorDetails = TransactorDetails(
+    personalDetails = PersonalDetails(
+      name = Name(
+        first = Some(testFirstName),
+        middle = None,
+        last = testLastName
+      ),
+      nino = Some(testNino),
+      trn = None,
+      identifiersMatch = true,
+      dateOfBirth = testDate
+    ),
+    isPartOfOrganisation = true,
+    organisationName = Some(testOrganisationName),
+    telephone = testTelephone,
+    email = testEmail,
+    address = testFullAddress,
+    declarationCapacity = AuthorisedEmployee
+  )
+
 }
