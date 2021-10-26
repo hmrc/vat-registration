@@ -16,13 +16,18 @@
 
 package models.api
 
+import models.registration.RegistrationSection
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class SicAndCompliance(businessDescription: String,
                             labourCompliance: Option[ComplianceLabour],
                             mainBusinessActivity: SicCode,
-                            businessActivities: List[SicCode]) {
+                            businessActivities: List[SicCode]) extends RegistrationSection[SicAndCompliance] {
+
+  override def isComplete: SicAndCompliance => Boolean = {
+    _ => true
+  }
 
   lazy val otherBusinessActivities: List[SicCode] =
     businessActivities.filterNot(_ == mainBusinessActivity)

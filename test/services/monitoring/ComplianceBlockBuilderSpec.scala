@@ -18,12 +18,12 @@ package services.monitoring
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import mocks.MockRegistrationRepository
+import mocks.MockVatSchemeRepository
 import models.api.ComplianceLabour
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
-class ComplianceBlockBuilderSpec extends VatRegSpec with MockRegistrationRepository with VatRegistrationFixture {
+class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository with VatRegistrationFixture {
 
   object TestBuilder extends ComplianceAuditBlockBuilder
 

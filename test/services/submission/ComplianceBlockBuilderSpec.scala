@@ -18,15 +18,15 @@ package services.submission
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import mocks.MockRegistrationRepository
+import mocks.MockVatSchemeRepository
 import models.api.ComplianceLabour
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.InternalServerException
 
-class ComplianceBlockBuilderSpec extends VatRegSpec with MockRegistrationRepository with VatRegistrationFixture {
+class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository with VatRegistrationFixture {
 
-  object TestBuilder extends ComplianceBlockBuilder(mockRegistrationRepository)
+  object TestBuilder extends ComplianceBlockBuilder(mockVatSchemeRepository)
 
   val emptyLabourCompliance = ComplianceLabour(
     numOfWorkersSupplied = None,

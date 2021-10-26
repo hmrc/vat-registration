@@ -28,7 +28,7 @@ import play.api.test.DefaultAwaitTimeout
 import play.api.test.Helpers._
 import reactivemongo.api.commands.WriteResult
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
-import repositories.{RegistrationMongoRepository, UpscanMongoRepository}
+import repositories.{UpscanMongoRepository, VatSchemeRepository}
 import utils.TimeMachine
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -79,7 +79,7 @@ trait IntegrationSpecBase extends PlaySpec
     .overrides(bind[TimeMachine].to[FakeTimeMachine])
     .build()
 
-  lazy val repo: RegistrationMongoRepository = app.injector.instanceOf[RegistrationMongoRepository]
+  lazy val repo: VatSchemeRepository = app.injector.instanceOf[VatSchemeRepository]
   lazy val dailyQuotaRepo: DailyQuotaRepository = app.injector.instanceOf[DailyQuotaRepository]
   lazy val trafficManagementRepo: TrafficManagementRepository = app.injector.instanceOf[TrafficManagementRepository]
   lazy val upscanMongoRepository: UpscanMongoRepository = app.injector.instanceOf[UpscanMongoRepository]

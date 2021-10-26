@@ -19,14 +19,14 @@ package services.submission
 import models.api.returns.Annual
 import models.{BackwardLook, ForwardLook, NonUk, SuppliesOutsideUk, Voluntary}
 import play.api.libs.json.JsObject
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import utils.JsonUtils.jsonObject
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AnnualAccountingBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository)(implicit ec: ExecutionContext) {
+class AnnualAccountingBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)(implicit ec: ExecutionContext) {
 
   def buildAnnualAccountingBlock(regId: String): Future[Option[JsObject]] = for {
     optReturns <- registrationMongoRepository.fetchReturns(regId)

@@ -20,7 +20,7 @@ import auth.{Authorisation, AuthorisationResource}
 import models.api.UpscanDetails
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import services.UpscanService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.InternalServerException
@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class UpscanController @Inject()(controllerComponents: ControllerComponents,
                                  upscanService: UpscanService,
-                                 registrationRepository: RegistrationMongoRepository,
+                                 registrationRepository: VatSchemeRepository,
                                  val authConnector: AuthConnector
                                 )(implicit ec: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation {

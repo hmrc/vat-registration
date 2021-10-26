@@ -1,0 +1,16 @@
+## REGISTRATIONS API
+
+# /vatreg/registrations
+GET             /                                               controllers.registrations.RegistrationController.getAllRegistrations
+POST            /                                               controllers.registrations.RegistrationController.newRegistration
+
+# /vatreg/registrations/:regId
+GET             /:regId                                         controllers.registrations.RegistrationController.getRegistration(regId: String)
+PUT             /:regId                                         controllers.registrations.RegistrationController.upsertRegistration(regId: String)
+DELETE          /:regId                                         controllers.registrations.RegistrationController.deleteRegistration(regId: String)
+
+# /vatreg/registrations/:regId/sections/:sectionId
+GET             /:regId/sections/:section                       controllers.registrations.RegistrationSectionController.getSection(regId: String, section: models.registration.RegistrationSectionId)
+PATCH           /:regId/sections/:section                       controllers.registrations.RegistrationSectionController.upsertSection(regId: String, section: models.registration.RegistrationSectionId)
+PUT             /:regId/sections/:section                       controllers.registrations.RegistrationSectionController.replaceSection(regId: String, section: models.registration.RegistrationSectionId)
+DELETE          /:regId/sections/:section                       controllers.registrations.RegistrationSectionController.deleteSection(regId: String, section: models.registration.RegistrationSectionId)

@@ -19,6 +19,7 @@ package services
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api.Partner
+import models.registration.sections.PartnersSection
 import models.submission.{Individual, Partnership, UkCompany}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
@@ -39,15 +40,15 @@ class PartnersServiceSpec extends VatRegSpec with VatRegistrationFixture {
 
   "getPartner" must {
     "return a partner if it exists" in {
-      when(mockRegistrationMongoRepository.fetchBlock[List[Partner]](ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(partnersBlockKey))(any()))
-        .thenReturn(Future.successful(Some(List(testSoleTraderPartner))))
+      when(mockRegistrationMongoRepository.fetchBlock[PartnersSection](ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(partnersBlockKey))(any()))
+        .thenReturn(Future.successful(Some(PartnersSection(List(testSoleTraderPartner)))))
 
       val res = await(Service.getPartner(testRegId, index = 1))
 
       res mustBe Some(testSoleTraderPartner)
     }
     "return None if the partner doesn't exist" in {
-      when(mockRegistrationMongoRepository.fetchBlock[List[Partner]](ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(partnersBlockKey))(any()))
+      when(mockRegistrationMongoRepository.fetchBlock[PartnersSection](ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(partnersBlockKey))(any()))
         .thenReturn(Future.successful(None))
 
       val res = await(Service.getPartner(testRegId, index = 1))
@@ -60,16 +61,16 @@ class PartnersServiceSpec extends VatRegSpec with VatRegistrationFixture {
     "add a partner at the specified index" in {
       val updatedList = List(testSoleTraderPartner, testLtdCoPartner)
 
-      when(mockRegistrationMongoRepository.fetchBlock[List[Partner]](
+      when(mockRegistrationMongoRepository.fetchBlock[PartnersSection](
         ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(partnersBlockKey))(any[Reads[List[Partner]]])
-      ).thenReturn(Future.successful(Some(List(testSoleTraderPartner))))
+        ArgumentMatchers.eq(partnersBlockKey))(any[Reads[PartnersSection]])
+      ).thenReturn(Future.successful(Some(PartnersSection(List(testSoleTraderPartner)))))
 
-      when(mockRegistrationMongoRepository.updateBlock[List[Partner]](
+      when(mockRegistrationMongoRepository.updateBlock[PartnersSection](
         ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(updatedList),
+        ArgumentMatchers.eq(PartnersSection(updatedList)),
         ArgumentMatchers.eq(partnersBlockKey)
-      )(any[Writes[List[Partner]]])).thenReturn(Future.successful(updatedList))
+      )(any[Writes[PartnersSection]])).thenReturn(Future.successful(PartnersSection(updatedList)))
 
       val res = await(Service.storePartner(testRegId, index = 2, partner = testLtdCoPartner))
 
@@ -81,29 +82,29 @@ class PartnersServiceSpec extends VatRegSpec with VatRegistrationFixture {
     "return all partners" in {
       val partnerList = List(testSoleTraderPartner)
 
-      when(mockRegistrationMongoRepository.fetchBlock[List[Partner]](ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(partnersBlockKey))(any()))
-        .thenReturn(Future.successful(Some(partnerList)))
+      when(mockRegistrationMongoRepository.fetchBlock[PartnersSection](ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(partnersBlockKey))(any()))
+        .thenReturn(Future.successful(Some(PartnersSection(partnerList))))
 
       val res = await(Service.getPartners(testRegId))
 
-      res mustBe Some(partnerList)
+      res mustBe Some(PartnersSection(partnerList))
     }
   }
 
   "deletePartner" must {
     "remove a partner at the specified index" in {
-      when(mockRegistrationMongoRepository.fetchBlock[List[Partner]](ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(partnersBlockKey))(any()))
-        .thenReturn(Future.successful(Some(List(testSoleTraderPartner))))
+      when(mockRegistrationMongoRepository.fetchBlock[PartnersSection](ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(partnersBlockKey))(any()))
+        .thenReturn(Future.successful(Some(PartnersSection(List(testSoleTraderPartner)))))
 
-      when(mockRegistrationMongoRepository.updateBlock[List[Partner]](
+      when(mockRegistrationMongoRepository.updateBlock[PartnersSection](
         ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(Nil),
+        ArgumentMatchers.eq(PartnersSection(Nil)),
         ArgumentMatchers.eq(partnersBlockKey)
-      )(any())).thenReturn(Future.successful(Nil))
+      )(any())).thenReturn(Future.successful(PartnersSection(Nil)))
 
       val res = await(Service.deletePartner(testRegId, index = 1))
 
-      res mustBe Nil
+      res mustBe PartnersSection(Nil)
     }
   }
 

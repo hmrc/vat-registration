@@ -18,14 +18,15 @@ package services
 
 import common.exceptions.UpdateFailed
 import models.api.Partner
+import models.registration.sections.PartnersSection
 import play.api.libs.json.Reads
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PartnersService @Inject()(registrationMongoRepository: RegistrationMongoRepository)
+class PartnersService @Inject()(registrationMongoRepository: VatSchemeRepository)
                                (implicit ec: ExecutionContext) {
 
   val partnersBlock = "partners"
@@ -34,29 +35,36 @@ class PartnersService @Inject()(registrationMongoRepository: RegistrationMongoRe
 
   def getPartner(regId: String, index: Int): Future[Option[Partner]] = {
     getPartners(regId).map {
-      case Some(partners) => partners.lift(index - indexOffset)
+      case Some(section) => section.partners.lift(index - indexOffset)
       case _ => None
     }
   }
 
   def storePartner(regId: String, partner: Partner, index: Int)(implicit reads: Reads[Partner]): Future[Partner] = {
-    registrationMongoRepository.fetchBlock[List[Partner]](regId, partnersBlock)
-      .map(_.getOrElse(Nil))
-      .flatMap { partners =>
-        registrationMongoRepository.updateBlock(regId, partners.patch(index - indexOffset, List(partner), recordsToReplace), partnersBlock).map(
-          _.lift(index - indexOffset)
-            .getOrElse(throw UpdateFailed(regId, partnersBlock))
-        )
+    registrationMongoRepository.fetchBlock[PartnersSection](regId, partnersBlock)
+      .map(_.getOrElse(PartnersSection(Nil)))
+      .flatMap { section =>
+        registrationMongoRepository.updateBlock(
+          regId = regId,
+          data = PartnersSection(section.partners.patch(index - indexOffset, List(partner), recordsToReplace)),
+          key = partnersBlock
+        ).map(_.partners.lift(index - indexOffset).getOrElse(throw UpdateFailed(regId, partnersBlock)))
       }
   }
 
-  def getPartners(regId: String): Future[Option[List[Partner]]] =
-    registrationMongoRepository.fetchBlock[List[Partner]](regId, partnersBlock)
+  def getPartners(regId: String): Future[Option[PartnersSection]] =
+    registrationMongoRepository.fetchBlock[PartnersSection](regId, partnersBlock)
 
-  def deletePartner(regId: String, index: Int): Future[List[Partner]] =
-    registrationMongoRepository.fetchBlock[List[Partner]](regId, partnersBlock).map(_.getOrElse(Nil)).flatMap { partners =>
-      registrationMongoRepository.updateBlock[List[Partner]](regId, partners.patch(index - indexOffset, Nil, recordsToReplace), partnersBlock)
-    }
+  def deletePartner(regId: String, index: Int): Future[PartnersSection] =
+    registrationMongoRepository.fetchBlock[PartnersSection](regId, partnersBlock)
+      .map(_.getOrElse(PartnersSection(Nil)))
+      .flatMap { section =>
+        registrationMongoRepository.updateBlock[PartnersSection](
+          regId = regId,
+          data = PartnersSection(section.partners.patch(index - indexOffset, Nil, recordsToReplace)),
+          key = partnersBlock
+        )
+      }
 
 }
 

@@ -26,7 +26,7 @@ import org.mockito.stubbing.OngoingStubbing
 import play.api.libs.json.JsObject
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 
@@ -36,7 +36,7 @@ class SicAndComplianceControllerSpec extends VatRegSpec with VatRegistrationFixt
 
   class Setup {
     val controller: SicAndComplianceController = new SicAndComplianceController(mockSicAndComplianceService, mockAuthConnector, stubControllerComponents()){
-      override val resourceConn: RegistrationMongoRepository = mockRegistrationMongoRepository
+      override val resourceConn: VatSchemeRepository = mockRegistrationMongoRepository
     }
   }
 

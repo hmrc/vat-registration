@@ -27,7 +27,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 import models.submission._
@@ -41,7 +41,7 @@ class ApplicantDetailsControllerSpec extends VatRegSpec with VatRegistrationFixt
       mockVatRegistrationService,
       stubControllerComponents()
     ) {
-      override val resourceConn: RegistrationMongoRepository = mockRegistrationMongoRepository
+      override val resourceConn: VatSchemeRepository = mockRegistrationMongoRepository
     }
   }
 

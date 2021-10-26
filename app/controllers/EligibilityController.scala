@@ -20,7 +20,7 @@ import auth.Authorisation
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsObject, JsValue}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import services.EligibilityService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -33,7 +33,7 @@ class EligibilityController @Inject()(val eligibilityService: EligibilityService
                                       controllerComponents: ControllerComponents
                                      ) extends BackendController(controllerComponents) with Authorisation {
 
-  val resourceConn: RegistrationMongoRepository = eligibilityService.registrationRepository
+  val resourceConn: VatSchemeRepository = eligibilityService.registrationRepository
 
   def getEligibilityData(regId: String): Action[AnyContent] = Action.async {
     implicit request =>

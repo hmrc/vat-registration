@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.mvc.Results
 import play.api.test.Helpers._
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import uk.gov.hmrc.auth.core.AuthConnector
 
 import scala.concurrent.Future
@@ -32,7 +32,7 @@ class AuthorisationSpec extends VatRegSpec {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   val authorisation: Authorisation = new Authorisation {
-    val resourceConn: RegistrationMongoRepository = mockRegistrationMongoRepository
+    val resourceConn: VatSchemeRepository = mockRegistrationMongoRepository
     val authConnector: AuthConnector = mockAuthConnector
   }
 

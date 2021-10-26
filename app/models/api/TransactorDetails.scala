@@ -16,6 +16,7 @@
 
 package models.api
 
+import models.registration.RegistrationSection
 import models.submission.DeclarationCapacity
 import play.api.libs.json.{Format, Json}
 
@@ -25,7 +26,13 @@ case class TransactorDetails(personalDetails: PersonalDetails,
                              telephone: String,
                              email: String,
                              address: Address,
-                             declarationCapacity: DeclarationCapacityAnswer)
+                             declarationCapacity: DeclarationCapacityAnswer) extends RegistrationSection[TransactorDetails] {
+
+  override def isComplete: TransactorDetails => Boolean = {
+    _ => true
+  }
+
+}
 
 object TransactorDetails {
   implicit val format: Format[TransactorDetails] = Json.format[TransactorDetails]

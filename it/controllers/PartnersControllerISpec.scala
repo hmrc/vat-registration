@@ -4,6 +4,7 @@ package controllers
 import enums.VatRegStatus
 import itutil.IntegrationStubbing
 import models.api.{Partner, VatScheme}
+import models.registration.sections.PartnersSection
 import models.submission.{Individual, Partnership, UkCompany}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
@@ -22,7 +23,7 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(partners)
+        partners = Some(PartnersSection(partners))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/1").get()
@@ -67,7 +68,7 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(partners)
+        partners = Some(PartnersSection(partners))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/1").get()
@@ -117,14 +118,19 @@ class PartnersControllerISpec extends IntegrationStubbing {
     }
     "add a new partner and return CREATED" in new SetupHelper {
       given.user.isAuthorised
-      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft, partners = Some(List(testPartnershipPartner))))
+      insertIntoDb(VatScheme(
+        id = testRegId,
+        internalId = testInternalid,
+        status = VatRegStatus.draft,
+        partners = Some(PartnersSection(List(testPartnershipPartner)))
+      ))
 
       val result = client(s"/vatreg/$testRegId/partners/2").put(Json.toJson(testSoleTraderPartner))
 
       whenReady(result) { res =>
         res.status mustBe CREATED
         res.json mustBe Json.toJson(testSoleTraderPartner)
-        await(repo.fetchBlock[List[Partner]](testRegId, "partners")) mustBe Some(List(testPartnershipPartner, testSoleTraderPartner))
+        await(repo.fetchBlock[PartnersSection](testRegId, "partners")) mustBe Some(PartnersSection(List(testPartnershipPartner, testSoleTraderPartner)))
       }
     }
     "Update an specific entry and not alter the rest" in new SetupHelper {
@@ -133,7 +139,7 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(List(testPartnershipPartner, testSoleTraderPartner))
+        partners = Some(PartnersSection(List(testPartnershipPartner, testSoleTraderPartner)))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/1").put(Json.toJson(testLtdCoPartner))
@@ -141,7 +147,7 @@ class PartnersControllerISpec extends IntegrationStubbing {
       whenReady(result) { res =>
         res.status mustBe CREATED
         res.json mustBe Json.toJson(testLtdCoPartner)
-        await(repo.fetchBlock[List[Partner]](testRegId, "partners")) mustBe Some(List(testLtdCoPartner, testSoleTraderPartner))
+        await(repo.fetchBlock[PartnersSection](testRegId, "partners")) mustBe Some(PartnersSection(List(testLtdCoPartner, testSoleTraderPartner)))
       }
     }
     "return BAD_REQUEST if the json isn't valid" in new SetupHelper {
@@ -176,7 +182,7 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(partners)
+        partners = Some(PartnersSection(partners))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/1").put(Json.toJson(testSoleTraderPartner))
@@ -195,7 +201,7 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(partners)
+        partners = Some(PartnersSection(partners))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners").get()
@@ -226,7 +232,7 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(partners)
+        partners = Some(PartnersSection(partners))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners").get()
@@ -245,14 +251,14 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(partners)
+        partners = Some(PartnersSection(partners))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/2").delete()
 
       whenReady(result) { res =>
         res.status mustBe NO_CONTENT
-        await(repo.fetchBlock[List[Partner]](testRegId, "partners")) mustBe Some(List(testPartnershipPartner, testLtdCoPartner))
+        await(repo.fetchBlock[PartnersSection](testRegId, "partners")) mustBe Some(PartnersSection(List(testPartnershipPartner, testLtdCoPartner)))
       }
     }
     "affect nothing and return NO_CONTENT if the partner ID is outside the range of what's in the repo" in new SetupHelper {
@@ -262,14 +268,14 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(partners)
+        partners = Some(PartnersSection(partners))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/4").delete()
 
       whenReady(result) { res =>
         res.status mustBe NO_CONTENT
-        await(repo.fetchBlock[List[Partner]](testRegId, "partners")) mustBe Some(partners)
+        await(repo.fetchBlock[PartnersSection](testRegId, "partners")) mustBe Some(PartnersSection(partners))
       }
     }
     "affect nothing and return NO_CONTENT if there are no partners" in new SetupHelper {
@@ -308,7 +314,7 @@ class PartnersControllerISpec extends IntegrationStubbing {
         id = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
-        partners = Some(partners)
+        partners = Some(PartnersSection(partners))
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/1").delete()

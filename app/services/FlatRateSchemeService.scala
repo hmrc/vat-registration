@@ -18,12 +18,12 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import models.api.FlatRateScheme
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 
 @Singleton
-class FlatRateSchemeService @Inject()(val registrationRepository: RegistrationMongoRepository) {
+class FlatRateSchemeService @Inject()(val registrationRepository: VatSchemeRepository) {
 
   def retrieveFlatRateScheme(regId: String): Future[Option[FlatRateScheme]] = {
     registrationRepository.fetchFlatRateScheme(regId)

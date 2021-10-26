@@ -25,16 +25,16 @@ import models.submission.UkCompany
 import play.api.libs.json._
 import play.api.test.Helpers._
 import reactivemongo.api.commands.WriteResult
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RegistrationMongoRepositoryISpec extends MongoBaseSpec with FutureAssertions with ITFixtures {
+class VatSchemeRepositoryISpec extends MongoBaseSpec with FutureAssertions with ITFixtures {
 
   class Setup {
-    val repository: RegistrationMongoRepository = app.injector.instanceOf[RegistrationMongoRepository]
+    val repository: VatSchemeRepository = app.injector.instanceOf[VatSchemeRepository]
 
     def insert(json: JsObject): WriteResult = await(repository.collection.insert(json))
 

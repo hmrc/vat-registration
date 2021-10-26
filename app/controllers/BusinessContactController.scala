@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import models.api.BusinessContact
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import services.BusinessContactService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -34,7 +34,7 @@ class BusinessContactController @Inject()(val businessContactService: BusinessCo
                                           controllerComponents: ControllerComponents
                                          ) extends BackendController(controllerComponents) with Authorisation {
 
-  val resourceConn: RegistrationMongoRepository = businessContactService.registrationRepository
+  val resourceConn: VatSchemeRepository = businessContactService.registrationRepository
 
   def getBusinessContact(regId: String): Action[AnyContent] = Action.async {
     implicit request =>

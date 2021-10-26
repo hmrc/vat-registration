@@ -9,6 +9,9 @@ PUT          /traffic-management/reg-info           controllers.TrafficManagemen
 DELETE       /traffic-management/reg-info/clear     controllers.TrafficManagementController.clearDocument
 
 GET          /scheme                                controllers.VatRegistrationController.retrieveVatSchemeByInternalId()
+GET          /threshold/:date                        controllers.VatThresholdController.getThresholdForDate(date: String)
+POST         /upscan-callback                        controllers.UpscanController.upscanDetailsCallback
+
 GET          /:regId/get-scheme                     controllers.VatRegistrationController.retrieveVatScheme(regId: String)
 
 GET          /:regId/trading-details                controllers.TradingDetailsController.fetchTradingDetails(regId)
@@ -38,8 +41,6 @@ PATCH       /:regId/sicAndComp                      controllers.SicAndCompliance
 GET         /:regId/business-contact                controllers.BusinessContactController.getBusinessContact(regId: String)
 PATCH       /:regId/business-contact                controllers.BusinessContactController.updateBusinessContact(regId: String)
 
-GET         /threshold/:date                        controllers.VatThresholdController.getThresholdForDate(date: String)
-
 GET         /:regId/eligibility-data                controllers.EligibilityController.getEligibilityData(regId: String)
 PATCH       /:regId/eligibility-data                controllers.EligibilityController.updateEligibilityData(regId: String)
 
@@ -55,7 +56,6 @@ PATCH       /:regId/nrs-payload                     controllers.NrsSubmissionPay
 
 POST        /:regId/upscan-reference                controllers.UpscanController.createUpscanDetails(regId: String)
 GET         /:regId/upscan-file-details/:reference  controllers.UpscanController.getUpscanDetails(regId: String, reference: String)
-POST        /upscan-callback                        controllers.UpscanController.upscanDetailsCallback
 
 GET         /:regId/partners/:index                 controllers.PartnersController.getPartner(regId: String, index: Int)
 PUT         /:regId/partners/:index                 controllers.PartnersController.upsertPartner(regId: String, index: Int)

@@ -19,7 +19,7 @@ package services.submission
 import models.api.AttachmentType
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.{JsObject, Json}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import services.AttachmentsService
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{conditional, jsonObject, optional}
@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AdminBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository,
+class AdminBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository,
                                   attachmentsService: AttachmentsService)
                                  (implicit ec: ExecutionContext) {
 

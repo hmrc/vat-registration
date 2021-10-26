@@ -23,7 +23,7 @@ import enums.VatRegStatus
 import models.api._
 import play.api.libs.json._
 import play.api.mvc._
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import services._
 import services.submission.SubmissionService
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -35,9 +35,9 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class VatRegistrationController @Inject()(val registrationService: VatRegistrationService,
                                           val submissionService: SubmissionService,
-                                          val registrationRepository: RegistrationMongoRepository,
+                                          val registrationRepository: VatSchemeRepository,
                                           val authConnector: AuthConnector,
-                                          val newRegistrationService: NewRegistrationService,
+                                          val newRegistrationService: RegistrationService,
                                           controllerComponents: ControllerComponents
                                          )(implicit executionContext: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation with FutureInstances {

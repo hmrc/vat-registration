@@ -45,4 +45,6 @@ object SicCode extends SicCodeValidator {
     }
   }
 
+  implicit val format: Format[SicCode] = Json.format[SicCode]
+
 }

@@ -17,6 +17,7 @@
 package models.api
 
 import models._
+import models.registration.RegistrationSection
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -28,7 +29,13 @@ case class EligibilitySubmissionData(threshold: Threshold,
                                      customerStatus: CustomerStatus,
                                      partyType: PartyType,
                                      registrationReason: RegistrationReason,
-                                     isTransactor: Boolean)
+                                     isTransactor: Boolean) extends RegistrationSection[EligibilitySubmissionData] {
+
+  override def isComplete: EligibilitySubmissionData => Boolean = {
+    _ => true
+  }
+
+}
 
 object EligibilitySubmissionData {
   val exceptionKey = "2"

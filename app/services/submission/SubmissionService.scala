@@ -39,7 +39,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SubmissionService @Inject()(registrationRepository: RegistrationMongoRepository,
+class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   vatSubmissionConnector: VatSubmissionConnector,
                                   nonRepudiationService: NonRepudiationService,
                                   trafficManagementService: TrafficManagementService,
