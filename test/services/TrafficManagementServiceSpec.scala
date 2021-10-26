@@ -20,7 +20,7 @@ import config.BackendConfig
 import helpers.VatRegSpec
 import mocks.{MockDailyQuotaRepository, MockTrafficManagementRepository}
 import models.api.{Draft, OTRS, RegistrationInformation, VatReg}
-import models.submission.{Individual, UkCompany}
+import models.submission._
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.Helpers._
@@ -37,10 +37,15 @@ class TrafficManagementServiceSpec extends VatRegSpec
 
   override lazy val app: Application = new GuiceApplicationBuilder()
     .configure(Map(
-      "traffic-management.hours.from"-> 9,
-      "traffic-management.hours.until"-> 17,
-      "traffic-management.quotas.uk-company-enrolled"-> 15,
-      "traffic-management.quotas.sole-trader" -> 1
+      "traffic-management.hours.from" -> 9,
+      "traffic-management.hours.until" -> 17,
+      "traffic-management.quotas.uk-company-enrolled" -> 15,
+      "traffic-management.quotas.sole-trader" -> 1,
+      "traffic-management.quotas.sole-trader-enrolled" -> 2,
+      "traffic-management.quotas.netp-enrolled" -> 2,
+      "traffic-management.quotas.non-uk-company-enrolled" -> 2,
+      "traffic-management.quotas.reg-society-enrolled" -> 2,
+      "traffic-management.quotas.charitable-incorp-org-enrolled" -> 2
     ))
     .build()
 
@@ -82,16 +87,18 @@ class TrafficManagementServiceSpec extends VatRegSpec
 
       res mustBe QuotaReached
     }
-    "return Allocated when the quota has not been exceeded" in new Setup() {
-      mockCurrentTotal(UkCompany, isEnrolled = true)(1)
-      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
-        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today))
-      )
-      mockIncrement(UkCompany, isEnrolled = true)(1)
+    Seq(UkCompany, Individual, NETP, NonUkNonEstablished, RegSociety, CharitableOrg).foreach { partyType =>
+      s"return Allocated when the quota has not been exceeded for $partyType" in new Setup() {
+        mockCurrentTotal(partyType, isEnrolled = true)(1)
+        mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
+          Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today))
+        )
+        mockIncrement(partyType, isEnrolled = true)(1)
 
-      val res = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
+        val res = await(Service.allocate(testInternalId, testRegId, partyType, isEnrolled = true))
 
-      res mustBe Allocated
+        res mustBe Allocated
+      }
     }
     "return quota reached before opening hours" in new Setup(hour = 8) {
       mockCurrentTotal(UkCompany, isEnrolled = true)(1)

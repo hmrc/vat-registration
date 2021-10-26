@@ -43,6 +43,10 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       case NETP => config.DailyQuotas.netp
       case NonUkNonEstablished if isEnrolled => config.DailyQuotas.enrolledNonUkCompany
       case NonUkNonEstablished => config.DailyQuotas.nonUkCompany
+      case RegSociety if isEnrolled => config.DailyQuotas.enrolledRegSociety
+      case RegSociety => config.DailyQuotas.regSociety
+      case CharitableOrg if isEnrolled => config.DailyQuotas.enrolledCharitableIncorpOrg
+      case CharitableOrg => config.DailyQuotas.charitableIncorpOrg
     }
 
   def currentHour: Int = timeMachine.timestamp.getHour
