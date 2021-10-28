@@ -126,8 +126,8 @@ trait ITFixtures {
       identifiersMatch = true,
       dateOfBirth = testDate
     ),
-    entity = IncorporatedIdEntity(
-      companyName = testCompanyName,
+    entity = IncorporatedEntity(
+      companyName = Some(testCompanyName),
       companyNumber = testCrn,
       dateOfIncorporation = Some(testDateOfIncorp),
       ctutr = Some(testCtUtr),
@@ -152,8 +152,8 @@ trait ITFixtures {
       identifiersMatch = true,
       dateOfBirth = testDate
     ),
-    entity = IncorporatedIdEntity(
-      companyName = testCompanyName,
+    entity = IncorporatedEntity(
+      companyName = Some(testCompanyName),
       companyNumber = testCrn,
       dateOfIncorporation = Some(testDateOfIncorp),
       ctutr = Some(testCtUtr),
@@ -348,8 +348,8 @@ trait ITFixtures {
     identifiersMatch = true
   )
 
-  val testLtdCoEntity = IncorporatedIdEntity(
-    companyName = testCompanyName,
+  val testLtdCoEntity = IncorporatedEntity(
+    companyName = Some(testCompanyName),
     companyNumber = testCrn,
     ctutr = Some(testUtr),
     dateOfIncorporation = Some(testDateOfIncorp),
@@ -369,7 +369,8 @@ trait ITFixtures {
     identifiersMatch = true
   )
 
-  val testTrustEntity: MinorEntityIdEntity = MinorEntityIdEntity(
+  val testTrustEntity: MinorEntity = MinorEntity(
+    Some(testCompanyName),
     Some(testUtr),
     None,
     None,
@@ -583,7 +584,8 @@ trait ITFixtures {
       partyType = NonUkNonEstablished
     )
 
-  lazy val testNonUkCompanyEntity = MinorEntityIdEntity(
+  lazy val testNonUkCompanyEntity = MinorEntity(
+    Some(testCompanyName),
     Some(testCtUtr),
     None,
     Some(OverseasIdentifierDetails("1234", "FR")),

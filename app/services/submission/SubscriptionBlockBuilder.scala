@@ -55,7 +55,7 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: Registrati
         "exemptionOrException" -> eligibilityData.exceptionOrExemption
       ),
       optional("corporateBodyRegistered" -> Option(applicantDetails.entity).collect {
-        case IncorporatedIdEntity(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
+        case IncorporatedEntity(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
           Some(jsonObject(
             "companyRegistrationNumber" -> companyNumber,
             optional("dateOfIncorporation" -> dateOfIncorporation),

@@ -89,8 +89,8 @@ trait VatRegistrationFixture {
     registrationReason = ForwardLook
   )
 
-  val testLtdCoEntity = IncorporatedIdEntity(
-    companyName = testCompanyName,
+  val testLtdCoEntity = IncorporatedEntity(
+    companyName = Some(testCompanyName),
     companyNumber = testCrn,
     ctutr = Some(testUtr),
     dateOfIncorporation = Some(testDateOFIncorp),
@@ -121,7 +121,8 @@ trait VatRegistrationFixture {
     identifiersMatch = true
   )
 
-  val testTrustEntity: MinorEntityIdEntity = MinorEntityIdEntity(
+  val testTrustEntity: MinorEntity = MinorEntity(
+    Some(testCompanyName),
     Some(testUtr),
     None,
     None,

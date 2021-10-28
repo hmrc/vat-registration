@@ -730,7 +730,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "idValue" -> "1234"
         )
       ),
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testTradingDetails.tradingName.get,
+      "shortOrgName" -> testCompanyName
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(

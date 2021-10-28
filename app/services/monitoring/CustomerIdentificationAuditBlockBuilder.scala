@@ -17,13 +17,14 @@
 package services.monitoring
 
 import models.api.VatScheme
-import models.{PartnershipIdEntity, IncorporatedIdEntity, SoleTraderIdEntity}
+import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
 
 import javax.inject.Singleton
 
+// scalastyle:off
 @Singleton
 class CustomerIdentificationAuditBlockBuilder {
 
@@ -34,7 +35,7 @@ class CustomerIdentificationAuditBlockBuilder {
           "tradersPartyType" -> vatScheme.partyType,
           optional("identifiers" -> {
             applicantDetails.entity match {
-              case IncorporatedIdEntity(_, companyNumber, _, optCtutr, _, _, _, _, _, optChrn) =>
+              case IncorporatedEntity(_, companyNumber, _, optCtutr, _, _, _, _, _, optChrn) =>
                 Some(jsonObject(
                   "companyRegistrationNumber" -> companyNumber,
                   optional("ctUTR" -> optCtutr),
@@ -56,7 +57,8 @@ class CustomerIdentificationAuditBlockBuilder {
           }),
           optional("shortOrgName" -> {
             applicantDetails.entity match {
-              case IncorporatedIdEntity(companyName, _, _, _, _, _, _, _, _, _) => Some(companyName)
+              case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => companyName
+              case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => companyName
               case _ => None
             }
           }),

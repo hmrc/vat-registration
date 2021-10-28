@@ -17,7 +17,7 @@
 package services.submission
 
 import models.submission.{Individual, NETP}
-import models.{IncorporatedIdEntity, SoleTraderIdEntity}
+import models.{IncorporatedEntity, MinorEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -39,13 +39,19 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
   } yield (optVatScheme, optApplicantDetails, optTradingDetails) match {
     case (Some(vatScheme), Some(applicantDetails), Some(tradingDetails)) =>
       jsonObject(
-        "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map{ data =>
+        "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map { data =>
           if (data.partyType.equals(NETP)) Individual
           else data.partyType
         },
-        optional("shortOrgName" -> Option(applicantDetails.entity).collect {
-          case IncorporatedIdEntity(companyName, _, _, _, None, _, _, _, _, _) => StringNormaliser.normaliseString(companyName) //Don't send company name when safeId is present
-        }),
+        optional(
+          "shortOrgName" -> {
+            applicantDetails.entity match {
+              case IncorporatedEntity(companyName, _, _, _, None, _, _, _, _, _) => companyName
+              case MinorEntity(companyName, _, _, _, _, _, _, _, _, None, _) => companyName
+              case _ => None
+            }
+          }.map(StringNormaliser.normaliseString) //Don't send company name when safeId is present
+        ),
         optional("tradingName" -> tradingDetails.tradingName.map(StringNormaliser.normaliseString))
       ) ++ {
         applicantDetails.entity.bpSafeId match {
