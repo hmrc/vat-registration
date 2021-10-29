@@ -16,7 +16,7 @@
 
 package models.api
 
-import models.{BusinessEntity, PartnershipIdEntity, IncorporatedIdEntity, SoleTraderIdEntity}
+import models.{BusinessEntity, PartnershipIdEntity, IncorporatedEntity, SoleTraderIdEntity}
 import models.submission.{Individual, Partnership, PartyType, UkCompany}
 import play.api.libs.json.{JsError, JsPath, JsSuccess, JsValue, Json, JsonValidationError, Reads, Writes}
 
@@ -33,7 +33,7 @@ object Partner {
     val optPartyType = (json \ partyTypeKey).validate[PartyType].asOpt
     val optDetails = optPartyType match {
       case Some(Individual) => (json \ detailsKey).validate[SoleTraderIdEntity].asOpt
-      case Some(UkCompany) => (json \ detailsKey).validate[IncorporatedIdEntity].asOpt
+      case Some(UkCompany) => (json \ detailsKey).validate[IncorporatedEntity].asOpt
       case Some(Partnership) => (json \ detailsKey).validate[PartnershipIdEntity].asOpt
       case _ => None
     }
@@ -60,7 +60,7 @@ object Partner {
       case Partner(details, Individual, _) =>
         Json.toJson(details.asInstanceOf[SoleTraderIdEntity])(SoleTraderIdEntity.format)
       case Partner(details, UkCompany, _) =>
-        Json.toJson(details.asInstanceOf[IncorporatedIdEntity])(IncorporatedIdEntity.format)
+        Json.toJson(details.asInstanceOf[IncorporatedEntity])(IncorporatedEntity.format)
       case Partner(details, Partnership, _) =>
         Json.toJson(details.asInstanceOf[PartnershipIdEntity])(PartnershipIdEntity.format)
     }

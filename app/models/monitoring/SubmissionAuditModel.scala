@@ -18,7 +18,7 @@ package models.monitoring
 
 import models.api.VatScheme
 import models.submission.{IdVerificationStatus, NETP, NonUkNonEstablished}
-import models.{IncorporatedIdEntity, NonUk, SuppliesOutsideUk, Voluntary}
+import models.{IncorporatedEntity, NonUk, SuppliesOutsideUk, Voluntary}
 import play.api.libs.json.{JsString, JsValue, Json}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -64,7 +64,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           }),
           optional("corporateBodyRegistered" -> {
             applicantDetails.entity match {
-              case IncorporatedIdEntity(_, _, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
+              case IncorporatedEntity(_, _, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
                 Some(jsonObject(
                   "countryOfIncorporation" -> countryOfIncorporation,
                   optional("dateOfIncorporation" -> dateOfIncorporation)
