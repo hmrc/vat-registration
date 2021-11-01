@@ -72,7 +72,7 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
       Json.obj("questionId" -> "applicantUKNino-optionalData", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "JW778877A"),
       Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "Some Question 21", "answer" -> "Some Answer 21", "answerValue" -> 123456),
       Json.obj("questionId" -> "testQId22", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "val22"),
-      Json.obj("questionId" -> "registeringBusiness", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> true),
+      Json.obj("questionId" -> "registeringBusiness-value", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "own"),
       Json.obj("questionId" -> "businessEntity-value", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "50")
     )
     val section1 = Json.obj("title" -> "test TITLE 1", "data" -> JsArray(questions1))
@@ -132,6 +132,28 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
       result mustBe eligibilityData
       verify(mockRegistrationMongoRepository, Mockito.times(1))
         .insertVatScheme(ArgumentMatchers.eq(vatSchemeWithoutFRSorAAS))
+    }
+
+    "return eligibility data and clear user's transactor details if the transactor answer is changed" in new Setup {
+      val vatSchemeWithTransactor: VatScheme = testFullVatScheme.copy(transactorDetails = Some(validTransactorDetails))
+      val vatSchemeWithoutTransactor: VatScheme = testFullVatScheme.copy(transactorDetails = None)
+
+      when(mockRegistrationMongoRepository.updateEligibilitySubmissionData(any(), any()))
+        .thenReturn(Future.successful(testEligibilitySubmissionData))
+      when(mockRegistrationMongoRepository.updateEligibilityData(any(), any()))
+        .thenReturn(Future.successful(eligibilityData))
+      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
+        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(isTransactor = true))))
+      when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+        .thenReturn(Future.successful(Some(vatSchemeWithTransactor)))
+      when(mockRegistrationMongoRepository.insertVatScheme(ArgumentMatchers.eq(vatSchemeWithoutTransactor)))
+        .thenReturn(Future.successful(vatSchemeWithoutTransactor))
+
+      val result: JsObject = await(service.updateEligibilityData("regId", eligibilityData))
+
+      result mustBe eligibilityData
+      verify(mockRegistrationMongoRepository, Mockito.times(1))
+        .insertVatScheme(ArgumentMatchers.eq(vatSchemeWithoutTransactor))
     }
 
     "return eligibility data and not clear any vatscheme fields where eligibility data is unchanged" in new Setup {
