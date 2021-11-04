@@ -172,7 +172,10 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(
-          testFullVatSchemeWithUnregisteredBusinessPartner.copy(transactorDetails = Some(testTransactorDetails)),
+          testFullVatSchemeWithUnregisteredBusinessPartner.copy(
+            eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(isTransactor = true)),
+            transactorDetails = Some(testTransactorDetails)
+          ),
           repo.insert
         )
 

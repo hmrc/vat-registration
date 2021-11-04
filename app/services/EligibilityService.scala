@@ -55,14 +55,15 @@ class EligibilityService @Inject()(val registrationRepository: RegistrationMongo
     registrationRepository.retrieveVatScheme(regId).flatMap {
       case Some(vatScheme) =>
         oldEligibilityData match {
-          case EligibilitySubmissionData(_, _, _, _, oldPartyType, _) if !oldPartyType.equals(eligibilityData.partyType) =>
+          case EligibilitySubmissionData(_, _, _, _, oldPartyType, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
             registrationRepository.insertVatScheme(VatScheme(
               id = vatScheme.id,
               internalId = vatScheme.internalId,
               status = vatScheme.status
             ))
 
-          case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _, _) if !oldTurnoverEstimates.equals(eligibilityData.estimates) =>
+          case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _, _, oldTransactorFlag)
+            if !oldTurnoverEstimates.equals(eligibilityData.estimates) || !oldTransactorFlag.equals(eligibilityData.isTransactor) =>
             val clearedFRS = if (oldTurnoverEstimates.turnoverEstimate > 150000L) {
               None
             } else {
@@ -76,7 +77,17 @@ class EligibilityService @Inject()(val registrationRepository: RegistrationMongo
               vatScheme.returns
             }
 
-            registrationRepository.insertVatScheme(vatScheme.copy(flatRateScheme = clearedFRS, returns = clearedReturns))
+            val clearedTransactor = if (oldTransactorFlag != eligibilityData.isTransactor) {
+              None
+            } else {
+              vatScheme.transactorDetails
+            }
+
+            registrationRepository.insertVatScheme(vatScheme.copy(
+              flatRateScheme = clearedFRS,
+              returns = clearedReturns,
+              transactorDetails = clearedTransactor
+            ))
 
           case _ =>
             Future.successful(vatScheme)

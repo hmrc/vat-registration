@@ -27,7 +27,8 @@ case class EligibilitySubmissionData(threshold: Threshold,
                                      estimates: TurnoverEstimates,
                                      customerStatus: CustomerStatus,
                                      partyType: PartyType,
-                                     registrationReason: RegistrationReason)
+                                     registrationReason: RegistrationReason,
+                                     isTransactor: Boolean)
 
 object EligibilitySubmissionData {
   val exceptionKey = "2"
@@ -39,6 +40,9 @@ object EligibilitySubmissionData {
   val changingLegalEntityOfBusiness = "changing-legal-entity"
   val settingUpVatGroup = "setting-up-vat-group"
   val ukEstablishedOverseasExporter = "overseas-exporter"
+
+  val registeringOwnBusiness = "own"
+  val registeringSomeoneElse = "someone-else"
 
   val eligibilityReads: Reads[EligibilitySubmissionData] = Reads { json =>
     (
@@ -58,8 +62,9 @@ object EligibilitySubmissionData {
         json.validate[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads) and
         json.validate[CustomerStatus](CustomerStatus.eligibilityDataJsonReads) and
         (json \ "businessEntity-value").validate[PartyType] and
-        (json \ "registrationReason-value").validateOpt[String]
-      ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason) =>
+        (json \ "registrationReason-value").validateOpt[String] and
+        (json \ "registeringBusiness-value").validate[String]
+      ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason, registeringBusiness) =>
       EligibilitySubmissionData(
         threshold,
         exceptionOrException,
@@ -81,9 +86,23 @@ object EligibilitySubmissionData {
           case Some(`takingOverBusiness`) | Some(`changingLegalEntityOfBusiness`) => TransferOfAGoingConcern
           case Some(`settingUpVatGroup`) => GroupRegistration
           case Some(`ukEstablishedOverseasExporter`) => SuppliesOutsideUk
+        },
+        registeringBusiness match {
+          case `registeringOwnBusiness` => false
+          case `registeringSomeoneElse` => true
         }
-      ))
+      )
+    )
   }
 
-  implicit val format: Format[EligibilitySubmissionData] = Json.format[EligibilitySubmissionData]
+  implicit val format: Format[EligibilitySubmissionData] = (
+    (__ \ "threshold").format[Threshold] and
+      (__ \ "exceptionOrExemption").format[String] and
+      (__ \ "estimates").format[TurnoverEstimates] and
+      (__ \ "customerStatus").format[CustomerStatus] and
+      (__ \ "partyType").format[PartyType] and
+      (__ \ "registrationReason").format[RegistrationReason] and
+      (__ \ "isTransactor").formatWithDefault[Boolean](false)
+    ) (EligibilitySubmissionData.apply, unlift(EligibilitySubmissionData.unapply))
+
 }

@@ -210,7 +210,8 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         estimates = TurnoverEstimates(123456),
         customerStatus = MTDfB,
         partyType = UkCompany,
-        registrationReason = ForwardLook
+        registrationReason = ForwardLook,
+        isTransactor = false
       )
 
       val expected: Threshold = Threshold(
@@ -242,7 +243,8 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         estimates = TurnoverEstimates(10001),
         customerStatus = MTDfB,
         partyType = UkCompany,
-        registrationReason = Voluntary
+        registrationReason = Voluntary,
+        isTransactor = false
       )
 
       val expected: TurnoverEstimates = TurnoverEstimates(turnoverEstimate = 10001)

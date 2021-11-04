@@ -42,8 +42,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           "answerValue" -> 123456),
         Json.obj("questionId" -> "customerStatus-value", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> "2"),
-        Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
-          "answerValue" -> true),
+        Json.obj("questionId" -> "registeringBusiness-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> "own"),
         Json.obj("questionId" -> "businessEntity-value", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> "50")
       )
@@ -65,7 +65,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         estimates = TurnoverEstimates(123456),
         customerStatus = MTDfB,
         partyType = UkCompany,
-        registrationReason = ForwardLook
+        registrationReason = ForwardLook,
+        isTransactor = false
       ))
 
       result mustBe expected
@@ -101,7 +102,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         estimates = TurnoverEstimates(123456),
         customerStatus = MTDfB,
         partyType = UkCompany,
-        registrationReason = ForwardLook
+        registrationReason = ForwardLook,
+        isTransactor = false
       ))
 
       EligibilitySubmissionData.format.reads(json) mustBe expected
@@ -121,7 +123,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         estimates = TurnoverEstimates(123456),
         customerStatus = MTDfB,
         partyType = UkCompany,
-        registrationReason = ForwardLook
+        registrationReason = ForwardLook,
+        isTransactor = false
       )
 
       val expected = Json.obj(
@@ -137,7 +140,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         ),
         "customerStatus" -> "2",
         "partyType" -> "50",
-        "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook)
+        "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook),
+        "isTransactor" -> false
       )
 
       EligibilitySubmissionData.format.writes(model) mustBe expected

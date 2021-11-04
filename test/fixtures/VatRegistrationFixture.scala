@@ -86,7 +86,8 @@ trait VatRegistrationFixture {
     estimates = TurnoverEstimates(123456),
     customerStatus = MTDfB,
     partyType = UkCompany,
-    registrationReason = ForwardLook
+    registrationReason = ForwardLook,
+    isTransactor = false
   )
 
   val testLtdCoEntity = IncorporatedEntity(
