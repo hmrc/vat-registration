@@ -152,6 +152,22 @@ trait VatRegistrationFixture {
     previousAddress = None
   )
 
+  lazy val unverifiedUserApplicantDetails: ApplicantDetails = ApplicantDetails(
+    personalDetails = PersonalDetails(
+      name = testName,
+      nino = Some(testNino),
+      trn = None,
+      identifiersMatch = false,
+      dateOfBirth = testDate
+    ),
+    entity = testLtdCoEntity,
+    roleInBusiness = testRole,
+    currentAddress = testAddress,
+    contact = testDigitalContactOptional,
+    changeOfName = Some(testFormerName),
+    previousAddress = None
+  )
+
   lazy val testEmail = "test@test.com"
   lazy val testTelephone = "1234567890"
   lazy val testOrgName = "testOrganisationName"

@@ -37,8 +37,9 @@ class AttachmentsService @Inject()(val registrationRepository: RegistrationMongo
 
   def attachmentList(vatScheme: VatScheme): List[AttachmentType] = {
     val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType))
+    val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.identifiersMatch)
 
-    if (needIdentityDoc) List(IdentityEvidence) else Nil
+    if (needIdentityDoc || unverifiedPersonalDetails) List(IdentityEvidence) else Nil
   }
 
   def getAttachmentDetails(regId: String): Future[Option[Attachments]] =
