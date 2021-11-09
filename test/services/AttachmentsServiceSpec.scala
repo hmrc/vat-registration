@@ -32,11 +32,22 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   val attachmentsKey = "attachments"
   val netpEligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
   val testNetpVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(netpEligibilityData))
+  val testUnverifiedUserVatScheme = testFullVatScheme.copy(
+    applicantDetails = Some(unverifiedUserApplicantDetails)
+  )
 
   "getAttachmentsList" when {
     "attachments are required" must {
-      "return a list of the required attachments" in {
+      "return a list of the required attachments for a NETP" in {
         mockGetVatScheme(testRegId)(Some(testNetpVatScheme))
+
+        val res = await(Service.getAttachmentList(testRegId))
+
+        res mustBe List(IdentityEvidence)
+      }
+
+      "return a list of the required attachments for a UKCompany with unmatched personal details" in {
+        mockGetVatScheme(testRegId)(Some(testUnverifiedUserVatScheme))
 
         val res = await(Service.getAttachmentList(testRegId))
 
