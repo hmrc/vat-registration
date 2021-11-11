@@ -16,9 +16,9 @@
 
 package services.submission
 
-import models.api.{Address, FormerName, Name, PersonalDetails}
+import models.api.{Address, FormerName, Name}
 import models.submission.CustomerId
-import play.api.libs.json.{JsArray, JsObject, Json, Writes}
+import play.api.libs.json.{JsObject, Json}
 import repositories.RegistrationMongoRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{jsonObject, _}
@@ -41,9 +41,10 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: Registratio
             jsonObject(
               "declarationSigning" -> jsonObject(
                 "confirmInformationDeclaration" -> declaration,
-                "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity).getOrElse(
+                "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity.role).getOrElse(
                   applicantDetails.roleInBusiness.toDeclarationCapacity
-                )
+                ),
+                optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.otherRole))
               ),
               "applicantDetails" -> jsonObject(
                 "roleInBusiness" -> applicantDetails.roleInBusiness,
