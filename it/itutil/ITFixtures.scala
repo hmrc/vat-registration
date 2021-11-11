@@ -631,7 +631,7 @@ trait ITFixtures {
     telephone = testTelephone,
     email = testEmail,
     address = testFullAddress,
-    declarationCapacity = AuthorisedEmployee
+    declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
   )
 
 }

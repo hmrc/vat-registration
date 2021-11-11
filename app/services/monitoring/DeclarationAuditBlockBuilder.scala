@@ -17,7 +17,7 @@
 package services.monitoring
 
 import models.api.{Address, FormerName, Name, VatScheme}
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{jsonObject, _}
 
@@ -32,9 +32,10 @@ class DeclarationAuditBlockBuilder {
         jsonObject(
           "declarationSigning" -> jsonObject(
             "confirmInformationDeclaration" -> declaration,
-            "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity).getOrElse(
+            "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity.role).getOrElse(
               applicantDetails.roleInBusiness.toDeclarationCapacity
-            ).toString
+            ).toString,
+            optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.otherRole))
           ),
           "applicant" -> jsonObject(
             "roleInBusiness" -> applicantDetails.roleInBusiness.toString,

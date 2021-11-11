@@ -25,8 +25,15 @@ case class TransactorDetails(personalDetails: PersonalDetails,
                              telephone: String,
                              email: String,
                              address: Address,
-                             declarationCapacity: DeclarationCapacity)
+                             declarationCapacity: DeclarationCapacityAnswer)
 
 object TransactorDetails {
   implicit val format: Format[TransactorDetails] = Json.format[TransactorDetails]
+}
+
+case class DeclarationCapacityAnswer(role: DeclarationCapacity,
+                                     otherRole: Option[String] = None)
+
+object DeclarationCapacityAnswer {
+  implicit val format: Format[DeclarationCapacityAnswer] = Json.format[DeclarationCapacityAnswer]
 }

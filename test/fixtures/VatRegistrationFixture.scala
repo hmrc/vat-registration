@@ -184,7 +184,7 @@ trait VatRegistrationFixture {
     telephone = testTelephone,
     email = testEmail,
     address = testAddress,
-    declarationCapacity = AuthorisedEmployee
+    declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
   )
 
   lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =
