@@ -17,6 +17,7 @@
 package services.submission.buildermocks
 
 import models.api.Partner
+import models.registration.sections.PartnersSection
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
@@ -37,7 +38,7 @@ trait MockPartnersService extends MockitoSugar {
       ArgumentMatchers.eq(index)
     )).thenReturn(response)
 
-  def mockGetPartners(regId: String)(response: Future[Option[List[Partner]]]): OngoingStubbing[Future[Option[List[Partner]]]] =
+  def mockGetPartners(regId: String)(response: Future[Option[PartnersSection]]): OngoingStubbing[Future[Option[PartnersSection]]] =
     when(mockPartnersService.getPartners(ArgumentMatchers.eq(regId))).thenReturn(response)
 
   def mockStorePartner(regId: String, partner: Partner, index: Int)(response: Future[Partner]):OngoingStubbing[Future[Partner]] =
@@ -47,7 +48,7 @@ trait MockPartnersService extends MockitoSugar {
       ArgumentMatchers.eq(index)
     )).thenReturn(response)
 
-  def mockDeletePartner(regId: String, index: Int)(response: Future[List[Partner]]): OngoingStubbing[Future[List[Partner]]] =
+  def mockDeletePartner(regId: String, index: Int)(response: Future[PartnersSection]): OngoingStubbing[Future[PartnersSection]] =
     when(mockPartnersService.deletePartner(
       ArgumentMatchers.eq(regId),
       ArgumentMatchers.eq(index)

@@ -18,15 +18,15 @@ package services.submission
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import mocks.MockRegistrationRepository
+import mocks.MockVatSchemeRepository
 import models.api.returns._
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.InternalServerException
 
-class PeriodsBlockBuilderSpec extends VatRegSpec with MockRegistrationRepository with VatRegistrationFixture {
+class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository with VatRegistrationFixture {
 
-  object TestBuilder extends PeriodsBlockBuilder(mockRegistrationRepository)
+  object TestBuilder extends PeriodsBlockBuilder(mockVatSchemeRepository)
 
   val emptyReturns: Returns = Returns(
     zeroRatedSupplies = None,

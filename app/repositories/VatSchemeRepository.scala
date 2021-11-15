@@ -24,6 +24,8 @@ import models.api.returns.Returns
 import models.submission.PartyType
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.Cursor.FailOnError
+import reactivemongo.api.{ReadPreference, WriteConcern}
 import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
@@ -38,7 +40,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 // scalastyle:off
 @Singleton
-class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypto: CryptoSCRS)(implicit executionContext: ExecutionContext)
+class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent, crypto: CryptoSCRS)(implicit executionContext: ExecutionContext)
   extends ReactiveRepository[VatScheme, BSONObjectID](
     collectionName = "registration-information",
     mongo = mongo.mongoConnector.db,
@@ -49,6 +51,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
 
   private val bankAccountCryptoFormatter = BankAccountMongoFormat.encryptedFormat(crypto)
   private val acknowledgementRefPrefix = "VRS"
+  private val omitIdProjection = Json.obj("_id" -> 0)
 
   def startUp: Future[Unit] = collection.indexesManager.list() map { indexes =>
     logger.info("[Startup] Outputting current indexes")
@@ -76,24 +79,31 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     )
   )
 
-  // Generic methods
+  def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+    val projection = Some(Json.obj("internalId" -> 1, "_id" -> 0))
+    collection.find(registrationSelector(id), projection).one[JsObject].map {
+      _.map(js => (js \ "internalId").as[String])
+    }
+  }
 
+  @deprecated("migrate to the new /registrations API")
   def fetchBlock[T](regId: String, key: String)(implicit rds: Reads[T]): Future[Option[T]] = {
     val projection = Some(Json.obj(key -> 1))
-    collection.find(regIdSelector(regId), projection).one[JsObject].map { doc =>
+    collection.find(registrationSelector(regId), projection).one[JsObject].map { doc =>
       doc.fold(throw MissingRegDocument(regId)) { js =>
         (js \ key).validateOpt[T].get
       }
     }
   }
 
+  @deprecated("migrate to the new /registrations API")
   def updateBlock[T](regId: String, data: T, key: String = "")(implicit writes: Writes[T]): Future[T] = {
     def toCamelCase(str: String): String = str.head.toLower + str.tail
 
     val selectorKey = if (key == "") toCamelCase(data.getClass.getSimpleName) else key
 
     val setDoc = Json.obj("$set" -> Json.obj(selectorKey -> Json.toJson(data)))
-    collection.update.one(regIdSelector(regId), setDoc) map { updateResult =>
+    collection.update.one(registrationSelector(regId), setDoc) map { updateResult =>
       if (updateResult.n == 0) {
         logger.warn(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
         throw MissingRegDocument(regId)
@@ -126,7 +136,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   def insertVatScheme(vatScheme: VatScheme): Future[VatScheme] = {
     implicit val vatSchemeWrites: OWrites[VatScheme] = VatScheme.format(Some(crypto))
 
-    collection.update.one(regIdSelector(vatScheme.id), vatScheme, upsert = true).map { writeResult =>
+    collection.update.one(registrationSelector(vatScheme.id), vatScheme, upsert = true).map { writeResult =>
       logger.info(s"[RegistrationMongoRepository] [insertVatScheme] successfully stored a preexisting VatScheme")
       vatScheme
     }.recover {
@@ -136,6 +146,87 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
+  def getAllRegistrations(internalId: String): Future[List[JsValue]] =
+    collection
+      .find(
+        selector = Json.obj("internalId" -> internalId),
+        projection = Some(omitIdProjection)
+      )
+      .cursor[JsValue](ReadPreference.primaryPreferred)
+      .collect(maxDocs = -1, FailOnError[List[JsValue]]())
+
+  def getRegistration(internalId: String, regId: String): Future[Option[JsValue]] = {
+    collection.find(
+      selector = Json.obj("registrationId" -> regId, "internalId" -> internalId),
+      projection = Some(omitIdProjection)
+    ).one[JsValue]
+  }
+
+  def upsertRegistration(internalId: String, regId: String, data: JsValue): Future[Option[JsValue]] = {
+    collection.findAndUpdate(
+      selector = BSONDocument("registrationId" -> regId, "internalId" -> internalId),
+      update = Json.obj("$set" -> data.as[JsObject]),
+      fetchNewObject = true,
+      upsert = true,
+      sort = None,
+      fields = Some(Json.obj("_id" -> 0)),
+      bypassDocumentValidation = true,
+      writeConcern = WriteConcern.Default,
+      maxTime = None,
+      collation = None,
+      arrayFilters = Nil
+    ).map { writeResult =>
+      logger.info(s"[RegistrationMongoRepository] [insertVatScheme] successfully stored a preexisting VatScheme")
+      writeResult.result[JsValue]
+    }.recoverWith {
+      case e: Exception =>
+        logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: $regId, ${e.printStackTrace}")
+        throw e
+    }
+  }
+
+  def deleteRegistration(internalId: String, regId: String): Future[Boolean] = {
+    collection.delete.one(registrationSelector(regId, Some(internalId))) map { wr =>
+      if (!wr.ok) logger.error(s"[deleteVatScheme] - Error deleting vat reg doc for regId $regId - Error: ${Message.unapply(wr)}")
+      wr.ok
+    }
+  }
+
+  def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] = {
+    val projection = Some(Json.obj(section -> 1, "_id" -> 0))
+    collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
+      case Some(json) =>
+        (json \ section).validate[T].asOpt
+      case _ =>
+        logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+        None
+    }
+  }
+
+  def upsertSection[T](internalId: String, regId: String, section: String = "", data: T)(implicit writes: Writes[T]): Future[Option[T]] = {
+    def toCamelCase(str: String): String = str.head.toLower + str.tail
+
+    val selectorKey = if (section == "") toCamelCase(data.getClass.getSimpleName) else section
+
+    val setDoc = Json.obj("$set" -> Json.obj(selectorKey -> Json.toJson(data)))
+    collection.update.one(registrationSelector(regId, Some(internalId)), setDoc, upsert = true) map { updateResult =>
+      if (updateResult.n == 0) {
+        logger.warn(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
+        None
+      } else {
+        logger.info(s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${updateResult.nModified}")
+        Some(data)
+      }
+    } recover {
+      case e =>
+        logger.warn(s"Unable to update ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId, Error: ${e.getMessage}")
+        throw e
+    }
+  }
+
+  // TODO: Remove deprecated methods once migration to new /registrations API is complete
+
+  @deprecated("migrate to the new /registrations API")
   def retrieveVatScheme(regId: String): Future[Option[VatScheme]] = {
     implicit val format = VatScheme.format(Some(crypto))
     find("registrationId" -> regId).map(_.headOption)
@@ -147,7 +238,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   }
 
   def deleteVatScheme(regId: String): Future[Boolean] = {
-    collection.delete.one(regIdSelector(regId)) map { wr =>
+    collection.delete.one(registrationSelector(regId)) map { wr =>
       if (!wr.ok) logger.error(s"[deleteVatScheme] - Error deleting vat reg doc for regId $regId - Error: ${Message.unapply(wr)}")
       wr.ok
     }
@@ -158,7 +249,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
       "status" -> VatRegStatus.locked
     )).get
 
-    collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_.ok)
+    collection.update.one(registrationSelector(regId), BSONDocument("$set" -> modifier)).map(_.ok)
   }
 
   def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value, formBundleId: String): Future[VatRegStatus.Value] = {
@@ -167,11 +258,12 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
       "acknowledgementReference" -> s"$acknowledgementRefPrefix$formBundleId"
     )).get
 
-    collection.update.one(regIdSelector(regId), BSONDocument("$set" -> modifier)).map(_ => status)
+    collection.update.one(registrationSelector(regId), BSONDocument("$set" -> modifier)).map(_ => status)
   }
 
+  @deprecated("migrate to the new /registrations API")
   def fetchReturns(regId: String): Future[Option[Returns]] = {
-    val selector = regIdSelector(regId)
+    val selector = registrationSelector(regId)
     val projection = Some(Json.obj("returns" -> 1))
     collection.find(selector, projection).one[JsObject].map { doc =>
       doc.flatMap { js =>
@@ -180,16 +272,19 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
+  @deprecated("migrate to the new /registrations API")
   def retrieveTradingDetails(regId: String): Future[Option[TradingDetails]] = {
     fetchBlock[TradingDetails](regId, "tradingDetails")
   }
 
+  @deprecated("migrate to the new /registrations API")
   def updateTradingDetails(regId: String, tradingDetails: TradingDetails): Future[TradingDetails] = {
     updateBlock(regId, tradingDetails, "tradingDetails")
   }
 
+  @deprecated("migrate to the new /registrations API")
   def updateReturns(regId: String, returns: Returns): Future[Returns] = {
-    val selector = regIdSelector(regId)
+    val selector = registrationSelector(regId)
     val update = BSONDocument("$set" -> BSONDocument("returns" -> Json.toJson(returns)))
     collection.update.one(selector, update) map { updateResult =>
       logger.info(s"[Returns] updating returns for regId : $regId - documents modified : ${updateResult.nModified}")
@@ -197,16 +292,18 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
+  @deprecated("migrate to the new /registrations API")
   def fetchBankAccount(regId: String): Future[Option[BankAccount]] = {
-    val selector = regIdSelector(regId)
+    val selector = registrationSelector(regId)
     val projection = Some(Json.obj("bankAccount" -> 1))
     collection.find(selector, projection).one[JsObject].map(
       _.flatMap(js => (js \ "bankAccount").validateOpt(bankAccountCryptoFormatter).get)
     )
   }
 
+  @deprecated("migrate to the new /registrations API")
   def updateBankAccount(regId: String, bankAccount: BankAccount): Future[BankAccount] = {
-    val selector = regIdSelector(regId)
+    val selector = registrationSelector(regId)
     val update = BSONDocument("$set" -> Json.obj("bankAccount" -> Json.toJson(bankAccount)(bankAccountCryptoFormatter)))
     collection.update.one(selector, update) map { updateResult =>
       logger.info(s"[Returns] updating bank account for regId : $regId - documents modified : ${updateResult.nModified}")
@@ -214,17 +311,11 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
-  def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-    val projection = Some(Json.obj("internalId" -> 1, "_id" -> 0))
-    collection.find(regIdSelector(id), projection).one[JsObject].map {
-      _.map(js => (js \ "internalId").as[String])
-    }
-  }
-
+  @deprecated("migrate to the new /registrations API")
   def getApplicantDetails(regId: String, partyType: PartyType): Future[Option[ApplicantDetails]] = {
     val projection = Json.obj("applicantDetails" -> 1, "_id" -> 0)
 
-    collection.find(regIdSelector(regId), Some(projection)).one[JsObject].map { doc =>
+    collection.find(registrationSelector(regId), Some(projection)).one[JsObject].map { doc =>
       doc.fold[Option[ApplicantDetails]](throw MissingRegDocument(regId))(json =>
         (json \ "applicantDetails").validateOpt[ApplicantDetails](ApplicantDetails.reads(partyType)) match {
           case JsSuccess(applicantDetails, _) =>
@@ -237,6 +328,7 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
+  @deprecated("migrate to the new /registrations API")
   def patchApplicantDetails(regId: String, applicantDetails: ApplicantDetails): Future[ApplicantDetails] = {
     val query = Json.obj("registrationId" -> regId)
     val updateData = Json.obj("$set" -> Json.obj("applicantDetails" -> applicantDetails))
@@ -256,10 +348,15 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
     }
   }
 
-  private[repositories] def regIdSelector(regId: String) = BSONDocument("registrationId" -> regId)
+  @deprecated("migrate to the new /registrations API")
+  private[repositories] def registrationSelector(regId: String, internalId: Option[String] = None) =
+    BSONDocument("registrationId" -> regId) ++
+      internalId.map(id => BSONDocument("internalId" -> id))
+        .getOrElse(BSONDocument())
 
+  @deprecated("migrate to the new /registrations API")
   def removeFlatRateScheme(regId: String): Future[Boolean] = {
-    val selector = regIdSelector(regId)
+    val selector = registrationSelector(regId)
     val update = BSONDocument("$unset" -> BSONDocument("flatRateScheme" -> ""))
     collection.update.one(selector, update) map { updateResult =>
       if (updateResult.n == 0) {
@@ -282,21 +379,27 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   def updateNrsSubmissionPayload(regId: String, encodedHTML: String): Future[String] =
     updateBlock[String](regId, encodedHTML, "nrsSubmissionPayload")
 
+  @deprecated("migrate to the new /registrations API")
   def fetchSicAndCompliance(regId: String): Future[Option[SicAndCompliance]] =
     fetchBlock[SicAndCompliance](regId, "sicAndCompliance")(SicAndCompliance.apiFormat)
 
+  @deprecated("migrate to the new /registrations API")
   def updateSicAndCompliance(regId: String, sicAndCompliance: SicAndCompliance): Future[SicAndCompliance] =
     updateBlock(regId, sicAndCompliance, "sicAndCompliance")(SicAndCompliance.apiFormat)
 
+  @deprecated("migrate to the new /registrations API")
   def fetchBusinessContact(regId: String): Future[Option[BusinessContact]] =
     fetchBlock[BusinessContact](regId, "businessContact")
 
+  @deprecated("migrate to the new /registrations API")
   def updateBusinessContact(regId: String, businessCont: BusinessContact): Future[BusinessContact] =
     updateBlock(regId, businessCont, "businessContact")
 
+  @deprecated("migrate to the new /registrations API")
   def fetchFlatRateScheme(regId: String): Future[Option[FlatRateScheme]] =
     fetchBlock[FlatRateScheme](regId, "flatRateScheme")
 
+  @deprecated("migrate to the new /registrations API")
   def updateFlatRateScheme(regId: String, flatRateScheme: FlatRateScheme): Future[FlatRateScheme] =
     updateBlock(regId, flatRateScheme, "flatRateScheme")
 
@@ -306,9 +409,11 @@ class RegistrationMongoRepository @Inject()(mongo: ReactiveMongoComponent, crypt
   def updateEligibilityData(regId: String, eligibilityData: JsObject): Future[JsObject] =
     updateBlock(regId, eligibilityData, "eligibilityData")
 
+  @deprecated("migrate to the new /registrations API")
   def fetchEligibilitySubmissionData(regId: String): Future[Option[EligibilitySubmissionData]] =
     fetchBlock[EligibilitySubmissionData](regId, "eligibilitySubmissionData")
 
+  @deprecated("migrate to the new /registrations API")
   def updateEligibilitySubmissionData(regId: String, eligibilitySubmissionData: EligibilitySubmissionData): Future[EligibilitySubmissionData] =
     updateBlock(regId, eligibilitySubmissionData, "eligibilitySubmissionData")
 

@@ -16,13 +16,13 @@
 
 package services
 
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class NrsSubmissionPayloadService @Inject()(val registrationMongoRepository: RegistrationMongoRepository) {
+class NrsSubmissionPayloadService @Inject()(val registrationMongoRepository: VatSchemeRepository) {
 
   def storeNrsSubmissionPayload(regId: String, payload: String): Future[String] =
     registrationMongoRepository.updateNrsSubmissionPayload(regId, payload)

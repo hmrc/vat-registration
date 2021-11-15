@@ -19,8 +19,9 @@ package controllers
 import common.exceptions.MissingRegDocument
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import mocks.MockNewRegistrationService
+import mocks.MockRegistrationService
 import models.api._
+import models.registration.sections.PartnersSection
 import models.submission.Individual
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
@@ -29,13 +30,13 @@ import play.api.http.Status
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrationFixture with MockNewRegistrationService {
+class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationService {
 
   import play.api.test.Helpers._
 
@@ -45,11 +46,11 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
       mockSubmissionService,
       mockRegistrationMongoRepository,
       mockAuthConnector,
-      mockNewRegistrationService,
+      mockRegistrationService,
       stubControllerComponents()) {
 
-      override val registrationRepository: RegistrationMongoRepository = mockRegistrationMongoRepository
-      override val resourceConn: RegistrationMongoRepository = mockRegistrationMongoRepository
+      override val registrationRepository: VatSchemeRepository = mockRegistrationMongoRepository
+      override val resourceConn: VatSchemeRepository = mockRegistrationMongoRepository
     }
   }
 
@@ -269,7 +270,7 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
     "return an Ok response with acknowledgement reference for a valid submission with partners" in new Setup {
       val testPartner = Partner(testSoleTraderEntity, Individual, isLeadPartner = true)
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme.copy(partners = Some(List(testPartner))))
+      ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme.copy(partners = Some(PartnersSection(List(testPartner)))))
 
       when(mockSubmissionService.submitVatRegistration(
         ArgumentMatchers.eq(testRegId),

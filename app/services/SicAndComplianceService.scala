@@ -18,12 +18,12 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import models.api.SicAndCompliance
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 
 @Singleton
-class SicAndComplianceService @Inject()(val registrationRepository: RegistrationMongoRepository) {
+class SicAndComplianceService @Inject()(val registrationRepository: VatSchemeRepository) {
 
   def getSicAndCompliance(regId: String): Future[Option[SicAndCompliance]] = {
     registrationRepository.fetchSicAndCompliance(regId)

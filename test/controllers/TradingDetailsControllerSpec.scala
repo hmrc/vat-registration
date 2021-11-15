@@ -24,7 +24,7 @@ import org.mockito.Mockito._
 import play.api.libs.json.JsObject
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 
@@ -34,7 +34,7 @@ class TradingDetailsControllerSpec extends VatRegSpec with VatRegistrationFixtur
 
   class Setup {
     val controller: TradingDetailsController = new TradingDetailsController(mockTradingDetailsService, mockAuthConnector, stubControllerComponents()){
-      override val resourceConn: RegistrationMongoRepository = mockRegistrationMongoRepository
+      override val resourceConn: VatSchemeRepository = mockRegistrationMongoRepository
     }
   }
 

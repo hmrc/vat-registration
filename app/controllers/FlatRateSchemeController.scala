@@ -22,7 +22,7 @@ import javax.inject.{Inject, Singleton}
 import models.api.FlatRateScheme
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import services.FlatRateSchemeService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -36,7 +36,7 @@ class FlatRateSchemeController @Inject()(val flatRateSchemeService: FlatRateSche
                                         )(implicit executionContext: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation {
 
-  val resourceConn: RegistrationMongoRepository = flatRateSchemeService.registrationRepository
+  val resourceConn: VatSchemeRepository = flatRateSchemeService.registrationRepository
 
 
   def fetchFlatRateScheme(regId: String): Action[AnyContent] = Action.async {

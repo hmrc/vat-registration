@@ -16,9 +16,16 @@
 
 package models.api
 
+import models.registration.RegistrationSection
 import play.api.libs.json.{Format, Json}
 
-case class Attachments(method: AttachmentMethod)
+case class Attachments(method: AttachmentMethod) extends RegistrationSection[Attachments] {
+
+  override def isComplete: Attachments => Boolean = {
+    _ => true
+  }
+
+}
 
 object Attachments {
   implicit val format: Format[Attachments] = Json.format[Attachments]

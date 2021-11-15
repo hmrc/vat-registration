@@ -417,7 +417,6 @@ trait VatRegistrationFixture {
     import uk.gov.hmrc.auth.core.retrieve._
     import uk.gov.hmrc.auth.core.{ConfidenceLevel, CredentialStrength, User}
 
-
     val testInternalId = "testInternalId"
     val testExternalId = "testExternalId"
     val testAgentCode = "testAgentCode"
@@ -493,7 +492,8 @@ trait VatRegistrationFixture {
         Some(testItmpAddress) ~
         Some(testCredentialStrength) ~
         testLoginTimes
-
   }
+
+  val testPersonalDetails = PersonalDetails(testName, Some(testNino), trn = None, identifiersMatch = true, testDate)
 
 }

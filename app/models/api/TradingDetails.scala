@@ -16,11 +16,19 @@
 
 package models.api
 
+import models.registration.RegistrationSection
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class TradingDetails(tradingName: Option[String],
-                          eoriRequested: Option[Boolean])
+                          eoriRequested: Option[Boolean]) extends RegistrationSection[TradingDetails] {
+
+  override def isComplete: TradingDetails => Boolean = {
+    case TradingDetails(Some(_), Some(_)) => true
+    case _ => false
+  }
+
+}
 
 object TradingDetails {
 

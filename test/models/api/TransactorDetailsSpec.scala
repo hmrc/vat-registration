@@ -19,7 +19,6 @@ package models.api
 import fixtures.VatRegistrationFixture
 import helpers.BaseSpec
 import models.JsonFormatValidation
-import models.submission._
 import play.api.libs.json._
 
 class TransactorDetailsSpec extends BaseSpec with JsonFormatValidation with VatRegistrationFixture {

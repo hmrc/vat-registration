@@ -20,6 +20,7 @@ import enums.VatRegStatus
 import models._
 import models.api._
 import models.api.returns._
+import models.registration.sections.PartnersSection
 import models.submission._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -89,7 +90,8 @@ trait ITFixtures {
     overseasCompliance = None,
     northernIrelandProtocol = Some(testNorthernIrelandProtocol)
   )
-
+  lazy val testFirstName = "testFirstName"
+  lazy val testLastName = "testLastName"
   val testFlatRateScheme = FlatRateScheme(joinFrs = true, Some(frsDetails))
   val EstimateValue: Long = 1000L
   val zeroRatedTurnoverEstimate: Long = 1000L
@@ -103,6 +105,7 @@ trait ITFixtures {
   val testTrn = "testTrn"
   val testRole = Director
   val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
+  val testProperName = Name(first = Some(testFirstName), middle = None, last = testLastName)
   val testFormerName = FormerName(name = Some(oldName), change = Some(testDate))
   val testCompanyName = "testCompanyName"
   val testDateOfBirth = DateOfBirth(testDate)
@@ -112,8 +115,7 @@ trait ITFixtures {
   val testDateOfIncorp = LocalDate.of(2020, 1, 2)
   val testBpSafeId = "testBpSafeId"
   val testWebsite = "www.foo.com"
-  lazy val testFirstName = "testFirstName"
-  lazy val testLastName = "testLastName"
+
   lazy val testOrganisationName = "testOrganisationName"
   lazy val testEmail = "test@test.com"
   lazy val testTelephone = "1234567890"
@@ -393,7 +395,7 @@ trait ITFixtures {
 
   lazy val testVatSchemeWithPartners = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
-    partners = Some(List(testPartner)),
+    partners = Some(PartnersSection(List(testPartner))),
     applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testSoleTraderEntity))
   )
 
@@ -614,18 +616,10 @@ trait ITFixtures {
       eligibilitySubmissionData = Some(testNonUkCompanyEligibilitySubmissionData)
     )
 
+  val testPersonalDetails = PersonalDetails(testProperName, Some(testNino), trn = None, identifiersMatch = true, testDate)
+
   lazy val testTransactorDetails = TransactorDetails(
-    personalDetails = PersonalDetails(
-      name = Name(
-        first = Some(testFirstName),
-        middle = None,
-        last = testLastName
-      ),
-      nino = Some(testNino),
-      trn = None,
-      identifiersMatch = true,
-      dateOfBirth = testDate
-    ),
+    personalDetails = testPersonalDetails,
     isPartOfOrganisation = true,
     organisationName = Some(testOrganisationName),
     telephone = testTelephone,

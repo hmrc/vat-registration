@@ -18,16 +18,16 @@ package services
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import mocks.MockRegistrationRepository
+import mocks.MockVatSchemeRepository
 import models.api._
 import models.submission.NETP
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
-class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationRepository {
+class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
 
-  object Service extends AttachmentsService(mockRegistrationRepository)
+  object Service extends AttachmentsService(mockVatSchemeRepository)
 
   val attachmentsKey = "attachments"
   val netpEligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)

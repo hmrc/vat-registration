@@ -19,6 +19,7 @@ package models.api
 import auth.CryptoSCRS
 import enums.VatRegStatus
 import models.api.returns.Returns
+import models.registration.sections.PartnersSection
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -39,7 +40,7 @@ case class VatScheme(id: String,
                      transactorDetails: Option[TransactorDetails] = None,
                      confirmInformationDeclaration: Option[Boolean] = None,
                      nrsSubmissionPayload: Option[String] = None,
-                     partners: Option[List[Partner]] = None,
+                     partners: Option[PartnersSection] = None,
                      attachments: Option[Attachments] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
@@ -67,7 +68,7 @@ object VatScheme {
         (__ \ "transactorDetails").readNullable[TransactorDetails] and
         (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
         (__ \ "nrsSubmissionPayload").readNullable[String] and
-        (__ \ "partners").readNullable[List[Partner]] and
+        (__ \ "partners").readNullable[PartnersSection] and
         (__ \ "attachments").readNullable[Attachments]
         ) (VatScheme.apply _)
       case _ => (
@@ -87,7 +88,7 @@ object VatScheme {
         (__ \ "transactorDetails").readNullable[TransactorDetails] and
         (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
         (__ \ "nrsSubmissionPayload").readNullable[String] and
-        (__ \ "partners").readNullable[List[Partner]] and
+        (__ \ "partners").readNullable[PartnersSection] and
         (__ \ "attachments").readNullable[Attachments]
         ) (VatScheme.apply _)
     }
@@ -109,7 +110,7 @@ object VatScheme {
     (__ \ "transactorDetails").writeNullable[TransactorDetails] and
     (__ \ "confirmInformationDeclaration").writeNullable[Boolean] and
     (__ \ "nrsSubmissionPayload").writeNullable[String] and
-    (__ \ "partners").writeNullable[List[Partner]] and
+    (__ \ "partners").writeNullable[PartnersSection] and
     (__ \ "attachments").writeNullable[Attachments]
     ) (unlift(VatScheme.unapply))
 

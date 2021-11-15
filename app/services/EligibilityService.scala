@@ -18,14 +18,14 @@ package services
 
 import models.api.{EligibilitySubmissionData, VatScheme}
 import play.api.libs.json.{JsObject, JsResultException}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import utils.EligibilityDataJsonUtils
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EligibilityService @Inject()(val registrationRepository: RegistrationMongoRepository) {
+class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) {
 
   def getEligibilityData(regId: String): Future[Option[JsObject]] =
     registrationRepository.fetchEligibilityData(regId)

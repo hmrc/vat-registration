@@ -17,7 +17,7 @@
 package services.submission
 
 import play.api.libs.json.JsObject
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{optional, _}
 
@@ -25,7 +25,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ComplianceBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository)
+class ComplianceBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)
                                       (implicit ec: ExecutionContext) {
 
   def buildComplianceBlock(regId: String): Future[Option[JsObject]] = {

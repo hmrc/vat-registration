@@ -17,6 +17,7 @@
 package models.api
 
 import models.BusinessEntity
+import models.registration.RegistrationSection
 import models.submission._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -28,7 +29,13 @@ case class ApplicantDetails(personalDetails: PersonalDetails,
                             previousAddress: Option[Address] = None,
                             contact: DigitalContactOptional,
                             changeOfName: Option[FormerName] = None,
-                            roleInBusiness: RoleInTheBusiness)
+                            roleInBusiness: RoleInTheBusiness) extends RegistrationSection[ApplicantDetails] {
+
+  override def isComplete: ApplicantDetails => Boolean = {
+    _ => true
+  }
+
+}
 
 object ApplicantDetails extends VatApplicantDetailsValidator
   with JsonUtilities {
@@ -42,8 +49,7 @@ object ApplicantDetails extends VatApplicantDetailsValidator
       (__ \ "contact").read[DigitalContactOptional] and
       (__ \ "changeOfName").readNullable[FormerName] and
       (__ \ "roleInTheBusiness").read[RoleInTheBusiness]
-    ) (ApplicantDetails.apply _
-  )
+    ) (ApplicantDetails.apply _)
 
   implicit val writes: Writes[ApplicantDetails] = (
     (__ \ "personalDetails").write[PersonalDetails] and
@@ -53,7 +59,6 @@ object ApplicantDetails extends VatApplicantDetailsValidator
       (__ \ "contact").write[DigitalContactOptional] and
       (__ \ "changeOfName").writeNullable[FormerName] and
       (__ \ "roleInTheBusiness").write[RoleInTheBusiness]
-    ) (unlift(ApplicantDetails.unapply)
-  )
+    ) (unlift(ApplicantDetails.unapply))
 
 }

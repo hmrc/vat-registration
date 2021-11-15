@@ -17,13 +17,13 @@
 package services
 
 import models.api.returns.Returns
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class ReturnsService @Inject()(val registrationRepository: RegistrationMongoRepository) {
+class ReturnsService @Inject()(val registrationRepository: VatSchemeRepository) {
 
   def retrieveReturns(regId: String): Future[Option[Returns]] = {
     registrationRepository.fetchReturns(regId)

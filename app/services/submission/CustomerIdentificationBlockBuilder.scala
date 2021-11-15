@@ -19,7 +19,7 @@ package services.submission
 import models.submission.{Individual, NETP}
 import models.{IncorporatedEntity, MinorEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, Json}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
 import utils.StringNormaliser
@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 // scalastyle:off
 @Singleton
-class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository
+class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository
                                                   )(implicit ec: ExecutionContext) {
 
   def buildCustomerIdentificationBlock(regId: String): Future[JsObject] = for {

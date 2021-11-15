@@ -16,6 +16,7 @@
 
 package models.api.returns
 
+import models.registration.RegistrationSection
 import play.api.libs.json._
 import utils.JsonUtilities
 
@@ -28,7 +29,13 @@ case class Returns(zeroRatedSupplies: Option[BigDecimal],
                    startDate: Option[LocalDate],
                    annualAccountingDetails: Option[AASDetails],
                    overseasCompliance: Option[OverseasCompliance],
-                   northernIrelandProtocol: Option[NIPCompliance])
+                   northernIrelandProtocol: Option[NIPCompliance]) extends RegistrationSection[Returns] {
+
+  override def isComplete: Returns => Boolean = {
+    _ => true
+  }
+
+}
 
 object Returns extends JsonUtilities {
   implicit val format: Format[Returns] = Json.format[Returns]

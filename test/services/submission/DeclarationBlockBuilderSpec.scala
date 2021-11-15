@@ -18,15 +18,15 @@ package services.submission
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import mocks.MockRegistrationRepository
+import mocks.MockVatSchemeRepository
 import models.api.DigitalContactOptional
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.InternalServerException
 
-class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationRepository {
+class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
 
-  object TestBuilder extends DeclarationBlockBuilder(mockRegistrationRepository)
+  object TestBuilder extends DeclarationBlockBuilder(mockVatSchemeRepository)
 
   val testApplicantDetails = validApplicantDetails.copy(changeOfName = None)
   val declarationVatScheme = testVatScheme.copy(applicantDetails = Some(testApplicantDetails), confirmInformationDeclaration = Some(true))

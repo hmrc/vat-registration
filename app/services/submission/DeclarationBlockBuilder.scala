@@ -19,7 +19,7 @@ package services.submission
 import models.api.{Address, FormerName, Name}
 import models.submission.CustomerId
 import play.api.libs.json.{JsObject, Json}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{jsonObject, _}
 
@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 // scalastyle:off
 @Singleton
-class DeclarationBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository)
+class DeclarationBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)
                                        (implicit ec: ExecutionContext) {
 
   def buildDeclarationBlock(regId: String): Future[JsObject] = {

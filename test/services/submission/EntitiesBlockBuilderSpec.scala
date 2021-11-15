@@ -19,6 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api.{BusinessContact, DigitalContact, Email, Partner}
+import models.registration.sections.PartnersSection
 import models.submission.{EntitiesArrayType, Individual, PartnerEntity, PartyType}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -61,7 +62,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
   "buildEntitiesBlock" when {
     "the partner was successfully matched by the identity service" should {
       "return a JSON array containing a single partner with a business partner safe ID" in {
-        mockGetPartners(testRegId)(Future.successful(Some(List(testPartner))))
+        mockGetPartners(testRegId)(Future.successful(Some(PartnersSection(List(testPartner)))))
         mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact)))
 
         await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(Json.obj(
@@ -88,7 +89,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
     "the partner was not matched" when {
       "an SA UTR was provided" should {
         "return a JSON array containing a single partner with a list of identifiers" in {
-          mockGetPartners(testRegId)(Future.successful(Some(List(testPartner.copy(details = testEntityNoSafeId)))))
+          mockGetPartners(testRegId)(Future.successful(Some(PartnersSection(List(testPartner.copy(details = testEntityNoSafeId))))))
           mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact)))
 
           await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(
@@ -118,7 +119,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
         "return a JSON array containing a single partner without identifiers" in {
           val testEntity = testSoleTraderEntity.copy(bpSafeId = None, sautr = None)
           val testPartner = Partner(details = testEntity, partyType = Individual, isLeadPartner = true)
-          mockGetPartners(testRegId)(Future.successful(Some(List(testPartner))))
+          mockGetPartners(testRegId)(Future.successful(Some(PartnersSection(List(testPartner)))))
           mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact)))
 
           await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(
@@ -155,7 +156,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
     }
     "there is no telephone number" should {
       "return the correct JSON without the phone number" in {
-        mockGetPartners(testRegId)(Future.successful(Some(List(testPartner))))
+        mockGetPartners(testRegId)(Future.successful(Some(PartnersSection(List(testPartner)))))
         mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact.copy(digitalContact = testContact.copy(tel = None)))))
 
         await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(

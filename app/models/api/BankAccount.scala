@@ -17,13 +17,20 @@
 package models.api
 
 import auth.CryptoSCRS
+import models.registration.RegistrationSection
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class BankAccount(isProvided: Boolean,
                        details: Option[BankAccountDetails],
                        overseasDetails: Option[BankAccountOverseasDetails],
-                       reason: Option[NoUKBankAccount])
+                       reason: Option[NoUKBankAccount]) extends RegistrationSection[BankAccount] {
+
+  override def isComplete: BankAccount => Boolean = {
+    _ => true
+  }
+
+}
 
 case class BankAccountDetails(name: String,
                               sortCode: String,

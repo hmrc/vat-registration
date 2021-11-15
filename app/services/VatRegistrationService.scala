@@ -26,7 +26,7 @@ import models.api.{Threshold, TurnoverEstimates, VatScheme}
 import models.submission.PartyType
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.{HttpClient, InternalServerException}
 
 import java.util.UUID
@@ -35,7 +35,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class VatRegistrationService @Inject()(registrationRepository: RegistrationMongoRepository,
+class VatRegistrationService @Inject()(registrationRepository: VatSchemeRepository,
                                        val backendConfig: BackendConfig,
                                        val http: HttpClient) extends ApplicativeSyntax with FutureInstances {
 

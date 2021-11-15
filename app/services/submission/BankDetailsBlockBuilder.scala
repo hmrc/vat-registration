@@ -20,7 +20,7 @@ import models.api.NoUKBankAccount.reasonId
 import models.api.{BankAccount, OverseasAccount}
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.jsonObject
 
@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository)(implicit ec: ExecutionContext) {
+class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)(implicit ec: ExecutionContext) {
 
   def buildBankDetailsBlock(regId: String): Future[Option[JsObject]] = for {
     optBankAccount <- registrationMongoRepository.fetchBankAccount(regId)

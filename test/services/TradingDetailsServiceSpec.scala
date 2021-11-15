@@ -24,7 +24,7 @@ import models.api.TradingDetails
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.test.Helpers._
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 
@@ -34,7 +34,7 @@ class TradingDetailsServiceSpec extends VatRegSpec with VatRegistrationFixture {
     val service: TradingDetailsService = new TradingDetailsService(
       registrationRepository = mockRegistrationMongoRepository
     ) {
-      override val registrationRepository: RegistrationMongoRepository = mockRegistrationMongoRepository
+      override val registrationRepository: VatSchemeRepository = mockRegistrationMongoRepository
     }
   }
 

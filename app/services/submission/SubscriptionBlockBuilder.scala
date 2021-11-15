@@ -19,7 +19,7 @@ package services.submission
 import models.api.returns.NIPCompliance
 import models._
 import play.api.libs.json.JsObject
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
 
@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 // scalastyle:off
 @Singleton
-class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: RegistrationMongoRepository)(implicit ec: ExecutionContext) {
+class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)(implicit ec: ExecutionContext) {
 
   def buildSubscriptionBlock(regId: String): Future[JsObject] = for {
     optEligibilityData <- registrationMongoRepository.fetchEligibilitySubmissionData(regId)

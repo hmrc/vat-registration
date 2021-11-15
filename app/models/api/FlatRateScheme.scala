@@ -16,12 +16,19 @@
 
 package models.api
 
-import java.time.LocalDate
+import models.registration.RegistrationSection
 
+import java.time.LocalDate
 import play.api.libs.json._
 
 case class FlatRateScheme(joinFrs: Boolean,
-                          frsDetails: Option[FRSDetails])
+                          frsDetails: Option[FRSDetails]) extends RegistrationSection[FlatRateScheme] {
+
+  override def isComplete: FlatRateScheme => Boolean = {
+    _ => true
+  }
+
+}
 
 object FlatRateScheme {
   implicit val format: Format[FlatRateScheme] = Json.format[FlatRateScheme]

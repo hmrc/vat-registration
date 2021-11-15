@@ -20,7 +20,7 @@ import auth.{Authorisation, AuthorisationResource}
 import models.api.Partner
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 import services.PartnersService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class PartnersController @Inject()(val authConnector: AuthConnector,
-                                   mongo: RegistrationMongoRepository,
+                                   mongo: VatSchemeRepository,
                                    partnersService: PartnersService,
                                    controllerComponents: ControllerComponents)
                                   (implicit ec: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
@@ -72,7 +72,7 @@ class PartnersController @Inject()(val authConnector: AuthConnector,
     isAuthorised(regId) { authResult =>
       authResult.ifAuthorised(regId, "PartnersController", "getAllPartners") {
         partnersService.getPartners(regId).map {
-          case Some(partners) => Ok(Json.toJson(partners))
+          case Some(section) => Ok(Json.toJson(section.partners))
           case _ => NotFound
         }
       }

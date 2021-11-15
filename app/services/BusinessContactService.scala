@@ -18,12 +18,12 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import models.api.BusinessContact
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 
 @Singleton
-class BusinessContactService @Inject()(val registrationRepository: RegistrationMongoRepository) {
+class BusinessContactService @Inject()(val registrationRepository: VatSchemeRepository) {
 
   def getBusinessContact(regId: String): Future[Option[BusinessContact]] =
     registrationRepository.fetchBusinessContact(regId)

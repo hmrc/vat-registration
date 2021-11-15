@@ -18,13 +18,13 @@ package services
 
 import models.api.{AttachmentType, Attachments, IdentityEvidence, VatScheme}
 import models.submission.{NETP, NonUkNonEstablished}
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AttachmentsService @Inject()(val registrationRepository: RegistrationMongoRepository
+class AttachmentsService @Inject()(val registrationRepository: VatSchemeRepository
                                   )(implicit executionContext: ExecutionContext) {
 
   private val attachmentDetailsKey = "attachments"

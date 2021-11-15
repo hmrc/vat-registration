@@ -18,12 +18,12 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import models.api.TradingDetails
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 
 @Singleton
-class TradingDetailsService @Inject()(val registrationRepository: RegistrationMongoRepository) {
+class TradingDetailsService @Inject()(val registrationRepository: VatSchemeRepository) {
 
   def retrieveTradingDetails(regId: String): Future[Option[TradingDetails]] = {
     registrationRepository.retrieveTradingDetails(regId)

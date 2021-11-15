@@ -26,7 +26,7 @@ import org.mockito.stubbing.OngoingStubbing
 import play.api.libs.json.JsObject
 import play.api.mvc.Result
 import play.api.test.FakeRequest
-import repositories.RegistrationMongoRepository
+import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
 
@@ -39,7 +39,7 @@ class BusinessContactControllerSpec extends VatRegSpec with VatRegistrationFixtu
                                                     mockBusinessContactService,
                                                     mockAuthConnector,
                                                     stubControllerComponents()) {
-      override val resourceConn: RegistrationMongoRepository = mockRegistrationMongoRepository
+      override val resourceConn: VatSchemeRepository = mockRegistrationMongoRepository
     }
   }
     def mockGetBusinessContactFromService(res:Future[Option[BusinessContact]]):OngoingStubbing[Future[Option[BusinessContact]]] =

@@ -40,8 +40,8 @@ class EntitiesBlockBuilder @Inject()(partnersService: PartnersService,
       optAddress = businessContact.map(_.ppob)
       optTelephone = businessContact.flatMap(_.digitalContact.tel)
     } yield optPartners match {
-      case Some(partners) if partners.nonEmpty =>
-        Some(Json.toJson(partners.map { partner =>
+      case Some(section) if section.partners.nonEmpty =>
+        Some(Json.toJson(section.partners.map { partner =>
           jsonObject(
             "action" -> addPartnerAction,
             "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
