@@ -624,6 +624,7 @@ trait ITFixtures {
     organisationName = Some(testOrganisationName),
     telephone = testTelephone,
     email = testEmail,
+    emailVerified = true,
     address = testFullAddress,
     declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
   )
