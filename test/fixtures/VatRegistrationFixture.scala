@@ -183,6 +183,7 @@ trait VatRegistrationFixture {
     organisationName = Some(testOrgName),
     telephone = testTelephone,
     email = testEmail,
+    emailVerified = true,
     address = testAddress,
     declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
   )

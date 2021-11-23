@@ -25,6 +25,7 @@ case class TransactorDetails(personalDetails: PersonalDetails,
                              organisationName: Option[String] = None,
                              telephone: String,
                              email: String,
+                             emailVerified: Boolean,
                              address: Address,
                              declarationCapacity: DeclarationCapacityAnswer) extends RegistrationSection[TransactorDetails] {
 
