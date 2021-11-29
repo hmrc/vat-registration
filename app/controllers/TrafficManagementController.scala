@@ -54,6 +54,7 @@ class TrafficManagementController @Inject()(controllerComponents: ControllerComp
     }
   }
 
+  @deprecated("Use getRegInfoById method", "0.332.0")
   def getRegistrationInformation: Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
       trafficManagementService.getRegistrationInformation(internalId) map {
@@ -65,6 +66,18 @@ class TrafficManagementController @Inject()(controllerComponents: ControllerComp
     }
   }
 
+  def getRegInfoById(registrationId: String): Action[AnyContent] = Action.async { implicit request =>
+    isAuthenticated { internalId =>
+      trafficManagementService.getRegInfoById(internalId, registrationId) map {
+        case Some(regInfo) =>
+          Ok(Json.toJson(regInfo))
+        case _ =>
+          NotFound
+      }
+    }
+  }
+
+  @deprecated("Use upsertRegInfoById method", "0.332.0")
   def upsertRegistrationInformation(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     isAuthenticated { internalId =>
       val regId = (request.body \ "registrationId").as[String]
@@ -72,16 +85,45 @@ class TrafficManagementController @Inject()(controllerComponents: ControllerComp
       val regStartDate = (request.body \ "regStartDate").as[LocalDate]
       val channel = (request.body \ "channel").as[RegistrationChannel]
 
-      trafficManagementService.upsertRegistrationInformation(internalId, regId, status, regStartDate, channel) map {
+      trafficManagementService.upsertRegInfo(internalId, regId, status, regStartDate, channel) map {
         regInfo =>
           Ok(Json.toJson(regInfo))
       }
     }
   }
 
+  def upsertRegInfoById(registrationId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    isAuthenticated { internalId =>
+      val optStatus = (request.body \ "status").asOpt[RegistrationStatus]
+      val optRegStartDate = (request.body \ "regStartDate").asOpt[LocalDate]
+      val optChannel = (request.body \ "channel").asOpt[RegistrationChannel]
+
+      (optStatus, optRegStartDate, optChannel) match {
+        case (Some(status), Some(startDate), Some(channel)) =>
+          trafficManagementService
+            .upsertRegInfoById(internalId, registrationId, status, startDate, channel)
+            .map { regInfo =>
+              Ok(Json.toJson(regInfo))
+            }
+        case _ =>
+          Future.successful(BadRequest)
+      }
+    }
+  }
+
+  @deprecated("Use deleteRegInfoById method", "0.332.0")
   def clearDocument(): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
       trafficManagementService.clearDocument(internalId) map {
+        case true => NoContent
+        case _ => PreconditionFailed
+      }
+    }
+  }
+
+  def deleteRegInfoById(registrationId: String): Action[AnyContent] = Action.async { implicit request =>
+    isAuthenticated { internalId =>
+      trafficManagementService.deleteRegInfoById(internalId, registrationId) map {
         case true => NoContent
         case _ => PreconditionFailed
       }
