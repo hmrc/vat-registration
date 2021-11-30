@@ -58,22 +58,41 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       canAllocate = currentTotal < dailyQuota(partyType, isEnrolled) && isWithinOpeningHours
       _ <- if (canAllocate) {
         dailyQuotaRepository.incrementTotal(partyType, isEnrolled).flatMap(_ =>
-          trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, VatReg, timeMachine.today))
+          trafficManagementRepository.upsertRegInfoById(internalId, regId, Draft, timeMachine.today, VatReg, timeMachine.today))
         } else {
-          trafficManagementRepository.upsertRegistrationInformation(internalId, regId, Draft, timeMachine.today, OTRS, timeMachine.today)
+          trafficManagementRepository.upsertRegInfoById(internalId, regId, Draft, timeMachine.today, OTRS, timeMachine.today)
         }
     } yield if (canAllocate) Allocated else QuotaReached
   }
 
+  @deprecated("Use getRegInfoById method", "0.332.0")
   def getRegistrationInformation(internalId: String): Future[Option[RegistrationInformation]] =
     trafficManagementRepository.getRegistrationInformation(internalId)
 
-  def upsertRegistrationInformation(internalId: String,
-                                    registrationId: String,
-                                    status: RegistrationStatus,
-                                    regStartDate: LocalDate,
-                                    channel: RegistrationChannel): Future[RegistrationInformation] =
+  def getRegInfoById(internalId: String, registrationId: String): Future[Option[RegistrationInformation]] =
+    trafficManagementRepository.getRegInfoById(internalId, registrationId)
+
+  @deprecated("Use upsertRegInfoById method", "0.332.0")
+  def upsertRegInfo(internalId: String,
+                    registrationId: String,
+                    status: RegistrationStatus,
+                    regStartDate: LocalDate,
+                    channel: RegistrationChannel): Future[RegistrationInformation] =
     trafficManagementRepository.upsertRegistrationInformation(
+      internalId = internalId,
+      regId = registrationId,
+      status = status,
+      regStartDate = regStartDate,
+      channel = channel,
+      lastModified = timeMachine.today
+    )
+
+  def upsertRegInfoById(internalId: String,
+                        registrationId: String,
+                        status: RegistrationStatus,
+                        regStartDate: LocalDate,
+                        channel: RegistrationChannel): Future[RegistrationInformation] =
+    trafficManagementRepository.upsertRegInfoById(
       internalId = internalId,
       regId = registrationId,
       status = status,
@@ -91,8 +110,12 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       upsert = true
     ) map (_.result[RegistrationInformation])
 
+  @deprecated("Use deleteRegInfoById method", "0.332.0")
   def clearDocument(internalId: String): Future[Boolean] =
     trafficManagementRepository.clearDocument(internalId)
+
+  def deleteRegInfoById(internalId: String, registrationId: String): Future[Boolean] =
+    trafficManagementRepository.deleteRegInfoById(internalId, registrationId)
 }
 
 sealed trait AllocationResponse

@@ -37,6 +37,14 @@ trait MockTrafficManagementRepository extends MockitoSugar {
       ArgumentMatchers.eq(internalId)
     )).thenReturn(response)
 
+  def mockGetRegInfoById(internalId: String,
+                         registrationId: String)
+                        (response: Future[Option[RegistrationInformation]]): OngoingStubbing[Future[Option[RegistrationInformation]]] =
+    when(mockTrafficManagementRepository.getRegInfoById(
+      ArgumentMatchers.eq(internalId),
+      ArgumentMatchers.eq(registrationId)
+    )).thenReturn(response)
+
   def mockUpsertRegInfo(internalId: String,
                         regId: String,
                         status: RegistrationStatus,
@@ -53,9 +61,32 @@ trait MockTrafficManagementRepository extends MockitoSugar {
       ArgumentMatchers.eq(lastModified)
     )) thenReturn response
 
+  def mockUpsertRegInfoById(internalId: String,
+                            regId: String,
+                            status: RegistrationStatus,
+                            regStartDate: LocalDate,
+                            channel: RegistrationChannel,
+                            lastModified: LocalDate)
+                           (response: Future[RegistrationInformation]): OngoingStubbing[Future[RegistrationInformation]] =
+    when(mockTrafficManagementRepository.upsertRegInfoById(
+      ArgumentMatchers.eq(internalId),
+      ArgumentMatchers.eq(regId),
+      ArgumentMatchers.eq(status),
+      ArgumentMatchers.eq(regStartDate),
+      ArgumentMatchers.eq(channel),
+      ArgumentMatchers.eq(lastModified)
+    )) thenReturn response
+
   def mockClearDocument(internalId: String)(response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
     when(mockTrafficManagementRepository.clearDocument(
       ArgumentMatchers.eq(internalId)
+    )) thenReturn response
+
+  def mockDeleteRegInfoById(internalId: String,
+                            registrationId: String)(response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
+    when(mockTrafficManagementRepository.deleteRegInfoById(
+      ArgumentMatchers.eq(internalId),
+      ArgumentMatchers.eq(registrationId)
     )) thenReturn response
 
 }

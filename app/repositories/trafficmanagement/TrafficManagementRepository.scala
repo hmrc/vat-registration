@@ -83,10 +83,18 @@ class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
     }
   }
 
+  @deprecated("Use getRegInfoById method", "0.332.0")
   def getRegistrationInformation(internalId: String): Future[Option[RegistrationInformation]] =
     find("internalId" -> JsString(internalId))
       .map(_.headOption)
 
+  def getRegInfoById(internalId: String, registrationId: String): Future[Option[RegistrationInformation]] =
+    find(
+      "internalId" -> JsString(internalId),
+      "registrationId" -> JsString(registrationId)
+    ).map(_.headOption)
+
+  @deprecated("Use upsertRegInfoById method", "0.332.0")
   def upsertRegistrationInformation(internalId: String,
                                     regId: String,
                                     status: RegistrationStatus,
@@ -113,13 +121,50 @@ class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
       })
   }
 
+  def upsertRegInfoById(internalId: String,
+                        regId: String,
+                        status: RegistrationStatus,
+                        regStartDate: LocalDate,
+                        channel: RegistrationChannel,
+                        lastModified: LocalDate): Future[RegistrationInformation] = {
+
+    val newRecord = RegistrationInformation(
+      internalId = internalId,
+      registrationId = regId,
+      status = status,
+      regStartDate = regStartDate,
+      channel = channel,
+      lastModified = lastModified
+    )
+
+    val selector = Json.obj("internalId" -> internalId, "registrationId" -> regId)
+    val modifier = Json.obj("$set" -> Json.toJson(newRecord))
+
+    findAndUpdate(selector, modifier, fetchNewObject = true, upsert = true)
+      .map(_.result[RegistrationInformation] match {
+        case Some(regInfo) => regInfo
+        case _ => throw new Exception("Unexpected error when inserting registration information")
+      })
+  }
+
   override def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
     find("internalId" -> JsString(id))
       .map(_.headOption.map(_.internalId))
 
 
+  @deprecated("Use deleteRegInfoById method", "0.332.0")
   def clearDocument(internalId: String): Future[Boolean] = {
     collection.delete.one(BSONDocument("internalId" -> internalId)) map { res =>
+      if (!res.ok) logger.error(s"[clearDocument] - Error deleting traffic management doc for internalId $internalId - Error: ${Message.unapply(res)}")
+      res.ok
+    }
+  }
+
+  def deleteRegInfoById(internalId: String, registrationId: String): Future[Boolean] = {
+    collection.delete.one(BSONDocument(
+      "internalId" -> internalId,
+      "registrationId" -> registrationId
+    )).map { res =>
       if (!res.ok) logger.error(s"[clearDocument] - Error deleting traffic management doc for internalId $internalId - Error: ${Message.unapply(res)}")
       res.ok
     }

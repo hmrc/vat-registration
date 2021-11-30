@@ -79,7 +79,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
   "allocate" must {
     "return QuotaReached when the quota is exceeded" in new Setup() {
       mockCurrentTotal(UkCompany, isEnrolled = true)(16)
-      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
         Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
       )
 
@@ -90,7 +90,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
     Seq(UkCompany, Individual, NETP, NonUkNonEstablished, RegSociety, CharitableOrg).foreach { partyType =>
       s"return Allocated when the quota has not been exceeded for $partyType" in new Setup() {
         mockCurrentTotal(partyType, isEnrolled = true)(1)
-        mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
+        mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
           Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today))
         )
         mockIncrement(partyType, isEnrolled = true)(1)
@@ -102,7 +102,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
     "return quota reached before opening hours" in new Setup(hour = 8) {
       mockCurrentTotal(UkCompany, isEnrolled = true)(1)
-      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
         Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
       )
 
@@ -112,7 +112,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
     "return quota reached after opening hours" in new Setup(hour = 18) {
       mockCurrentTotal(UkCompany, isEnrolled = true)(1)
-      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
         Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
       )
 
@@ -123,7 +123,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
     "apply different quotas for different entity types" in new Setup() {
       mockCurrentTotal(UkCompany, isEnrolled = true)(14)
       mockCurrentTotal(Individual, isEnrolled = false)(1)
-      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
         Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today))
       )
       mockIncrement(UkCompany, isEnrolled = true)(1)
@@ -135,7 +135,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
   }
 
-  "getRegistrationInformation" must {
+  "getRegistrationInformation (deprecated)" must {
     "return the registration information where it exists" in new Setup {
       mockGetRegInfo(testInternalId)(Future.successful(Some(testRegInfo)))
 
@@ -152,22 +152,60 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
   }
 
-  "upsertRegistrationInformation" must {
+  "getRegInfoById" must {
+    "return the registration information where it exists" in new Setup {
+      mockGetRegInfoById(testInternalId, testRegId)(Future.successful(Some(testRegInfo)))
+
+      val res = await(Service.getRegInfoById(testInternalId, testRegId))
+
+      res mustBe Some(testRegInfo)
+    }
+    "return None where a record doesn't exist" in new Setup {
+      mockGetRegInfoById(testInternalId, testRegId)(Future.successful(None))
+
+      val res = await(Service.getRegInfoById(testInternalId, testRegId))
+
+      res mustBe None
+    }
+  }
+
+  "upsertRegInfo (deprecated)" must {
     "return registration information" in new Setup {
       val regInfo = RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)
       mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(Future.successful(regInfo))
 
-      val res = await(Service.upsertRegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS))
+      val res = await(Service.upsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS))
 
       res mustBe regInfo
     }
   }
 
-  "clearDocument" must {
+  "upsertRegInfoById" must {
+    "return registration information" in new Setup {
+      val regInfo = RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(Future.successful(regInfo))
+
+      val res = await(Service.upsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS))
+
+      res mustBe regInfo
+    }
+  }
+
+  "clearDocument (deprecated)" must {
     "return true" in new Setup {
       mockClearDocument(testInternalId)(response = Future.successful(true))
 
       val res = await(Service.clearDocument(testInternalId))
+
+      res mustBe true
+    }
+  }
+
+  "clearDocument" must {
+    "return true" in new Setup {
+      mockDeleteRegInfoById(testInternalId, testRegId)(response = Future.successful(true))
+
+      val res = await(Service.deleteRegInfoById(testInternalId, testRegId))
 
       res mustBe true
     }

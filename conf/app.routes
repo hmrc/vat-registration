@@ -3,7 +3,13 @@
 POST         /new                                   controllers.VatRegistrationController.newVatRegistration
 POST         /insert-s4l-scheme                         controllers.VatRegistrationController.insertVatScheme
 
+# Traffic Management API
 POST         /traffic-management/:regId/allocate    controllers.TrafficManagementController.allocate(regId)
+GET          /traffic-management/:regId/reg-info    controllers.TrafficManagementController.getRegInfoById(regId)
+PUT          /traffic-management/:regId/reg-info    controllers.TrafficManagementController.upsertRegInfoById(regId)
+DELETE       /traffic-management/:regId/reg-info    controllers.TrafficManagementController.deleteRegInfoById(regId)
+
+# Deprecated Traffic Management API
 GET          /traffic-management/reg-info           controllers.TrafficManagementController.getRegistrationInformation
 PUT          /traffic-management/reg-info           controllers.TrafficManagementController.upsertRegistrationInformation()
 DELETE       /traffic-management/reg-info/clear     controllers.TrafficManagementController.clearDocument

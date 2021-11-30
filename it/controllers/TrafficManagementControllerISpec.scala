@@ -74,7 +74,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     }
   }
 
-  "GET /traffic-management/reg-info" must {
+  "GET /traffic-management/reg-info (deprecated)" must {
     "return OK with reg info when a record exists for the internal ID" in new Setup {
       given
         .user.isAuthorised
@@ -103,7 +103,50 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     }
   }
 
-  "PUT /traffic-management/reg-info" must {
+  "GET /traffic-management/:regId/reg-info" must {
+    "return OK with reg info when a record exists for the internal ID" in new Setup {
+      given
+        .user.isAuthorised
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+
+      val res = await(client(controllers.routes.TrafficManagementController.getRegInfoById(testRegId).url).get)
+
+      res.status mustBe OK
+      res.json mustBe Json.toJson(testRegInfo)
+    }
+
+    "return OK with the correct reg info when multiple records exist for the internal ID" in new Setup {
+      val testRegId2 = "testRegId2"
+      val testRegInfo2 = testRegInfo.copy(registrationId = testRegId2)
+      given
+        .user.isAuthorised
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+        .regInfoRepo.insertIntoDb(testRegInfo2, trafficManagementRepo.insert)
+
+      val res = await(client(controllers.routes.TrafficManagementController.getRegInfoById(testRegId2).url).get)
+
+      res.status mustBe OK
+      res.json mustBe Json.toJson(testRegInfo2)
+    }
+
+    "return NOT_FOUND when no record exists for the internal ID" in new Setup {
+      given.user.isAuthorised
+
+      val res = await(client(controllers.routes.TrafficManagementController.getRegInfoById(testRegId).url).get)
+
+      res.status mustBe NOT_FOUND
+    }
+
+    "return FORBIDDEN if the user is not authenticated" in new Setup {
+      given.user.isNotAuthorised
+
+      val res = await(client(controllers.routes.TrafficManagementController.getRegInfoById(testRegId).url).get)
+
+      res.status mustBe FORBIDDEN
+    }
+  }
+
+  "PUT /traffic-management/reg-info (deprecated)" must {
     "return OK with reg info" in new Setup {
       given
         .user.isAuthorised
@@ -116,16 +159,78 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
       res.status mustBe OK
       res.json mustBe Json.toJson(testRegInfo)
     }
-
   }
 
-  "DELETE /traffic-management/reg-info/clear" must {
+  "PUT /traffic-management/:regId/reg-info" must {
+    "return OK with reg info when all required information is present" in new Setup {
+      given
+        .user.isAuthorised
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+
+      val json = Json.toJson(testRegInfo.copy(status = Submitted))
+
+      val res = await(client(controllers.routes.TrafficManagementController.upsertRegInfoById(testRegId).url).put(json))
+
+      res.status mustBe OK
+      res.json mustBe json
+      await(trafficManagementRepo.find("registrationId" -> testRegId)).map(_.status) must contain(Submitted)
+    }
+    "return bad request when required fields are missing" in new Setup {
+      given
+        .user.isAuthorised
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+
+      val json = Json.obj()
+
+      val res = await(client(controllers.routes.TrafficManagementController.upsertRegInfoById(testRegId).url).put(json))
+
+      res.status mustBe BAD_REQUEST
+      await(trafficManagementRepo.find("registrationId" -> testRegId)).headOption.map(_.status) must contain(Draft)
+    }
+    "perform an insert operation if the specified registration doesn't exist" in new Setup {
+      given
+        .user.isAuthorised
+
+
+      val json = Json.toJson(testRegInfo)
+
+      val res = await(client(controllers.routes.TrafficManagementController.upsertRegInfoById(testRegId).url).put(json))
+
+      res.status mustBe OK
+      res.json mustBe json
+      await(trafficManagementRepo.find("registrationId" -> testRegId)).headOption must contain(testRegInfo)
+    }
+  }
+
+  "DELETE /traffic-management/reg-info/clear (deprecated)" must {
     "return NO_CONTENT when successful" in new Setup {
       given
         .user.isAuthorised
         .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
 
       val res = await(client(controllers.routes.TrafficManagementController.clearDocument.url).delete())
+
+      res.status mustBe NO_CONTENT
+    }
+  }
+
+  "DELETE /traffic-management/:regId/reg-info" must {
+    "return NO_CONTENT when successful" in new Setup {
+      given
+        .user.isAuthorised
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+
+      val res = await(client(controllers.routes.TrafficManagementController.deleteRegInfoById(testRegId).url).delete())
+
+      res.status mustBe NO_CONTENT
+      await(trafficManagementRepo.find("registrationId" -> testRegId)) mustBe Nil
+    }
+
+    "return NO_CONTENT even when the record doesn't exist" in new Setup {
+      given
+        .user.isAuthorised
+
+      val res = await(client(controllers.routes.TrafficManagementController.deleteRegInfoById(testRegId).url).delete())
 
       res.status mustBe NO_CONTENT
     }
