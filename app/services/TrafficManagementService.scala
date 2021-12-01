@@ -47,6 +47,10 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       case RegSociety => config.DailyQuotas.regSociety
       case CharitableOrg if isEnrolled => config.DailyQuotas.enrolledCharitableIncorpOrg
       case CharitableOrg => config.DailyQuotas.charitableIncorpOrg
+      case Trust if isEnrolled => config.DailyQuotas.enrolledTrust
+      case Trust => config.DailyQuotas.trust
+      case UnincorpAssoc if isEnrolled => config.DailyQuotas.enrolledUnincorpAssoc
+      case UnincorpAssoc => config. DailyQuotas.unincorpAssoc
     }
 
   def currentHour: Int = timeMachine.timestamp.getHour

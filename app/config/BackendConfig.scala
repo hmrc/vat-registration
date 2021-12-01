@@ -61,6 +61,10 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
     val regSociety = servicesConfig.getInt("traffic-management.quotas.reg-society")
     val enrolledCharitableIncorpOrg = servicesConfig.getInt("traffic-management.quotas.charitable-incorp-org-enrolled")
     val charitableIncorpOrg = servicesConfig.getInt("traffic-management.quotas.charitable-incorp-org")
+    val enrolledTrust = servicesConfig.getInt("traffic-management.quotas.trust-enrolled")
+    val trust = servicesConfig.getInt("traffic-management.quotas.trust")
+    val enrolledUnincorpAssoc = servicesConfig.getInt("traffic-management.quotas.unincorp-assoc-enrolled")
+    val unincorpAssoc = servicesConfig.getInt("traffic-management.quotas.unincorp-assoc")
   }
 
   lazy val nonRepudiationSubmissionUrl: String = servicesConfig.baseUrl("non-repudiation") + "/submission"
