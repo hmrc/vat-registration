@@ -16,6 +16,8 @@
 
 package services.submission
 
+import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
+import models.api.ApplicantDetails
 import models.submission.{Individual, NETP}
 import models.{IncorporatedEntity, MinorEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, Json}
@@ -30,7 +32,8 @@ import scala.concurrent.{ExecutionContext, Future}
 // scalastyle:off
 @Singleton
 class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository
-                                                  )(implicit ec: ExecutionContext) {
+                                                  )(implicit ec: ExecutionContext)
+  extends FeatureSwitching {
 
   def buildCustomerIdentificationBlock(regId: String): Future[JsObject] = for {
     optVatScheme <- registrationMongoRepository.retrieveVatScheme(regId)
@@ -43,24 +46,27 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
           if (data.partyType.equals(NETP)) Individual
           else data.partyType
         },
-        optional(
-          "shortOrgName" -> {
-            applicantDetails.entity match {
-              case IncorporatedEntity(companyName, _, _, _, None, _, _, _, _, _) => companyName
-              case MinorEntity(companyName, _, _, _, _, _, _, _, _, None, _) => companyName
-              case _ => None
-            }
-          }.map(StringNormaliser.normaliseString) //Don't send company name when safeId is present
-        ),
         optional("tradingName" -> tradingDetails.tradingName.map(StringNormaliser.normaliseString))
       ) ++ {
+        (optTradingDetails.flatMap(_.shortOrgName).map(StringNormaliser.normaliseString), getCompanyName(applicantDetails)) match {
+          case (Some(shortOrgName), Some(companyName)) if isEnabled(ShortOrgName) => jsonObject(
+            "shortOrgName" -> shortOrgName,
+            "organisationName" -> companyName
+          )
+          case (None, optCompanyName) if isEnabled(ShortOrgName) => jsonObject(
+            optional("shortOrgName" -> optCompanyName),
+            optional("organisationName" -> optCompanyName)
+          )
+          case (_, optCompanyName) => jsonObject(optional("shortOrgName" -> optCompanyName))
+        }
+      } ++ {
         applicantDetails.entity.bpSafeId match {
           case Some(bpSafeId) =>
-            Json.obj("primeBPSafeID" -> bpSafeId)
+            jsonObject("primeBPSafeID" -> bpSafeId)
           case None if applicantDetails.entity.identifiers.nonEmpty =>
-            Json.obj("customerID" -> Json.toJson(applicantDetails.entity.identifiers))
+            jsonObject("customerID" -> Json.toJson(applicantDetails.entity.identifiers))
           case _ =>
-            Json.obj()
+            jsonObject()
         }
       } ++ {
         applicantDetails.entity match {
@@ -85,5 +91,13 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
     case _ =>
       throw new InternalServerException("Could not build customer identification block for submission due to missing data from applicant and trading details")
   }
+
+  def getCompanyName(applicantDetails: ApplicantDetails): Option[String] = {
+    applicantDetails.entity match {
+      case IncorporatedEntity(companyName, _, _, _, None, _, _, _, _, _) => companyName
+      case MinorEntity(companyName, _, _, _, _, _, _, _, _, None, _) => companyName
+      case _ => None //Don't send company name when safeId is present
+    }
+  }.map(StringNormaliser.normaliseString)
 
 }

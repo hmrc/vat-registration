@@ -22,15 +22,19 @@ import play.api.libs.json._
 
 class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
 
+  val testTradingName = "testTradingName"
+  val testShortOrgName = "testShortOrgName"
+
   val fullJson: JsValue = Json.parse(
-    """
-      |{
-      |  "tradingName":"test-name",
-      |  "eoriRequested":true
-      |}
+    s"""
+       |{
+       |  "tradingName":"$testTradingName",
+       |  "eoriRequested":true,
+       |  "shortOrgName":"$testShortOrgName"
+       |}
          """.stripMargin
   )
-  val fullModel: TradingDetails = TradingDetails(Some("test-name"), Some(true))
+  val fullModel: TradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName))
 
   val noNameJson: JsValue = Json.parse(
     """
@@ -39,7 +43,7 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
       |}
     """.stripMargin
   )
-  val noNameModel: TradingDetails = TradingDetails(None, Some(true))
+  val noNameModel: TradingDetails = TradingDetails(None, Some(true), None)
 
   val noEoriJson: JsValue = Json.parse(
     """
@@ -49,7 +53,7 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
     """.stripMargin
   )
 
-  val noEoriModel: TradingDetails = TradingDetails(Some("test-name"), None)
+  val noEoriModel: TradingDetails = TradingDetails(Some("test-name"), None, None)
 
   val emptyJson: JsValue = Json.parse(
     """
@@ -59,7 +63,7 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
     """.stripMargin
   )
 
-  val emptyModel: TradingDetails = TradingDetails(None, None)
+  val emptyModel: TradingDetails = TradingDetails(None, None, None)
 
   "Creating a TradingDetails model from Json" should {
     "complete successfully from full Json" in {

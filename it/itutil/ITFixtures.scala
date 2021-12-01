@@ -46,7 +46,8 @@ trait ITFixtures {
   val vatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft)
   val oldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   val testTradingName = "trading-name"
-  val testTradingDetails = TradingDetails(Some(testTradingName), Some(true))
+  val testShortOrgName = "testShortOrgName"
+  val testTradingDetails = TradingDetails(Some(testTradingName), Some(true), None)
   val testAuthProviderId = "authProviderId"
   val testWarehouseNumber = "tst123456789012"
   val testWarehouseName = "testWarehouseName"
@@ -514,6 +515,7 @@ trait ITFixtures {
 
   val testNetpTradingDetails: TradingDetails = TradingDetails(
     Some(testTradingName),
+    None,
     None
   )
 
