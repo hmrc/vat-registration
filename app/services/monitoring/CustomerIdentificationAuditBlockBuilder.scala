@@ -16,7 +16,8 @@
 
 package services.monitoring
 
-import models.api.VatScheme
+import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
+import models.api.{ApplicantDetails, VatScheme}
 import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.InternalServerException
@@ -26,7 +27,7 @@ import javax.inject.Singleton
 
 // scalastyle:off
 @Singleton
-class CustomerIdentificationAuditBlockBuilder {
+class CustomerIdentificationAuditBlockBuilder extends FeatureSwitching {
 
   def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsValue = {
     (vatScheme.applicantDetails, vatScheme.tradingDetails) match {
@@ -55,16 +56,21 @@ class CustomerIdentificationAuditBlockBuilder {
                 None
             }
           }),
-          optional("shortOrgName" -> {
-            applicantDetails.entity match {
-              case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => companyName
-              case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => companyName
-              case _ => None
-            }
-          }),
           "dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth,
           optional("tradingName" -> tradingDetails.tradingName)
-        )
+        ) ++ {
+          (tradingDetails.shortOrgName, getCompanyName(applicantDetails)) match {
+            case (Some(shortOrgName), Some(companyName)) if isEnabled(ShortOrgName) => jsonObject(
+              "shortOrgName" -> shortOrgName,
+              "organisationName" -> companyName
+            )
+            case (None, optCompanyName) if isEnabled(ShortOrgName) => jsonObject(
+              optional("shortOrgName" -> optCompanyName),
+              optional("organisationName" -> optCompanyName)
+            )
+            case (_, optCompanyName) => jsonObject(optional("shortOrgName" -> optCompanyName))
+          }
+        }
       case (None, _) =>
         throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Applicant details data")
       case (_, None) =>
@@ -72,4 +78,12 @@ class CustomerIdentificationAuditBlockBuilder {
     }
   }
 
+
+  def getCompanyName(applicantDetails: ApplicantDetails): Option[String] = {
+    applicantDetails.entity match {
+      case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => companyName
+      case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => companyName
+      case _ => None
+    }
+  }
 }

@@ -18,7 +18,7 @@ package controllers
 
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import enums.VatRegStatus
-import featureswitch.core.config.{FeatureSwitching, StubSubmission}
+import featureswitch.core.config.{FeatureSwitching, ShortOrgName, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
 import models.api.VatScheme
 import models.nonrepudiation.NonRepudiationMetadata
@@ -164,6 +164,26 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         )
 
         res.status mustBe OK
+      }
+
+      "return OK if the submission is successful with an unregistered business partner and a short org name different from companyName" in new Setup {
+        enable(StubSubmission)
+        enable(ShortOrgName)
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner.copy(
+          tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+        ), repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testSubmissionJsonWithShortOrgName, OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+        disable(ShortOrgName)
       }
 
       "return OK if the submission is successful with an unregistered business partner and transactor details" in new Setup {
