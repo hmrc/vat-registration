@@ -365,6 +365,7 @@ trait ITFixtures {
   )
 
   val testGeneralPartnershipEntity: PartnershipIdEntity = PartnershipIdEntity(
+    Some(testCompanyName),
     Some(testUtr),
     Some(testPostcode),
     None,
