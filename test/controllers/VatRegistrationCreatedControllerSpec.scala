@@ -109,7 +109,8 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
             "details" -> Json.obj(
               "name" -> "testAccountName",
               "sortCode" -> "010203",
-              "number" -> "01023456"
+              "number" -> "01023456",
+              "status" -> Json.toJson[BankAccountDetailsStatus](ValidStatus)
             )
           )
         )
@@ -132,7 +133,8 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
           "details" -> Json.obj(
             "name" -> "Test Bank Account",
             "sortCode" -> "010203",
-            "number" -> "01023456"
+            "number" -> "01023456",
+            "status" -> Json.toJson[BankAccountDetailsStatus](ValidStatus)
           )
         )
 

@@ -16,11 +16,11 @@
 
 package services.monitoring
 
-import models.api.VatScheme
+import models.api.{IndeterminateStatus, VatScheme}
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
-import utils.JsonUtils.jsonObject
+import utils.JsonUtils._
 
 import javax.inject.Singleton
 
@@ -36,7 +36,8 @@ class BankAuditBlockBuilder {
               jsonObject(
                 "accountName" -> bankAccountDetails.name,
                 "sortCode" -> bankAccountDetails.sortCode,
-                "accountNumber" -> bankAccountDetails.number
+                "accountNumber" -> bankAccountDetails.number,
+                conditional(bankAccountDetails.status.equals(IndeterminateStatus))("bankDetailsNotValid" -> true)
               )
             case None =>
               throw new InternalServerException("[BankAuditBlockBuilder]: Could not build bank details block for audit due to missing bank account details")

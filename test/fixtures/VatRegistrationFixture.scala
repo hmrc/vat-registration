@@ -62,8 +62,14 @@ trait VatRegistrationFixture {
   )
 
   lazy val testDigitalContactOptional = DigitalContactOptional(Some("skylake@vilikariet.com"), None, None)
-  lazy val testBankDetails = BankAccountDetails("Test Bank Account", "010203", "01023456")
-  lazy val testBankDetailsOverseas = BankAccountOverseasDetails("Test Overseas Bank Account", "010203", "01023456")
+  lazy val testBankName = "Test Bank Account"
+  lazy val testSortCode = "010203"
+  lazy val testBankNumber = "01023456"
+  lazy val testBankDetails = BankAccountDetails(testBankName, testSortCode, testBankNumber, ValidStatus)
+  lazy val testOverseasBankName = "Test Overseas Bank Account"
+  lazy val testBic = "010203"
+  lazy val testIban = "01023456"
+  lazy val testBankDetailsOverseas = BankAccountOverseasDetails(testOverseasBankName, testBic, testIban)
   lazy val testFormerName = FormerName(Some(testName), Some(testDate))
   lazy val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
   lazy val zeroRatedSupplies: BigDecimal = 12.99
