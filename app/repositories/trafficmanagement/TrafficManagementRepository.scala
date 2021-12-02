@@ -51,6 +51,15 @@ class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
     options = BSONDocument("expireAfterSeconds" -> BSONInteger(ttl))
   )
 
+  private def recreateIndexes = for {
+    _ <- collection.indexesManager.dropAll()
+    _ <- Future.sequence(indexes.map(collection.indexesManager.create))
+    ensured <- ensureIndexes
+  } yield ensured
+
+  // TODO: Remove once tihs has ran once
+  recreateIndexes
+
   override def indexes: Seq[Index] = {
     Seq(
       Index(
@@ -63,22 +72,6 @@ class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
       ),
       lastModifiedIndex
     )
-  }
-
-  override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] = {
-    for {
-      currentIndexes <- collection.indexesManager.list()
-      _<- deleteLastUpdatedIndex(currentIndexes)
-      indexes = currentIndexes :+ lastModifiedIndex
-      updated <- Future.sequence(indexes.map(collection.indexesManager.ensure))
-    } yield updated
-  }
-
-  def deleteLastUpdatedIndex(indexes: List[Index])(implicit ec: ExecutionContext): Future[Int] = {
-    indexes.find(index => index.eventualName == "lastModified") match {
-      case Some(index) => collection.indexesManager.drop(index.eventualName)
-      case None => Future.successful(0)
-    }
   }
 
   @deprecated("Use getRegInfoById method", "0.332.0")
