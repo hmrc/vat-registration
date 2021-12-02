@@ -19,10 +19,10 @@ package models
 import auth.CryptoSCRS
 import com.typesafe.config.ConfigFactory
 import helpers.VatRegSpec
-import models.api.{BankAccount, BankAccountDetails, BankAccountMongoFormat, BankAccountOverseasDetails, BeingSetup}
+import models.api._
+import org.mockito.Mockito._
 import play.api.Configuration
 import play.api.libs.json._
-import org.mockito.Mockito._
 
 class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
 
@@ -31,7 +31,8 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
     details = Some(BankAccountDetails(
       name = "Test Account name",
       sortCode = "00-99-22",
-      number = "12345678"
+      number = "12345678",
+      status = ValidStatus
     )),
     overseasDetails = None,
     reason = None
@@ -53,7 +54,8 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
        |  "details":{
        |    "name":"Test Account name",
        |    "sortCode":"00-99-22",
-       |    "number":"12345678"
+       |    "number":"12345678",
+       |    "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
        |  }
        |}
         """.stripMargin)
@@ -71,8 +73,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
         """.stripMargin)
 
 
-
-  val noDetailsBankAccountModel: BankAccount = BankAccount(isProvided = false, None,None, Some(BeingSetup))
+  val noDetailsBankAccountModel: BankAccount = BankAccount(isProvided = false, None, None, Some(BeingSetup))
   val noDetailsBankAccountJson: JsValue = Json.parse(
     s"""
        |{
@@ -104,7 +105,8 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
              |  "details":{
              |    "name":"Test Account name",
              |    "sortCode":"00-99-22",
-             |    "number":"12345678"
+             |    "number":"12345678",
+             |    "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
              |  }
              |}
            """.stripMargin
@@ -120,7 +122,8 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
              |  "isProvided":true,
              |  "details":{
              |    "sortCode":"00-99-22",
-             |    "number":"12345678"
+             |    "number":"12345678",
+             |    "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
              |  }
              |}
         """.stripMargin)
@@ -136,7 +139,8 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
              |  "isProvided":true,
              |  "details":{
              |    "name":"Test Account name",
-             |    "sortCode":"00-99-22"
+             |    "sortCode":"00-99-22",
+             |    "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
              |  }
              |}
         """.stripMargin)
@@ -152,7 +156,8 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
              |  "isProvided":true,
              |  "details":{
              |    "name":"Test Account name",
-             |    "number":"12345678"
+             |    "number":"12345678",
+             |    "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
              |  }
              |}
         """.stripMargin)
@@ -197,7 +202,8 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       Some(BankAccountDetails(
         name = "Test Account name",
         sortCode = "00-99-22",
-        number = "12345678"
+        number = "12345678",
+        status = ValidStatus
       )),
       overseasDetails = None,
       reason = None
@@ -215,13 +221,14 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
     )
 
     val encryptedJson = Json.parse(
-      """
+      s"""
         |{
         | "isProvided":true,
         | "details":{
         |   "name":"Test Account name",
         |   "sortCode":"00-99-22",
-        |   "number":"V3BrR3VxdHB2YzBYb1BrbHk3UGJzdz09"
+        |   "number":"V3BrR3VxdHB2YzBYb1BrbHk3UGJzdz09",
+        |   "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
         | }
         |}
       """.stripMargin)

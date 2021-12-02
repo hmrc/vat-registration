@@ -18,6 +18,7 @@ package services.submission
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import models.api._
 import models.submission.NETP
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -35,43 +36,42 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
     )
   }
 
-  val bankDetailsBlockJson: JsObject = Json.parse(
-    """
-      |{ "UK": {
-      |       "accountName": "Test Bank Account",
-      |       "sortCode": "010203",
-      |       "accountNumber": "01023456"
-      |       }
-      |}
-      |""".stripMargin).as[JsObject]
+  val bankDetailsBlockJson: JsObject = Json.obj(
+    "UK" -> Json.obj(
+      "accountName" -> testBankName,
+      "sortCode" -> testSortCode,
+      "accountNumber" -> testBankNumber
+    )
+  )
 
-  val bankDetailsOverseasBlockJson: JsObject = Json.parse(
-    """
-      |{ "Overseas": {
-      |       "name": "Test Overseas Bank Account",
-      |       "bic": "010203",
-      |       "iban": "01023456"
-      |       }
-      |}
-      |""".stripMargin).as[JsObject]
+  val indeterminateBankDetailsBlockJson: JsObject = Json.obj(
+    "UK" -> Json.obj(
+      "accountName" -> testBankName,
+      "sortCode" -> testSortCode,
+      "accountNumber" -> testBankNumber,
+      "bankDetailsNotValid" -> true
+    )
+  )
 
-  val bankDetailsNotProvidedBlockJson: JsObject = Json.parse(
-    """
-      |{ "UK":
-      |  {
-      |     "reasonBankAccNotProvided": "1"
-      |  }
-      |}
-      |""".stripMargin).as[JsObject]
+  val bankDetailsOverseasBlockJson: JsObject = Json.obj(
+    "Overseas" -> Json.obj(
+      "name" -> testOverseasBankName,
+      "bic" -> testBic,
+      "iban" -> testIban
+    )
+  )
 
-  val bankDetailsOverseasNotProvidedBlockJson: JsObject = Json.parse(
-    """
-      |{ "UK":
-      |  {
-      |     "reasonBankAccNotProvided": "3"
-      |  }
-      |}
-      |""".stripMargin).as[JsObject]
+  val bankDetailsNotProvidedBlockJson: JsObject = Json.obj(
+    "UK" -> Json.obj(
+      "reasonBankAccNotProvided" -> NoUKBankAccount.reasonId(BeingSetup)
+    )
+  )
+
+  val bankDetailsOverseasNotProvidedBlockJson: JsObject = Json.obj(
+    "UK" -> Json.obj(
+      "reasonBankAccNotProvided" -> NoUKBankAccount.reasonId(OverseasAccount)
+    )
+  )
 
   "buildBankDetailsBlock" should {
     "return the correct json" when {
@@ -83,6 +83,16 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
         val result: Option[JsObject] = await(service.buildBankDetailsBlock(testRegId))
         result mustBe Some(bankDetailsBlockJson)
+      }
+
+      "the applicant has an indeterminate bank account" in new Setup {
+        when(mockRegistrationMongoRepository.fetchBankAccount(testRegId))
+          .thenReturn(Future.successful(Some(testBankAccount.copy(details = Some(testBankDetails.copy(status = IndeterminateStatus))))))
+        when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
+          .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
+
+        val result: Option[JsObject] = await(service.buildBankDetailsBlock(testRegId))
+        result mustBe Some(indeterminateBankDetailsBlockJson)
       }
 
       "the applicant has a overseas bank account" in new Setup {

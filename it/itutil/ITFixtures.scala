@@ -240,7 +240,8 @@ trait ITFixtures {
   val testBankDetails = BankAccountDetails(
     name = "testBankName",
     sortCode = "11-11-11",
-    number = "01234567"
+    number = "01234567",
+    status = ValidStatus
   )
   val testSubmittedSortCode = "111111"
 

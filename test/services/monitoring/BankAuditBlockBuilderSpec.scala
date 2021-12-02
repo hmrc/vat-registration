@@ -18,7 +18,7 @@ package services.monitoring
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api.BankAccountDetails
+import models.api.{BankAccountDetails, ValidStatus}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.InternalServerException
 
@@ -49,7 +49,8 @@ class BankAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
         val testBank: BankAccountDetails = BankAccountDetails(
           name = "Test Bank Account",
           sortCode = "01-02-03",
-          number = "01023456"
+          number = "01023456",
+          status = ValidStatus
         )
 
         val testScheme = testVatScheme.copy(bankAccount = Some(testBankAccount).map(_.copy(details = Some(testBank)))

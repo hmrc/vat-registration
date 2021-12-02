@@ -65,7 +65,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with FutureAssertions with 
   val accountNumber = "12345678"
   val encryptedAccountNumber = "V0g2RXVUcUZpSUk4STgvbGNFdlAydz09"
   val sortCode = "12-34-56"
-  val bankAccountDetails: BankAccountDetails = BankAccountDetails("testAccountName", sortCode, accountNumber)
+  val bankAccountDetails: BankAccountDetails = BankAccountDetails("testAccountName", sortCode, accountNumber, ValidStatus)
   val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails), None, None)
 
   val vatSchemeWithEligibilityData = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, eligibilitySubmissionData = Some(testEligibilitySubmissionData))
@@ -80,7 +80,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with FutureAssertions with 
        |   "details":{
        |     "name":"testAccountName",
        |     "sortCode":"$sortCode",
-       |     "number":"$encryptedAccountNumber"
+       |     "number":"$encryptedAccountNumber",
+       |     "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
        |    }
        |  }
        |}

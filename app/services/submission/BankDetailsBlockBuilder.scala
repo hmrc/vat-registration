@@ -17,12 +17,12 @@
 package services.submission
 
 import models.api.NoUKBankAccount.reasonId
-import models.api.{BankAccount, OverseasAccount}
+import models.api.{BankAccount, IndeterminateStatus, OverseasAccount}
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
-import utils.JsonUtils.jsonObject
+import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,10 +39,11 @@ class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRe
         "UK" -> jsonObject(
           "accountName" -> details.name,
           "sortCode" -> details.sortCode.replaceAll("-", ""),
-          "accountNumber" -> details.number
+          "accountNumber" -> details.number,
+          conditional(details.status.equals(IndeterminateStatus))("bankDetailsNotValid" -> true)
         )
       ))
-    case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(partyType@(NETP | NonUkNonEstablished))) =>
+    case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(NETP | NonUkNonEstablished)) =>
       Some(jsonObject(
         "Overseas" -> jsonObject(
           "name" -> overseasDetails.name,
@@ -56,7 +57,7 @@ class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRe
           "reasonBankAccNotProvided" -> reasonId(reason)
         )
       ))
-    case (None, Some(partyType@(NETP | NonUkNonEstablished))) =>
+    case (None, Some(NETP | NonUkNonEstablished)) =>
       Some(jsonObject("UK" -> jsonObject(
         "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
       )))

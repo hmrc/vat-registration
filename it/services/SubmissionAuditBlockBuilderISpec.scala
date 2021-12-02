@@ -16,7 +16,7 @@ class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with Submissi
     tradingDetails = Some(testTradingDetails),
     sicAndCompliance = Some(testFullSicAndCompliance),
     businessContact = Some(testFullBusinessContactDetails),
-    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails),None , None)),
+    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),

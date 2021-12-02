@@ -34,7 +34,8 @@ case class BankAccount(isProvided: Boolean,
 
 case class BankAccountDetails(name: String,
                               sortCode: String,
-                              number: String)
+                              number: String,
+                              status: BankAccountDetailsStatus)
 
 case class BankAccountOverseasDetails(name: String,
                                       bic: String,
@@ -56,7 +57,8 @@ object BankAccountDetailsMongoFormat extends VatBankAccountValidator {
   def format(crypto: CryptoSCRS): Format[BankAccountDetails] = (
     (__ \ "name").format[String] and
       (__ \ "sortCode").format[String] and
-      (__ \ "number").format[String](crypto.rds)(crypto.wts)
+      (__ \ "number").format[String](crypto.rds)(crypto.wts) and
+      (__ \ "status").format[BankAccountDetailsStatus]
     ) (BankAccountDetails.apply, unlift(BankAccountDetails.unapply))
 }
 
