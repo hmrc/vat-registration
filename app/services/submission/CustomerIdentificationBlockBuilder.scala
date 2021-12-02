@@ -19,7 +19,7 @@ package services.submission
 import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
 import models.api.ApplicantDetails
 import models.submission.{Individual, NETP}
-import models.{IncorporatedEntity, MinorEntity, SoleTraderIdEntity}
+import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, Json}
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -96,6 +96,7 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
     applicantDetails.entity match {
       case IncorporatedEntity(companyName, _, _, _, None, _, _, _, _, _) => companyName
       case MinorEntity(companyName, _, _, _, _, _, _, _, _, None, _) => companyName
+      case PartnershipIdEntity(companyName, _, _, _, None, _, _, _) => companyName
       case _ => None //Don't send company name when safeId is present
     }
   }.map(StringNormaliser.normaliseString)

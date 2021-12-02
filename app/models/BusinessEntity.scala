@@ -61,7 +61,7 @@ object BusinessEntity {
       Json.toJson(incorporatedEntity)(IncorporatedEntity.format)
     case soleTrader@SoleTraderIdEntity(_, _, _, _, _, _, _, _, _, _, _) =>
       Json.toJson(soleTrader)(SoleTraderIdEntity.format)
-    case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _) =>
+    case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _, _) =>
       Json.toJson(partnershipIdEntity)(PartnershipIdEntity.format)
     case minorEntity: MinorEntity =>
       Json.toJson(minorEntity)(MinorEntity.format)
@@ -170,7 +170,8 @@ object OverseasIdentifierDetails {
 
 // PartnershipIdEntity supports Partnerships
 
-case class PartnershipIdEntity(sautr: Option[String],
+case class PartnershipIdEntity(companyName: Option[String],
+                               sautr: Option[String],
                                postCode: Option[String],
                                chrn: Option[String],
                                bpSafeId: Option[String] = None,
