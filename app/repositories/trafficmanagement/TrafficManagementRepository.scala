@@ -54,13 +54,11 @@ class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
   override def indexes: Seq[Index] = {
     Seq(
       Index(
-        name = Some("internalId"),
-        key = Seq("internalId" -> IndexType.Ascending),
-        unique = true
-      ),
-      Index(
-        name = Some("registrationId"),
-        key = Seq("registrationId" -> IndexType.Ascending),
+        name = Some("intAndRegIdCompositeKey"),
+        key = Seq(
+          "registrationId" -> IndexType.Ascending,
+          "internalId" -> IndexType.Ascending
+        ),
         unique = true
       ),
       lastModifiedIndex
