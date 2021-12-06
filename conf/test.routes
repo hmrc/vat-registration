@@ -3,6 +3,7 @@ POST        /api/feature-switches                                  featureswitch
 
 PUT         /api/daily-quota                                       controllers.test.UpdateTrafficManagementController.updateQuota
 DELETE      /api/traffic-management                                controllers.test.UpdateTrafficManagementController.clear
+DELETE      /registrations                                         controllers.test.DeleteAllRegistrationsController.deleteAllRegistrations
 
 POST        /vat/subscription                                      controllers.test.StubVatSubmissionController.processSubmission
 
