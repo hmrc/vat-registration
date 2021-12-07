@@ -101,7 +101,7 @@ trait VatRegistrationFixture {
     companyNumber = testCrn,
     ctutr = Some(testUtr),
     dateOfIncorporation = Some(testDateOFIncorp),
-    businessVerification = BvFail,
+    businessVerification = Some(BvFail),
     registration = NotCalledStatus,
     identifiersMatch = true,
     chrn = None
@@ -113,7 +113,7 @@ trait VatRegistrationFixture {
     testDate,
     Some(testNino),
     sautr = Some(testUtr),
-    businessVerification = BvPass,
+    businessVerification = Some(BvPass),
     registration = FailedStatus,
     identifiersMatch = true
   )
@@ -124,7 +124,7 @@ trait VatRegistrationFixture {
     Some(testPostcode),
     None,
     Some(testBpSafeId),
-    businessVerification = BvPass,
+    businessVerification = Some(BvPass),
     registration = RegisteredStatus,
     identifiersMatch = true
   )
@@ -137,7 +137,7 @@ trait VatRegistrationFixture {
     Some(testPostcode),
     Some(testChrn),
     Some(testCasc),
-    businessVerification = BvPass,
+    businessVerification = Some(BvPass),
     registration = RegisteredStatus,
     bpSafeId = Some(testBpSafeId),
     identifiersMatch = true

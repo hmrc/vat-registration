@@ -134,7 +134,7 @@ trait ITFixtures {
       companyNumber = testCrn,
       dateOfIncorporation = Some(testDateOfIncorp),
       ctutr = Some(testCtUtr),
-      businessVerification = BvUnchallenged,
+      businessVerification = Some(BvUnchallenged),
       registration = NotCalledStatus,
       identifiersMatch = true,
       bpSafeId = None,
@@ -161,7 +161,7 @@ trait ITFixtures {
       dateOfIncorporation = Some(testDateOfIncorp),
       ctutr = Some(testCtUtr),
       identifiersMatch = true,
-      businessVerification = BvPass,
+      businessVerification = Some(BvPass),
       registration = RegisteredStatus,
       bpSafeId = Some(testBpSafeId),
       chrn = None
@@ -183,7 +183,7 @@ trait ITFixtures {
         sautr = Some(testSaUtr),
         trn = None,
         bpSafeId = Some(testBpSafeId),
-        businessVerification = BvPass,
+        businessVerification = Some(BvPass),
         registration = RegisteredStatus,
         identifiersMatch = true
       ),
@@ -200,7 +200,7 @@ trait ITFixtures {
         sautr = Some(testSaUtr),
         trn = None,
         bpSafeId = None,
-        businessVerification = BvPass,
+        businessVerification = Some(BvPass),
         registration = FailedStatus,
         identifiersMatch = true
       ),
@@ -349,7 +349,7 @@ trait ITFixtures {
     Some(testNino),
     sautr = Some(testUtr),
     trn = None,
-    businessVerification = BvPass,
+    businessVerification = Some(BvPass),
     registration = FailedStatus,
     identifiersMatch = true
   )
@@ -359,7 +359,7 @@ trait ITFixtures {
     companyNumber = testCrn,
     ctutr = Some(testUtr),
     dateOfIncorporation = Some(testDateOfIncorp),
-    businessVerification = BvFail,
+    businessVerification = Some(BvFail),
     registration = NotCalledStatus,
     identifiersMatch = true,
     chrn = None
@@ -371,7 +371,7 @@ trait ITFixtures {
     Some(testPostcode),
     None,
     Some(testBpSafeId),
-    businessVerification = BvPass,
+    businessVerification = Some(BvPass),
     registration = RegisteredStatus,
     identifiersMatch = true
   )
@@ -384,14 +384,14 @@ trait ITFixtures {
     Some(testPostcode),
     Some(testChrn),
     Some(testCasc),
-    businessVerification = BvPass,
+    businessVerification = Some(BvPass),
     registration = RegisteredStatus,
     bpSafeId = Some(testBpSafeId),
     identifiersMatch = true
   )
 
   val testPartner = Partner(
-    details = testSoleTraderEntity,
+    details = testSoleTraderEntity.copy(businessVerification = None),
     partyType = Individual,
     isLeadPartner = true
   )
@@ -528,7 +528,7 @@ trait ITFixtures {
     None,
     Some(testSaUtr),
     Some(testTrn),
-    businessVerification = BvPass,
+    businessVerification = Some(BvPass),
     registration = FailedStatus,
     identifiersMatch = true
   )
@@ -540,7 +540,7 @@ trait ITFixtures {
     None,
     Some(testSaUtr),
     Some(testTrn),
-    businessVerification = BvUnchallenged,
+    businessVerification = Some(BvUnchallenged),
     registration = NotCalledStatus,
     identifiersMatch = true,
     overseas = Some(OverseasIdentifierDetails("1234", "FR"))
@@ -601,7 +601,7 @@ trait ITFixtures {
     None,
     None,
     None,
-    businessVerification = BvUnchallenged,
+    businessVerification = Some(BvUnchallenged),
     registration = NotCalledStatus,
     identifiersMatch = true
   )
