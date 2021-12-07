@@ -34,7 +34,7 @@ class AttachmentTypeSpec extends VatRegSpec with VatRegistrationFixture {
 
   "AttachmentType submissionWrites" must {
     "parse a list of AttachmentTypes to the correct Json" in {
-      Json.toJson[List[AttachmentType]](List(LetterOfAuthority, VAT51))(AttachmentType.submissionWrites(Post)) mustBe Json.obj(
+      Json.toJson[Set[AttachmentType]](Set(LetterOfAuthority, VAT51))(AttachmentType.submissionWrites(Post)) mustBe Json.obj(
         "letterOfAuthority" -> "3",
         "VAT51" -> "3"
       )

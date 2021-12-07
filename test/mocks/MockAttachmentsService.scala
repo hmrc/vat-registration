@@ -32,7 +32,7 @@ trait MockAttachmentsService extends MockitoSugar {
   val mockAttachmentService: AttachmentsService = mock[AttachmentsService]
 
   def mockGetAttachmentList(internalId: String)
-                           (response: Future[List[AttachmentType]]): OngoingStubbing[Future[List[AttachmentType]]] =
+                           (response: Future[Set[AttachmentType]]): OngoingStubbing[Future[Set[AttachmentType]]] =
     when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(internalId)))
       .thenReturn(response)
 

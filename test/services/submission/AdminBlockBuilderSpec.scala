@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockAttachmentsService
-import models.api.{AttachmentMethod, Attachments, EmailMethod, IdentityEvidence, Post}
+import models.api.{AttachmentMethod, AttachmentType, Attachments, EmailMethod, IdentityEvidence, Post}
 import models.submission.NETP
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -68,7 +68,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(Nil))
+          .thenReturn(Future.successful(Set[AttachmentType]()))
         when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(Attachments(Post))))
 
@@ -83,7 +83,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(List(IdentityEvidence)))
+          .thenReturn(Future.successful(Set[AttachmentType](IdentityEvidence)))
         when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(Attachments(Post))))
 
@@ -98,7 +98,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(List(IdentityEvidence)))
+          .thenReturn(Future.successful(Set[AttachmentType](IdentityEvidence)))
         when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(Attachments(EmailMethod))))
 
@@ -115,7 +115,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(validFullTradingDetails)))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(Nil))
+          .thenReturn(Future.successful(Set[AttachmentType]()))
         when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(Attachments(Post))))
 
@@ -130,7 +130,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(None))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(Nil))
+          .thenReturn(Future.successful(Set[AttachmentType]()))
         when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(Attachments(Post))))
 
@@ -145,7 +145,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         when(mockRegistrationMongoRepository.retrieveTradingDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(None))
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(Nil))
+          .thenReturn(Future.successful(Set[AttachmentType]()))
         when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Some(Attachments(Post))))
 

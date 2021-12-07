@@ -20,7 +20,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api._
-import models.submission.NETP
+import models.submission.{LtdLiabilityPartnership, NETP, Partnership}
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
@@ -35,6 +35,11 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   val testUnverifiedUserVatScheme = testFullVatScheme.copy(
     applicantDetails = Some(unverifiedUserApplicantDetails)
   )
+  val partnershipEligibilityData = testEligibilitySubmissionData.copy(partyType = Partnership)
+  val testPartnershipVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(partnershipEligibilityData))
+  val llpEligibilityData = testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)
+  val testLlpVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(llpEligibilityData))
+
 
   "getAttachmentsList" when {
     "attachments are required" must {
@@ -43,7 +48,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testRegId))
 
-        res mustBe List(IdentityEvidence)
+        res mustBe Set(IdentityEvidence)
       }
 
       "return a list of the required attachments for a UKCompany with unmatched personal details" in {
@@ -51,7 +56,15 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testRegId))
 
-        res mustBe List(IdentityEvidence)
+        res mustBe Set(IdentityEvidence)
+      }
+
+      "return VAT2 in the attachment list for a Partnership" in {
+        mockGetVatScheme(testRegId)(Some(testPartnershipVatScheme))
+
+        val res = await(Service.getAttachmentList(testRegId))
+
+        res mustBe Set(VAT2)
       }
     }
     "attachments are not required" must {
@@ -60,7 +73,15 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testRegId))
 
-        res mustBe Nil
+        res mustBe Set.empty
+      }
+
+      "not return VAT2 in the attachment list for a Limited Liability Partnership" in {
+        mockGetVatScheme(testRegId)(Some(testLlpVatScheme))
+
+        val res = await(Service.getAttachmentList(testRegId))
+
+        res mustBe Set.empty
       }
     }
   }

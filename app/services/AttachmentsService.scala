@@ -16,8 +16,8 @@
 
 package services
 
-import models.api.{AttachmentType, Attachments, IdentityEvidence, VatScheme}
-import models.submission.{NETP, NonUkNonEstablished}
+import models.api.{AttachmentType, Attachments, IdentityEvidence, VAT2, VatScheme}
+import models.submission.{LtdPartnership, NETP, NonUkNonEstablished, Partnership, ScotLtdPartnership, ScotPartnership}
 import repositories.VatSchemeRepository
 
 import javax.inject.{Inject, Singleton}
@@ -29,17 +29,17 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
 
   private val attachmentDetailsKey = "attachments"
 
-  def getAttachmentList(regId: String): Future[List[AttachmentType]] =
+  def getAttachmentList(regId: String): Future[Set[AttachmentType]] =
     registrationRepository.retrieveVatScheme(regId).map {
       case Some(vatScheme) => attachmentList(vatScheme)
-      case None => Nil
+      case None => Set.empty
     }
 
-  def attachmentList(vatScheme: VatScheme): List[AttachmentType] = {
-    val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType))
-    val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.identifiersMatch)
-
-    if (needIdentityDoc || unverifiedPersonalDetails) List(IdentityEvidence) else Nil
+  def attachmentList(vatScheme: VatScheme): Set[AttachmentType] = {
+    Set(
+      getIdentityEvidenceAttachment(vatScheme),
+      getVat2Attachment(vatScheme)
+    ).flatten
   }
 
   def getAttachmentDetails(regId: String): Future[Option[Attachments]] =
@@ -48,4 +48,15 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   def storeAttachmentDetails(regId: String, attachmentDetails: Attachments): Future[Attachments] =
     registrationRepository.updateBlock[Attachments](regId, attachmentDetails, attachmentDetailsKey)
 
+  private def getIdentityEvidenceAttachment(vatScheme: VatScheme): Option[AttachmentType] = {
+    val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType))
+    val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.identifiersMatch)
+    if (needIdentityDoc || unverifiedPersonalDetails) Some(IdentityEvidence) else None
+  }
+
+  private def getVat2Attachment(vatScheme: VatScheme): Option[AttachmentType] = {
+    val allPartnershipsExceptLLP = List(Partnership, LtdPartnership, ScotPartnership, ScotLtdPartnership)
+    val needVat2ForPartnership = vatScheme.eligibilitySubmissionData.exists(data => allPartnershipsExceptLLP.contains(data.partyType))
+    if (needVat2ForPartnership) Some(VAT2) else None
+  }
 }
