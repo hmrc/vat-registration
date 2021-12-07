@@ -210,7 +210,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
     "return Status Code 1" when {
       "the businessVerificationStatus is BvPass" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvPass, registration = FailedStatus))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvPass), registration = FailedStatus))
 
         when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
           .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
@@ -219,7 +219,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
         result mustBe customerIdentificationBlockJson(1)
       }
       "the businessVerificationStatus is CtEnrolled" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvCtEnrolled, registration = FailedStatus))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), registration = FailedStatus))
 
         when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
           .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
@@ -230,7 +230,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return Status Code 2" when {
       "the identifiersMatch is false" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvUnchallenged, identifiersMatch = false))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged), identifiersMatch = false))
 
         when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
           .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
@@ -248,7 +248,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
         result mustBe customerIdentificationBlockJson(3)
       }
       "businessVerification is not called" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvUnchallenged))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged)))
 
         when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
           .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
@@ -259,7 +259,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return the BP Safe ID" when {
       "businessVerificationStatus is Pass" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvPass, bpSafeId = Some(testBpSafeId)))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvPass), bpSafeId = Some(testBpSafeId)))
 
         when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
           .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))
@@ -268,7 +268,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
         result mustBe customerIdentificationBlockWithBPJson
       }
       "businessVerification is CT-Enrolled" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = BvCtEnrolled, bpSafeId = Some(testBpSafeId)))
+        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), bpSafeId = Some(testBpSafeId)))
 
         when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
           .thenReturn(Future.successful(Some(testFullVatScheme.copy(applicantDetails = Some(appDetails)))))

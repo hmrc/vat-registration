@@ -26,7 +26,7 @@ import java.time.LocalDate
 sealed trait BusinessEntity {
   def bpSafeId: Option[String]
 
-  def businessVerification: BusinessVerificationStatus
+  def businessVerification: Option[BusinessVerificationStatus]
 
   def registration: BusinessRegistrationStatus
 
@@ -36,11 +36,13 @@ sealed trait BusinessEntity {
 
   def idVerificationStatus: IdVerificationStatus =
     (identifiersMatch, businessVerification, registration) match {
-      case (true, BvPass, FailedStatus) => IdVerified
-      case (true, BvCtEnrolled, FailedStatus) => IdVerified
-      case (true, BvFail, NotCalledStatus) => IdVerificationFailed
-      case (true, BvUnchallenged, NotCalledStatus) => IdVerificationFailed
-      case (false, BvUnchallenged, NotCalledStatus) => IdUnverifiable
+      case (true, Some(BvPass), FailedStatus) => IdVerified
+      case (true, Some(BvCtEnrolled), FailedStatus) => IdVerified
+      case (true, None, FailedStatus) => IdVerified
+      case (true, Some(BvFail), NotCalledStatus) => IdVerificationFailed
+      case (true, Some(BvUnchallenged), NotCalledStatus) => IdVerificationFailed
+      case (false, Some(BvUnchallenged), NotCalledStatus) => IdUnverifiable
+      case (false, None, NotCalledStatus) => IdUnverifiable
       case _ => throw new InternalServerException("[ApplicantDetailsHelper][idVerificationStatus] method called with unsupported data from incorpId")
     }
 }
@@ -80,7 +82,7 @@ case class IncorporatedEntity(companyName: Option[String],
                               ctutr: Option[String] = None,
                               bpSafeId: Option[String] = None,
                               countryOfIncorporation: String = "GB",
-                              businessVerification: BusinessVerificationStatus,
+                              businessVerification: Option[BusinessVerificationStatus],
                               registration: BusinessRegistrationStatus,
                               identifiersMatch: Boolean,
                               chrn: Option[String] = None) extends BusinessEntity {
@@ -122,7 +124,7 @@ case class SoleTraderIdEntity(firstName: String,
                               sautr: Option[String] = None,
                               trn: Option[String] = None,
                               bpSafeId: Option[String] = None,
-                              businessVerification: BusinessVerificationStatus,
+                              businessVerification: Option[BusinessVerificationStatus],
                               registration: BusinessRegistrationStatus,
                               overseas: Option[OverseasIdentifierDetails] = None,
                               identifiersMatch: Boolean) extends BusinessEntity {
@@ -175,7 +177,7 @@ case class PartnershipIdEntity(companyName: Option[String],
                                postCode: Option[String],
                                chrn: Option[String],
                                bpSafeId: Option[String] = None,
-                               businessVerification: BusinessVerificationStatus,
+                               businessVerification: Option[BusinessVerificationStatus],
                                registration: BusinessRegistrationStatus,
                                identifiersMatch: Boolean) extends BusinessEntity {
 
@@ -209,7 +211,7 @@ case class MinorEntity(companyName: Option[String],
                        chrn: Option[String],
                        casc: Option[String],
                        registration: BusinessRegistrationStatus,
-                       businessVerification: BusinessVerificationStatus,
+                       businessVerification: Option[BusinessVerificationStatus],
                        bpSafeId: Option[String] = None,
                        identifiersMatch: Boolean) extends BusinessEntity {
 
