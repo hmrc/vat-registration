@@ -38,22 +38,6 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAs
   val regInfo2 = RegistrationInformation(internalId2, regId2, Draft, testDate2, VatReg, testDate2)
   implicit val hc = HeaderCarrier()
 
-  "getRegistrationInformation (deprecated)" must {
-    "return the correct information for the internal id when it exists" in new Setup {
-      await(trafficManagementRepo.bulkInsert(Seq(regInfo1, regInfo2)))
-
-      val res = await(trafficManagementRepo.getRegistrationInformation(internalId1))
-
-      res mustBe Some(regInfo1)
-    }
-    "return None if a record doesn't exist" in new Setup {
-      await(trafficManagementRepo.insert(regInfo1))
-
-      val res = await(trafficManagementRepo.getRegistrationInformation(internalId2))
-
-      res mustBe None
-    }
-  }
 
   "getRegInfoById" must {
     "return the correct information for the internalID/regID when it exists" in new Setup {
@@ -72,23 +56,6 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAs
     }
   }
 
-  "upsertRegistrationInformation (deprecated)" must {
-    "Update an existing record" in new Setup {
-      await(trafficManagementRepo.bulkInsert(Seq(regInfo1, regInfo2)))
-
-      val res = await(trafficManagementRepo.upsertRegistrationInformation(internalId2, regId2, Submitted, testDate2, OTRS, testDate2))
-
-      res mustBe regInfo2.copy(status = Submitted, channel = OTRS)
-    }
-    "create a new record where one doesn't exist" in new Setup {
-      await(trafficManagementRepo.insert(regInfo1))
-
-      val res = await(trafficManagementRepo.upsertRegistrationInformation(internalId2, regId2, Draft, testDate2, VatReg, testDate2))
-
-      res mustBe regInfo2
-    }
-  }
-
   "upsertRegInfoById" must {
     "Update an existing record" in new Setup {
       await(trafficManagementRepo.bulkInsert(Seq(regInfo1, regInfo2)))
@@ -103,12 +70,6 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAs
       val res = await(trafficManagementRepo.upsertRegInfoById(internalId2, regId2, Draft, testDate2, VatReg, testDate2))
 
       res mustBe regInfo2
-    }
-  }
-
-  "Calling clearDocument (deprecated)" must {
-    "delete the entry to the traffic management repo" in new Setup {
-      trafficManagementRepo.insert(regInfo1).flatMap(_ => trafficManagementRepo.clearDocument(internalId1)) returns true
     }
   }
 

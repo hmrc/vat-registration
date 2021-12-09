@@ -9,11 +9,6 @@ GET          /traffic-management/:regId/reg-info    controllers.TrafficManagemen
 PUT          /traffic-management/:regId/reg-info    controllers.TrafficManagementController.upsertRegInfoById(regId)
 DELETE       /traffic-management/:regId/reg-info    controllers.TrafficManagementController.deleteRegInfoById(regId)
 
-# Deprecated Traffic Management API
-GET          /traffic-management/reg-info           controllers.TrafficManagementController.getRegistrationInformation
-PUT          /traffic-management/reg-info           controllers.TrafficManagementController.upsertRegistrationInformation()
-DELETE       /traffic-management/reg-info/clear     controllers.TrafficManagementController.clearDocument
-
 GET          /scheme                                controllers.VatRegistrationController.retrieveVatSchemeByInternalId()
 GET          /threshold/:date                        controllers.VatThresholdController.getThresholdForDate(date: String)
 POST         /upscan-callback                        controllers.UpscanController.upscanDetailsCallback

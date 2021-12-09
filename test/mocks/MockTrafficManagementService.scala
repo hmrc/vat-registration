@@ -41,12 +41,6 @@ trait MockTrafficManagementService extends MockitoSugar {
       ArgumentMatchers.eq(isEnrolled)
     )).thenReturn(response)
 
-  def mockGetRegInfo(internalId: String)
-                    (response: Future[Option[RegistrationInformation]]): OngoingStubbing[Future[Option[RegistrationInformation]]] =
-    when(mockTrafficManagementService.getRegistrationInformation(
-      ArgumentMatchers.eq(internalId)
-    )).thenReturn(response)
-
   def mockUpdateStatus(regId: String, channel: RegistrationStatus)
                       (response: Future[Option[RegistrationInformation]]): OngoingStubbing[Future[Option[RegistrationInformation]]] =
     when(mockTrafficManagementService.updateStatus(
@@ -54,9 +48,4 @@ trait MockTrafficManagementService extends MockitoSugar {
       ArgumentMatchers.eq(channel)
     )) thenReturn response
 
-  def mockClearDocument(internalId: String)
-                       (response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
-    when(mockTrafficManagementService.clearDocument(
-      ArgumentMatchers.eq(internalId)
-    )) thenReturn response
 }
