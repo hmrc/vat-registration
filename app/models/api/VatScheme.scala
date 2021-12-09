@@ -24,6 +24,8 @@ import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+import java.time.LocalDate
+
 case class VatScheme(id: String,
                      internalId: String,
                      tradingDetails: Option[TradingDetails] = None,
@@ -41,7 +43,8 @@ case class VatScheme(id: String,
                      confirmInformationDeclaration: Option[Boolean] = None,
                      nrsSubmissionPayload: Option[String] = None,
                      partners: Option[PartnersSection] = None,
-                     attachments: Option[Attachments] = None) {
+                     attachments: Option[Attachments] = None,
+                     createdDate: Option[LocalDate] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -69,7 +72,8 @@ object VatScheme {
         (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
         (__ \ "nrsSubmissionPayload").readNullable[String] and
         (__ \ "partners").readNullable[PartnersSection] and
-        (__ \ "attachments").readNullable[Attachments]
+        (__ \ "attachments").readNullable[Attachments] and
+        (__ \ "createdDate").readNullable[LocalDate]
         ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
@@ -89,7 +93,8 @@ object VatScheme {
         (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
         (__ \ "nrsSubmissionPayload").readNullable[String] and
         (__ \ "partners").readNullable[PartnersSection] and
-        (__ \ "attachments").readNullable[Attachments]
+        (__ \ "attachments").readNullable[Attachments] and
+        (__ \ "createdDate").readNullable[LocalDate]
         ) (VatScheme.apply _)
     }
 
@@ -111,7 +116,8 @@ object VatScheme {
     (__ \ "confirmInformationDeclaration").writeNullable[Boolean] and
     (__ \ "nrsSubmissionPayload").writeNullable[String] and
     (__ \ "partners").writeNullable[PartnersSection] and
-    (__ \ "attachments").writeNullable[Attachments]
+    (__ \ "attachments").writeNullable[Attachments] and
+    (__ \ "createdDate").writeNullable[LocalDate]
     ) (unlift(VatScheme.unapply))
 
   def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =

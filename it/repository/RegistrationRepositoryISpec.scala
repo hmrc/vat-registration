@@ -12,6 +12,7 @@ import play.api.test.Helpers.{await, _}
 import reactivemongo.api.commands.WriteResult
 import repositories.VatSchemeRepository
 import services.RegistrationIdService
+import utils.TimeMachine
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -23,6 +24,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
 
   override implicit lazy val app = GuiceApplicationBuilder()
     .overrides(bind[RegistrationIdService].to(fakeRegIdService))
+    .overrides(bind[TimeMachine].to[FakeTimeMachine])
     .build()
 
   val testRegId2 = "testRegId2"

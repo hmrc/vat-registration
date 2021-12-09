@@ -270,7 +270,7 @@ trait ITFixtures {
   val testNrsSubmissionPayload = "testNrsSubmissionPayload"
   val testEncodedPayload: String = Base64.getEncoder.encodeToString(testNrsSubmissionPayload.getBytes(StandardCharsets.UTF_8))
 
-  lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft)
+  lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, createdDate = Some(testDate))
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     tradingDetails = Some(testTradingDetails),
@@ -405,7 +405,8 @@ trait ITFixtures {
   def testEmptyVatScheme(regId: String): VatScheme = VatScheme(
     id = regId,
     internalId = testInternalid,
-    status = VatRegStatus.draft
+    status = VatRegStatus.draft,
+    createdDate = Some(testDate)
   )
 
   object AuthTestData {
