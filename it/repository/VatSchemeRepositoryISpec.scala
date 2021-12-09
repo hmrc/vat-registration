@@ -18,20 +18,29 @@ package repository
 
 import common.exceptions._
 import enums.VatRegStatus
-import itutil.{FutureAssertions, ITFixtures, MongoBaseSpec}
+import itutil.{FakeTimeMachine, FutureAssertions, ITFixtures, IntegrationStubbing, MongoBaseSpec}
 import models.api._
 import models.api.returns._
 import models.submission.UkCompany
+import play.api.Application
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json._
 import play.api.test.Helpers._
 import reactivemongo.api.commands.WriteResult
 import repositories.VatSchemeRepository
+import utils.TimeMachine
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class VatSchemeRepositoryISpec extends MongoBaseSpec with FutureAssertions with ITFixtures {
+class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing with FutureAssertions with ITFixtures {
+
+  override implicit lazy val app: Application = new GuiceApplicationBuilder()
+    .configure(config)
+    .overrides(bind[TimeMachine].to[FakeTimeMachine])
+    .build()
 
   class Setup {
     val repository: VatSchemeRepository = app.injector.instanceOf[VatSchemeRepository]
@@ -124,7 +133,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with FutureAssertions with 
 
   "Calling createNewVatScheme" should {
     "create a new, blank VatScheme with the correct ID" in new Setup {
-      await(repository.createNewVatScheme(testRegId, testInternalid)) mustBe vatScheme
+      await(repository.createNewVatScheme(testRegId, testInternalid)) mustBe vatScheme.copy(createdDate = Some(testDate))
     }
     "throw an InsertFailed exception when creating a new VAT scheme when one already exists with the same int Id and reg id" in new Setup {
       await(repository.createNewVatScheme(vatSchemeWithEligibilityData.id, testInternalid))

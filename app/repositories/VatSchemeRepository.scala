@@ -25,22 +25,25 @@ import models.submission.PartyType
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.Cursor.FailOnError
-import reactivemongo.api.{ReadPreference, WriteConcern}
 import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
+import reactivemongo.api.{ReadPreference, WriteConcern}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import utils.JsonErrorUtil
+import utils.{JsonErrorUtil, TimeMachine}
 
+import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 // scalastyle:off
 @Singleton
-class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent, crypto: CryptoSCRS)(implicit executionContext: ExecutionContext)
+class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
+                                    crypto: CryptoSCRS,
+                                    timeMachine: TimeMachine)(implicit executionContext: ExecutionContext)
   extends ReactiveRepository[VatScheme, BSONObjectID](
     collectionName = "registration-information",
     mongo = mongo.mongoConnector.db,
@@ -62,6 +65,29 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent, crypto: Crypt
     }
     logger.info("[Startup] Finished outputting current indexes")
   }
+
+  private def runOnce =
+    collection.find(selector = Json.obj(), projection = Some(Json.obj()))
+      .cursor[JsValue](ReadPreference.primaryPreferred)
+      .collect(maxDocs = -1, FailOnError[List[JsValue]]())
+      .map ( registrations =>
+        registrations.map { registration =>
+          val optId = (registration \ "_id").validate[BSONObjectID](BSONObjectIDFormat).asOpt
+          val optCreatedDate = (registration \ "createdDate").validate[LocalDate].asOpt
+          val optInternalId = (registration \ "internalId").validate[String].asOpt
+          val optRegistrationId = (registration \ "registrationId").validate[String].asOpt
+
+          (optCreatedDate, optInternalId, optRegistrationId, optId) match {
+            case (None, Some(internalId), Some(regId), Some(id)) =>
+              val reconstructedDate = LocalDateTime.ofEpochSecond(id.timeSecond, 0, ZoneOffset.UTC).toLocalDate
+              val createdDate = if (!reconstructedDate.isBefore(LocalDate.now)) LocalDate.now else reconstructedDate
+
+              upsertRegistration(internalId, regId, registration.as[JsObject] + ("createdDate" -> JsString(createdDate.toString)))
+            case _ =>
+              Future.successful(None)
+          }
+        }
+      )
 
   override def indexes: Seq[Index] = Seq(
     Index(
@@ -122,10 +148,11 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent, crypto: Crypt
     val set = Json.obj(
       "registrationId" -> Json.toJson[String](regId),
       "status" -> Json.toJson(VatRegStatus.draft),
-      "internalId" -> Json.toJson[String](intId)
+      "internalId" -> Json.toJson[String](intId),
+      "createdDate" -> Json.toJson(timeMachine.today)
     )
     collection.insert.one(set).map { _ =>
-      VatScheme(regId, internalId = intId, status = VatRegStatus.draft)
+      VatScheme(regId, internalId = intId, status = VatRegStatus.draft, createdDate = Some(timeMachine.today))
     }.recover {
       case e: Exception =>
         logger.error(s"[RegistrationMongoRepository] [createNewVatScheme] threw an exception when attempting to create a new record with exception: ${e.getMessage} for regId: $regId and internalid: $intId")

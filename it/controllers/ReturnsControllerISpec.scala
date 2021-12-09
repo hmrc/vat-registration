@@ -2,15 +2,24 @@
 
 package controllers
 
-import itutil.IntegrationStubbing
+import itutil.{FakeTimeMachine, IntegrationStubbing}
 import models.api.returns._
+import play.api.Application
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
+import utils.TimeMachine
 
 class ReturnsControllerISpec extends IntegrationStubbing {
 
   class Setup extends SetupHelper
+
+  override implicit lazy val app: Application = new GuiceApplicationBuilder()
+    .configure(config)
+    .overrides(bind[TimeMachine].to[FakeTimeMachine])
+    .build()
 
   val testZeroRatedSupplies = 10000.5
 

@@ -2,7 +2,7 @@
 package controllers.registrations
 
 import enums.VatRegStatus
-import itutil.{FakeRegistrationIdService, IntegrationStubbing}
+import itutil.{FakeRegistrationIdService, FakeTimeMachine, IntegrationStubbing}
 import models.api.VatScheme
 import play.api.Application
 import play.api.inject.bind
@@ -10,6 +10,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.RegistrationIdService
+import utils.TimeMachine
 
 import scala.concurrent.ExecutionContext
 
@@ -21,6 +22,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(config)
     .overrides(bind[RegistrationIdService].to[FakeRegistrationIdService])
+    .overrides(bind[TimeMachine].to[FakeTimeMachine])
     .build()
 
   val registrationsUrl = "/registrations"
