@@ -32,9 +32,7 @@ object Partner {
   implicit val reads: Reads[Partner] = Reads[Partner] { json =>
     val optPartyType = (json \ partyTypeKey).validate[PartyType].asOpt
     val optDetails = optPartyType match {
-      case Some(Individual) => (json \ detailsKey).validate[SoleTraderIdEntity].asOpt
-      case Some(UkCompany) => (json \ detailsKey).validate[IncorporatedEntity].asOpt
-      case Some(Partnership) => (json \ detailsKey).validate[PartnershipIdEntity].asOpt
+      case Some(partyType) => (json \ detailsKey).validate[BusinessEntity](BusinessEntity.reads(partyType)).asOpt
       case _ => None
     }
     val optIsLeadPartner = (json \ leadPartnerKey).validate[Boolean].asOpt
@@ -57,12 +55,8 @@ object Partner {
 
   implicit val writes: Writes[Partner] = Writes[Partner] { partner =>
     val details: JsValue = partner match {
-      case Partner(details, Individual, _) =>
-        Json.toJson(details.asInstanceOf[SoleTraderIdEntity])(SoleTraderIdEntity.format)
-      case Partner(details, UkCompany, _) =>
-        Json.toJson(details.asInstanceOf[IncorporatedEntity])(IncorporatedEntity.format)
-      case Partner(details, Partnership, _) =>
-        Json.toJson(details.asInstanceOf[PartnershipIdEntity])(PartnershipIdEntity.format)
+      case Partner(details, _, _) =>
+        Json.toJson[BusinessEntity](details)(BusinessEntity.writes)
     }
 
     Json.obj(
