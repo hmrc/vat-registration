@@ -69,27 +69,8 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
     } yield if (canAllocate) Allocated else QuotaReached
   }
 
-  @deprecated("Use getRegInfoById method", "0.332.0")
-  def getRegistrationInformation(internalId: String): Future[Option[RegistrationInformation]] =
-    trafficManagementRepository.getRegistrationInformation(internalId)
-
   def getRegInfoById(internalId: String, registrationId: String): Future[Option[RegistrationInformation]] =
     trafficManagementRepository.getRegInfoById(internalId, registrationId)
-
-  @deprecated("Use upsertRegInfoById method", "0.332.0")
-  def upsertRegInfo(internalId: String,
-                    registrationId: String,
-                    status: RegistrationStatus,
-                    regStartDate: LocalDate,
-                    channel: RegistrationChannel): Future[RegistrationInformation] =
-    trafficManagementRepository.upsertRegistrationInformation(
-      internalId = internalId,
-      regId = registrationId,
-      status = status,
-      regStartDate = regStartDate,
-      channel = channel,
-      lastModified = timeMachine.today
-    )
 
   def upsertRegInfoById(internalId: String,
                         registrationId: String,
@@ -113,10 +94,6 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       ),
       upsert = true
     ) map (_.result[RegistrationInformation])
-
-  @deprecated("Use deleteRegInfoById method", "0.332.0")
-  def clearDocument(internalId: String): Future[Boolean] =
-    trafficManagementRepository.clearDocument(internalId)
 
   def deleteRegInfoById(internalId: String, registrationId: String): Future[Boolean] =
     trafficManagementRepository.deleteRegInfoById(internalId, registrationId)

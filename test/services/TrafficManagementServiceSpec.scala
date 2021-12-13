@@ -135,23 +135,6 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
   }
 
-  "getRegistrationInformation (deprecated)" must {
-    "return the registration information where it exists" in new Setup {
-      mockGetRegInfo(testInternalId)(Future.successful(Some(testRegInfo)))
-
-      val res = await(Service.getRegistrationInformation(testInternalId))
-
-      res mustBe Some(testRegInfo)
-    }
-    "return None where a record doesn't exist" in new Setup {
-      mockGetRegInfo(testInternalId)(Future.successful(None))
-
-      val res = await(Service.getRegistrationInformation(testInternalId))
-
-      res mustBe None
-    }
-  }
-
   "getRegInfoById" must {
     "return the registration information where it exists" in new Setup {
       mockGetRegInfoById(testInternalId, testRegId)(Future.successful(Some(testRegInfo)))
@@ -169,35 +152,14 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
   }
 
-  "upsertRegInfo (deprecated)" must {
-    "return registration information" in new Setup {
-      val regInfo = RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)
-      mockUpsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(Future.successful(regInfo))
-
-      val res = await(Service.upsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS))
-
-      res mustBe regInfo
-    }
-  }
-
   "upsertRegInfoById" must {
     "return registration information" in new Setup {
       val regInfo = RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)
       mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(Future.successful(regInfo))
 
-      val res = await(Service.upsertRegInfo(testInternalId, testRegId, Draft, testDate, OTRS))
+      val res = await(Service.upsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS))
 
       res mustBe regInfo
-    }
-  }
-
-  "clearDocument (deprecated)" must {
-    "return true" in new Setup {
-      mockClearDocument(testInternalId)(response = Future.successful(true))
-
-      val res = await(Service.clearDocument(testInternalId))
-
-      res mustBe true
     }
   }
 

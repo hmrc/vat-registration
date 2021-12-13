@@ -74,35 +74,6 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     }
   }
 
-  "GET /traffic-management/reg-info (deprecated)" must {
-    "return OK with reg info when a record exists for the internal ID" in new Setup {
-      given
-        .user.isAuthorised
-        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
-
-      val res = await(client(controllers.routes.TrafficManagementController.getRegistrationInformation.url).get)
-
-      res.status mustBe OK
-      res.json mustBe Json.toJson(testRegInfo)
-    }
-
-    "return NOT_FOUND when no record exists for the internal ID" in new Setup {
-      given.user.isAuthorised
-
-      val res = await(client(controllers.routes.TrafficManagementController.getRegistrationInformation.url).get)
-
-      res.status mustBe NOT_FOUND
-    }
-
-    "return FORBIDDEN if the user is not authenticated" in new Setup {
-      given.user.isNotAuthorised
-
-      val res = await(client(controllers.routes.TrafficManagementController.getRegistrationInformation.url).get)
-
-      res.status mustBe FORBIDDEN
-    }
-  }
-
   "GET /traffic-management/:regId/reg-info" must {
     "return OK with reg info when a record exists for the internal ID" in new Setup {
       given
@@ -146,21 +117,6 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     }
   }
 
-  "PUT /traffic-management/reg-info (deprecated)" must {
-    "return OK with reg info" in new Setup {
-      given
-        .user.isAuthorised
-        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
-
-      val json = Json.toJson(testRegInfo)
-
-      val res = await(client(controllers.routes.TrafficManagementController.upsertRegistrationInformation().url).put(json))
-
-      res.status mustBe OK
-      res.json mustBe Json.toJson(testRegInfo)
-    }
-  }
-
   "PUT /traffic-management/:regId/reg-info" must {
     "return OK with reg info when all required information is present" in new Setup {
       given
@@ -199,18 +155,6 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
       res.status mustBe OK
       res.json mustBe json
       await(trafficManagementRepo.find("registrationId" -> testRegId)).headOption must contain(testRegInfo)
-    }
-  }
-
-  "DELETE /traffic-management/reg-info/clear (deprecated)" must {
-    "return NO_CONTENT when successful" in new Setup {
-      given
-        .user.isAuthorised
-        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
-
-      val res = await(client(controllers.routes.TrafficManagementController.clearDocument.url).delete())
-
-      res.status mustBe NO_CONTENT
     }
   }
 
