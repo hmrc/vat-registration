@@ -92,8 +92,6 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
         }
       )
 
-  runOnce
-
   override def indexes: Seq[Index] = Seq(
     Index(
       name = Some("RegId"),
@@ -107,14 +105,6 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
         "internalId" -> IndexType.Ascending
       ),
       unique = true
-    ),
-    Index(
-      name = Some("ExpireAfter7Days"),
-      key = Seq(
-        "createdDate" -> IndexType.Ascending
-      ),
-      unique = false,
-      options = BSONDocument("expireAfterSeconds" -> BSONInteger(backendConfig.expiryInSeconds))
     )
   )
 
