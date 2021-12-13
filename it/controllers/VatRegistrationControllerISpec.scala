@@ -318,20 +318,37 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     }
 
     "the user is a General Partnership" should {
-      "return OK if the submission is successful where the submission contains partners" in new Setup {
+      "return OK if the submission is successful where the submission contains a Sole Trader partner" in new Setup {
         enable(StubSubmission)
 
         given
           .user.isAuthorised
-          .regRepo.insertIntoDb(testVatSchemeWithPartners, repo.insert)
+          .regRepo.insertIntoDb(testVatSchemeWithSoleTraderPartner, repo.insert)
 
-        stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderWithPartnerJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testPartnershipWithSoleTrader, OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())
         )
 
         res.status mustBe OK
+      }
+
+      "return OK if the submission is successful where the submission contains a UK Company partner" in new Setup {
+        enable(StubSubmission)
+        enable(ShortOrgName)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testVatSchemeWithUkCompanyPartner, repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testPartnershipWithUkCompany, OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+        disable(ShortOrgName)
       }
     }
 
