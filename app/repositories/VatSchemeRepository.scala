@@ -18,6 +18,7 @@ package repositories
 
 import auth.{AuthorisationResource, CryptoSCRS}
 import common.exceptions._
+import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
 import models.api.returns.Returns
@@ -28,7 +29,7 @@ import reactivemongo.api.Cursor.FailOnError
 import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.api.{ReadPreference, WriteConcern}
-import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.bson.{BSONDocument, BSONInteger, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.ReactiveRepository
@@ -43,7 +44,9 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
                                     crypto: CryptoSCRS,
-                                    timeMachine: TimeMachine)(implicit executionContext: ExecutionContext)
+                                    timeMachine: TimeMachine,
+                                    backendConfig: BackendConfig
+                                   )(implicit executionContext: ExecutionContext)
   extends ReactiveRepository[VatScheme, BSONObjectID](
     collectionName = "registration-information",
     mongo = mongo.mongoConnector.db,
@@ -89,6 +92,8 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
         }
       )
 
+  runOnce
+
   override def indexes: Seq[Index] = Seq(
     Index(
       name = Some("RegId"),
@@ -102,6 +107,14 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
         "internalId" -> IndexType.Ascending
       ),
       unique = true
+    ),
+    Index(
+      name = Some("ExpireAfter7Days"),
+      key = Seq(
+        "createdDate" -> IndexType.Ascending
+      ),
+      unique = false,
+      options = BSONDocument("expireAfterSeconds" -> BSONInteger(backendConfig.expiryInSeconds))
     )
   )
 

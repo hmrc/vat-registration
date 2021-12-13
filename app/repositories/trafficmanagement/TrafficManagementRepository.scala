@@ -43,12 +43,10 @@ class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
     domainFormat = RegistrationInformation.format
   ) with AuthorisationResource {
 
-  protected lazy val ttl = backendConfig.expiryInSeconds.toInt
-
   val lastModifiedIndex = Index(
     name = Some("lastModified"),
     key = Seq("lastModified" -> IndexType.Ascending),
-    options = BSONDocument("expireAfterSeconds" -> BSONInteger(ttl))
+    options = BSONDocument("expireAfterSeconds" -> BSONInteger(backendConfig.expiryInSeconds))
   )
 
   private def recreateIndexes = for {
