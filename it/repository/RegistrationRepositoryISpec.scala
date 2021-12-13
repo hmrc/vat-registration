@@ -21,10 +21,11 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
   with ITFixtures {
 
   val fakeRegIdService = new FakeRegistrationIdService
+  val fakeTimeMachine = new FakeTimeMachine
 
   override implicit lazy val app = GuiceApplicationBuilder()
     .overrides(bind[RegistrationIdService].to(fakeRegIdService))
-    .overrides(bind[TimeMachine].to[FakeTimeMachine])
+    .overrides(bind[TimeMachine].to(fakeTimeMachine))
     .build()
 
   val testRegId2 = "testRegId2"
@@ -33,7 +34,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
     val repo: VatSchemeRepository = app.injector.instanceOf[VatSchemeRepository]
     val crypto = app.injector.instanceOf[CryptoSCRS]
 
-    def regAsJson(registration: VatScheme): JsValue = VatScheme.writes(Some(crypto)).writes(registration)
+    def regAsJson(registration: VatScheme): JsValue = VatScheme.writes(Some(crypto)).writes(registration).as[JsObject] + ("timestamp" -> Json.obj("$date" -> 1483228800000L))
 
     def insert(json: JsObject): WriteResult = await(repo.collection.insert(json))
 

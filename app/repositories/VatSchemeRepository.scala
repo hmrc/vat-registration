@@ -69,29 +69,6 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
     logger.info("[Startup] Finished outputting current indexes")
   }
 
-  private def runOnce =
-    collection.find(selector = Json.obj(), projection = Some(Json.obj()))
-      .cursor[JsValue](ReadPreference.primaryPreferred)
-      .collect(maxDocs = -1, FailOnError[List[JsValue]]())
-      .map ( registrations =>
-        registrations.map { registration =>
-          val optId = (registration \ "_id").validate[BSONObjectID](BSONObjectIDFormat).asOpt
-          val optCreatedDate = (registration \ "createdDate").validate[LocalDate].asOpt
-          val optInternalId = (registration \ "internalId").validate[String].asOpt
-          val optRegistrationId = (registration \ "registrationId").validate[String].asOpt
-
-          (optCreatedDate, optInternalId, optRegistrationId, optId) match {
-            case (None, Some(internalId), Some(regId), Some(id)) =>
-              val reconstructedDate = LocalDateTime.ofEpochSecond(id.timeSecond, 0, ZoneOffset.UTC).toLocalDate
-              val createdDate = if (!reconstructedDate.isBefore(LocalDate.now)) LocalDate.now else reconstructedDate
-
-              upsertRegistration(internalId, regId, registration.as[JsObject] + ("createdDate" -> JsString(createdDate.toString)))
-            case _ =>
-              Future.successful(None)
-          }
-        }
-      )
-
   override def indexes: Seq[Index] = Seq(
     Index(
       name = Some("RegId"),
@@ -105,8 +82,40 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
         "internalId" -> IndexType.Ascending
       ),
       unique = true
+    ),
+    Index(
+      name = Some("TTL"),
+      key = Seq(
+        "timestamp" -> IndexType.Ascending
+      ),
+      unique = false,
+      options = BSONDocument("expireAfterSeconds" -> BSONInteger(backendConfig.expiryInSeconds))
     )
   )
+
+  def runOnce = {
+    val builder = collection.update(ordered = true)
+    val updates = Future.sequence(Seq(
+      builder.element(
+        q = BSONDocument(),
+        u = BSONDocument(
+          "$currentDate" ->  BSONDocument("timestamp" -> true)
+        ),
+        multi = true
+      ),
+      builder.element(
+        q = BSONDocument("createdDate" -> BSONDocument("$exists" -> false)),
+        u = BSONDocument(
+          "$set" ->  BSONDocument("createdDate" -> timeMachine.today.toString)
+        ),
+        multi = true
+      )
+    ))
+
+    updates.flatMap(e => builder.many(e))
+  }
+
+  runOnce
 
   def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
     val projection = Some(Json.obj("internalId" -> 1, "_id" -> 0))
@@ -152,7 +161,8 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
       "registrationId" -> Json.toJson[String](regId),
       "status" -> Json.toJson(VatRegStatus.draft),
       "internalId" -> Json.toJson[String](intId),
-      "createdDate" -> Json.toJson(timeMachine.today)
+      "createdDate" -> Json.toJson(timeMachine.today),
+      "timestamp" -> Json.obj("$date" -> timeMachine.timestamp.toInstant(ZoneOffset.UTC).toEpochMilli)
     )
     collection.insert.one(set).map { _ =>
       VatScheme(regId, internalId = intId, status = VatRegStatus.draft, createdDate = Some(timeMachine.today))
