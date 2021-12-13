@@ -16,11 +16,15 @@
 
 package services.submission
 
+import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
 import models.api.Address
 import models.submission.{EntitiesArrayType, PartnerEntity}
+import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import services.{BusinessContactService, PartnersService}
-import utils.JsonUtils.{conditional, jsonObject, optional}
+import uk.gov.hmrc.http.InternalServerException
+import utils.JsonUtils.{jsonObject, optional}
+import utils.StringNormaliser
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,17 +32,18 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EntitiesBlockBuilder @Inject()(partnersService: PartnersService,
                                      businessContactService: BusinessContactService)
-                                    (implicit ec: ExecutionContext) {
+                                    (implicit ec: ExecutionContext)
+  extends FeatureSwitching {
 
   private val addPartnerAction = "1"
 
   // scalastyle:off
   def buildEntitiesBlock(regId: String): Future[Option[JsValue]] =
-    for{
+    for {
       optPartners <- partnersService.getPartners(regId)
-      businessContact <- businessContactService.getBusinessContact(regId)
-      optAddress = businessContact.map(_.ppob)
-      optTelephone = businessContact.flatMap(_.digitalContact.tel)
+      businessContact <- businessContactService.getBusinessContact(regId).map(
+        _.getOrElse(throw new InternalServerException("[EntitiesBlockBuilder] Attempted to build entities block without business contact"))
+      )
     } yield optPartners match {
       case Some(section) if section.partners.nonEmpty =>
         Some(Json.toJson(section.partners.map { partner =>
@@ -46,20 +51,36 @@ class EntitiesBlockBuilder @Inject()(partnersService: PartnersService,
             "action" -> addPartnerAction,
             "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
             "tradersPartyType" -> partner.partyType,
-            optional("customerIdentification" -> {
+            "customerIdentification" -> {
               partner.details match {
                 case _ if partner.details.bpSafeId.isDefined =>
-                  Some(Json.obj("primeBPSafeID" -> partner.details.bpSafeId))
-                case _ if partner.details.identifiers.nonEmpty =>
-                  Some(Json.obj("customerID" -> Json.toJson(partner.details.identifiers)))
+                  jsonObject("primeBPSafeID" -> partner.details.bpSafeId)
                 case _ =>
-                  None
+                  jsonObject(
+                    "customerID" -> Json.toJson(partner.details.identifiers)
+                  ) ++ {
+                    partner.details match {
+                      case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, _, _, _, _, _) =>
+                        jsonObject(
+                          "name" -> jsonObject(
+                            "firstName" -> firstName,
+                            "lastName" -> lastName
+                          ),
+                          "dateOfBirth" -> dateOfBirth
+                        )
+                      case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
+                      case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
+                      case PartnershipIdEntity(companyName, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
+                    }
+                  }
               }
-            }),
-            conditional(optAddress.isDefined || optTelephone.isDefined)(
-              "businessContactDetails" -> jsonObject(
-                optional("address" -> optAddress.map(formatAddress)),
-                optional("commDetails" -> optTelephone.map(tel => Json.obj("telephone" -> tel)))
+            },
+            "businessContactDetails" -> jsonObject(
+              "address" -> formatAddress(businessContact.ppob),
+              "commDetails" -> jsonObject(
+                optional("telephone" -> businessContact.digitalContact.tel),
+                optional("mobileNumber" -> businessContact.digitalContact.mobile),
+                "email" -> businessContact.digitalContact.email
               )
             )
           )
@@ -77,5 +98,19 @@ class EntitiesBlockBuilder @Inject()(partnersService: PartnersService,
     optional("postCode" -> address.postcode),
     optional("countryCode" -> address.country.flatMap(_.code))
   )
+
+  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String]): JsObject =
+    (orgName.map(StringNormaliser.normaliseString), optShortOrgName.map(StringNormaliser.normaliseString)) match {
+      case (Some(orgName), Some(shortOrgName)) if isEnabled(ShortOrgName) => jsonObject(
+        "shortOrgName" -> shortOrgName,
+        "organisationName" -> orgName
+      )
+      case (Some(orgName), None) if isEnabled(ShortOrgName) => jsonObject(
+        "shortOrgName" -> orgName,
+        "organisationName" -> orgName
+      )
+      case (Some(orgName), _) => jsonObject("shortOrgName" -> orgName)
+      case _ => throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
+    }
 
 }

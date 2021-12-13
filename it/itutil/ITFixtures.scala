@@ -390,16 +390,36 @@ trait ITFixtures {
     identifiersMatch = true
   )
 
-  val testPartner = Partner(
+  lazy val testPartner = Partner(
     details = testSoleTraderEntity.copy(businessVerification = None),
     partyType = Individual,
     isLeadPartner = true
   )
 
-  lazy val testVatSchemeWithPartners = testFullVatScheme.copy(
+  lazy val testUkCompanyPartner = testPartner.copy(
+    details = testLtdCoEntity.copy(businessVerification = None, registration = FailedStatus),
+    partyType = UkCompany
+  )
+
+  lazy val testVatSchemeWithSoleTraderPartner = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
     partners = Some(PartnersSection(List(testPartner))),
-    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testSoleTraderEntity))
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
+      bpSafeId = None,
+      businessVerification = Some(BvFail),
+      registration = NotCalledStatus
+    )))
+  )
+
+  lazy val testVatSchemeWithUkCompanyPartner = testFullVatScheme.copy(
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
+    partners = Some(PartnersSection(List(testUkCompanyPartner))),
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
+      bpSafeId = None,
+      businessVerification = Some(BvFail),
+      registration = NotCalledStatus
+    ))),
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
   )
 
   def testEmptyVatScheme(regId: String): VatScheme = VatScheme(

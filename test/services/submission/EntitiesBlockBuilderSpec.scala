@@ -80,7 +80,9 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
               "countryCode" -> "GB"
             ),
             "commDetails" -> Json.obj(
-              "telephone" -> testPhone
+              "mobileNumber" -> testPhone,
+              "telephone" -> testPhone,
+              "email" -> testEmail
             )
           )
         )))
@@ -98,7 +100,12 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
               "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
               "tradersPartyType" -> Json.toJson[PartyType](Individual),
               "customerIdentification" -> Json.obj(
-                "customerID" -> Json.toJson(testEntity.identifiers)
+                "customerID" -> Json.toJson(testEntity.identifiers),
+                "name" -> Json.obj(
+                  "firstName" -> testFirstName,
+                  "lastName" -> testLastName
+                ),
+                "dateOfBirth" -> testDate
               ),
               "businessContactDetails" -> Json.obj(
                 "address" -> Json.obj(
@@ -108,7 +115,9 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
                   "countryCode" -> "GB"
                 ),
                 "commDetails" -> Json.obj(
-                  "telephone" -> testPhone
+                  "mobileNumber" -> testPhone,
+                  "telephone" -> testPhone,
+                  "email" -> testEmail
                 )
               )
             )
@@ -128,7 +137,12 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
               "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
               "tradersPartyType" -> Json.toJson[PartyType](Individual),
               "customerIdentification" -> Json.obj(
-                "customerID" -> Json.toJson(testEntity.identifiers)
+                "customerID" -> Json.toJson(testEntity.identifiers),
+                "name" -> Json.obj(
+                  "firstName" -> testFirstName,
+                  "lastName" -> testLastName
+                ),
+                "dateOfBirth" -> testDate
               ),
               "businessContactDetails" -> Json.obj(
                 "address" -> Json.obj(
@@ -138,7 +152,9 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
                   "countryCode" -> "GB"
                 ),
                 "commDetails" -> Json.obj(
-                  "telephone" -> testPhone
+                  "mobileNumber" -> testPhone,
+                  "telephone" -> testPhone,
+                  "email" -> testEmail
                 )
               )
             )
@@ -173,6 +189,10 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
                 "line2" -> "line2",
                 "postCode" -> "XX XX",
                 "countryCode" -> "GB"
+              ),
+              "commDetails" -> Json.obj(
+                "mobileNumber" -> testPhone,
+                "email" -> testEmail
               )
             )
           )
