@@ -93,30 +93,6 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
     )
   )
 
-  def runOnce = {
-    val builder = collection.update(ordered = true)
-    val updates = Future.sequence(Seq(
-      builder.element(
-        q = BSONDocument(),
-        u = BSONDocument(
-          "$currentDate" ->  BSONDocument("timestamp" -> true)
-        ),
-        multi = true
-      ),
-      builder.element(
-        q = BSONDocument("createdDate" -> BSONDocument("$exists" -> false)),
-        u = BSONDocument(
-          "$set" ->  BSONDocument("createdDate" -> timeMachine.today.toString)
-        ),
-        multi = true
-      )
-    ))
-
-    updates.flatMap(e => builder.many(e))
-  }
-
-  runOnce
-
   def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
     val projection = Some(Json.obj("internalId" -> 1, "_id" -> 0))
     collection.find(registrationSelector(id), projection).one[JsObject].map {
