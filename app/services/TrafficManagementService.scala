@@ -33,6 +33,8 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
                                          timeMachine: TimeMachine)
                                         (implicit ec: ExecutionContext, config: BackendConfig) {
 
+  private val defaultQuota = 0
+
   def dailyQuota(partyType: PartyType, isEnrolled: Boolean): Int =
     partyType match {
       case UkCompany if isEnrolled => config.DailyQuotas.enrolledUkCompany
@@ -50,7 +52,8 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       case Trust if isEnrolled => config.DailyQuotas.enrolledTrust
       case Trust => config.DailyQuotas.trust
       case UnincorpAssoc if isEnrolled => config.DailyQuotas.enrolledUnincorpAssoc
-      case UnincorpAssoc => config. DailyQuotas.unincorpAssoc
+      case UnincorpAssoc => config.DailyQuotas.unincorpAssoc
+      case _ => defaultQuota
     }
 
   def currentHour: Int = timeMachine.timestamp.getHour
