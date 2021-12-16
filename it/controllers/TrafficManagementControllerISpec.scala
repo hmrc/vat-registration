@@ -3,7 +3,7 @@ package controllers
 
 import itutil.IntegrationStubbing
 import models.api._
-import models.submission.UkCompany
+import models.submission.{PartyType, ScotPartnership, UkCompany}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 
@@ -58,6 +58,18 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
       val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
         .post(Json.obj(
           "partyType" -> "50",
+          "isEnrolled" -> true
+        )))
+
+      res.status mustBe TOO_MANY_REQUESTS
+    }
+    "return TOO_MANY_REQUESTS if the party type is not supported" in new Setup {
+      given
+        .user.isAuthorised
+
+      val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
+        .post(Json.obj(
+          "partyType" -> PartyType.toJsString(ScotPartnership),
           "isEnrolled" -> true
         )))
 
