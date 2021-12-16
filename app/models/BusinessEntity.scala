@@ -50,10 +50,14 @@ sealed trait BusinessEntity {
 object BusinessEntity {
   def reads(partyType: PartyType): Reads[BusinessEntity] = Reads { json =>
     partyType match {
-      case UkCompany | RegSociety | CharitableOrg => Json.fromJson(json)(IncorporatedEntity.format)
-      case Individual | NETP => Json.fromJson(json)(SoleTraderIdEntity.format)
-      case Partnership => Json.fromJson(json)(PartnershipIdEntity.format)
-      case UnincorpAssoc | Trust | NonUkNonEstablished => Json.fromJson(json)(MinorEntity.format)
+      case UkCompany | RegSociety | CharitableOrg =>
+        Json.fromJson(json)(IncorporatedEntity.format)
+      case Individual | NETP =>
+        Json.fromJson(json)(SoleTraderIdEntity.format)
+      case Partnership | ScotPartnership | LtdPartnership | ScotLtdPartnership | LtdLiabilityPartnership =>
+        Json.fromJson(json)(PartnershipIdEntity.format)
+      case UnincorpAssoc | Trust | NonUkNonEstablished =>
+        Json.fromJson(json)(MinorEntity.format)
       case _ => throw new InternalServerException("Tried to parse business entity for an unsupported party type")
     }
   }
@@ -63,7 +67,7 @@ object BusinessEntity {
       Json.toJson(incorporatedEntity)(IncorporatedEntity.format)
     case soleTrader@SoleTraderIdEntity(_, _, _, _, _, _, _, _, _, _, _) =>
       Json.toJson(soleTrader)(SoleTraderIdEntity.format)
-    case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _, _) =>
+    case partnershipIdEntity@PartnershipIdEntity(_, _, _, _, _, _, _, _, _, _) =>
       Json.toJson(partnershipIdEntity)(PartnershipIdEntity.format)
     case minorEntity: MinorEntity =>
       Json.toJson(minorEntity)(MinorEntity.format)
@@ -170,10 +174,12 @@ object OverseasIdentifierDetails {
   implicit val format: Format[OverseasIdentifierDetails] = Json.format[OverseasIdentifierDetails]
 }
 
-// PartnershipIdEntity supports Partnerships
+// PartnershipIdEntity supports Partnerships, Scottish Partnerships, Ltd Partnerships, Scottish Ltd Partnerships and Limited Liability Partnerships
 
-case class PartnershipIdEntity(companyName: Option[String],
-                               sautr: Option[String],
+case class PartnershipIdEntity(sautr: Option[String],
+                               companyNumber: Option[String],
+                               companyName: Option[String] = None,
+                               dateOfIncorporation: Option[LocalDate],
                                postCode: Option[String],
                                chrn: Option[String],
                                bpSafeId: Option[String] = None,
@@ -192,6 +198,12 @@ case class PartnershipIdEntity(companyName: Option[String],
         idValue = chrn,
         idType = CharityRefIdType,
         IDsVerificationStatus = idVerificationStatus
+      )),
+      companyNumber.map(crn => CustomerId(
+        idValue = crn,
+        idType = CrnIdType,
+        IDsVerificationStatus = idVerificationStatus,
+        date = dateOfIncorporation
       ))
     ).flatten
 

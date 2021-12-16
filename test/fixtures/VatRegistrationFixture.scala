@@ -119,10 +119,12 @@ trait VatRegistrationFixture {
   )
 
   val testGeneralPartnershipEntity: PartnershipIdEntity = PartnershipIdEntity(
-    Some(testCompanyName),
     Some(testUtr),
+    companyNumber = None,
+    Some(testCompanyName),
+    dateOfIncorporation = None,
     Some(testPostcode),
-    None,
+    chrn = None,
     Some(testBpSafeId),
     businessVerification = Some(BvPass),
     registration = RegisteredStatus,

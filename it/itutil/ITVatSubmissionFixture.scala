@@ -4,7 +4,7 @@ package itutil
 import models.api.returns.{StoringGoodsForDispatch, StoringWithinUk}
 import models.api.{AttachmentMethod, Post}
 import models.submission._
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsArray, JsObject, Json}
 
 trait ITVatSubmissionFixture extends ITFixtures {
 
@@ -1360,7 +1360,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
-  val testPartnershipWithSoleTrader: JsObject = Json.obj(
+  def testPartnership(customerIdentification: JsObject, entities: Option[JsArray]): JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> Json.obj(
       "additionalInformation" -> Json.obj(
@@ -1370,18 +1370,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "EORIrequested" -> true
       )
     ),
-    "customerIdentification" -> Json.obj(
-      "tradersPartyType" -> "61",
-      "customerID" -> Json.arr(
-        Json.obj(
-          "idValue" -> "testUtr",
-          "idType" -> "UTR",
-          "IDsVerificationStatus" -> "3"
-        )
-      ),
-      "shortOrgName" -> testCompanyName,
-      "tradingName" -> testTradingDetails.tradingName.get
-    ),
+    "customerIdentification" -> customerIdentification,
     "contact" -> Json.obj(
       "address" -> Json.obj(
         "line1" -> testFullAddress.line1,
@@ -1391,14 +1380,13 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
-        "addressValidated" -> true //false if manually entered by user
+        "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
-        //"webAddress" -> Do we need this?
-        "commsPreference" -> "ZEL" //electronic
+        "commsPreference" -> "ZEL"
       )
     ),
     "subscription" -> Json.obj(
@@ -1406,8 +1394,6 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "registrationReason" -> "0016",
         "relevantDate" -> testDate,
         "voluntaryOrEarlierDate" -> testDate,
-        //For mandatory users - voluntary is optionally provided by the user
-        //For voluntary users - relevant date = voluntaryOrEarlierDate
         "exemptionOrException" -> "0"
       ),
       "businessActivities" -> Json.obj(
@@ -1468,7 +1454,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "line5" -> testFullAddress.line5,
           "postCode" -> testFullAddress.postcode,
           "countryCode" -> "GB",
-          "addressValidated" -> true //false if manually entered by user
+          "addressValidated" -> true
         ),
         "prevAddress" -> Json.obj(
           "line1" -> testFullAddress.line1,
@@ -1478,7 +1464,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "line5" -> testFullAddress.line5,
           "postCode" -> testFullAddress.postcode,
           "countryCode" -> "GB",
-          "addressValidated" -> true //false if manually entered by user
+          "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
           "email" -> testDigitalContactOptional.email,
@@ -1497,234 +1483,186 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> "03" //currently defaulted company director
+        "declarationCapacity" -> "03"
+      )
+    )
+  ) ++ {
+    entities match {
+      case Some(json) => Json.obj("entities" -> json)
+      case None => Json.obj()
+    }
+  }
+
+  val generalPartnershipCustomerId = Json.obj(
+    "tradersPartyType" -> Json.toJson[PartyType](Partnership),
+    "customerID" -> Json.arr(
+      Json.obj(
+        "idValue" -> "testUtr",
+        "idType" -> "UTR",
+        "IDsVerificationStatus" -> "3"
       )
     ),
-    "entities" -> Json.arr(
+    "tradingName" -> testTradingDetails.tradingName.get,
+    "shortOrgName" -> testShortOrgName,
+    "organisationName" -> testCompanyName
+  )
+
+  val limitedPartnershipCustomerId = Json.obj(
+    "tradersPartyType" -> Json.toJson[PartyType](LtdPartnership),
+    "customerID" -> Json.arr(
       Json.obj(
-        "action" -> "1",
-        "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-        "tradersPartyType" -> Json.toJson[PartyType](Individual),
-        "customerIdentification" -> Json.obj(
-          "customerID" -> Json.arr(
-            Json.obj(
-              "idValue" -> "NB686868C",
-              "idType" -> "NINO",
-              "IDsVerificationStatus" -> "1"
-            ),
-            Json.obj(
-              "idValue" -> "testUtr",
-              "idType" -> "UTR",
-              "IDsVerificationStatus" -> "1"
-            )
+        "idValue" -> "testUtr",
+        "idType" -> "UTR",
+        "IDsVerificationStatus" -> "3"
+      ),
+      Json.obj(
+        "idValue" -> testCrn,
+        "date" -> testDateOfIncorp,
+        "idType" -> "CRN",
+        "IDsVerificationStatus" -> "3"
+      )
+    ),
+    "tradingName" -> testTradingDetails.tradingName.get,
+    "shortOrgName" -> testShortOrgName,
+    "organisationName" -> testCompanyName
+  )
+
+  val limitedLiabilityPartnershipCustomerId = Json.obj(
+    "tradersPartyType" -> Json.toJson[PartyType](LtdLiabilityPartnership),
+    "customerID" -> Json.arr(
+      Json.obj(
+        "idValue" -> "testUtr",
+        "idType" -> "UTR",
+        "IDsVerificationStatus" -> "3"
+      ),
+      Json.obj(
+        "idValue" -> testCrn,
+        "date" -> testDateOfIncorp,
+        "idType" -> "CRN",
+        "IDsVerificationStatus" -> "3"
+      )
+    ),
+    "tradingName" -> testTradingDetails.tradingName.get,
+    "shortOrgName" -> testShortOrgName,
+    "organisationName" -> testCompanyName
+  )
+
+  val ukCompanyLeadPartner = Json.arr(
+    Json.obj(
+      "action" -> "1",
+      "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
+      "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
+      "customerIdentification" -> Json.obj(
+        "customerID" -> Json.arr(
+          Json.obj(
+            "idValue" -> testUtr,
+            "idType" -> "UTR",
+            "IDsVerificationStatus" -> "1"
           ),
-          "name" -> Json.obj(
-            "firstName" -> testFirstName,
-            "lastName" -> testLastName
-          ),
-          "dateOfBirth" -> testDate
-        ),
-        "businessContactDetails" -> Json.obj(
-          "address" -> Json.obj(
-            "line1" -> testFullAddress.line1,
-            "line2" -> testFullAddress.line2,
-            "line3" -> testFullAddress.line3,
-            "line4" -> testFullAddress.line4,
-            "line5" -> testFullAddress.line5,
-            "postCode" -> testFullAddress.postcode,
-            "countryCode" -> "GB"
-          ),
-          "commDetails" -> Json.obj(
-            "email" -> testBusinessContactDetails.digitalContact.email,
-            "telephone" -> testBusinessContactDetails.digitalContact.tel,
-            "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
+          Json.obj(
+            "idValue" -> testCrn,
+            "date" -> testDateOfIncorp,
+            "idType" -> "CRN",
+            "IDsVerificationStatus" -> "1"
           )
+        ),
+        "shortOrgName" -> testCompanyName,
+        "organisationName" -> testCompanyName
+      ),
+      "businessContactDetails" -> Json.obj(
+        "address" -> Json.obj(
+          "line1" -> testFullAddress.line1,
+          "line2" -> testFullAddress.line2,
+          "line3" -> testFullAddress.line3,
+          "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
+          "postCode" -> testFullAddress.postcode,
+          "countryCode" -> "GB"
+        ),
+        "commDetails" -> Json.obj(
+          "email" -> testBusinessContactDetails.digitalContact.email,
+          "telephone" -> testBusinessContactDetails.digitalContact.tel,
+          "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
         )
       )
     )
   )
 
-  val testPartnershipWithUkCompany: JsObject = Json.obj(
-    "messageType" -> "SubscriptionCreate",
-    "admin" -> Json.obj(
-      "additionalInformation" -> Json.obj(
-        "customerStatus" -> "2"
-      ),
-      "attachments" -> Json.obj(
-        "EORIrequested" -> true
-      )
-    ),
-    "customerIdentification" -> Json.obj(
-      "tradersPartyType" -> "61",
-      "customerID" -> Json.arr(
-        Json.obj(
-          "idValue" -> "testUtr",
-          "idType" -> "UTR",
-          "IDsVerificationStatus" -> "3"
-        )
-      ),
-      "tradingName" -> testTradingDetails.tradingName.get,
-      "shortOrgName" -> testShortOrgName,
-      "organisationName" -> testCompanyName
-    ),
-    "contact" -> Json.obj(
-      "address" -> Json.obj(
-        "line1" -> testFullAddress.line1,
-        "line2" -> testFullAddress.line2,
-        "line3" -> testFullAddress.line3,
-        "line4" -> testFullAddress.line4,
-        "line5" -> testFullAddress.line5,
-        "postCode" -> testFullAddress.postcode,
-        "countryCode" -> "GB",
-        "addressValidated" -> true //false if manually entered by user
-      ),
-      "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
-        //"webAddress" -> Do we need this?
-        "commsPreference" -> "ZEL" //electronic
-      )
-    ),
-    "subscription" -> Json.obj(
-      "reasonForSubscription" -> Json.obj(
-        "registrationReason" -> "0016",
-        "relevantDate" -> testDate,
-        "voluntaryOrEarlierDate" -> testDate,
-        //For mandatory users - voluntary is optionally provided by the user
-        //For voluntary users - relevant date = voluntaryOrEarlierDate
-        "exemptionOrException" -> "0"
-      ),
-      "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
-        "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
-          "mainCode2" -> "00002",
-          "mainCode3" -> "00003",
-          "mainCode4" -> "00004"
-        )
-      ),
-      "yourTurnover" -> Json.obj(
-        "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
-        "zeroRatedSupplies" -> 12.99,
-        "VATRepaymentExpected" -> true,
-        "goodsFromOtherEU" -> testTurnover,
-        "goodsSoldToOtherEU" -> testTurnover
-      ),
-      "schemes" -> Json.obj(
-        "FRSCategory" -> "123",
-        "FRSPercentage" -> 15,
-        "startDate" -> "2017-01-01",
-        "limitedCostTrader" -> false
-      )
-    ),
-    "periods" -> Json.obj(
-      "customerPreferredPeriodicity" -> "MA"
-    ),
-    "bankDetails" -> Json.obj(
-      "UK" -> Json.obj(
-        "accountName" -> "testBankName",
-        "sortCode" -> "111111",
-        "accountNumber" -> "01234567"
-      )
-    ),
-    "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement
-    ),
-    "declaration" -> Json.obj(
-      "applicantDetails" -> Json.obj(
-        "roleInBusiness" -> "03",
+  val soleTraderLeadPartner = Json.arr(
+    Json.obj(
+      "action" -> "1",
+      "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
+      "tradersPartyType" -> Json.toJson[PartyType](Individual),
+      "customerIdentification" -> Json.obj(
+        "customerID" -> Json.arr(
+          Json.obj(
+            "idValue" -> "NB686868C",
+            "idType" -> "NINO",
+            "IDsVerificationStatus" -> "1"
+          ),
+          Json.obj(
+            "idValue" -> "testUtr",
+            "idType" -> "UTR",
+            "IDsVerificationStatus" -> "1"
+          )
+        ),
         "name" -> Json.obj(
-          "firstName" -> testName.first,
-          "lastName" -> testName.last
+          "firstName" -> testFirstName,
+          "lastName" -> testLastName
         ),
-        "prevName" -> Json.obj(
-          "firstName" -> "Bob",
-          "lastName" -> "Smith",
-          "nameChangeDate" -> testDate
-        ),
-        "currAddress" -> Json.obj(
+        "dateOfBirth" -> testDate
+      ),
+      "businessContactDetails" -> Json.obj(
+        "address" -> Json.obj(
           "line1" -> testFullAddress.line1,
           "line2" -> testFullAddress.line2,
           "line3" -> testFullAddress.line3,
           "line4" -> testFullAddress.line4,
           "line5" -> testFullAddress.line5,
           "postCode" -> testFullAddress.postcode,
-          "countryCode" -> "GB",
-          "addressValidated" -> true //false if manually entered by user
-        ),
-        "prevAddress" -> Json.obj(
-          "line1" -> testFullAddress.line1,
-          "line2" -> testFullAddress.line2,
-          "line3" -> testFullAddress.line3,
-          "line4" -> testFullAddress.line4,
-          "line5" -> testFullAddress.line5,
-          "postCode" -> testFullAddress.postcode,
-          "countryCode" -> "GB",
-          "addressValidated" -> true //false if manually entered by user
+          "countryCode" -> "GB"
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
-        ),
-        "dateOfBirth" -> testDate,
-        "identifiers" -> Json.arr(
-          Json.obj(
-            "date" -> testDate,
-            "idType" -> "NINO",
-            "idValue" -> testNino,
-            "IDsVerificationStatus" -> "1"
-          )
-        )
-      ),
-      "declarationSigning" -> Json.obj(
-        "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> "03" //currently defaulted company director
-      )
-    ),
-    "entities" -> Json.arr(
-      Json.obj(
-        "action" -> "1",
-        "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-        "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
-        "customerIdentification" -> Json.obj(
-          "customerID" -> Json.arr(
-            Json.obj(
-              "idValue" -> testUtr,
-              "idType" -> "UTR",
-              "IDsVerificationStatus" -> "1"
-            ),
-            Json.obj(
-              "idValue" -> testCrn,
-              "date" -> testDateOfIncorp,
-              "idType" -> "CRN",
-              "IDsVerificationStatus" -> "1"
-            )
-          ),
-          "shortOrgName" -> testCompanyName,
-          "organisationName" -> testCompanyName
-        ),
-        "businessContactDetails" -> Json.obj(
-          "address" -> Json.obj(
-            "line1" -> testFullAddress.line1,
-            "line2" -> testFullAddress.line2,
-            "line3" -> testFullAddress.line3,
-            "line4" -> testFullAddress.line4,
-            "line5" -> testFullAddress.line5,
-            "postCode" -> testFullAddress.postcode,
-            "countryCode" -> "GB"
-          ),
-          "commDetails" -> Json.obj(
-            "email" -> testBusinessContactDetails.digitalContact.email,
-            "telephone" -> testBusinessContactDetails.digitalContact.tel,
-            "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
-          )
+          "email" -> testBusinessContactDetails.digitalContact.email,
+          "telephone" -> testBusinessContactDetails.digitalContact.tel,
+          "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
         )
       )
     )
   )
 
+  val scottishPartnershipLeadPartner = Json.arr(
+    Json.obj(
+      "action" -> "1",
+      "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
+      "tradersPartyType" -> Json.toJson[PartyType](ScotPartnership),
+      "customerIdentification" -> Json.obj(
+        "customerID" -> Json.arr(
+          Json.obj(
+            "idValue" -> "testUtr",
+            "idType" -> "UTR",
+            "IDsVerificationStatus" -> "1"
+          )
+        ),
+        "shortOrgName" -> testCompanyName,
+        "organisationName" -> testCompanyName
+      ),
+      "businessContactDetails" -> Json.obj(
+        "address" -> Json.obj(
+          "line1" -> testFullAddress.line1,
+          "line2" -> testFullAddress.line2,
+          "line3" -> testFullAddress.line3,
+          "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
+          "postCode" -> testFullAddress.postcode,
+          "countryCode" -> "GB"
+        ),
+        "commDetails" -> Json.obj(
+          "email" -> testBusinessContactDetails.digitalContact.email,
+          "telephone" -> testBusinessContactDetails.digitalContact.tel,
+          "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
+        )
+      )
+    )
+  )
 }

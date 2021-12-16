@@ -47,7 +47,7 @@ class CustomerIdentificationAuditBlockBuilder extends FeatureSwitching {
                   optional("NINO" -> optNino),
                   optional("saUTR" -> optUtr)
                 ))
-              case PartnershipIdEntity(_, optUtr, _, optChrn, _, _, _, _) =>
+              case PartnershipIdEntity(optUtr, _, _, _, _, optChrn, _, _, _, _) =>
                 Some(jsonObject(
                   optional("saUTR" -> optUtr),
                   optional("CHRN" -> optChrn)
@@ -83,7 +83,7 @@ class CustomerIdentificationAuditBlockBuilder extends FeatureSwitching {
     applicantDetails.entity match {
       case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => companyName
       case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => companyName
-      case PartnershipIdEntity(companyName, _, _, _, _, _, _, _) => companyName
+      case PartnershipIdEntity(_, _, companyName, _, _, _, _, _, _, _) => companyName
       case _ => None
     }
   }
