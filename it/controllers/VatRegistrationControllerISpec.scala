@@ -20,8 +20,10 @@ import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, ShortOrgName, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
-import models.api.VatScheme
+import models.api.{BvFail, FailedStatus, NotCalledStatus, Partner, VatScheme}
 import models.nonrepudiation.NonRepudiationMetadata
+import models.registration.sections.PartnersSection
+import models.submission._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
@@ -68,6 +70,62 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   )
 
   val testSubmissionResponse = Json.obj("formBundle" -> "123412341234")
+
+  lazy val testPartner: Partner = Partner(
+    details = testSoleTraderEntity.copy(businessVerification = None),
+    partyType = Individual,
+    isLeadPartner = true
+  )
+
+  lazy val testUkCompanyPartner: Partner = testPartner.copy(
+    details = testLtdCoEntity.copy(businessVerification = None, registration = FailedStatus),
+    partyType = UkCompany
+  )
+
+  lazy val testScottishPartnershipPartner: Partner = testPartner.copy(
+    details = testGeneralPartnershipEntity.copy(bpSafeId = None, businessVerification = None, registration = FailedStatus),
+    partyType = ScotPartnership
+  )
+
+  lazy val generalPartnershipWithSoleTraderPartner: VatScheme = testFullVatScheme.copy(
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
+    partners = Some(PartnersSection(List(testPartner))),
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
+      bpSafeId = None,
+      businessVerification = Some(BvFail),
+      registration = NotCalledStatus
+    ))),
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+  )
+
+  lazy val generalPartnershipWithUkCompanyPartner: VatScheme = testFullVatScheme.copy(
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
+    partners = Some(PartnersSection(List(testUkCompanyPartner))),
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
+      bpSafeId = None,
+      businessVerification = Some(BvFail),
+      registration = NotCalledStatus
+    ))),
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+  )
+
+  lazy val limitedPartnershipWithScotPartnershipPartner: VatScheme = testFullVatScheme.copy(
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = LtdPartnership)),
+    partners = Some(PartnersSection(List(testScottishPartnershipPartner))),
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
+      companyNumber = Some(testCrn),
+      dateOfIncorporation = Some(testDateOfIncorp),
+      bpSafeId = None,
+      businessVerification = Some(BvFail),
+      registration = NotCalledStatus
+    ))),
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+  )
+
+  lazy val limitedLiabilityPartnership: VatScheme = limitedPartnershipWithScotPartnershipPartner.copy(
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)),
+    partners = None
+  )
 
   "POST /new" should {
     "return CREATED if the daily quota has not been met" in new Setup {
@@ -266,9 +324,9 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(
-            testNetpVatScheme.copy(applicantDetails = Some(testNetpApplicantDetails.copy(entity = testNetpEntityOverseas))),
-            repo.insert
-          )
+          testNetpVatScheme.copy(applicantDetails = Some(testNetpApplicantDetails.copy(entity = testNetpEntityOverseas))),
+          repo.insert
+        )
 
         stubPost("/vatreg/test-only/vat/subscription", testNetpJsonOverseas, OK, Json.stringify(testSubmissionResponse))
 
@@ -319,19 +377,19 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a General Partnership" should {
       "return OK if the submission is successful where the submission contains a Sole Trader partner" in new Setup {
-        enable(StubSubmission)
-
+        enable(ShortOrgName)
         given
           .user.isAuthorised
-          .regRepo.insertIntoDb(testVatSchemeWithSoleTraderPartner, repo.insert)
+          .regRepo.insertIntoDb(generalPartnershipWithSoleTraderPartner, repo.insert)
 
-        stubPost("/vatreg/test-only/vat/subscription", testPartnershipWithSoleTrader, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testPartnership(generalPartnershipCustomerId, Some(soleTraderLeadPartner)), OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())
         )
 
         res.status mustBe OK
+        disable(ShortOrgName)
       }
 
       "return OK if the submission is successful where the submission contains a UK Company partner" in new Setup {
@@ -339,9 +397,45 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         enable(ShortOrgName)
         given
           .user.isAuthorised
-          .regRepo.insertIntoDb(testVatSchemeWithUkCompanyPartner, repo.insert)
+          .regRepo.insertIntoDb(generalPartnershipWithUkCompanyPartner, repo.insert)
 
-        stubPost("/vatreg/test-only/vat/subscription", testPartnershipWithUkCompany, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testPartnership(generalPartnershipCustomerId, Some(ukCompanyLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+        disable(ShortOrgName)
+      }
+    }
+
+    "the user is a Limited Partnership" should {
+      "return OK if the submission is successful where the submission contains a Scottish Partnership partner" in new Setup {
+        enable(ShortOrgName)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(limitedPartnershipWithScotPartnershipPartner, repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testPartnership(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+        disable(ShortOrgName)
+      }
+    }
+
+    "the user is a Limited Liability Partnership" should {
+      "return OK if the submission is successful" in new Setup {
+        enable(ShortOrgName)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(limitedLiabilityPartnership, repo.insert)
+
+        stubPost("/vatreg/test-only/vat/subscription", testPartnership(limitedLiabilityPartnershipCustomerId, None), OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())

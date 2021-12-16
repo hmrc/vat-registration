@@ -20,7 +20,6 @@ import enums.VatRegStatus
 import models._
 import models.api._
 import models.api.returns._
-import models.registration.sections.PartnersSection
 import models.submission._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -366,10 +365,12 @@ trait ITFixtures {
   )
 
   val testGeneralPartnershipEntity: PartnershipIdEntity = PartnershipIdEntity(
-    Some(testCompanyName),
     Some(testUtr),
+    companyNumber = None,
+    Some(testCompanyName),
+    dateOfIncorporation = None,
     Some(testPostcode),
-    None,
+    chrn = None,
     Some(testBpSafeId),
     businessVerification = Some(BvPass),
     registration = RegisteredStatus,
@@ -388,38 +389,6 @@ trait ITFixtures {
     registration = RegisteredStatus,
     bpSafeId = Some(testBpSafeId),
     identifiersMatch = true
-  )
-
-  lazy val testPartner = Partner(
-    details = testSoleTraderEntity.copy(businessVerification = None),
-    partyType = Individual,
-    isLeadPartner = true
-  )
-
-  lazy val testUkCompanyPartner = testPartner.copy(
-    details = testLtdCoEntity.copy(businessVerification = None, registration = FailedStatus),
-    partyType = UkCompany
-  )
-
-  lazy val testVatSchemeWithSoleTraderPartner = testFullVatScheme.copy(
-    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
-    partners = Some(PartnersSection(List(testPartner))),
-    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
-      bpSafeId = None,
-      businessVerification = Some(BvFail),
-      registration = NotCalledStatus
-    )))
-  )
-
-  lazy val testVatSchemeWithUkCompanyPartner = testFullVatScheme.copy(
-    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
-    partners = Some(PartnersSection(List(testUkCompanyPartner))),
-    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
-      bpSafeId = None,
-      businessVerification = Some(BvFail),
-      registration = NotCalledStatus
-    ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
   )
 
   def testEmptyVatScheme(regId: String): VatScheme = VatScheme(

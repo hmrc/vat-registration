@@ -18,7 +18,7 @@ package services.submission
 
 import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
 import models.api.Address
-import models.submission.{EntitiesArrayType, PartnerEntity}
+import models.submission.{EntitiesArrayType, Individual, NETP, PartnerEntity, PartyType}
 import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import services.{BusinessContactService, PartnersService}
@@ -50,7 +50,10 @@ class EntitiesBlockBuilder @Inject()(partnersService: PartnersService,
           jsonObject(
             "action" -> addPartnerAction,
             "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-            "tradersPartyType" -> partner.partyType,
+            "tradersPartyType" -> Json.toJson[PartyType](partner.partyType match {
+              case NETP => Individual
+              case partyType => partyType
+            }),
             "customerIdentification" -> {
               partner.details match {
                 case _ if partner.details.bpSafeId.isDefined =>
@@ -70,7 +73,7 @@ class EntitiesBlockBuilder @Inject()(partnersService: PartnersService,
                         )
                       case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
                       case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
-                      case PartnershipIdEntity(companyName, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
+                      case PartnershipIdEntity(_, _, companyName, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
                     }
                   }
               }

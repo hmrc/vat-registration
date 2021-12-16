@@ -96,7 +96,7 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
     applicantDetails.entity match {
       case IncorporatedEntity(companyName, _, _, _, None, _, _, _, _, _) => companyName
       case MinorEntity(companyName, _, _, _, _, _, _, _, _, None, _) => companyName
-      case PartnershipIdEntity(companyName, _, _, _, None, _, _, _) => companyName
+      case PartnershipIdEntity(_, _, companyName, _, _, _, None, _, _, _) => companyName
       case _ => None //Don't send company name when safeId is present
     }
   }.map(StringNormaliser.normaliseString)
