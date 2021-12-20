@@ -18,7 +18,7 @@ package httpparsers
 
 import play.api.http.Status.{BAD_REQUEST, CONFLICT, OK}
 import play.api.libs.json.JsSuccess
-import uk.gov.hmrc.http.{HttpReads, HttpResponse, InternalServerException}
+import uk.gov.hmrc.http.{ConflictException, HttpReads, HttpResponse, InternalServerException}
 
 object VatSubmissionHttpParser {
 
@@ -46,7 +46,7 @@ object VatSubmissionHttpParser {
               throw new InternalServerException(s"Unexpected Json response for this status: $BAD_REQUEST")
           }
         case CONFLICT =>
-          throw new InternalServerException("VAT Submission API - application already in progress")
+          throw new ConflictException("VAT Submission API - application already in progress")
         case _ =>
           throw new InternalServerException(
             s"Unexpected response from VAT Submission API - status = ${response.status}, body = ${response.body}"
