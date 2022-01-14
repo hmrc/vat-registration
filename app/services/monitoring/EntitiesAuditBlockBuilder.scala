@@ -14,50 +14,45 @@
  * limitations under the License.
  */
 
-package services.submission
+package services.monitoring
 
 import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
 import models._
-import models.api.{Address, Partner}
+import models.api.{Address, Partner, VatScheme}
 import models.submission._
 import play.api.libs.json.{JsObject, JsValue, Json}
-import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{jsonObject, optional}
 import utils.StringNormaliser
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class EntitiesBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)
-                                    (implicit ec: ExecutionContext)
+class EntitiesAuditBlockBuilder @Inject()(implicit ec: ExecutionContext)
   extends FeatureSwitching {
 
   private val addPartnerAction = "1"
 
   // scalastyle:off
-  def buildEntitiesBlock(regId: String): Future[Option[JsValue]] =
-    for {
-      vatScheme <- registrationMongoRepository.retrieveVatScheme(regId).map(
-        _.getOrElse(throw new InternalServerException("Attempted to build entities block without vatScheme"))
-      )
-      businessContact = vatScheme.businessContact
-        .getOrElse(throw new InternalServerException("Attempted to build entities block without business contact"))
-      applicantDetails = vatScheme.applicantDetails
-        .getOrElse(throw new InternalServerException("Attempted to build entities block without applicant details"))
-      regReason = vatScheme.eligibilitySubmissionData.map(_.registrationReason)
-        .getOrElse(throw new InternalServerException("Attempted to build entities block without reg reason"))
-      entities = vatScheme.partners match {
-        case Some(entitiesSection) => entitiesSection.partners
-        case None if regReason.equals(GroupRegistration) => List(Partner(
-          applicantDetails.entity,
-          UkCompany,
-          isLeadPartner = true
-        ))
-        case _ => Nil
-      }
-    } yield entities match {
+  def buildEntitiesAuditBlock(vatScheme: VatScheme): Option[JsValue] = {
+    val businessContact = vatScheme.businessContact
+      .getOrElse(throw new InternalServerException("Attempted to build entities block without business contact"))
+    val applicantDetails = vatScheme.applicantDetails
+      .getOrElse(throw new InternalServerException("Attempted to build entities block without applicant details"))
+    val regReason = vatScheme.eligibilitySubmissionData.map(_.registrationReason)
+      .getOrElse(throw new InternalServerException("Attempted to build entities block without reg reason"))
+
+    val entities = vatScheme.partners match {
+      case Some(entitiesSection) => entitiesSection.partners
+      case None if regReason.equals(GroupRegistration) => List(Partner(
+        applicantDetails.entity,
+        UkCompany,
+        isLeadPartner = true
+      ))
+      case _ => Nil
+    }
+    entities match {
       case entities if entities.nonEmpty =>
         Some(Json.toJson(entities.map { partner =>
           jsonObject(
@@ -118,6 +113,7 @@ class EntitiesBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepos
       case _ =>
         None
     }
+  }
 
   private def formatAddress(address: Address): JsObject = jsonObject(
     "line1" -> address.line1,

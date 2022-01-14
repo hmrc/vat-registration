@@ -1,6 +1,7 @@
 
 package itutil
 
+import models.{ForwardLook, RegistrationReason}
 import models.api.returns.{StoringGoodsForDispatch, StoringWithinUk}
 import models.api.{AttachmentMethod, Post}
 import models.submission._
@@ -1360,7 +1361,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
-  def testPartnership(customerIdentification: JsObject, entities: Option[JsArray]): JsObject = Json.obj(
+  def testSubmissionJson(customerIdentification: JsObject, entities: Option[JsArray], regReason: RegistrationReason = ForwardLook, corporateBodyRegistered: Option[JsObject] = None): JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> Json.obj(
       "additionalInformation" -> Json.obj(
@@ -1389,9 +1390,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "commsPreference" -> "ZEL"
       )
     ),
-    "subscription" -> Json.obj(
+    "subscription" -> { Json.obj(
       "reasonForSubscription" -> Json.obj(
-        "registrationReason" -> "0016",
+        "registrationReason" -> regReason,
         "relevantDate" -> testDate,
         "voluntaryOrEarlierDate" -> testDate,
         "exemptionOrException" -> "0"
@@ -1418,7 +1419,12 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "startDate" -> "2017-01-01",
         "limitedCostTrader" -> false
       )
-    ),
+    ) ++ {
+      corporateBodyRegistered match {
+        case Some(json) => json
+        case None => Json.obj()
+      }
+    }},
     "periods" -> Json.obj(
       "customerPreferredPeriodicity" -> "MA"
     ),
@@ -1547,6 +1553,13 @@ trait ITVatSubmissionFixture extends ITFixtures {
     "organisationName" -> testCompanyName
   )
 
+  val vatGroupCustomerId = Json.obj(
+    "tradersPartyType" -> Json.toJson[PartyType](TaxGroups),
+    "tradingName" -> testTradingDetails.tradingName.get,
+    "shortOrgName" -> testShortOrgName,
+    "organisationName" -> testCompanyName
+  )
+
   val ukCompanyLeadPartner = Json.arr(
     Json.obj(
       "action" -> "1",
@@ -1583,6 +1596,47 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "email" -> testBusinessContactDetails.digitalContact.email,
           "telephone" -> testBusinessContactDetails.digitalContact.tel,
           "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
+        )
+      )
+    )
+  )
+
+  val ukCompanyLeadEntity = Json.arr(
+    Json.obj(
+      "action" -> "1",
+      "entityType" -> Json.toJson[EntitiesArrayType](GroupRepMemberEntity),
+      "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
+      "customerIdentification" -> Json.obj(
+        "customerID" -> Json.arr(
+          Json.obj(
+            "idValue" -> testUtr,
+            "idType" -> "UTR",
+            "IDsVerificationStatus" -> "1"
+          ),
+          Json.obj(
+            "idValue" -> testCrn,
+            "date" -> testDateOfIncorp,
+            "idType" -> "CRN",
+            "IDsVerificationStatus" -> "1"
+          )
+        ),
+        "shortOrgName" -> testCompanyName,
+        "organisationName" -> testCompanyName
+      ),
+      "businessContactDetails" -> Json.obj(
+        "address" -> Json.obj(
+          "line1" -> testFullAddress.line1,
+          "line2" -> testFullAddress.line2,
+          "line3" -> testFullAddress.line3,
+          "line4" -> testFullAddress.line4,
+          "line5" -> testFullAddress.line5,
+          "postCode" -> testFullAddress.postcode,
+          "countryCode" -> "GB"
+        ),
+        "commDetails" -> Json.obj(
+          "email" -> testDigitalContactOptional.email,
+          "telephone" -> testDigitalContactOptional.tel,
+          "mobileNumber" -> testDigitalContactOptional.mobile
         )
       )
     )

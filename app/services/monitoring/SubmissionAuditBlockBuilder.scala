@@ -34,7 +34,8 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
                                             bankAuditBlockBuilder: BankAuditBlockBuilder,
                                             contactAuditBlockBuilder: ContactAuditBlockBuilder,
                                             annualAccountingAuditBlockBuilder: AnnualAccountingAuditBlockBuilder,
-                                            attachmentsService: AttachmentsService) {
+                                            attachmentsService: AttachmentsService,
+                                            entitiesAuditBlockBuilder: EntitiesAuditBlockBuilder) {
 
 
   def buildAuditJson(vatScheme: VatScheme,
@@ -59,7 +60,8 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
       "bankDetails" -> bankAuditBlockBuilder.buildBankAuditBlock(vatScheme),
       "periods" -> periodsAuditBlockBuilder.buildPeriodsBlock(vatScheme),
       optional("joinAA" -> annualAccountingAuditBlockBuilder.buildAnnualAccountingAuditBlock(vatScheme)),
-      conditional(attachmentList.nonEmpty)("attachments" -> AttachmentType.submissionWrites(Post).writes(attachmentList))
+      conditional(attachmentList.nonEmpty)("attachments" -> AttachmentType.submissionWrites(Post).writes(attachmentList)),
+      optional("entities" -> entitiesAuditBlockBuilder.buildEntitiesAuditBlock(vatScheme))
     )
 
     SubmissionAuditModel(

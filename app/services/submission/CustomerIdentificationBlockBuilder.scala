@@ -17,9 +17,9 @@
 package services.submission
 
 import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
-import models.api.ApplicantDetails
-import models.submission.{Individual, NETP}
-import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
+import models._
+import models.api.EligibilitySubmissionData
+import models.submission.{Individual, NETP, TaxGroups}
 import play.api.libs.json.{JsObject, Json}
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -42,25 +42,16 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
   } yield (optVatScheme, optApplicantDetails, optTradingDetails) match {
     case (Some(vatScheme), Some(applicantDetails), Some(tradingDetails)) =>
       jsonObject(
-        "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map { data =>
-          if (data.partyType.equals(NETP)) Individual
-          else data.partyType
+        "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map {
+          case EligibilitySubmissionData(_, _, _, _, _, GroupRegistration, _) => TaxGroups
+          case EligibilitySubmissionData(_, _, _, _, NETP, _, _) => Individual
+          case EligibilitySubmissionData(_, _, _, _, partyType, _, _) => partyType
         },
         optional("tradingName" -> tradingDetails.tradingName.map(StringNormaliser.normaliseString))
       ) ++ {
-        (optTradingDetails.flatMap(_.shortOrgName).map(StringNormaliser.normaliseString), getCompanyName(applicantDetails)) match {
-          case (Some(shortOrgName), Some(companyName)) if isEnabled(ShortOrgName) => jsonObject(
-            "shortOrgName" -> shortOrgName,
-            "organisationName" -> companyName
-          )
-          case (None, optCompanyName) if isEnabled(ShortOrgName) => jsonObject(
-            optional("shortOrgName" -> optCompanyName),
-            optional("organisationName" -> optCompanyName)
-          )
-          case (_, optCompanyName) => jsonObject(optional("shortOrgName" -> optCompanyName))
-        }
-      } ++ {
         applicantDetails.entity.bpSafeId match {
+          case _ if vatScheme.eligibilitySubmissionData.exists(_.registrationReason.equals(GroupRegistration)) =>
+            jsonObject()
           case Some(bpSafeId) =>
             jsonObject("primeBPSafeID" -> bpSafeId)
           case None if applicantDetails.entity.identifiers.nonEmpty =>
@@ -69,6 +60,7 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
             jsonObject()
         }
       } ++ {
+        val shortOrgName = optTradingDetails.flatMap(_.shortOrgName).map(StringNormaliser.normaliseString)
         applicantDetails.entity match {
           case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, bpSafeId, _, _, _, _) if bpSafeId.isEmpty =>
             jsonObject(
@@ -78,7 +70,13 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
               ),
               "dateOfBirth" -> dateOfBirth
             )
-          case _ => jsonObject()
+          case IncorporatedEntity(companyName, _, _, _, bpSafeId, _, _, _, _, _) if bpSafeId.isEmpty =>
+            orgNameJson(companyName, shortOrgName)
+          case MinorEntity(companyName, _, _, _, _, _, _, _, _, bpSafeId, _) if bpSafeId.isEmpty =>
+            orgNameJson(companyName, shortOrgName)
+          case PartnershipIdEntity(_, _, companyName, _, _, _, bpSafeId, _, _, _) if bpSafeId.isEmpty =>
+            orgNameJson(companyName, shortOrgName)
+          case _ => jsonObject() //Don't send company name when safeId is present
         }
       }
 
@@ -92,13 +90,17 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
       throw new InternalServerException("Could not build customer identification block for submission due to missing data from applicant and trading details")
   }
 
-  def getCompanyName(applicantDetails: ApplicantDetails): Option[String] = {
-    applicantDetails.entity match {
-      case IncorporatedEntity(companyName, _, _, _, None, _, _, _, _, _) => companyName
-      case MinorEntity(companyName, _, _, _, _, _, _, _, _, None, _) => companyName
-      case PartnershipIdEntity(_, _, companyName, _, _, _, None, _, _, _) => companyName
-      case _ => None //Don't send company name when safeId is present
+  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String]): JsObject =
+    (orgName.map(StringNormaliser.normaliseString), optShortOrgName.map(StringNormaliser.normaliseString)) match {
+      case (Some(orgName), Some(shortOrgName)) if isEnabled(ShortOrgName) => jsonObject(
+        "shortOrgName" -> shortOrgName,
+        "organisationName" -> orgName
+      )
+      case (Some(orgName), None) if isEnabled(ShortOrgName) => jsonObject(
+        "shortOrgName" -> orgName,
+        "organisationName" -> orgName
+      )
+      case (Some(orgName), _) => jsonObject("shortOrgName" -> orgName)
+      case _ => throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
     }
-  }.map(StringNormaliser.normaliseString)
-
 }
