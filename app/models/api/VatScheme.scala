@@ -44,7 +44,8 @@ case class VatScheme(id: String,
                      nrsSubmissionPayload: Option[String] = None,
                      partners: Option[PartnersSection] = None,
                      attachments: Option[Attachments] = None,
-                     createdDate: Option[LocalDate] = None) {
+                     createdDate: Option[LocalDate] = None,
+                     applicationReference: Option[String] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -73,7 +74,8 @@ object VatScheme {
         (__ \ "nrsSubmissionPayload").readNullable[String] and
         (__ \ "partners").readNullable[PartnersSection] and
         (__ \ "attachments").readNullable[Attachments] and
-        (__ \ "createdDate").readNullable[LocalDate]
+        (__ \ "createdDate").readNullable[LocalDate] and
+        (__ \ "applicationReference").readNullable[String]
         ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
@@ -94,7 +96,8 @@ object VatScheme {
         (__ \ "nrsSubmissionPayload").readNullable[String] and
         (__ \ "partners").readNullable[PartnersSection] and
         (__ \ "attachments").readNullable[Attachments] and
-        (__ \ "createdDate").readNullable[LocalDate]
+        (__ \ "createdDate").readNullable[LocalDate] and
+        (__ \ "applicationReference").readNullable[String]
         ) (VatScheme.apply _)
     }
 
@@ -117,7 +120,8 @@ object VatScheme {
     (__ \ "nrsSubmissionPayload").writeNullable[String] and
     (__ \ "partners").writeNullable[PartnersSection] and
     (__ \ "attachments").writeNullable[Attachments] and
-    (__ \ "createdDate").writeNullable[LocalDate]
+    (__ \ "createdDate").writeNullable[LocalDate] and
+    (__ \ "applicationReference").writeNullable[String]
     ) (unlift(VatScheme.unapply))
 
   def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =
