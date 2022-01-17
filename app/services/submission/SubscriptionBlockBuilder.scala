@@ -45,7 +45,7 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: VatSchemeR
         "registrationReason" -> eligibilityData.registrationReason.key,
         "relevantDate" -> {
           eligibilityData.registrationReason match {
-            case Voluntary | SuppliesOutsideUk => returns.startDate
+            case Voluntary | SuppliesOutsideUk | GroupRegistration => returns.startDate
             case BackwardLook => eligibilityData.threshold.thresholdInTwelveMonths
             case ForwardLook => Some(eligibilityData.threshold.earliestDate)
             case NonUk => eligibilityData.threshold.thresholdOverseas

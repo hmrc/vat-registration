@@ -18,23 +18,23 @@ package services.submission
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api.{BusinessContact, DigitalContact, Email, Partner}
+import models.GroupRegistration
+import models.api.{BusinessContact, DigitalContact, DigitalContactOptional, Email, Partner}
 import models.registration.sections.PartnersSection
-import models.submission.{EntitiesArrayType, Individual, PartnerEntity, PartyType}
+import models.submission._
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
 import play.api.libs.json.Json
 import play.api.test.Helpers._
-import services.submission.buildermocks.MockPartnersService
 
 import scala.concurrent.Future
 
-class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with VatRegistrationFixture {
+class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   object Builder extends EntitiesBlockBuilder(
-    mockPartnersService,
-    mockBusinessContactService
+    mockRegistrationMongoRepository
   )
 
   private def mockGetBusinessContact(regId: String)(response: Future[Option[BusinessContact]]): OngoingStubbing[Future[Option[BusinessContact]]] =
@@ -58,12 +58,22 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
   val testEntity = testSoleTraderEntity.copy(bpSafeId = Some(testBpSafeId))
   val testEntityNoSafeId = testSoleTraderEntity.copy(bpSafeId = None)
   val testPartner = Partner(details = testEntity, partyType = Individual, isLeadPartner = true)
+  val testApplicantContact = DigitalContactOptional(
+    email = Some(testEmail),
+    tel = Some(testPhone),
+    mobile = Some(testPhone)
+  )
 
   "buildEntitiesBlock" when {
     "the partner was successfully matched by the identity service" should {
       "return a JSON array containing a single partner with a business partner safe ID" in {
-        mockGetPartners(testRegId)(Future.successful(Some(PartnersSection(List(testPartner)))))
-        mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testVatScheme.copy(
+            eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+            businessContact = Some(businessContact),
+            partners = Some(PartnersSection(List(testPartner))),
+            applicantDetails = Some(validApplicantDetails)
+          ))))
 
         await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(Json.obj(
           "action" -> "1",
@@ -91,8 +101,13 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
     "the partner was not matched" when {
       "an SA UTR was provided" should {
         "return a JSON array containing a single partner with a list of identifiers" in {
-          mockGetPartners(testRegId)(Future.successful(Some(PartnersSection(List(testPartner.copy(details = testEntityNoSafeId))))))
-          mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact)))
+          when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+            .thenReturn(Future.successful(Some(testVatScheme.copy(
+              eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+              businessContact = Some(businessContact),
+              partners = Some(PartnersSection(List(testPartner.copy(details = testEntityNoSafeId)))),
+              applicantDetails = Some(validApplicantDetails)
+            ))))
 
           await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(
             Json.obj(
@@ -128,8 +143,13 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
         "return a JSON array containing a single partner without identifiers" in {
           val testEntity = testSoleTraderEntity.copy(bpSafeId = None, sautr = None)
           val testPartner = Partner(details = testEntity, partyType = Individual, isLeadPartner = true)
-          mockGetPartners(testRegId)(Future.successful(Some(PartnersSection(List(testPartner)))))
-          mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact)))
+          when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+            .thenReturn(Future.successful(Some(testVatScheme.copy(
+              eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+              businessContact = Some(businessContact),
+              partners = Some(PartnersSection(List(testPartner))),
+              applicantDetails = Some(validApplicantDetails)
+            ))))
 
           await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(
             Json.obj(
@@ -164,16 +184,26 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
     }
     "there are no partner details" should {
       "return None" in {
-        mockGetPartners(testRegId)(Future.successful(None))
-        mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testVatScheme.copy(
+            eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+            businessContact = Some(businessContact),
+            partners = None,
+            applicantDetails = Some(validApplicantDetails)
+          ))))
 
         await(Builder.buildEntitiesBlock(testRegId)) mustBe None
       }
     }
     "there is no telephone number" should {
       "return the correct JSON without the phone number" in {
-        mockGetPartners(testRegId)(Future.successful(Some(PartnersSection(List(testPartner)))))
-        mockGetBusinessContact(testRegId)(Future.successful(Some(businessContact.copy(digitalContact = testContact.copy(tel = None)))))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testVatScheme.copy(
+            eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+            businessContact = Some(businessContact.copy(digitalContact = testContact.copy(tel = None))),
+            partners = Some(PartnersSection(List(testPartner))),
+            applicantDetails = Some(validApplicantDetails)
+          ))))
 
         await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(
           Json.obj(
@@ -197,6 +227,76 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with MockPartnersService with 
             )
           )
         ))
+      }
+    }
+
+    "there is no partner list but the user is registering a vat group" should {
+      "return a JSON array containing a single entity based on the applicants business entity without safeId" in {
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testVatScheme.copy(
+            eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
+            businessContact = Some(businessContact),
+            partners = None,
+            applicantDetails = Some(validApplicantDetails.copy(contact = testApplicantContact))
+          ))))
+
+        await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(Json.obj(
+          "action" -> "1",
+          "entityType" -> Json.toJson[EntitiesArrayType](GroupRepMemberEntity),
+          "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
+          "customerIdentification" -> Json.obj(
+            "customerID" -> Json.toJson(testLtdCoEntity.identifiers),
+            "shortOrgName" -> testCompanyName
+          ),
+          "businessContactDetails" -> Json.obj(
+            "address" -> Json.obj(
+              "line1" -> "line1",
+              "line2" -> "line2",
+              "postCode" -> "XX XX",
+              "countryCode" -> "GB"
+            ),
+            "commDetails" -> Json.obj(
+              "mobileNumber" -> testPhone,
+              "telephone" -> testPhone,
+              "email" -> testEmail
+            )
+          )
+        )))
+      }
+
+      "return a JSON array containing a single entity based on the applicants business entity with safeId" in {
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testVatScheme.copy(
+            eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
+            businessContact = Some(businessContact),
+            partners = None,
+            applicantDetails = Some(validApplicantDetails.copy(
+              entity = testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId)),
+              contact = testApplicantContact
+            ))
+          ))))
+
+        await(Builder.buildEntitiesBlock(testRegId)) mustBe Some(Json.arr(Json.obj(
+          "action" -> "1",
+          "entityType" -> Json.toJson[EntitiesArrayType](GroupRepMemberEntity),
+          "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
+          "customerIdentification" -> Json.obj(
+            "primeBPSafeID" -> testBpSafeId
+          ),
+          "businessContactDetails" -> Json.obj(
+            "address" -> Json.obj(
+              "line1" -> "line1",
+              "line2" -> "line2",
+              "postCode" -> "XX XX",
+              "countryCode" -> "GB"
+            ),
+            "commDetails" -> Json.obj(
+              "mobileNumber" -> testPhone,
+              "telephone" -> testPhone,
+              "email" -> testEmail
+            )
+          )
+        )))
       }
     }
   }

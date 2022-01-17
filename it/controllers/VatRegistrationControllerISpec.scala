@@ -20,7 +20,8 @@ import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, ShortOrgName, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
-import models.api.{BvFail, FailedStatus, NotCalledStatus, Partner, VatScheme}
+import models.GroupRegistration
+import models.api.{BvFail, BvPass, FailedStatus, NotCalledStatus, Partner, VatScheme}
 import models.nonrepudiation.NonRepudiationMetadata
 import models.registration.sections.PartnersSection
 import models.submission._
@@ -125,6 +126,26 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   lazy val limitedLiabilityPartnership: VatScheme = limitedPartnershipWithScotPartnershipPartner.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)),
     partners = None
+  )
+
+  lazy val vatGroupVatscheme: VatScheme = testFullVatScheme.copy(
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testLtdCoEntity.copy(
+      companyNumber = testCrn,
+      dateOfIncorporation = Some(testDateOfIncorp),
+      bpSafeId = None,
+      businessVerification = Some(BvPass),
+      registration = FailedStatus
+    ))),
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+  )
+
+  lazy val corporateBodyRegisteredJson = Json.obj(
+    "corporateBodyRegistered" -> Json.obj(
+      "companyRegistrationNumber" -> testCrn,
+      "dateOfIncorporation" -> testDateOfIncorp,
+      "countryOfIncorporation" -> "GB"
+    )
   )
 
   "POST /new" should {
@@ -382,7 +403,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .user.isAuthorised
           .regRepo.insertIntoDb(generalPartnershipWithSoleTraderPartner, repo.insert)
 
-        stubPost("/vatreg/test-only/vat/subscription", testPartnership(generalPartnershipCustomerId, Some(soleTraderLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson(generalPartnershipCustomerId, Some(soleTraderLeadPartner)), OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())
@@ -399,7 +420,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .user.isAuthorised
           .regRepo.insertIntoDb(generalPartnershipWithUkCompanyPartner, repo.insert)
 
-        stubPost("/vatreg/test-only/vat/subscription", testPartnership(generalPartnershipCustomerId, Some(ukCompanyLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson(generalPartnershipCustomerId, Some(ukCompanyLeadPartner)), OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())
@@ -417,7 +438,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .user.isAuthorised
           .regRepo.insertIntoDb(limitedPartnershipWithScotPartnershipPartner, repo.insert)
 
-        stubPost("/vatreg/test-only/vat/subscription", testPartnership(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner)), OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())
@@ -435,7 +456,30 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .user.isAuthorised
           .regRepo.insertIntoDb(limitedLiabilityPartnership, repo.insert)
 
-        stubPost("/vatreg/test-only/vat/subscription", testPartnership(limitedLiabilityPartnershipCustomerId, None), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson(limitedLiabilityPartnershipCustomerId, None), OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+        disable(ShortOrgName)
+      }
+    }
+
+    "the user is a UK Company registering a VAT Group" should {
+      "return OK if the submission is successful" in new Setup {
+        enable(ShortOrgName)
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(vatGroupVatscheme, repo.insert)
+
+        stubPost(
+          "/vatreg/test-only/vat/subscription",
+          testSubmissionJson(vatGroupCustomerId, Some(ukCompanyLeadEntity), GroupRegistration, Some(corporateBodyRegisteredJson)),
+          OK,
+          Json.stringify(testSubmissionResponse)
+        )
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())
