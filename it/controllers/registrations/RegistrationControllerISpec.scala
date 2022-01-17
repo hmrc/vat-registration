@@ -26,6 +26,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
     .build()
 
   val registrationsUrl = "/registrations"
+  val testApplicationReference = "Application Reference"
 
   def registrationUrl(regID: String) = s"$registrationsUrl/$regID"
 
@@ -95,6 +96,15 @@ class RegistrationControllerISpec extends IntegrationStubbing {
 
         res.status mustBe OK
         res.json mustBe Json.toJson(testVatScheme)
+      }
+      "return OK with the registration JSON when the registration has an optional application reference" in new SetupHelper {
+        given.user.isAuthorised
+        insertIntoDb(testVatScheme.copy(applicationReference = Some(testApplicationReference)))
+
+        val res = await(client(registrationUrl(testRegId)).get)
+
+        res.status mustBe OK
+        res.json mustBe Json.toJson(testVatScheme.copy(applicationReference = Some(testApplicationReference)))
       }
     }
     "the registration donesn't exists" must {
