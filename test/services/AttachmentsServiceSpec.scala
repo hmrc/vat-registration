@@ -19,6 +19,7 @@ package services
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
+import models.GroupRegistration
 import models.api._
 import models.submission.{LtdLiabilityPartnership, NETP, Partnership}
 import play.api.test.Helpers._
@@ -39,7 +40,8 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   val testPartnershipVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(partnershipEligibilityData))
   val llpEligibilityData = testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)
   val testLlpVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(llpEligibilityData))
-
+  val vatGroupEligibilityData = testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)
+  val testVatGroupVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(vatGroupEligibilityData))
 
   "getAttachmentsList" when {
     "attachments are required" must {
@@ -65,6 +67,14 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
         val res = await(Service.getAttachmentList(testRegId))
 
         res mustBe Set(VAT2)
+      }
+
+      "return VAT51 in the attachment list fot a Group Registration" in {
+        mockGetVatScheme(testRegId)(Some(testVatGroupVatScheme))
+
+        val res = await(Service.getAttachmentList(testRegId))
+
+        res mustBe Set(VAT51)
       }
     }
     "attachments are not required" must {

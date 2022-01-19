@@ -16,8 +16,9 @@
 
 package services
 
-import models.api.{AttachmentType, Attachments, IdentityEvidence, VAT2, VatScheme}
-import models.submission.{LtdPartnership, NETP, NonUkNonEstablished, Partnership, ScotLtdPartnership, ScotPartnership}
+import models.GroupRegistration
+import models.api._
+import models.submission._
 import repositories.VatSchemeRepository
 
 import javax.inject.{Inject, Singleton}
@@ -38,7 +39,8 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   def attachmentList(vatScheme: VatScheme): Set[AttachmentType] = {
     Set(
       getIdentityEvidenceAttachment(vatScheme),
-      getVat2Attachment(vatScheme)
+      getVat2Attachment(vatScheme),
+      getVat51Attachment(vatScheme)
     ).flatten
   }
 
@@ -58,5 +60,12 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
     val allPartnershipsExceptLLP = List(Partnership, LtdPartnership, ScotPartnership, ScotLtdPartnership)
     val needVat2ForPartnership = vatScheme.eligibilitySubmissionData.exists(data => allPartnershipsExceptLLP.contains(data.partyType))
     if (needVat2ForPartnership) Some(VAT2) else None
+  }
+
+  private def getVat51Attachment(vatScheme: VatScheme): Option[AttachmentType] = {
+    vatScheme.eligibilitySubmissionData.map(_.registrationReason) match {
+      case Some(GroupRegistration) => Some(VAT51)
+      case _ => None
+    }
   }
 }
