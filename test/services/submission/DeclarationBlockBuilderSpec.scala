@@ -219,11 +219,22 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       }
     }
     "throw an exception if the user hasn't answered the declaration question" in {
-      mockGetVatScheme(testRegId)(Some(testVatScheme))
+      mockGetVatScheme(testRegId)(Some(testFullVatScheme.copy(confirmInformationDeclaration = None)))
 
-      intercept[InternalServerException] {
+      val res = intercept[InternalServerException] {
         await(TestBuilder.buildDeclarationBlock(testRegId))
       }
+
+      res.getMessage mustBe "Could not construct declaration block because the following are missing: declaration"
+    }
+    "throw an exception if vat scheme doesn't contain applicant details" in {
+      mockGetVatScheme(testRegId)(Some(testFullVatScheme.copy(applicantDetails = None)))
+
+      val res = intercept[InternalServerException] {
+        await(TestBuilder.buildDeclarationBlock(testRegId))
+      }
+
+      res.getMessage mustBe "Could not construct declaration block because the following are missing: applicantDetails"
     }
     "throw an exception when the VAT scheme is missing" in {
       mockGetVatScheme(testRegId)(None)

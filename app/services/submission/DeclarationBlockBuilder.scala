@@ -80,8 +80,8 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRe
               })
             )
           case _ =>
-            val appDetailsMissing = scheme.applicantDetails.map(_ => "applicantDetails")
-            val declarationMissing = scheme.confirmInformationDeclaration.map(_ => "declaration")
+            val appDetailsMissing = scheme.applicantDetails.fold(Option("applicantDetails"))(_ => None)
+            val declarationMissing = scheme.confirmInformationDeclaration.fold(Option("declaration"))(_ => None)
             val message = Seq(appDetailsMissing, declarationMissing).flatten.mkString(", ")
             throw new InternalServerException(s"Could not construct declaration block because the following are missing: $message")
         }
