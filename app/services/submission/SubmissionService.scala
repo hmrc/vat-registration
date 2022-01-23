@@ -17,12 +17,14 @@
 package services.submission
 
 import cats.instances.FutureInstances
-import common.exceptions._
 import connectors.VatSubmissionConnector
 import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
+import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import models.api.{Submitted, VatScheme}
+import models.nonrepudiation.NonRepudiationSubmissionAccepted
 import play.api.Logging
+import play.api.http.Status.{BAD_REQUEST, CONFLICT}
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import repositories._
@@ -31,7 +33,7 @@ import services.{NonRepudiationService, TrafficManagementService}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
+import uk.gov.hmrc.http.{BadRequestException, ConflictException, HeaderCarrier, InternalServerException}
 import utils.{IdGenerator, TimeMachine}
 
 import java.util.Base64
@@ -54,57 +56,92 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
   def submitVatRegistration(regId: String, userHeaders: Map[String, String])
                            (implicit hc: HeaderCarrier,
                             request: Request[_]): Future[String] = {
-    for {
-      vatScheme <- registrationRepository.retrieveVatScheme(regId)
-        .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
-      _ <- vatScheme.status match {
-        case VatRegStatus.draft | VatRegStatus.locked =>
-          registrationRepository.lockSubmission(regId)
-        case _ =>
-          throw InvalidSubmissionStatus(s"VAT submission status was in a ${vatScheme.status} state")
-      }
-      submission <- submissionPayloadBuilder.buildSubmissionPayload(regId)
-      formBundleId <- submit(submission, vatScheme, regId, userHeaders) // TODO refactor so this returns a value from the VatRegStatus enum or maybe an ADT
-      _ <- registrationRepository.finishRegistrationSubmission(regId, VatRegStatus.submitted, formBundleId)
-      _ <- trafficManagementService.updateStatus(regId, Submitted)
-    } yield {
-      formBundleId
+    {
+      for {
+        _ <- registrationRepository.updateSubmissionStatus(regId, VatRegStatus.locked)
+        vatScheme <- registrationRepository.retrieveVatScheme(regId)
+          .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
+        submission <- submissionPayloadBuilder.buildSubmissionPayload(regId)
+        submissionResponse <- submit(submission, regId)
+        formBundleId <- handleResponse(submissionResponse, regId)
+        _ <- submitToNrs(formBundleId, vatScheme, userHeaders)
+        _ <- auditSubmission(formBundleId, vatScheme)
+        _ <- trafficManagementService.updateStatus(regId, Submitted)
+      } yield formBundleId
+    } recover {
+      case exception: ConflictException =>
+        registrationRepository.updateSubmissionStatus(regId, VatRegStatus.duplicateSubmission)
+        throw exception
+      case exception: BadRequestException =>
+        registrationRepository.updateSubmissionStatus(regId, VatRegStatus.failed)
+        throw exception
+      case exception =>
+        registrationRepository.updateSubmissionStatus(regId, VatRegStatus.failedRetryable)
+        throw exception
     }
   }
 
-  // scalastyle:off
   private[services] def submit(submission: JsObject,
-                               vatScheme: VatScheme,
-                               regId: String,
-                               userHeaders: Map[String, String]
+                               regId: String
                               )(implicit hc: HeaderCarrier,
-                                request: Request[_]): Future[String] = {
+                                request: Request[_]): Future[VatSubmissionResponse] = {
 
     val correlationId = idGenerator.createId
     logger.info(s"VAT Submission API Correlation Id: $correlationId for the following regId: $regId")
 
-    authorised().retrieve(credentials and affinityGroup and agentCode) {
-      case Some(credentials) ~ Some(affinity) ~ optAgentCode =>
-        vatSubmissionConnector.submit(submission, correlationId, credentials.providerId).map { formBundleId =>
-          auditService.audit(
-            submissionAuditBlockBuilder.buildAuditJson(
-              vatScheme = vatScheme,
-              authProviderId = credentials.providerId,
-              affinityGroup = affinity,
-              optAgentReferenceNumber = optAgentCode,
-              formBundleId = formBundleId
-            )
-          )
-
-          val encodedHtml = vatScheme.nrsSubmissionPayload
-            .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
-          val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
-
-          nonRepudiationService.submitNonRepudiation(regId, payloadString, timeMachine.timestamp, formBundleId, userHeaders)
-
-          formBundleId
-        }
+    authorised().retrieve(credentials) { case Some(credentials) =>
+      vatSubmissionConnector.submit(submission, correlationId, credentials.providerId)
     }
   }
 
+  private[services] def handleResponse(vatSubmissionStatus: VatSubmissionResponse,
+                                       regId: String)(implicit hc: HeaderCarrier,
+                                                      request: Request[_]): Future[String] = {
+    vatSubmissionStatus.fold(
+      failure =>
+        failure.status match {
+          case CONFLICT => throw new ConflictException(failure.body)
+          case BAD_REQUEST => throw new BadRequestException(failure.body)
+          case _ => throw new InternalServerException(failure.body)
+        },
+      success =>
+        registrationRepository
+          .finishRegistrationSubmission(regId, VatRegStatus.submitted, success.formBundleId)
+          .map(_ => success.formBundleId)
+    )
+  }
+
+  private[services] def submitToNrs(formBundleId: String,
+                                    vatScheme: VatScheme,
+                                    userHeaders: Map[String, String])
+                                   (implicit hc: HeaderCarrier,
+                                    request: Request[_]): Future[Unit] = {
+    val encodedHtml = vatScheme.nrsSubmissionPayload
+      .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
+    val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
+
+    nonRepudiationService.submitNonRepudiation(vatScheme.id, payloadString, timeMachine.timestamp, formBundleId, userHeaders)
+
+    Future.successful()
+  }
+
+  private[services] def auditSubmission(formBundleId: String,
+                                        vatScheme: VatScheme)
+                                       (implicit hc: HeaderCarrier,
+                                        request: Request[_]): Future[Unit] = {
+    authorised().retrieve(credentials and affinityGroup and agentCode) {
+      case Some(credentials) ~ Some(affinity) ~ optAgentCode =>
+        auditService.audit(
+          submissionAuditBlockBuilder.buildAuditJson(
+            vatScheme = vatScheme,
+            authProviderId = credentials.providerId,
+            affinityGroup = affinity,
+            optAgentReferenceNumber = optAgentCode,
+            formBundleId = formBundleId
+          )
+        )
+
+        Future.successful()
+    }
+  }
 }

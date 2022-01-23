@@ -178,10 +178,10 @@ trait VatMocks extends HttpClientMock {
         .thenReturn(serviceError[String](GenericDatabaseError(exception, Some("regId"))))
     }
 
-    def mockGetDocumentStatus(json: JsValue): Unit = {
+    def mockGetDocumentStatus(status: VatRegStatus.Value): Unit = {
       val idMatcher: String = anyString()
       when(mockVatRegistrationService.getStatus(idMatcher))
-        .thenReturn(Future.successful(json))
+        .thenReturn(Future.successful(status))
     }
 
     def mockGetAcknowledgementReferenceExistsError(): Unit = {

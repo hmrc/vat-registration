@@ -42,7 +42,6 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
   lazy val vatRestartUrl: String = backendConfig.servicesConfig.getString("api.vatRestartURL")
   lazy val vatCancelUrl: String = backendConfig.servicesConfig.getString("api.vatCancelURL")
 
-  private val cancelStatuses: Seq[VatRegStatus.Value] = Seq(VatRegStatus.draft, VatRegStatus.invalid)
   private val logger = LoggerFactory.getLogger(getClass)
 
   private def repositoryErrorHandler[T]: PartialFunction[Throwable, Either[LeftState, T]] = {
@@ -58,20 +57,12 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
         .map(Right(_)).recover(repositoryErrorHandler)
     }
 
-  def getStatus(regId: String): Future[JsValue] = {
+  def getStatus(regId: String): Future[VatRegStatus.Value] = {
     registrationRepository.retrieveVatScheme(regId) map {
       case Some(registration) =>
-        val base = Json.obj(
-          "status" -> registration.status
-        )
-
-        val ackRef = registration.acknowledgementReference.fold(Json.obj())(ref => Json.obj("ackRef" -> ref))
-        val restartUrl = if (registration.status.equals(VatRegStatus.rejected)) Json.obj("restartURL" -> vatRestartUrl) else Json.obj()
-        val cancelUrl = if (cancelStatuses.contains(registration.status)) Json.obj("cancelURL" -> vatCancelUrl.replace(":regID", regId)) else Json.obj()
-
-        base ++ ackRef ++ restartUrl ++ cancelUrl
+        registration.status
       case None =>
-        logger.warn(s"[getStatus] - No VAT registration document found for ${regId}")
+        logger.warn(s"[getStatus] - No VAT registration document found for $regId")
         throw new MissingRegDocument(regId)
     }
   }

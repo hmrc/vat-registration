@@ -260,9 +260,9 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
     }
   }
 
-  def lockSubmission(regId: String): Future[Boolean] = {
+  def updateSubmissionStatus(regId: String, status: VatRegStatus.Value): Future[Boolean] = {
     val modifier = toBSON(Json.obj(
-      "status" -> VatRegStatus.locked
+      "status" -> status
     )).get
 
     collection.update.one(registrationSelector(regId), BSONDocument("$set" -> modifier)).map(_.ok)

@@ -496,7 +496,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       given
         .user.isAuthorised
         .regRepo.insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft), repo.insert)
-        .subscriptionApi.respondsWith(OK)
 
       val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -511,7 +510,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       given
         .user.isAuthorised
         .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
-        .subscriptionApi.respondsWith(BAD_GATEWAY)
+
+      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, BAD_GATEWAY, Json.stringify(testSubmissionResponse))
 
       val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -520,19 +520,36 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       res.status mustBe INTERNAL_SERVER_ERROR
     }
 
-    "return INTERNAL_SERVER_ERROR if the subscription API returns BAD_REQUEST" in new Setup {
+    "return BAD_REQUEST if the subscription API returns BAD_REQUEST" in new Setup {
       enable(StubSubmission)
 
       given
         .user.isAuthorised
         .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
-        .subscriptionApi.respondsWith(BAD_REQUEST)
+
+      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, BAD_REQUEST, Json.stringify(testSubmissionResponse))
 
       val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
       )
 
-      res.status mustBe INTERNAL_SERVER_ERROR
+      res.status mustBe BAD_REQUEST
+    }
+
+    "return CONFLICT if the subscription API returns CONFLICT" in new Setup {
+      enable(StubSubmission)
+
+      given
+        .user.isAuthorised
+        .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
+
+      stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, CONFLICT, Json.stringify(testSubmissionResponse))
+
+      val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+        .put(Json.obj())
+      )
+
+      res.status mustBe CONFLICT
     }
   }
 

@@ -17,7 +17,7 @@
 package connectors
 
 import config.BackendConfig
-import httpparsers.VatSubmissionHttpParser.VatSubmissionHttpReads
+import httpparsers.VatSubmissionHttpParser.{VatSubmissionHttpReads, VatSubmissionResponse}
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http._
 
@@ -29,7 +29,7 @@ class VatSubmissionConnector @Inject()(appConfig: BackendConfig,
                                        http: HttpClient
                                       )(implicit executionContext: ExecutionContext) {
 
-  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[String] = {
+  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[VatSubmissionResponse] = {
 
     val submissionHeaders = Seq(
       "Authorization" -> appConfig.urlHeaderAuthorization,
@@ -39,7 +39,7 @@ class VatSubmissionConnector @Inject()(appConfig: BackendConfig,
       "Content-Type" -> "application/json"
     ) ++ hc.headers(Seq("X-Session-ID"))
 
-    http.POST[JsObject, String](
+    http.POST[JsObject, VatSubmissionResponse](
       url = appConfig.vatSubmissionUrl,
       body = submissionData,
       headers = submissionHeaders
