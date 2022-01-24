@@ -17,6 +17,7 @@
 package controllers
 
 import common.exceptions.MissingRegDocument
+import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockRegistrationService
@@ -31,12 +32,12 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
 import repositories.VatSchemeRepository
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
 
 import java.time.LocalDate
 import scala.concurrent.Future
 
-class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationService {
+class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationService {
 
   import play.api.test.Helpers._
 
@@ -181,15 +182,9 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
     "Calling getDocumentStatus" should {
 
       "return a Ok response when the user logged in" in new Setup {
-        val json: JsValue = Json.parse(
-          """
-            | {
-            |   "status": "draft",
-            |   "ackRef": "testAckRef"
-            | }
-          """.stripMargin)
+        val json: JsValue = Json.toJson(VatRegStatus.draft)
         AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        ServiceMocks.mockGetDocumentStatus(json)
+        ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
         val result: Future[Result] = controller.getDocumentStatus(testRegId)(FakeRequest())
         result returnsStatus OK
@@ -235,10 +230,43 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
       status(response) mustBe Status.FORBIDDEN
     }
 
+    "return Conflict for a duplicate submission" in new Setup {
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      ServiceMocks.mockGetDocumentStatus(VatRegStatus.duplicateSubmission)
+
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
+        Json.obj("userHeaders" -> testUserHeaders)
+      ))
+
+      status(response) mustBe CONFLICT
+    }
+
+    "return TooManyRequests if there is already a submission being processed" in new Setup {
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      ServiceMocks.mockGetDocumentStatus(VatRegStatus.locked)
+
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
+        Json.obj("userHeaders" -> testUserHeaders)
+      ))
+
+      status(response) mustBe TOO_MANY_REQUESTS
+    }
+
+    "return Ok if the submission has already been completed" in new Setup {
+      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
+      ServiceMocks.mockGetDocumentStatus(VatRegStatus.submitted)
+
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
+        Json.obj("userHeaders" -> testUserHeaders)
+      ))
+
+      status(response) mustBe OK
+    }
+
     "return an exception if the Submission Service can't make a DES submission" in new Setup {
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme)
-
+      ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
         ArgumentMatchers.eq(testRegId),
@@ -253,9 +281,10 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
       response mustBe UpstreamErrorResponse("message", 501)
     }
 
-    "return an Ok response with acknowledgement reference for a valid submit" in new Setup {
+    "return an Ok response for a valid submit" in new Setup {
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme)
+      ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
         ArgumentMatchers.eq(testRegId),
@@ -267,12 +296,12 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
         Json.obj("userHeaders" -> testUserHeaders)
       ))
       status(response) mustBe Status.OK
-      contentAsJson(response) mustBe Json.toJson("VRS00000000001")
     }
-    "return an Ok response with acknowledgement reference for a valid submission with partners" in new Setup {
+    "return an Ok response for a valid submission with partners" in new Setup {
       val testPartner = Partner(testSoleTraderEntity, Individual, isLeadPartner = true)
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme.copy(partners = Some(PartnersSection(List(testPartner)))))
+      ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
         ArgumentMatchers.eq(testRegId),
@@ -284,7 +313,6 @@ class VatRegistrationCreatedControllerSpec extends VatRegSpec with VatRegistrati
         Json.obj("userHeaders" -> testUserHeaders)
       ))
       status(response) mustBe Status.OK
-      contentAsJson(response) mustBe Json.toJson("VRS00000000001")
     }
   }
 

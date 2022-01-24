@@ -170,12 +170,12 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       repository.insert(vatSchemeWithEligibilityData).flatMap(_ => repository.deleteVatScheme(vatSchemeWithEligibilityData.id)) returns true
     }
   }
-  "Calling lockSubmission" should {
+  "Calling updateSubmissionStatus" should {
     val testAckRef = "testAckRef"
-    "lock the vat scheme" in new Setup {
+    "set the status" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
         insert <- repository.insert(vatSchemeWithEligibilityData)
-        update <- repository.lockSubmission(vatSchemeWithEligibilityData.id)
+        update <- repository.updateSubmissionStatus(vatSchemeWithEligibilityData.id, VatRegStatus.locked)
         Some(updatedScheme) <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.id)
       } yield updatedScheme.status
 
@@ -191,15 +191,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       } yield updatedScheme.status
 
       await(result) mustBe VatRegStatus.submitted
-    }
-    "update the vat scheme to held with the provided ackref" in new Setup {
-      val result: Future[VatRegStatus.Value] = for {
-        insert <- repository.insert(vatSchemeWithEligibilityData)
-        update <- repository.finishRegistrationSubmission(vatSchemeWithEligibilityData.id, VatRegStatus.held, testFormBundleId)
-        Some(updatedScheme) <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.id)
-      } yield updatedScheme.status
-
-      await(result) mustBe VatRegStatus.held
     }
   }
   "updateTradingDetails" should {

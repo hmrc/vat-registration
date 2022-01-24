@@ -37,12 +37,6 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
     mockRegistrationMongoRepository
   )
 
-  private def mockGetBusinessContact(regId: String)(response: Future[Option[BusinessContact]]): OngoingStubbing[Future[Option[BusinessContact]]] =
-    when(mockBusinessContactService.getBusinessContact(
-      ArgumentMatchers.eq(regId)
-    )).thenReturn(response)
-
-
   val testPhone = "01234 567890"
   val testContact = DigitalContact(
     email = testEmail,

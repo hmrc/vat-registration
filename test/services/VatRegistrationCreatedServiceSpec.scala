@@ -118,7 +118,7 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         when(mockRegistrationMongoRepository.deleteVatScheme(ArgumentMatchers.any()))
           .thenReturn(Future.successful(true))
 
-        await(service.deleteVatScheme(testRegId, VatRegStatus.draft, VatRegStatus.rejected)) mustBe true
+        await(service.deleteVatScheme(testRegId, VatRegStatus.draft)) mustBe true
       }
     }
 
@@ -128,7 +128,7 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.any()))
           .thenReturn(Future.successful(None))
 
-        intercept[MissingRegDocument](await(service.deleteVatScheme(testRegId, VatRegStatus.draft, VatRegStatus.rejected)))
+        intercept[MissingRegDocument](await(service.deleteVatScheme(testRegId, VatRegStatus.draft)))
       }
     }
 
@@ -138,7 +138,7 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.any()))
           .thenReturn(Future.successful(Some(testVatScheme.copy(status = VatRegStatus.submitted))))
 
-        intercept[InvalidSubmissionStatus](await(service.deleteVatScheme(testRegId, VatRegStatus.draft, VatRegStatus.rejected)))
+        intercept[InvalidSubmissionStatus](await(service.deleteVatScheme(testRegId, VatRegStatus.draft)))
       }
     }
   }
@@ -158,33 +158,10 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
   }
 
   "call to getStatus" should {
-    "return a correct JsValue" in new Setup {
-      val expectedJson: JsValue = Json.parse(
-        """
-          |{
-          | "status":"draft",
-          | "cancelURL":"/test/uri"
-          |}
-        """.stripMargin)
-
+    "return a correct status" in new Setup {
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(testVatScheme)))
 
-      await(service.getStatus(testRegId)) mustBe expectedJson
-    }
-
-    "return a correct JsValue with ackRef" in new Setup {
-      val vatSchemeWithAckRefNum: VatScheme = testVatScheme.copy(acknowledgementReference = Some(testAckReference))
-      val expectedJson: JsValue = Json.parse(
-        s"""
-           |{
-           |  "status":"draft",
-           |  "ackRef":"BRPY000000000001",
-           |  "cancelURL":"/test/uri"
-           |}
-          """.stripMargin)
-
-      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatSchemeWithAckRefNum)))
-      await(service.getStatus(testRegId)) mustBe expectedJson
+      await(service.getStatus(testRegId)) mustBe VatRegStatus.draft
     }
   }
 

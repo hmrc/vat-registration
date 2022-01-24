@@ -20,6 +20,7 @@ import auth.{Authorisation, AuthorisationResource}
 import cats.instances.FutureInstances
 import common.exceptions.{InvalidSubmissionStatus, LeftState}
 import enums.VatRegStatus
+import enums.VatRegStatus._
 import models.api._
 import play.api.libs.json._
 import play.api.mvc._
@@ -30,7 +31,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class VatRegistrationController @Inject()(val registrationService: VatRegistrationService,
@@ -86,16 +87,15 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
 
   def submitVATRegistration(regId: String): Action[JsValue] = Action.async(parse.json) {
     implicit request =>
-      isAuthorised(regId) { authResult =>
+      isAuthenticated { _ =>
         val userHeaders = (request.body \ "userHeaders").asOpt[Map[String, String]].getOrElse(Map.empty)
 
-        authResult.ifAuthorised(regId, "VatRegistrationController", "submitVATRegistration") {
-          submissionService.submitVatRegistration(regId, userHeaders).map { ackRefs =>
-            Ok(Json.toJson(ackRefs))
-          } recover {
-            case ex =>
-              logger.warn(s"Submission failed - ${ex.getMessage}")
-              throw ex
+        registrationService.getStatus(regId).flatMap {
+          case `locked` => Future.successful(TooManyRequests(Json.obj()))
+          case `submitted` => Future.successful(Ok(Json.obj()))
+          case `duplicateSubmission` => Future.successful(Conflict(Json.obj()))
+          case _ => submissionService.submitVatRegistration(regId, userHeaders).map { _ =>
+            Ok(Json.obj())
           }
         }
       }
@@ -132,7 +132,7 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
     implicit request =>
       isAuthorised(regId) { authResult =>
         authResult.ifAuthorised(regId, "VatRegistrationController", "deleteVatScheme") {
-          registrationService.deleteVatScheme(regId, VatRegStatus.draft, VatRegStatus.rejected) map { deleted =>
+          registrationService.deleteVatScheme(regId, VatRegStatus.draft) map { deleted =>
             if (deleted) Ok else InternalServerError
           } recover {
             case _: InvalidSubmissionStatus => PreconditionFailed

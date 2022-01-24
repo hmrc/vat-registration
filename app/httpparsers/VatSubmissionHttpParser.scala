@@ -18,7 +18,7 @@ package httpparsers
 
 import play.api.http.Status.{BAD_REQUEST, CONFLICT, OK}
 import play.api.libs.json.JsSuccess
-import uk.gov.hmrc.http.{ConflictException, HttpReads, HttpResponse, InternalServerException}
+import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object VatSubmissionHttpParser {
 
@@ -28,31 +28,36 @@ object VatSubmissionHttpParser {
   val InvalidCredentialIdKey = "INVALID_CREDENTIALID"
   val FormBundleIdKey = "formBundle"
 
-  implicit object VatSubmissionHttpReads extends HttpReads[String] {
-    override def read(method: String, url: String, response: HttpResponse): String = {
+  type VatSubmissionResponse = Either[VatSubmissionFailure, VatSubmissionSuccess]
+
+  implicit object VatSubmissionHttpReads extends HttpReads[VatSubmissionResponse] {
+    override def read(method: String, url: String, response: HttpResponse): VatSubmissionResponse = {
       response.status match {
         case OK =>
-          (response.json \ FormBundleIdKey).validate[String]
-            .getOrElse(throw new InternalServerException("VAT submission API - no form bundle ID in response"))
+          (response.json \ FormBundleIdKey).validate[String].asEither
+            .map(VatSubmissionSuccess)
+            .left.map(_ => VatSubmissionFailure(OK, "VAT submission API - no form bundle ID in response"))
         case BAD_REQUEST =>
           (response.json \ CodeKey).validate[String] match {
             case JsSuccess(InvalidPayloadKey, _) =>
-              throw new InternalServerException("VAT Submission API - invalid payload")
+              Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid payload"))
             case JsSuccess(InvalidSessionIdKey, _) =>
-              throw new InternalServerException("VAT Submission API - invalid Session ID")
+              Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid Session ID"))
             case JsSuccess(InvalidCredentialIdKey, _) =>
-              throw new InternalServerException("VAT Submission API - invalid Credential ID")
+              Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid Credential ID"))
             case _ =>
-              throw new InternalServerException(s"Unexpected Json response for this status: $BAD_REQUEST")
+              Left(VatSubmissionFailure(BAD_REQUEST, s"Unexpected response from VAT Submission API - status = ${response.status}"))
           }
         case CONFLICT =>
-          throw new ConflictException("VAT Submission API - application already in progress")
+          Left(VatSubmissionFailure(CONFLICT, "VAT Submission API - application already in progress"))
         case _ =>
-          throw new InternalServerException(
-            s"Unexpected response from VAT Submission API - status = ${response.status}, body = ${response.body}"
-          )
+          Left(VatSubmissionFailure(response.status, s"Unexpected response from VAT Submission API - status = ${response.status}"))
       }
     }
   }
 
 }
+
+case class VatSubmissionSuccess(formBundleId: String)
+
+case class VatSubmissionFailure(status: Int, body: String)

@@ -31,32 +31,36 @@ class VatSubmissionHttpParserSpec extends PlaySpec {
 
   "VatSubmissionHttpParser" should {
     "successfully parse the formBundleId with status OK" in {
-      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, Json.stringify(testResponse))) mustBe testFormBundleId
+      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, Json.stringify(testResponse))) mustBe Right(VatSubmissionSuccess(testFormBundleId))
+    }
+
+    "fail when status OK does not contain a formBundleId" in {
+      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, "{}")) mustBe Left(VatSubmissionFailure(OK, "VAT submission API - no form bundle ID in response"))
     }
 
     "fail when parsing the response with status BAD_REQUEST" when {
       "the code is INVALID_PAYLOAD" in {
         val jsonBody = Json.obj(VatSubmissionHttpParser.CodeKey -> VatSubmissionHttpParser.InvalidPayloadKey).toString()
 
-        intercept[InternalServerException](VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)))
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid payload"))
       }
 
       "the code is INVALID_CREDENTIALID" in {
         val jsonBody = Json.obj(VatSubmissionHttpParser.CodeKey -> VatSubmissionHttpParser.InvalidCredentialIdKey).toString()
 
-        intercept[InternalServerException](VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)))
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid Credential ID"))
       }
 
       "the code is INVALID_SESSIONID" in {
         val jsonBody = Json.obj(VatSubmissionHttpParser.CodeKey -> VatSubmissionHttpParser.InvalidSessionIdKey).toString()
 
-        intercept[InternalServerException](VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)))
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid Session ID"))
       }
     }
 
     "throw an INTERNAL SERVER EXCEPTION" when {
       "the VAT Submission API returns an unexpected response" in {
-        intercept[InternalServerException](VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(INTERNAL_SERVER_ERROR, "{}")))
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(INTERNAL_SERVER_ERROR, "{}")) mustBe Left(VatSubmissionFailure(INTERNAL_SERVER_ERROR, "Unexpected response from VAT Submission API - status = 500"))
       }
     }
 
