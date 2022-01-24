@@ -45,7 +45,17 @@ class TrafficManagementServiceSpec extends VatRegSpec
       "traffic-management.quotas.netp-enrolled" -> 2,
       "traffic-management.quotas.non-uk-company-enrolled" -> 2,
       "traffic-management.quotas.reg-society-enrolled" -> 2,
-      "traffic-management.quotas.charitable-incorp-org-enrolled" -> 2
+      "traffic-management.quotas.charitable-incorp-org-enrolled" -> 2,
+      "traffic-management.quotas.partnership-enrolled" -> 2,
+      "traffic-management.quotas.partnership" -> 2,
+      "traffic-management.quotas.limited-partnership-enrolled" -> 2,
+      "traffic-management.quotas.limited-partnership" -> 2,
+      "traffic-management.quotas.scottish-partnership" -> 2,
+      "traffic-management.quotas.scottish-partnership-enrolled" -> 2,
+      "traffic-management.quotas.scottish-limited-partnership" -> 2,
+      "traffic-management.quotas.scottish-limited-partnership-enrolled" -> 2,
+      "traffic-management.quotas.limited-liability-partnership-enrolled" -> 2,
+      "traffic-management.quotas.limited-liability-partnership" -> 2
     ))
     .build()
 
@@ -87,7 +97,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
 
       res mustBe QuotaReached
     }
-    Seq(UkCompany, Individual, NETP, NonUkNonEstablished, RegSociety, CharitableOrg).foreach { partyType =>
+    Seq(UkCompany, Individual, NETP, NonUkNonEstablished, RegSociety, CharitableOrg, Partnership, LtdPartnership, ScotPartnership, ScotLtdPartnership, LtdLiabilityPartnership).foreach { partyType =>
       s"return Allocated when the quota has not been exceeded for $partyType" in new Setup() {
         mockCurrentTotal(partyType, isEnrolled = true)(1)
         mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(

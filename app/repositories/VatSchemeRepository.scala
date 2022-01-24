@@ -26,17 +26,17 @@ import models.submission.PartyType
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.Cursor.FailOnError
+import reactivemongo.api.{ReadPreference, WriteConcern}
 import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.api.{ReadPreference, WriteConcern}
 import reactivemongo.bson.{BSONDocument, BSONInteger, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 import utils.{JsonErrorUtil, TimeMachine}
 
-import java.time.{LocalDate, LocalDateTime, ZoneOffset}
+import java.time.ZoneOffset
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -186,7 +186,7 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
       upsert = true,
       sort = None,
       fields = Some(Json.obj("_id" -> 0)),
-      bypassDocumentValidation = true,
+      bypassDocumentValidation = false,
       writeConcern = WriteConcern.Default,
       maxTime = None,
       collation = None,
@@ -196,8 +196,8 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
       writeResult.result[JsValue]
     }.recoverWith {
       case e: Exception =>
-        logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: $regId, ${e.printStackTrace}")
-        throw e
+        logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: $regId")
+        throw new InternalServerException(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: $regId, error: ${e.getMessage}")
     }
   }
 
@@ -235,8 +235,8 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
       }
     } recover {
       case e =>
-        logger.warn(s"Unable to update ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId, Error: ${e.getMessage}")
-        throw e
+        logger.warn(s"Unable to update ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId")
+        throw new InternalServerException(s"Unable to update section ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId, error: ${e.getMessage}")
     }
   }
 

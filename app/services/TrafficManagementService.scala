@@ -49,6 +49,16 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       case RegSociety => config.DailyQuotas.regSociety
       case CharitableOrg if isEnrolled => config.DailyQuotas.enrolledCharitableIncorpOrg
       case CharitableOrg => config.DailyQuotas.charitableIncorpOrg
+      case Partnership if isEnrolled => config.DailyQuotas.enrolledPartnership
+      case Partnership => config.DailyQuotas.partnership
+      case LtdPartnership if isEnrolled => config.DailyQuotas.enrolledLtdPartnership
+      case LtdPartnership => config.DailyQuotas.ltdPartnership
+      case ScotPartnership if isEnrolled => config.DailyQuotas.enrolledScotPartnership
+      case ScotPartnership => config.DailyQuotas.scotPartnership
+      case ScotLtdPartnership if isEnrolled => config.DailyQuotas.enrolledScotLtdPartnership
+      case ScotLtdPartnership => config.DailyQuotas.scotLtdPartnership
+      case LtdLiabilityPartnership if isEnrolled => config.DailyQuotas.enrolledLtdLiabilityPartnership
+      case LtdLiabilityPartnership => config.DailyQuotas.ltdLiabilityPartnership
       case Trust if isEnrolled => config.DailyQuotas.enrolledTrust
       case Trust => config.DailyQuotas.trust
       case UnincorpAssoc if isEnrolled => config.DailyQuotas.enrolledUnincorpAssoc

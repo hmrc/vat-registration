@@ -69,7 +69,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
 
       val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
         .post(Json.obj(
-          "partyType" -> PartyType.toJsString(ScotPartnership),
+          "partyType" -> "NETP",
           "isEnrolled" -> true
         )))
 
