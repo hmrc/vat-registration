@@ -39,6 +39,7 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   def attachmentList(vatScheme: VatScheme): Set[AttachmentType] = {
     Set(
       getIdentityEvidenceAttachment(vatScheme),
+      getTransactorIdentityEvidenceAttachment(vatScheme),
       getVat2Attachment(vatScheme),
       getVat51Attachment(vatScheme)
     ).flatten
@@ -50,19 +51,24 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   def storeAttachmentDetails(regId: String, attachmentDetails: Attachments): Future[Attachments] =
     registrationRepository.updateBlock[Attachments](regId, attachmentDetails, attachmentDetailsKey)
 
-  private def getIdentityEvidenceAttachment(vatScheme: VatScheme): Option[AttachmentType] = {
+  private def getIdentityEvidenceAttachment(vatScheme: VatScheme): Option[IdentityEvidence.type] = {
     val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType))
     val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.identifiersMatch)
     if (needIdentityDoc || unverifiedPersonalDetails) Some(IdentityEvidence) else None
   }
 
-  private def getVat2Attachment(vatScheme: VatScheme): Option[AttachmentType] = {
+  private def getTransactorIdentityEvidenceAttachment(vatScheme: VatScheme): Option[TransactorIdentityEvidence.type] = {
+    val needIdentityDocuments = vatScheme.transactorDetails.exists(data => !data.personalDetails.identifiersMatch)
+    if (needIdentityDocuments) Some(TransactorIdentityEvidence) else None
+  }
+
+  private def getVat2Attachment(vatScheme: VatScheme): Option[VAT2.type] = {
     val allPartnershipsExceptLLP = List(Partnership, LtdPartnership, ScotPartnership, ScotLtdPartnership)
     val needVat2ForPartnership = vatScheme.eligibilitySubmissionData.exists(data => allPartnershipsExceptLLP.contains(data.partyType))
     if (needVat2ForPartnership) Some(VAT2) else None
   }
 
-  private def getVat51Attachment(vatScheme: VatScheme): Option[AttachmentType] = {
+  private def getVat51Attachment(vatScheme: VatScheme): Option[VAT51.type] = {
     vatScheme.eligibilitySubmissionData.map(_.registrationReason) match {
       case Some(GroupRegistration) => Some(VAT51)
       case _ => None

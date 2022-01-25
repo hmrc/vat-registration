@@ -36,6 +36,16 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   val testUnverifiedUserVatScheme = testFullVatScheme.copy(
     applicantDetails = Some(unverifiedUserApplicantDetails)
   )
+  val testUnverifiedTransactorVatScheme = testFullVatScheme.copy(
+    transactorDetails = Some(validTransactorDetails.copy(
+      personalDetails = validTransactorDetails.personalDetails.copy(
+        identifiersMatch = false
+      )
+    )),
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
+      isTransactor = true
+    ))
+  )
   val partnershipEligibilityData = testEligibilitySubmissionData.copy(partyType = Partnership)
   val testPartnershipVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(partnershipEligibilityData))
   val llpEligibilityData = testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)
@@ -59,6 +69,14 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
         val res = await(Service.getAttachmentList(testRegId))
 
         res mustBe Set(IdentityEvidence)
+      }
+
+      "return transactorIdentityEvidence in the attachment list fot a transactor with unverified personal details" in {
+        mockGetVatScheme(testRegId)(Some(testUnverifiedTransactorVatScheme))
+
+        val res = await(Service.getAttachmentList(testRegId))
+
+        res mustBe Set(TransactorIdentityEvidence)
       }
 
       "return VAT2 in the attachment list for a Partnership" in {
