@@ -39,5 +39,19 @@ class AttachmentTypeSpec extends VatRegSpec with VatRegistrationFixture {
         "VAT51" -> "3"
       )
     }
+
+    "parse a list containing transactorIdentityEvidence and filter it out when identityEvidence is present" in {
+      Json.toJson[Set[AttachmentType]](Set(TransactorIdentityEvidence, IdentityEvidence, VAT51))(AttachmentType.submissionWrites(Post)) mustBe Json.obj(
+        "identityEvidence" -> "3",
+        "VAT51" -> "3"
+      )
+    }
+
+    "parse a list containing transactorIdentityEvidence and map it to identityEvidence when it's not there in the first place" in {
+      Json.toJson[Set[AttachmentType]](Set(TransactorIdentityEvidence, VAT51))(AttachmentType.submissionWrites(Post)) mustBe Json.obj(
+        "identityEvidence" -> "3",
+        "VAT51" -> "3"
+      )
+    }
   }
 }

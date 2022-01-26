@@ -27,6 +27,7 @@ case object Attachment1614h extends AttachmentType
 case object VAT5L extends AttachmentType
 case object LandPropertyOtherDocs extends AttachmentType
 case object IdentityEvidence extends AttachmentType
+case object TransactorIdentityEvidence extends AttachmentType //fake attachment type, gets filtered out in the submission
 case object TaxRepresentativeAuthorisation extends AttachmentType
 case object TaxAgentAuthorisation extends AttachmentType
 case object OtherAttachments extends AttachmentType
@@ -41,6 +42,7 @@ object AttachmentType {
     VAT5L -> "VAT5L",
     LandPropertyOtherDocs -> "landPropertyOtherDocs",
     IdentityEvidence -> "identityEvidence",
+    TransactorIdentityEvidence -> "transactorIdentityEvidence",
     TaxRepresentativeAuthorisation -> "taxRepresentativeAuthorisation",
     TaxAgentAuthorisation -> "taxAgentAuthorisation",
     OtherAttachments -> "otherAttachments"
@@ -54,16 +56,21 @@ object AttachmentType {
 
   def submissionWrites(attachmentOption: AttachmentMethod): Writes[Set[AttachmentType]] = Writes { attachments =>
     Json.toJson(
-      attachments.map { attachmentType =>
-        map(attachmentType) -> {
-          if (attachmentOption == EmailMethod) {
-            Json.toJson[AttachmentMethod](Post)
-          }
-          else {
-            Json.toJson[AttachmentMethod](attachmentOption)
-          }
+      attachments
+        .map {
+          case TransactorIdentityEvidence => IdentityEvidence
+          case attachment => attachment
         }
-      }.toMap
+        .map { attachmentType =>
+          map(attachmentType) -> {
+            if (attachmentOption == EmailMethod) {
+              Json.toJson[AttachmentMethod](Post)
+            }
+            else {
+              Json.toJson[AttachmentMethod](attachmentOption)
+            }
+          }
+        }.toMap
     )
   }
 }
