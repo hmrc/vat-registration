@@ -18,14 +18,15 @@ package controllers.registrations
 
 import auth.{Authorisation, AuthorisationResource}
 import models.api.VatScheme
-import play.api.libs.json.{Format, JsObject, JsValue, Json}
+import play.api.libs.json.{Format, JsError, JsObject, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.RegistrationService
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RegistrationController @Inject()(val authConnector: AuthConnector,
@@ -95,16 +96,8 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
    */
   def upsertRegistration(regId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     isAuthenticated { internalId =>
-      registrationService.getRegistration[JsObject](internalId, regId).flatMap {
-        case Some(registration) =>
-          val updatedJson = registration.deepMerge(request.body.as[JsObject])
-          registrationService.upsertRegistration[JsValue](internalId, regId, updatedJson).map { updatedRegistration =>
-            Ok(Json.toJson(updatedRegistration))
-          }
-        case _ =>
-          registrationService.upsertRegistration[JsValue](internalId, regId, request.body).map { updatedRegistration =>
-            Ok(Json.toJson(updatedRegistration))
-          }
+      registrationService.upsertRegistration[JsValue](internalId, regId, request.body).map { updatedRegistration =>
+        Ok(Json.toJson(updatedRegistration))
       }
     }
   }
