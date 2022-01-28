@@ -397,11 +397,11 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
 
   @deprecated("migrate to the new /registrations API")
   def fetchSicAndCompliance(regId: String): Future[Option[SicAndCompliance]] =
-    fetchBlock[SicAndCompliance](regId, "sicAndCompliance")(SicAndCompliance.apiFormat)
+    fetchBlock[SicAndCompliance](regId, "sicAndCompliance")
 
   @deprecated("migrate to the new /registrations API")
   def updateSicAndCompliance(regId: String, sicAndCompliance: SicAndCompliance): Future[SicAndCompliance] =
-    updateBlock(regId, sicAndCompliance, "sicAndCompliance")(SicAndCompliance.apiFormat)
+    updateBlock(regId, sicAndCompliance, "sicAndCompliance")
 
   @deprecated("migrate to the new /registrations API")
   def fetchBusinessContact(regId: String): Future[Option[BusinessContact]] =

@@ -44,8 +44,8 @@ class SicAndComplianceServiceSpec extends VatRegSpec with VatRegistrationFixture
 
   "getSicAndCompliance" should {
     "return a SicAndCompliance Model when an entry exists in mongo for the specified regId" in new Setup {
-      getFromMongo(Future.successful(testSicAndCompliance))
-      await(service.getSicAndCompliance("fooBarAndWizz")) mustBe testSicAndCompliance
+      getFromMongo(Future.successful(Some(testSicAndCompliance)))
+      await(service.getSicAndCompliance("fooBarAndWizz")) mustBe Some(testSicAndCompliance)
     }
     "return None when no entry exists in the dataBase for the specified regId" in new Setup {
       getFromMongo(Future.successful(None))
@@ -54,17 +54,17 @@ class SicAndComplianceServiceSpec extends VatRegSpec with VatRegistrationFixture
   }
   "updateSicAndCompliance" should {
     "return an updated SicAndCompliance Model when an update successfully takes place in mongo" in new Setup {
-      updateMongo(Future.successful(testSicAndCompliance.get))
-      await(service.updateSicAndCompliance("ImARegId",testSicAndCompliance.get)) mustBe testSicAndCompliance.get
+      updateMongo(Future.successful(testSicAndCompliance))
+      await(service.updateSicAndCompliance("ImARegId",testSicAndCompliance)) mustBe testSicAndCompliance
     }
     "return a missingRegDocument when no reg Document exists for the reg id when an update takes place" in new Setup {
       updateMongo(Future.failed(MissingRegDocument("testId")))
       intercept[MissingRegDocument](await(
-        service.updateSicAndCompliance("testId",testSicAndCompliance.get))) mustBe MissingRegDocument("testId")
+        service.updateSicAndCompliance("testId",testSicAndCompliance))) mustBe MissingRegDocument("testId")
     }
     "return new Exception when an exception is returned from the repo during an update" in new Setup {
       updateMongo(Future.failed(new Exception("foo Bar Wizz Bang")))
-      intercept[Exception](await(service.updateSicAndCompliance("testId",testSicAndCompliance.get)))
+      intercept[Exception](await(service.updateSicAndCompliance("testId",testSicAndCompliance)))
     }
   }
 

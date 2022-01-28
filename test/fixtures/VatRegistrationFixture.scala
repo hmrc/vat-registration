@@ -200,12 +200,12 @@ trait VatRegistrationFixture {
   lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =
     SicCode("00998", "otherBusiness desc 1", "fooBar 1") :: SicCode("00889", "otherBusiness desc 2", "fooBar 2") :: Nil
 
-  lazy val testSicAndCompliance = Some(SicAndCompliance(
+  lazy val testSicAndCompliance = SicAndCompliance(
     "this is my business description",
     Some(ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = Some(true), supplyWorkers = true)),
     SicCode("12345", "the flu", "sic details"),
     otherBusinessActivitiesSicAndCompiliance
-  ))
+  )
 
   lazy val testBusinessContact = Some(BusinessContact(
     digitalContact = DigitalContact("email@email.com", Some("12345"), Some("54321")),
@@ -275,7 +275,7 @@ trait VatRegistrationFixture {
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     tradingDetails = Some(validFullTradingDetails),
-    sicAndCompliance = testSicAndCompliance,
+    sicAndCompliance = Some(testSicAndCompliance),
     businessContact = testBusinessContact,
     bankAccount = Some(testBankAccount),
     flatRateScheme = Some(validFullFlatRateScheme),

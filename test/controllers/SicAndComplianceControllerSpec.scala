@@ -49,7 +49,7 @@ class SicAndComplianceControllerSpec extends VatRegSpec with VatRegistrationFixt
   "getSicAndCompliance" should {
     "return valid Json if record returned from service" in new Setup {
       AuthorisationMocks.mockAuthorised(testRegId,testInternalId)
-      mockGetSicAndComplianceFromService(Future.successful(testSicAndCompliance))
+      mockGetSicAndComplianceFromService(Future.successful(Some(testSicAndCompliance)))
 
       val result: Future[Result] = controller.getSicAndCompliance(testRegId)(FakeRequest())
       status(result) mustBe 200
@@ -80,7 +80,7 @@ class SicAndComplianceControllerSpec extends VatRegSpec with VatRegistrationFixt
   "updateSicAndCompliance" should {
     "return 200 and the updated model as json when a record exists and the update is successful" in new Setup {
       AuthorisationMocks.mockAuthorised(testRegId,testInternalId)
-      mockUpdateSicAndComplianceFromService(Future.successful(testSicAndCompliance.get))
+      mockUpdateSicAndComplianceFromService(Future.successful(testSicAndCompliance))
 
       val result: Future[Result] = controller.updateSicAndCompliance(testRegId)(FakeRequest().withBody[JsObject](validSicAndComplianceJson))
       contentAsJson(result) mustBe validSicAndComplianceJson
