@@ -36,7 +36,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
 
   "The compliance block builder" must {
     "build the correct json when only the supplyWorkers flag is set" in {
-      mockFetchSicAndCompliance(testRegId)(testSicAndCompliance.map(_.copy(labourCompliance = Some(emptyLabourCompliance))))
+      mockFetchSicAndCompliance(testRegId)(Some(testSicAndCompliance.copy(labourCompliance = Some(emptyLabourCompliance))))
 
       val res = await(TestBuilder.buildComplianceBlock(testRegId))
 
@@ -50,7 +50,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
         intermediaryArrangement = Some(true)
       )
 
-      mockFetchSicAndCompliance(testRegId)(testSicAndCompliance.map(_.copy(labourCompliance = Some(fullLabourCompliance))))
+      mockFetchSicAndCompliance(testRegId)(Some(testSicAndCompliance.copy(labourCompliance = Some(fullLabourCompliance))))
 
       val res = await(TestBuilder.buildComplianceBlock(testRegId))
 
@@ -61,7 +61,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
       ))
     }
     "return None when the labourCompliance section is not defined" in {
-      val noCompliance = testSicAndCompliance.map(_.copy(labourCompliance = None))
+      val noCompliance = Some(testSicAndCompliance.copy(labourCompliance = None))
       mockFetchSicAndCompliance(testRegId)(noCompliance)
 
       val res = await(TestBuilder.buildComplianceBlock(testRegId))

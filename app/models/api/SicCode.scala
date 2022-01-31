@@ -25,26 +25,9 @@ case class SicCode(id: String,
 
 object SicCode extends SicCodeValidator {
 
-  val apiFormat: Format[SicCode] = (
+  implicit val apiFormat: Format[SicCode] = (
     (__ \ "code").format[String](idValidator) and
       (__ \ "desc").format[String] and
       (__ \ "indexes").format[String]
     ) (SicCode.apply, unlift(SicCode.unapply))
-
-  val sicCodeListWrites = Writes[List[SicCode]] { codes =>
-    Json.obj(
-      "mainCode2" -> codes.lift(0).map(_.id),
-      "mainCode3" -> codes.lift(1).map(_.id),
-      "mainCode4" -> codes.lift(2).map(_.id)
-    ) match {
-      case JsObject(fieldSet) => JsObject(fieldSet.flatMap {
-        case (_, JsNull) => None
-        case _@value => Some(value)
-      })
-      case obj => obj
-    }
-  }
-
-  implicit val format: Format[SicCode] = Json.format[SicCode]
-
 }

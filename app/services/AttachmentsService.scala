@@ -41,7 +41,8 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
       getIdentityEvidenceAttachment(vatScheme),
       getTransactorIdentityEvidenceAttachment(vatScheme),
       getVat2Attachment(vatScheme),
-      getVat51Attachment(vatScheme)
+      getVat51Attachment(vatScheme),
+      getVat5LAttachment(vatScheme)
     ).flatten
   }
 
@@ -73,5 +74,9 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
       case Some(GroupRegistration) => Some(VAT51)
       case _ => None
     }
+  }
+
+  private def getVat5LAttachment(vatScheme: VatScheme): Option[VAT5L.type] = {
+    if (vatScheme.sicAndCompliance.exists(_.hasLandAndProperty.contains(true))) Some(VAT5L) else None
   }
 }

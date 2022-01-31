@@ -23,7 +23,9 @@ import play.api.libs.json._
 case class SicAndCompliance(businessDescription: String,
                             labourCompliance: Option[ComplianceLabour],
                             mainBusinessActivity: SicCode,
-                            businessActivities: List[SicCode]) extends RegistrationSection[SicAndCompliance] {
+                            businessActivities: List[SicCode],
+                            hasLandAndProperty: Option[Boolean] = None) extends RegistrationSection[SicAndCompliance] {
+  //TODO remove option from L&P when related feature switches are removed
 
   override def isComplete: SicAndCompliance => Boolean = {
     _ => true
@@ -34,12 +36,5 @@ case class SicAndCompliance(businessDescription: String,
 }
 
 object SicAndCompliance {
-  implicit val apiFormat: Format[SicAndCompliance] = {
-    implicit val sicCodeApiFormat: Format[SicCode] = SicCode.apiFormat
-    ((__ \ "businessDescription").format[String] and
-      (__ \ "labourCompliance").formatNullable[ComplianceLabour] and
-      (__ \ "mainBusinessActivity").format[SicCode] and
-      (__ \ "businessActivities").format[List[SicCode]]
-      ) (SicAndCompliance.apply, unlift(SicAndCompliance.unapply))
-  }
+  implicit val format: Format[SicAndCompliance] = Json.format[SicAndCompliance]
 }
