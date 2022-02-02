@@ -56,7 +56,7 @@ class CustomerIdentificationAuditBlockBuilder extends FeatureSwitching {
                 None
             }
           }),
-          "dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth,
+          optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
           optional("tradingName" -> tradingDetails.tradingName)
         ) ++ {
           (tradingDetails.shortOrgName, getCompanyName(applicantDetails)) match {

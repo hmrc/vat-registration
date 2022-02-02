@@ -24,7 +24,8 @@ import models.GroupRegistration
 import models.api.{BvFail, BvPass, FailedStatus, NotCalledStatus, Partner, VatScheme}
 import models.nonrepudiation.NonRepudiationMetadata
 import models.registration.sections.PartnersSection
-import models.submission._
+import models.submission.IdVerificationStatus.toJsString
+import models.submission.{DeclarationCapacity, _}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
@@ -237,6 +238,47 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+      }
+
+      "return OK for an Agent led journey" in new Setup {
+        enable(StubSubmission)
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testAgentVatScheme, repo.insert)
+
+        val agentTransactorJson = Json.obj(
+          "declaration" -> Json.obj(
+            "declarationSigning" -> Json.obj(
+              "declarationCapacity" -> DeclarationCapacity.toJsString(AccountantAgent)
+            ),
+            "agentOrCapacitor" -> Json.obj(
+              "individualName" -> Json.obj(
+                "firstName" -> testFirstName,
+                "lastName" -> testLastName
+              ),
+              "commDetails" -> Json.obj(
+                "telephone" -> testTelephone,
+                "email" -> testEmail
+              ),
+              "identification" -> Json.arr(
+                Json.obj(
+                  "idValue" -> testArn,
+                  "idType" -> "ARN",
+                  "IDsFailedOnlineVerification" -> toJsString(IdVerified)
+                )
+              )
+            )
+          )
+        )
+
+        stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson.as[JsObject].deepMerge(agentTransactorJson), OK, Json.stringify(testSubmissionResponse))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
           .put(Json.obj())

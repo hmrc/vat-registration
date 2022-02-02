@@ -32,6 +32,7 @@ import java.util.Base64
 trait VatRegistrationFixture {
   lazy val testNino = "AB123456A"
   lazy val testRole = Director
+  lazy val testArn = "testArn"
   lazy val testRegId = "testRegId"
   lazy val testInternalId = "INT-123-456-789"
   lazy val testAckReference = "BRPY000000000001"
@@ -150,8 +151,9 @@ trait VatRegistrationFixture {
       name = testName,
       nino = Some(testNino),
       trn = None,
+      arn = None,
       identifiersMatch = true,
-      dateOfBirth = testDate
+      dateOfBirth = Some(testDate)
     ),
     entity = testLtdCoEntity,
     roleInBusiness = testRole,
@@ -166,8 +168,9 @@ trait VatRegistrationFixture {
       name = testName,
       nino = Some(testNino),
       trn = None,
+      arn = None,
       identifiersMatch = false,
-      dateOfBirth = testDate
+      dateOfBirth = Some(testDate)
     ),
     entity = testLtdCoEntity,
     roleInBusiness = testRole,
@@ -185,15 +188,16 @@ trait VatRegistrationFixture {
       name = testName,
       nino = Some(testNino),
       trn = None,
+      arn = None,
       identifiersMatch = true,
-      dateOfBirth = testDate
+      dateOfBirth = Some(testDate)
     ),
-    isPartOfOrganisation = true,
+    isPartOfOrganisation = Some(true),
     organisationName = Some(testOrgName),
     telephone = testTelephone,
     email = testEmail,
     emailVerified = true,
-    address = testAddress,
+    address = Some(testAddress),
     declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
   )
 
@@ -504,6 +508,6 @@ trait VatRegistrationFixture {
         testLoginTimes
   }
 
-  val testPersonalDetails = PersonalDetails(testName, Some(testNino), trn = None, identifiersMatch = true, testDate)
+  val testPersonalDetails = PersonalDetails(testName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate))
 
 }

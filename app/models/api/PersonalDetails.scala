@@ -25,8 +25,9 @@ import java.time.LocalDate
 case class PersonalDetails(name: Name,
                            nino: Option[String],
                            trn: Option[String],
+                           arn: Option[String],
                            identifiersMatch: Boolean,
-                           dateOfBirth: LocalDate) {
+                           dateOfBirth: Option[LocalDate]) {
 
   def personalIdentifiers: List[CustomerId] =
     List(
@@ -35,14 +36,20 @@ case class PersonalDetails(name: Name,
           nino,
           NinoIdType,
           if (identifiersMatch) IdVerified else IdVerificationFailed,
-          date = Some(dateOfBirth)
+          date = dateOfBirth
         )),
       trn.map(trn =>
         CustomerId(
           trn,
           TempNinoIDType,
           IdUnverifiable,
-          date = Some(dateOfBirth)
+          date = dateOfBirth
+        )),
+      arn.map(arn =>
+        CustomerId(
+          arn,
+          ArnIdType,
+          IdVerified
         ))
     ).flatten
 }
@@ -52,7 +59,8 @@ object PersonalDetails {
     (__ \ "name").format[Name] and
       (__ \ "nino").formatNullable[String] and
       (__ \ "trn").formatNullable[String] and
+      (__ \ "arn").formatNullable[String] and
       (__ \ "identifiersMatch").formatWithDefault[Boolean](true) and
-      (__ \ "dateOfBirth").format[LocalDate]
+      (__ \ "dateOfBirth").formatNullable[LocalDate]
     ) (PersonalDetails.apply, unlift(PersonalDetails.unapply))
 }
