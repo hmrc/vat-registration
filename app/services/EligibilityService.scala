@@ -56,10 +56,35 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
       case Some(vatScheme) =>
         oldEligibilityData match {
           case EligibilitySubmissionData(_, _, _, _, oldPartyType, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
-            registrationRepository.insertVatScheme(VatScheme(
-              id = vatScheme.id,
-              internalId = vatScheme.internalId,
-              status = vatScheme.status
+            println(vatScheme.copy(
+              tradingDetails = None,
+              returns = None,
+              sicAndCompliance = None,
+              businessContact = None,
+              bankAccount = None,
+              applicantDetails = None,
+              transactorDetails = None,
+              flatRateScheme = None,
+              partners = None,
+              attachments = None,
+              nrsSubmissionPayload = None,
+              eligibilityData = None,
+              eligibilitySubmissionData = None
+            ).toString)
+            registrationRepository.insertVatScheme(vatScheme.copy(
+              tradingDetails = None,
+              returns = None,
+              sicAndCompliance = None,
+              businessContact = None,
+              bankAccount = None,
+              applicantDetails = None,
+              transactorDetails = None,
+              flatRateScheme = None,
+              partners = None,
+              attachments = None,
+              nrsSubmissionPayload = None,
+              eligibilityData = None,
+              eligibilitySubmissionData = None
             ))
 
           case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _, _, oldTransactorFlag)
