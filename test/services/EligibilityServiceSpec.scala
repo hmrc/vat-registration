@@ -94,6 +94,9 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
     }
 
     "return eligibility data and clear user's vat scheme if the partytype is changed" in new Setup {
+      val testClearedVatScheme = testVatScheme.copy(
+        confirmInformationDeclaration = Some(true)
+      )
       when(mockRegistrationMongoRepository.updateEligibilitySubmissionData(any(), any()))
         .thenReturn(Future.successful(testEligibilitySubmissionData))
       when(mockRegistrationMongoRepository.updateEligibilityData(any(), any()))
@@ -102,14 +105,14 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
         .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(partyType = RegSociety))))
       when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
-      when(mockRegistrationMongoRepository.insertVatScheme(ArgumentMatchers.eq(testVatScheme)))
-        .thenReturn(Future.successful(testVatScheme))
+      when(mockRegistrationMongoRepository.insertVatScheme(ArgumentMatchers.eq(testClearedVatScheme)))
+        .thenReturn(Future.successful(testClearedVatScheme))
 
       val result: JsObject = await(service.updateEligibilityData("regId", eligibilityData))
 
       result mustBe eligibilityData
       verify(mockRegistrationMongoRepository, Mockito.times(1))
-        .insertVatScheme(ArgumentMatchers.eq(testVatScheme))
+        .insertVatScheme(ArgumentMatchers.eq(testClearedVatScheme))
     }
 
     "return eligibility data and clear user's frs and aas scheme if the turnover is changed part the thresholds" in new Setup {
