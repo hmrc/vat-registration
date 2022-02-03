@@ -43,7 +43,7 @@ class DeclarationAuditBlockBuilder {
             optional("previousName" -> applicantDetails.changeOfName.map(formatFormerName)),
             "currentAddress" -> formatAddress(applicantDetails.currentAddress),
             optional("previousAddress" -> applicantDetails.previousAddress.map(formatAddress)),
-            "dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth,
+            optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
             "communicationDetails" -> jsonObject(
               optional("emailAddress" -> applicantDetails.contact.email),
               optional("telephone" -> applicantDetails.contact.tel),
@@ -56,12 +56,12 @@ class DeclarationAuditBlockBuilder {
           optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>
             jsonObject(
               "individualName" -> formatName(transactorDetails.personalDetails.name),
-              conditional(transactorDetails.isPartOfOrganisation)("organisationName" -> transactorDetails.organisationName),
+              optionalRequiredIf(transactorDetails.isPartOfOrganisation.contains(true))("organisationName" -> transactorDetails.organisationName),
               "commDetails" -> jsonObject(
                 "telephone" -> transactorDetails.telephone,
                 "email" -> transactorDetails.email
               ),
-              "address" -> formatAddress(transactorDetails.address),
+              optionalRequiredIf(transactorDetails.personalDetails.arn.isEmpty)("address" -> transactorDetails.address.map(formatAddress)),
               conditional(transactorDetails.personalDetails.personalIdentifiers.nonEmpty)(
                 "identification" -> transactorDetails.personalDetails.personalIdentifiers
               )

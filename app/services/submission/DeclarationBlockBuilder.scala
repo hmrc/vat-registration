@@ -50,7 +50,7 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRe
                 "roleInBusiness" -> applicantDetails.roleInBusiness,
                 "name" -> formatName(applicantDetails.personalDetails.name),
                 optional("prevName" -> applicantDetails.changeOfName.map(formatFormerName)),
-                "dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth,
+                optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
                 "currAddress" -> formatAddress(applicantDetails.currentAddress),
                 optional("prevAddress" -> applicantDetails.previousAddress.map(formatAddress)),
                 "commDetails" -> jsonObject(
@@ -65,12 +65,12 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRe
               optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>
                 jsonObject(
                   "individualName" -> formatName(transactorDetails.personalDetails.name),
-                  conditional(transactorDetails.isPartOfOrganisation)("organisationName" -> transactorDetails.organisationName),
+                  optionalRequiredIf(transactorDetails.isPartOfOrganisation.contains(true))("organisationName" -> transactorDetails.organisationName),
                   "commDetails" -> jsonObject(
                     "telephone" -> transactorDetails.telephone,
                     "email" -> transactorDetails.email
                   ),
-                  "address" -> formatAddress(transactorDetails.address),
+                  optionalRequiredIf(transactorDetails.personalDetails.arn.isEmpty)("address" -> transactorDetails.address.map(formatAddress)),
                   conditional(transactorDetails.personalDetails.personalIdentifiers.nonEmpty)(
                     "identification" -> transactorDetails.personalDetails.personalIdentifiers.map(identifier =>
                       Json.toJson(identifier)(CustomerId.transactorWrites)

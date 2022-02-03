@@ -21,12 +21,12 @@ import models.submission.DeclarationCapacity
 import play.api.libs.json.{Format, Json}
 
 case class TransactorDetails(personalDetails: PersonalDetails,
-                             isPartOfOrganisation: Boolean,
+                             isPartOfOrganisation: Option[Boolean],
                              organisationName: Option[String] = None,
                              telephone: String,
                              email: String,
                              emailVerified: Boolean,
-                             address: Address,
+                             address: Option[Address],
                              declarationCapacity: DeclarationCapacityAnswer) extends RegistrationSection[TransactorDetails] {
 
   override def isComplete: TransactorDetails => Boolean = {

@@ -33,6 +33,7 @@ trait ITFixtures {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
+  lazy val testArn = "testArn"
   val testDate: LocalDate = LocalDate.of(2017, 1, 1)
   val testUtr = "testUtr"
   val testPostcode = "TF1 1NT"
@@ -124,9 +125,10 @@ trait ITFixtures {
     personalDetails = PersonalDetails(
       name = testName,
       nino = Some(testNino),
+      arn = None,
       trn = None,
       identifiersMatch = true,
-      dateOfBirth = testDate
+      dateOfBirth = Some(testDate)
     ),
     entity = IncorporatedEntity(
       companyName = Some(testCompanyName),
@@ -151,8 +153,9 @@ trait ITFixtures {
       name = testName,
       nino = Some(testNino),
       trn = None,
+      arn = None,
       identifiersMatch = true,
-      dateOfBirth = testDate
+      dateOfBirth = Some(testDate)
     ),
     entity = IncorporatedEntity(
       companyName = Some(testCompanyName),
@@ -289,6 +292,42 @@ trait ITFixtures {
       id = testRegId,
       internalId = testInternalid,
       tradingDetails = Some(testTradingDetails),
+      returns = Some(testAASReturns),
+      sicAndCompliance = Some(testSicAndCompliance),
+      businessContact = Some(testBusinessContactDetails),
+      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
+      acknowledgementReference = Some("ackRef"),
+      flatRateScheme = Some(testFlatRateScheme),
+      status = VatRegStatus.draft,
+      applicantDetails = Some(testUnregisteredApplicantDetails),
+      eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+      confirmInformationDeclaration = Some(true),
+      nrsSubmissionPayload = Some(testEncodedPayload)
+    )
+
+  val testAgentTransactorDetails = TransactorDetails(
+    personalDetails = PersonalDetails(
+      name = Name(Some(testFirstName), None, testLastName),
+      nino = None,
+      trn = None,
+      arn = Some(testArn),
+      identifiersMatch = true,
+      dateOfBirth = None
+    ),
+    telephone = testTelephone,
+    email = testEmail,
+    isPartOfOrganisation = None,
+    emailVerified = true,
+    address = None,
+    declarationCapacity = DeclarationCapacityAnswer(AccountantAgent)
+  )
+
+  lazy val testAgentVatScheme: VatScheme =
+    VatScheme(
+      id = testRegId,
+      internalId = testInternalid,
+      tradingDetails = Some(testTradingDetails),
+      transactorDetails = Some(testAgentTransactorDetails),
       returns = Some(testAASReturns),
       sicAndCompliance = Some(testSicAndCompliance),
       businessContact = Some(testBusinessContactDetails),
@@ -549,9 +588,10 @@ trait ITFixtures {
   val testNetpTransactorDetails: PersonalDetails = PersonalDetails(
     name = testName,
     nino = None,
+    arn = None,
     trn = Some(testTrn),
     identifiersMatch = false,
-    dateOfBirth = testDate
+    dateOfBirth = Some(testDate)
   )
 
   val testNetpApplicantDetails: ApplicantDetails =
@@ -610,16 +650,16 @@ trait ITFixtures {
       eligibilitySubmissionData = Some(testNonUkCompanyEligibilitySubmissionData)
     )
 
-  val testPersonalDetails = PersonalDetails(testProperName, Some(testNino), trn = None, identifiersMatch = true, testDate)
+  val testPersonalDetails = PersonalDetails(testProperName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate))
 
   lazy val testTransactorDetails = TransactorDetails(
     personalDetails = testPersonalDetails,
-    isPartOfOrganisation = true,
+    isPartOfOrganisation = Some(true),
     organisationName = Some(testOrganisationName),
     telephone = testTelephone,
     email = testEmail,
     emailVerified = true,
-    address = testFullAddress,
+    address = Some(testFullAddress),
     declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
   )
 

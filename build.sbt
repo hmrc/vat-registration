@@ -40,7 +40,7 @@ lazy val testSettings = Seq(
   logBuffered                in IntegrationTest := false,
   unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest) (base => Seq(base / "it")).value,
   fork                       in Test            := true,
-  testForkedParallel         in Test            := true,
+  testForkedParallel         in Test            := false,
   parallelExecution          in Test            := true,
   logBuffered                in Test            := false,
   addTestReportOption(IntegrationTest, "int-test-reports")

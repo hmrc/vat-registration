@@ -19,7 +19,8 @@ package services.monitoring
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
-import models.api.{ApplicantDetails, DigitalContactOptional, VatScheme}
+import models.api.{ApplicantDetails, DeclarationCapacityAnswer, DigitalContactOptional, Name, PersonalDetails, TransactorDetails, VatScheme}
+import models.submission.AccountantAgent
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
@@ -63,6 +64,71 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |    "identifiers": {
             |      "nationalInsuranceNumber": "AB123456A"
             |    }
+            |  }
+            |}""".stripMargin
+        )
+      }
+      "the user is an agent" in {
+        val scheme = declarationVatScheme.copy(transactorDetails = Some(TransactorDetails(
+          personalDetails = PersonalDetails(
+            name = Name(Some(testFirstName), None, testLastName),
+            nino = None,
+            trn = None,
+            arn = Some(testArn),
+            identifiersMatch = true,
+            dateOfBirth = None
+          ),
+          telephone = testTelephone,
+          email = testEmail,
+          isPartOfOrganisation = None,
+          emailVerified = true,
+          address = None,
+          declarationCapacity = DeclarationCapacityAnswer(AccountantAgent)
+        )))
+        val res = TestBuilder.buildDeclarationBlock(scheme)
+
+        res mustBe Json.parse(
+          s"""{
+            |  "declarationSigning": {
+            |    "confirmInformationDeclaration": true,
+            |    "declarationCapacity": "AccountantAgent"
+            |  },
+            |  "applicant": {
+            |    "roleInBusiness": "Director",
+            |    "name": {
+            |      "firstName": "Forename",
+            |      "lastName": "Surname"
+            |    },
+            |    "currentAddress": {
+            |      "line1": "line1",
+            |      "line2": "line2",
+            |      "postcode": "XX XX",
+            |      "countryCode": "GB"
+            |    },
+            |    "dateOfBirth": "2018-01-01",
+            |    "communicationDetails": {
+            |      "emailAddress": "skylake@vilikariet.com"
+            |    },
+            |    "identifiers": {
+            |      "nationalInsuranceNumber": "AB123456A"
+            |    }
+            |  },
+            |  "agentOrCapacitor": {
+            |    "individualName": {
+            |      "firstName": "$testFirstName",
+            |      "lastName": "$testLastName"
+            |    },
+            |    "commDetails": {
+            |      "telephone": "$testTelephone",
+            |      "email": "$testEmail"
+            |    },
+            |    "identification": [
+            |      {
+            |        "idValue": "$testArn",
+            |        "idType": "ARN",
+            |        "IDsVerificationStatus": "1"
+            |      }
+            |    ]
             |  }
             |}""".stripMargin
         )

@@ -36,6 +36,8 @@ case object VrnIdType extends IdType
 
 case object EmpRefIdType extends IdType
 
+case object ArnIdType extends IdType
+
 case object OtherIdType extends IdType
 
 
@@ -50,6 +52,7 @@ object IdType {
     CascIdType -> "CASC",
     VrnIdType -> "VRN",
     EmpRefIdType -> "EMPREF",
+    ArnIdType -> "ARN",
     OtherIdType -> "OTHER"
   )
 

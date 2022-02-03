@@ -242,8 +242,9 @@ class RegistrationServiceSpec extends VatRegSpec
           name = testName,
           nino = Some(testNino),
           trn = None,
+          arn = None,
           identifiersMatch = true,
-          dateOfBirth = testDate
+          dateOfBirth = Some(testDate)
         ))
       }
       "return the answer in JSON format" in {
@@ -256,8 +257,9 @@ class RegistrationServiceSpec extends VatRegSpec
           name = testName,
           nino = Some(testNino),
           trn = None,
+          arn = None,
           identifiersMatch = true,
-          dateOfBirth = testDate
+          dateOfBirth = Some(testDate)
         )))
       }
     }
