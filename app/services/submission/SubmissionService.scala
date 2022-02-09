@@ -21,19 +21,21 @@ import connectors.VatSubmissionConnector
 import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
-import models.api.{Submitted, VatScheme}
-import models.nonrepudiation.NonRepudiationSubmissionAccepted
+import models.api.EligibilitySubmissionData.{exceptionKey, exemptionKey}
+import models.api.returns.Annual
+import models.api.{PersonalDetails, Submitted, VatScheme}
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import repositories._
 import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
-import services.{NonRepudiationService, TrafficManagementService}
+import services.{AttachmentsService, NonRepudiationService, TrafficManagementService}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{BadRequestException, ConflictException, HeaderCarrier, InternalServerException}
+import utils.JsonUtils.{conditional, jsonObject, optional}
 import utils.{IdGenerator, TimeMachine}
 
 import java.util.Base64
@@ -47,6 +49,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   trafficManagementService: TrafficManagementService,
                                   submissionPayloadBuilder: SubmissionPayloadBuilder,
                                   submissionAuditBlockBuilder: SubmissionAuditBlockBuilder,
+                                  attachmentsService: AttachmentsService,
                                   timeMachine: TimeMachine,
                                   auditService: AuditService,
                                   idGenerator: IdGenerator,
@@ -63,6 +66,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
           .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
         submission <- submissionPayloadBuilder.buildSubmissionPayload(regId)
         submissionResponse <- submit(submission, regId)
+        _ <- logSubmission(vatScheme, submissionResponse)
         formBundleId <- handleResponse(submissionResponse, regId)
         _ <- submitToNrs(formBundleId, vatScheme, userHeaders)
         _ <- auditSubmission(formBundleId, vatScheme)
@@ -143,5 +147,42 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
 
         Future.successful()
     }
+  }
+
+  private[services] def logSubmission(vatScheme: VatScheme,
+                                      vatSubmissionStatus: VatSubmissionResponse): Future[Unit] = {
+
+    val agentOrTransactor = (vatScheme.transactorDetails.map(_.personalDetails), vatScheme.eligibilitySubmissionData.map(_.isTransactor)) match {
+      case (Some(PersonalDetails(_, _, _, Some(arn), _, _)), Some(true)) => Some("AgentFlow")
+      case (Some(_), Some(true)) => Some("TransactorFlow")
+      case _ => None
+    }
+
+    val exceptionOrExemption = vatScheme.eligibilitySubmissionData.map(_.exceptionOrExemption).flatMap {
+      case `exceptionKey` => Some("Exception")
+      case `exemptionKey` => Some("Exemption")
+      case _ => None
+    }
+    val appliedForAas = if (vatScheme.returns.map(_.returnsFrequency).contains(Annual)) Some("AnnualAccountingScheme") else None
+    val appliedForFrs = if (vatScheme.flatRateScheme.exists(_.joinFrs)) Some("FlatRateScheme") else None
+    val specialSituations = List(exceptionOrExemption, appliedForAas, appliedForFrs).flatten
+
+    val attachmentList = attachmentsService.attachmentList(vatScheme).map(_.toString)
+
+    logger.info(jsonObject(
+      "logInfo" -> "SubmissionLog",
+      "status" -> vatSubmissionStatus.fold(_ => "Failed", _ => "Successful"),
+      "regId" -> vatScheme.id,
+      "partyType" -> vatScheme.partyType.toString,
+      "regReason" -> vatScheme.eligibilitySubmissionData.map(_.registrationReason.toString),
+      optional("agentOrTransactor" -> agentOrTransactor),
+      conditional(specialSituations.nonEmpty)("specialSituations" -> specialSituations),
+      optional("attachments" -> vatScheme.attachments.map(attachmentDetails => jsonObject(
+        "attachmentMethod" -> attachmentDetails.method.toString,
+        "attachments" -> attachmentList
+      )))
+    ).toString())
+
+    Future.successful()
   }
 }

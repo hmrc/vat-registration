@@ -23,7 +23,7 @@ import featureswitch.core.config.FeatureSwitching
 import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import httpparsers.VatSubmissionSuccess
-import mocks.MockTrafficManagementService
+import mocks.{MockAttachmentsService, MockTrafficManagementService}
 import mocks.monitoring.MockAuditService
 import models.api._
 import models.monitoring.SubmissionAuditModel
@@ -36,6 +36,7 @@ import play.api.libs.json.JsObject
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.AttachmentsService
 import services.monitoring.buildermocks.MockSubmissionAuditBlockBuilder
 import services.submission.buildermocks.MockSubmissionPayloadBuilder
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
@@ -53,6 +54,7 @@ class SubmissionServiceSpec extends VatRegSpec
   with MockAuditService
   with Eventually
   with MockTrafficManagementService
+  with MockAttachmentsService
   with MockSubmissionPayloadBuilder
   with MockSubmissionAuditBlockBuilder
   with FeatureSwitching {
@@ -70,6 +72,7 @@ class SubmissionServiceSpec extends VatRegSpec
       trafficManagementService = mockTrafficManagementService,
       submissionPayloadBuilder = mockSubmissionPayloadBuilder,
       submissionAuditBlockBuilder = mockSubmissionAuditBlockBuilder,
+      attachmentsService = mockAttachmentService,
       idGenerator = TestIdGenerator,
       auditService = mockAuditService,
       timeMachine = mockTimeMachine,
@@ -123,7 +126,7 @@ class SubmissionServiceSpec extends VatRegSpec
           Some(testCredentials)
         )
       )
-
+      mockAttachmentList(testFullVatScheme)(Set[AttachmentType]())
       await(service.submitVatRegistration(testRegId, testUserHeaders)) mustBe testFormBundleId
       eventually {
         verifyAudit(SubmissionAuditModel(

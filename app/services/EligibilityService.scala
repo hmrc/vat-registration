@@ -16,16 +16,19 @@
 
 package services
 
+import models.api.EligibilitySubmissionData.{exceptionKey, exemptionKey}
 import models.api.{EligibilitySubmissionData, VatScheme}
+import play.api.Logging
 import play.api.libs.json.{JsObject, JsResultException}
 import repositories.VatSchemeRepository
 import utils.EligibilityDataJsonUtils
+import utils.JsonUtils.{jsonObject, optional}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) {
+class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) extends Logging {
 
   def getEligibilityData(regId: String): Future[Option[JsObject]] =
     registrationRepository.fetchEligibilityData(regId)
@@ -42,9 +45,31 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
             Future.successful()
         }
         _ <- registrationRepository.updateEligibilitySubmissionData(regId, eligibilitySubmissionData)
+        _ <- logEligibilityPayload(regId, eligibilitySubmissionData)
         result <- registrationRepository.updateEligibilityData(regId, eligibilityData)
       } yield result
     )
+  }
+
+  private def logEligibilityPayload(regId: String,
+                                    eligibilitySubmissionData: EligibilitySubmissionData): Future[Unit] = {
+
+    val exceptionOrExemption = eligibilitySubmissionData.exceptionOrExemption match {
+      case `exceptionKey` => Some("Exception")
+      case `exemptionKey` => Some("Exemption")
+      case _ => None
+    }
+
+    logger.info(jsonObject(
+      "logInfo" -> "EligibilityPayloadLog",
+      "regId" -> regId,
+      "partyType" -> eligibilitySubmissionData.partyType.toString,
+      "regReason" -> eligibilitySubmissionData.registrationReason.toString,
+      "isTransactor" -> eligibilitySubmissionData.isTransactor,
+      optional("exceptionOrExemption" -> exceptionOrExemption)
+    ).toString())
+
+    Future.successful()
   }
 
   private def removeInvalidFields(regId: String,
@@ -56,21 +81,6 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
       case Some(vatScheme) =>
         oldEligibilityData match {
           case EligibilitySubmissionData(_, _, _, _, oldPartyType, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
-            println(vatScheme.copy(
-              tradingDetails = None,
-              returns = None,
-              sicAndCompliance = None,
-              businessContact = None,
-              bankAccount = None,
-              applicantDetails = None,
-              transactorDetails = None,
-              flatRateScheme = None,
-              partners = None,
-              attachments = None,
-              nrsSubmissionPayload = None,
-              eligibilityData = None,
-              eligibilitySubmissionData = None
-            ).toString)
             registrationRepository.insertVatScheme(vatScheme.copy(
               tradingDetails = None,
               returns = None,
