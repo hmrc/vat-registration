@@ -40,37 +40,37 @@ object RegistrationReason {
   implicit val format: Format[RegistrationReason] = Format(reads, writes)
 }
 
-object ForwardLook extends RegistrationReason {
+case object ForwardLook extends RegistrationReason {
   val key = "0016"
   val humanReadableKey = "Forward Look"
 }
 
-object BackwardLook extends RegistrationReason {
+case object BackwardLook extends RegistrationReason {
   val key = "0015"
   val humanReadableKey = "Backward Look"
 }
 
-object Voluntary extends RegistrationReason {
+case object Voluntary extends RegistrationReason {
   val key = "0018"
   val humanReadableKey = "Voluntary"
 }
 
-object NonUk extends RegistrationReason {
+case object NonUk extends RegistrationReason {
   val key = "0003"
   val humanReadableKey = "Non-UK"
 }
 
-object SuppliesOutsideUk extends RegistrationReason {
+case object SuppliesOutsideUk extends RegistrationReason {
   val key = "0017"
   val humanReadableKey = "Supplies outside the UK"
 }
 
-object GroupRegistration extends RegistrationReason {
+case object GroupRegistration extends RegistrationReason {
   val key = "0011"
   val humanReadableKey = "Group Registration"
 }
 
-object TransferOfAGoingConcern extends RegistrationReason {
+case object TransferOfAGoingConcern extends RegistrationReason {
   val key = "0014"
   val humanReadableKey = "Transfer of a Going Concern"
 }
