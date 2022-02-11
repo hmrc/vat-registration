@@ -18,7 +18,7 @@ package services.submission
 
 import models.api.returns.NIPCompliance
 import models._
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsBoolean, JsObject}
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -49,6 +49,7 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: VatSchemeR
             case BackwardLook => eligibilityData.threshold.thresholdInTwelveMonths
             case ForwardLook => Some(eligibilityData.threshold.earliestDate)
             case NonUk => eligibilityData.threshold.thresholdOverseas
+            case TransferOfAGoingConcern => eligibilityData.togcCole.map(_.dateOfTransfer)
           }
         },
         optional("voluntaryOrEarlierDate" -> returns.startDate),
@@ -102,6 +103,18 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: VatSchemeR
           case (false, _) => None
           case _ => throw new InternalServerException("[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true")
         }
+      }),
+      optional("takingOver" -> eligibilityData.togcCole.map { togcData =>
+        jsonObject(
+          "prevOwnerName" -> togcData.previousBusinessName,
+          "prevOwnerVATNumber" -> togcData.vatRegistrationNumber,
+          "keepPrevOwnerVATNo" -> togcData.wantToKeepVatNumber,
+          "acceptTsAndCsForTOGCOrCOLE" -> (if (togcData.wantToKeepVatNumber) {
+            togcData.agreedWithTermsForKeepingVat.getOrElse(throw new InternalServerException("TOGC user wants to keep VRN but did not answer T&C"))
+          } else {
+            false
+          })
+        )
       })
     )
     case _ =>

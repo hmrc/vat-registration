@@ -25,6 +25,9 @@ import java.time.LocalDate
 
 class EligibilitySubmissionDataSpec extends JsonFormatValidation {
 
+  val testName = "testName"
+  val testVrn = "testVrn"
+
   "eligibilityReads" must {
     "return EligibilitySubmissionData from a valid eligibility json" in {
       val questions = Seq(
@@ -45,7 +48,17 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         Json.obj("questionId" -> "registeringBusiness-value", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> "own"),
         Json.obj("questionId" -> "businessEntity-value", "question" -> "testQuestion", "answer" -> "testQuestion",
-          "answerValue" -> "50")
+          "answerValue" -> "50"),
+        Json.obj("questionId" -> "dateOfBusinessTransfer-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> LocalDate.now()),
+        Json.obj("questionId" -> "previousBusinessName-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> testName),
+        Json.obj("questionId" -> "vatNumber-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> testVrn),
+        Json.obj("questionId" -> "keepVatNumber-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> true),
+        Json.obj("questionId" -> "vatTermsAndConditions-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> true)
       )
       val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
       val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -66,6 +79,13 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         customerStatus = MTDfB,
         partyType = UkCompany,
         registrationReason = ForwardLook,
+        togcCole = Some(TogcCole(
+          dateOfTransfer = LocalDate.now(),
+          previousBusinessName = testName,
+          vatRegistrationNumber = testVrn,
+          wantToKeepVatNumber = true,
+          agreedWithTermsForKeepingVat = Some(true)
+        )),
         isTransactor = false
       ))
 

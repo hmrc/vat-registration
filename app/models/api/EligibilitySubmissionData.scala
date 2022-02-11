@@ -29,6 +29,7 @@ case class EligibilitySubmissionData(threshold: Threshold,
                                      customerStatus: CustomerStatus,
                                      partyType: PartyType,
                                      registrationReason: RegistrationReason,
+                                     togcCole: Option[TogcCole] = None,
                                      isTransactor: Boolean) extends RegistrationSection[EligibilitySubmissionData] {
 
   override def isComplete: EligibilitySubmissionData => Boolean = {
@@ -70,8 +71,9 @@ object EligibilitySubmissionData {
         json.validate[CustomerStatus](CustomerStatus.eligibilityDataJsonReads) and
         (json \ "businessEntity-value").validate[PartyType] and
         (json \ "registrationReason-value").validateOpt[String] and
-        (json \ "registeringBusiness-value").validate[String]
-      ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason, registeringBusiness) =>
+        (json \ "registeringBusiness-value").validate[String] and
+        json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None))
+      ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason, registeringBusiness, togcCole) =>
       EligibilitySubmissionData(
         threshold,
         exceptionOrException,
@@ -94,6 +96,7 @@ object EligibilitySubmissionData {
           case Some(`settingUpVatGroup`) => GroupRegistration
           case Some(`ukEstablishedOverseasExporter`) => SuppliesOutsideUk
         },
+        togcCole,
         registeringBusiness match {
           case `registeringOwnBusiness` => false
           case `registeringSomeoneElse` => true
@@ -109,6 +112,7 @@ object EligibilitySubmissionData {
       (__ \ "customerStatus").format[CustomerStatus] and
       (__ \ "partyType").format[PartyType] and
       (__ \ "registrationReason").format[RegistrationReason] and
+      (__ \ "togcBlock").formatNullable[TogcCole] and
       (__ \ "isTransactor").formatWithDefault[Boolean](false)
     ) (EligibilitySubmissionData.apply, unlift(EligibilitySubmissionData.unapply))
 
