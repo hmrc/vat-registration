@@ -28,7 +28,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
   val testName = "testName"
   val testVrn = "testVrn"
 
-  "eligibilityReads" must {
+  "eligibilityReads" when {
     "return EligibilitySubmissionData from a valid eligibility json" in {
       val questions = Seq(
         Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
@@ -86,12 +86,230 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           wantToKeepVatNumber = true,
           agreedWithTermsForKeepingVat = Some(true)
         )),
-        isTransactor = false
+        isTransactor = false,
+        calculatedDate = Some(LocalDate.now())
       ))
 
       result mustBe expected
     }
+    "registration reason is TogcCole" must {
+      "set calculatedDate as dateOfTransfer in EligibilitySubmissionData" in {
+        val togcColeBlock = Seq(
+          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> 1234),
+          Json.obj("questionId" -> "customerStatus-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "2"),
+          Json.obj("questionId" -> "registeringBusiness-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "registrationReason-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> EligibilitySubmissionData.takingOverBusiness),
+          Json.obj("questionId" -> "dateOfBusinessTransfer-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> LocalDate.now()),
+          Json.obj("questionId" -> "previousBusinessName-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> testName),
+          Json.obj("questionId" -> "vatNumber-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> testVrn),
+          Json.obj("questionId" -> "keepVatNumber-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "vatTermsAndConditions-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> true)
+        )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(togcColeBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
+
+        val result = Json.fromJson(testEligibilityJson)(
+          EligibilityDataJsonUtils.mongoReads[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads)
+        )
+
+        val expected = JsSuccess(EligibilitySubmissionData(
+          threshold = Threshold(
+            mandatoryRegistration = false
+          ),
+          exceptionOrExemption = "0",
+          estimates = TurnoverEstimates(1234),
+          customerStatus = MTDfB,
+          partyType = UkCompany,
+          registrationReason = TransferOfAGoingConcern,
+          togcCole = Some(TogcCole(
+            dateOfTransfer = LocalDate.now(),
+            previousBusinessName = testName,
+            vatRegistrationNumber = testVrn,
+            wantToKeepVatNumber = true,
+            agreedWithTermsForKeepingVat = Some(true)
+          )),
+          isTransactor = false,
+          calculatedDate = Some(LocalDate.now())
+        ))
+
+        result mustBe expected
+      }
+    }
+    "registration reason is sellingGoodsAndServices with threshold overseas" must {
+      "set calculatedDate as thresholdOverseas in EligibilitySubmissionData" in {
+        val thresholdOverseasBlock = Seq(
+          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "thresholdTaxableSupplies-value", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> LocalDate.now().toString),
+          Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> 123456),
+          Json.obj("questionId" -> "customerStatus-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "2"),
+          Json.obj("questionId" -> "registeringBusiness-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50")
+        )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdOverseasBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
+
+        val result = Json.fromJson(testEligibilityJson)(
+          EligibilityDataJsonUtils.mongoReads[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads)
+        )
+
+        val expected = JsSuccess(EligibilitySubmissionData(
+          threshold = Threshold(
+            mandatoryRegistration = true,
+            thresholdOverseas = Some(LocalDate.now)
+          ),
+          exceptionOrExemption = "0",
+          estimates = TurnoverEstimates(123456),
+          customerStatus = MTDfB,
+          partyType = UkCompany,
+          registrationReason = NonUk,
+          isTransactor = false,
+          calculatedDate = Some(LocalDate.now())
+        ))
+
+        result mustBe expected
+      }
+    }
+    "registration reason is sellingGoodsAndServices with thresholdPreviousThirtyDays" must {
+      "set calculatedDate as thresholdPreviousThirtyDays in EligibilitySubmissionData" in {
+        val thresholdPrevThirtyDaysBlock = Seq(
+          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> LocalDate.now().toString),
+          Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> 123456),
+          Json.obj("questionId" -> "customerStatus-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "2"),
+          Json.obj("questionId" -> "registeringBusiness-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50")
+        )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdPrevThirtyDaysBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
+
+        val result = Json.fromJson(testEligibilityJson)(
+          EligibilityDataJsonUtils.mongoReads[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads)
+        )
+
+        val expected = JsSuccess(EligibilitySubmissionData(
+          threshold = Threshold(
+            mandatoryRegistration = true,
+            thresholdPreviousThirtyDays = Some(LocalDate.now)
+          ),
+          exceptionOrExemption = "0",
+          estimates = TurnoverEstimates(123456),
+          customerStatus = MTDfB,
+          partyType = UkCompany,
+          registrationReason = ForwardLook,
+          isTransactor = false,
+          calculatedDate = Some(LocalDate.now())
+        ))
+
+        result mustBe expected
+      }
+    }
+    "registration reason is sellingGoodsAndServices with thresholdNextThirtyDays" must {
+      "set calculatedDate as thresholdNextThirtyDays in EligibilitySubmissionData" in {
+        val thresholdNextThirtyDaysBlock = Seq(
+          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> LocalDate.now().toString),
+          Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> 123456),
+          Json.obj("questionId" -> "customerStatus-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "2"),
+          Json.obj("questionId" -> "registeringBusiness-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50")
+        )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdNextThirtyDaysBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
+
+        val result = Json.fromJson(testEligibilityJson)(
+          EligibilityDataJsonUtils.mongoReads[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads)
+        )
+
+        val expected = JsSuccess(EligibilitySubmissionData(
+          threshold = Threshold(
+            mandatoryRegistration = true,
+            thresholdNextThirtyDays = Some(LocalDate.now)
+          ),
+          exceptionOrExemption = "0",
+          estimates = TurnoverEstimates(123456),
+          customerStatus = MTDfB,
+          partyType = UkCompany,
+          registrationReason = ForwardLook,
+          isTransactor = false,
+          calculatedDate = Some(LocalDate.now())
+        ))
+
+        result mustBe expected
+      }
+    }
+    "registration reason is sellingGoodsAndServices with thresholdNextTwelveMonths" must {
+      "set calculatedDate as thresholdNextTwelveMonths in EligibilitySubmissionData" in {
+        val thresholdNextTwelveMonthsBlock = Seq(
+          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> LocalDate.now().toString),
+          Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> 123456),
+          Json.obj("questionId" -> "customerStatus-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "2"),
+          Json.obj("questionId" -> "registeringBusiness-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity-value", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50")
+        )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdNextTwelveMonthsBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
+
+        val result = Json.fromJson(testEligibilityJson)(
+          EligibilityDataJsonUtils.mongoReads[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads)
+        )
+
+        val expected = JsSuccess(EligibilitySubmissionData(
+          threshold = Threshold(
+            mandatoryRegistration = true,
+            thresholdInTwelveMonths = Some(LocalDate.now)
+          ),
+          exceptionOrExemption = "0",
+          estimates = TurnoverEstimates(123456),
+          customerStatus = MTDfB,
+          partyType = UkCompany,
+          registrationReason = BackwardLook,
+          isTransactor = false,
+          calculatedDate = Some(LocalDate.now.plusMonths(2).withDayOfMonth(1))
+        ))
+
+        result mustBe expected
+      }
+    }
   }
+
 
   "reads" must {
     "return EligibilitySubmissionData from a valid json" in {
@@ -108,7 +326,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         ),
         "customerStatus" -> "2",
         "partyType" -> "50",
-        "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook)
+        "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook),
+        "calculatedDate" -> LocalDate.now()
       )
 
       val expected = JsSuccess(EligibilitySubmissionData(
@@ -123,7 +342,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         customerStatus = MTDfB,
         partyType = UkCompany,
         registrationReason = ForwardLook,
-        isTransactor = false
+        isTransactor = false,
+        calculatedDate = Some(LocalDate.now())
       ))
 
       EligibilitySubmissionData.format.reads(json) mustBe expected
@@ -144,7 +364,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         customerStatus = MTDfB,
         partyType = UkCompany,
         registrationReason = ForwardLook,
-        isTransactor = false
+        isTransactor = false,
+        calculatedDate = Some(LocalDate.now())
       )
 
       val expected = Json.obj(
@@ -161,7 +382,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         "customerStatus" -> "2",
         "partyType" -> "50",
         "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook),
-        "isTransactor" -> false
+        "isTransactor" -> false,
+        "calculatedDate" -> LocalDate.now()
       )
 
       EligibilitySubmissionData.format.writes(model) mustBe expected
