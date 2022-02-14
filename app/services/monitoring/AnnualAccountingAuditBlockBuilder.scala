@@ -18,7 +18,7 @@ package services.monitoring
 
 import models.api.VatScheme
 import models.api.returns.Annual
-import models.{BackwardLook, ForwardLook, NonUk, SuppliesOutsideUk, Voluntary}
+import models.{BackwardLook, ForwardLook, NonUk, SuppliesOutsideUk, TransferOfAGoingConcern, Voluntary}
 import play.api.libs.json.JsObject
 import utils.JsonUtils._
 
@@ -44,6 +44,7 @@ class AnnualAccountingAuditBlockBuilder @Inject()() {
                   case BackwardLook => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
                   case ForwardLook => Some(eligibilitySubmissionData.threshold.earliestDate)
                   case NonUk => eligibilitySubmissionData.threshold.thresholdOverseas
+                  case TransferOfAGoingConcern => eligibilitySubmissionData.togcCole.map(_.dateOfTransfer)
                 }
               }
             )

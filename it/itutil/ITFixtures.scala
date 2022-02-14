@@ -56,6 +56,8 @@ trait ITFixtures {
     ConditionalValue(answer = true, Some(testTurnover)),
     ConditionalValue(answer = true, Some(testTurnover))
   )
+  val testPreviousBusinessName = "testPreviousBusinessName"
+  val testVrn = "testVrn"
 
   val testReturns: Returns = Returns(
     zeroRatedSupplies = Some(12.99),

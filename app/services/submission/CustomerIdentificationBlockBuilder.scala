@@ -43,9 +43,9 @@ class CustomerIdentificationBlockBuilder @Inject()(registrationMongoRepository: 
     case (Some(vatScheme), Some(applicantDetails), Some(tradingDetails)) =>
       jsonObject(
         "tradersPartyType" -> vatScheme.eligibilitySubmissionData.map {
-          case EligibilitySubmissionData(_, _, _, _, _, GroupRegistration, _) => TaxGroups
-          case EligibilitySubmissionData(_, _, _, _, NETP, _, _) => Individual
-          case EligibilitySubmissionData(_, _, _, _, partyType, _, _) => partyType
+          case EligibilitySubmissionData(_, _, _, _, _, GroupRegistration, _, _) => TaxGroups
+          case EligibilitySubmissionData(_, _, _, _, NETP, _, _, _) => Individual
+          case EligibilitySubmissionData(_, _, _, _, partyType, _, _, _) => partyType
         },
         optional("tradingName" -> tradingDetails.tradingName.map(StringNormaliser.normaliseString))
       ) ++ {

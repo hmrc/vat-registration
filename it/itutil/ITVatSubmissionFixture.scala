@@ -1,10 +1,10 @@
 
 package itutil
 
-import models.{ForwardLook, RegistrationReason}
 import models.api.returns.{StoringGoodsForDispatch, StoringWithinUk}
 import models.api.{AttachmentMethod, Post}
 import models.submission._
+import models.{ForwardLook, RegistrationReason}
 import play.api.libs.json.{JsArray, JsObject, Json}
 
 trait ITVatSubmissionFixture extends ITFixtures {
@@ -1361,7 +1361,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
-  def testSubmissionJson(customerIdentification: JsObject, entities: Option[JsArray], regReason: RegistrationReason = ForwardLook, corporateBodyRegistered: Option[JsObject] = None): JsObject = Json.obj(
+  def testSubmissionJson(customerIdentification: JsObject, entities: Option[JsArray], regReason: RegistrationReason = ForwardLook, optSubscriptionBlock: Option[JsObject] = None): JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> Json.obj(
       "additionalInformation" -> Json.obj(
@@ -1390,41 +1390,43 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "commsPreference" -> "ZEL"
       )
     ),
-    "subscription" -> { Json.obj(
-      "reasonForSubscription" -> Json.obj(
-        "registrationReason" -> regReason,
-        "relevantDate" -> testDate,
-        "voluntaryOrEarlierDate" -> testDate,
-        "exemptionOrException" -> "0"
-      ),
-      "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
-        "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
-          "mainCode2" -> "00002",
-          "mainCode3" -> "00003",
-          "mainCode4" -> "00004"
+    "subscription" -> {
+      Json.obj(
+        "reasonForSubscription" -> Json.obj(
+          "registrationReason" -> regReason,
+          "relevantDate" -> testDate,
+          "voluntaryOrEarlierDate" -> testDate,
+          "exemptionOrException" -> "0"
+        ),
+        "businessActivities" -> Json.obj(
+          "description" -> testSicAndCompliance.businessDescription,
+          "SICCodes" -> Json.obj(
+            "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
+            "mainCode2" -> "00002",
+            "mainCode3" -> "00003",
+            "mainCode4" -> "00004"
+          )
+        ),
+        "yourTurnover" -> Json.obj(
+          "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
+          "zeroRatedSupplies" -> 12.99,
+          "VATRepaymentExpected" -> true,
+          "goodsFromOtherEU" -> testTurnover,
+          "goodsSoldToOtherEU" -> testTurnover
+        ),
+        "schemes" -> Json.obj(
+          "FRSCategory" -> "123",
+          "FRSPercentage" -> 15,
+          "startDate" -> "2017-01-01",
+          "limitedCostTrader" -> false
         )
-      ),
-      "yourTurnover" -> Json.obj(
-        "turnoverNext12Months" -> testEligibilitySubmissionData.estimates.turnoverEstimate,
-        "zeroRatedSupplies" -> 12.99,
-        "VATRepaymentExpected" -> true,
-        "goodsFromOtherEU" -> testTurnover,
-        "goodsSoldToOtherEU" -> testTurnover
-      ),
-      "schemes" -> Json.obj(
-        "FRSCategory" -> "123",
-        "FRSPercentage" -> 15,
-        "startDate" -> "2017-01-01",
-        "limitedCostTrader" -> false
-      )
-    ) ++ {
-      corporateBodyRegistered match {
-        case Some(json) => json
-        case None => Json.obj()
+      ) ++ {
+        optSubscriptionBlock match {
+          case Some(json) => json
+          case None => Json.obj()
+        }
       }
-    }},
+    },
     "periods" -> Json.obj(
       "customerPreferredPeriodicity" -> "MA"
     ),
@@ -1718,5 +1720,39 @@ trait ITVatSubmissionFixture extends ITFixtures {
         )
       )
     )
+  )
+
+  val togcBlockJson = Json.obj(
+    "takingOver" -> Json.obj(
+      "prevOwnerName" -> testPreviousBusinessName,
+      "prevOwnerVATNumber" -> testVrn,
+      "keepPrevOwnerVATNo" -> true,
+      "acceptTsAndCsForTOGCOrCOLE" -> true
+    ),
+    "corporateBodyRegistered" -> Json.obj(
+      "companyRegistrationNumber" -> testCrn,
+      "dateOfIncorporation" -> testDateOfIncorp,
+      "countryOfIncorporation" -> "GB"
+    )
+  )
+
+  val ukCompanyCustomerId = Json.obj(
+    "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
+    "customerID" -> Json.arr(
+      Json.obj(
+        "idType" -> "UTR",
+        "idValue" -> testUtr,
+        "IDsVerificationStatus" -> "1"
+      ),
+      Json.obj(
+        "idType" -> "CRN",
+        "idValue" -> testCrn,
+        "date" -> testDateOfIncorp,
+        "IDsVerificationStatus" -> "1"
+      )
+    ),
+    "organisationName" -> testCompanyName,
+    "shortOrgName" -> testShortOrgName,
+    "tradingName" -> testTradingDetails.tradingName.get
   )
 }

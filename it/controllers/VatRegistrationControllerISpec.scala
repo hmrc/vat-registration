@@ -20,18 +20,19 @@ import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, ShortOrgName, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
-import models.GroupRegistration
-import models.api.{BvFail, BvPass, FailedStatus, NotCalledStatus, Partner, VatScheme}
+import models.api._
 import models.nonrepudiation.NonRepudiationMetadata
 import models.registration.sections.PartnersSection
 import models.submission.IdVerificationStatus.toJsString
 import models.submission.{DeclarationCapacity, _}
+import models.{GroupRegistration, TogcCole, TransferOfAGoingConcern}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import java.time.LocalDate
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -519,6 +520,52 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubPost(
           "/vatreg/test-only/vat/subscription",
           testSubmissionJson(vatGroupCustomerId, Some(ukCompanyLeadEntity), GroupRegistration, Some(corporateBodyRegisteredJson)),
+          OK,
+          Json.stringify(testSubmissionResponse)
+        )
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .put(Json.obj())
+        )
+
+        res.status mustBe OK
+        disable(ShortOrgName)
+      }
+    }
+
+    "the user is registering with a TOGC reg reason" should {
+      "return OK if the submission is successful" in new Setup {
+        enable(ShortOrgName)
+
+        lazy val togcBlock: TogcCole = TogcCole(
+          dateOfTransfer = testDate,
+          previousBusinessName = testPreviousBusinessName,
+          vatRegistrationNumber = testVrn,
+          wantToKeepVatNumber = true,
+          agreedWithTermsForKeepingVat = Some(true)
+        )
+        lazy val togcVatScheme: VatScheme = testFullVatScheme.copy(
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
+            registrationReason = TransferOfAGoingConcern,
+            togcCole = Some(togcBlock)
+          )),
+          applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testLtdCoEntity.copy(
+            companyNumber = testCrn,
+            dateOfIncorporation = Some(testDateOfIncorp),
+            bpSafeId = None,
+            businessVerification = Some(BvPass),
+            registration = FailedStatus
+          ))),
+          tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+        )
+
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(togcVatScheme, repo.insert)
+
+        stubPost(
+          "/vatreg/test-only/vat/subscription",
+          testSubmissionJson(ukCompanyCustomerId, entities = None, TransferOfAGoingConcern, Some(togcBlockJson)),
           OK,
           Json.stringify(testSubmissionResponse)
         )
