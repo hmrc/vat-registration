@@ -23,6 +23,8 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
 
+import java.time.LocalDate
+
 case class EligibilitySubmissionData(threshold: Threshold,
                                      exceptionOrExemption: String,
                                      estimates: TurnoverEstimates,
@@ -30,7 +32,8 @@ case class EligibilitySubmissionData(threshold: Threshold,
                                      partyType: PartyType,
                                      registrationReason: RegistrationReason,
                                      togcCole: Option[TogcCole] = None,
-                                     isTransactor: Boolean) extends RegistrationSection[EligibilitySubmissionData] {
+                                     isTransactor: Boolean,
+                                     calculatedDate: Option[LocalDate] = None) extends RegistrationSection[EligibilitySubmissionData] {
 
   override def isComplete: EligibilitySubmissionData => Boolean = {
     _ => true
@@ -73,7 +76,7 @@ object EligibilitySubmissionData {
         (json \ "registrationReason-value").validateOpt[String] and
         (json \ "registeringBusiness-value").validate[String] and
         json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None))
-      ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason, registeringBusiness, togcCole) =>
+      ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason, registeringBusiness, optTogcCole) =>
       EligibilitySubmissionData(
         threshold,
         exceptionOrException,
@@ -96,10 +99,21 @@ object EligibilitySubmissionData {
           case Some(`settingUpVatGroup`) => GroupRegistration
           case Some(`ukEstablishedOverseasExporter`) => SuppliesOutsideUk
         },
-        togcCole,
+        optTogcCole,
         registeringBusiness match {
           case `registeringOwnBusiness` => false
           case `registeringSomeoneElse` => true
+        },
+        (threshold, optTogcCole) match {
+          case (_, Some(TogcCole(dateOfTransfer, _, _, _, _))) =>
+            Some(dateOfTransfer)
+          case (Threshold(true, _, _, _, Some(thresholdOverseas)), _) =>
+            Some(thresholdOverseas)
+          case (Threshold(true, optPrevThirtyDays, optNextTwelveMonths, optNextThirtyDays, _), _)
+            if List(optPrevThirtyDays, optNextTwelveMonths, optNextThirtyDays).flatten.nonEmpty =>
+            Some(threshold.earliestDate)
+          case _ =>
+            None
         }
       )
     )
@@ -113,7 +127,8 @@ object EligibilitySubmissionData {
       (__ \ "partyType").format[PartyType] and
       (__ \ "registrationReason").format[RegistrationReason] and
       (__ \ "togcBlock").formatNullable[TogcCole] and
-      (__ \ "isTransactor").formatWithDefault[Boolean](false)
+      (__ \ "isTransactor").formatWithDefault[Boolean](false) and
+      (__ \ "calculatedDate").formatNullable[LocalDate]
     ) (EligibilitySubmissionData.apply, unlift(EligibilitySubmissionData.unapply))
 
 }
