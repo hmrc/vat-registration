@@ -30,8 +30,7 @@ case class ApplicantDetails(personalDetails: PersonalDetails,
                             changeOfName: Option[FormerName] = None,
                             roleInBusiness: RoleInTheBusiness)
 
-object ApplicantDetails extends VatApplicantDetailsValidator
-  with JsonUtilities {
+object ApplicantDetails extends JsonUtilities {
 
   //TODO Remove transactor .orElse a few weeks after this commit goes live as it's there just to support old journeys
   def reads(partyType: PartyType): Reads[ApplicantDetails] = (
