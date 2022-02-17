@@ -117,7 +117,7 @@ class ThresholdSpec extends JsonFormatValidation {
       "the registration is overseas" in {
         val thresholdOverseas = "2017-01-02"
         val json = Json.obj(
-          "thresholdTaxableSupplies-value" -> s"$thresholdOverseas"
+          "thresholdTaxableSupplies" -> s"$thresholdOverseas"
         )
 
         val expectedResult = Threshold(

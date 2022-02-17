@@ -43,7 +43,7 @@ object Threshold {
       (json \ "thresholdPreviousThirtyDays-optionalData").validateOpt[LocalDate],
       (json \ "thresholdInTwelveMonths-optionalData").validateOpt[LocalDate],
       (json \ "thresholdNextThirtyDays-optionalData").validateOpt[LocalDate],
-      (json \ "thresholdTaxableSupplies-value").validateOpt[LocalDate]
+      (json \ "thresholdTaxableSupplies").validateOpt[LocalDate]
     ) match {
       case (JsSuccess(voluntaryRegistration, _), JsSuccess(thresholdPreviousThirtyDays, _),
       JsSuccess(thresholdInTwelveMonths, _), JsSuccess(thresholdNextThirtyDays, _), JsSuccess(thresholdOverseas, _)) =>

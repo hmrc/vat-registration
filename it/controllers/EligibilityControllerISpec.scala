@@ -27,10 +27,10 @@ class EligibilityControllerISpec extends IntegrationStubbing {
     Json.obj("questionId" -> "voluntaryRegistration", "question" -> "Some Question", "answer" -> "Some Answer", "answerValue" -> true),
     Json.obj("questionId" -> "voluntaryInformation", "question" -> "Some Question", "answer" -> "Some Answer", "answerValue" -> true),
     Json.obj("questionId" -> "applicantUKNino-optionalData", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "JW778877A"),
-    Json.obj("questionId" -> "turnoverEstimate-value", "question" -> "Some Question 21", "answer" -> "Some Answer 21", "answerValue" -> 12345),
+    Json.obj("questionId" -> "turnoverEstimate", "question" -> "Some Question 21", "answer" -> "Some Answer 21", "answerValue" -> 12345),
     Json.obj("questionId" -> "testQId22", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "val22"),
-    Json.obj("questionId" -> "registeringBusiness-value", "question" -> "Some Question 23", "answer" -> "Some Answer 23", "answerValue" -> "own"),
-    Json.obj("questionId" -> "businessEntity-value", "question" -> "Some Question 23", "answer" -> "Some Answer 23", "answerValue" -> "50")
+    Json.obj("questionId" -> "registeringBusiness", "question" -> "Some Question 23", "answer" -> "Some Answer 23", "answerValue" -> "own"),
+    Json.obj("questionId" -> "businessEntity", "question" -> "Some Question 23", "answer" -> "Some Answer 23", "answerValue" -> "50")
   )
   val section1: JsObject = Json.obj("title" -> "test TITLE 1", "data" -> JsArray(questions1))
   val section2: JsObject = Json.obj("title" -> "test TITLE 2", "data" -> JsArray(questions2))
