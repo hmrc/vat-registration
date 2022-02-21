@@ -23,7 +23,7 @@ case class TurnoverEstimates(turnoverEstimate: Long)
 object TurnoverEstimates {
 
   val eligibilityDataJsonReads: Reads[TurnoverEstimates] = Reads { json =>
-    (json \ "turnoverEstimate-value").validate[Long].map(turnOverEstimateAmount =>
+    (json \ "turnoverEstimate").validate[Long].map(turnOverEstimateAmount =>
       TurnoverEstimates(turnoverEstimate = turnOverEstimateAmount)
     )
   }

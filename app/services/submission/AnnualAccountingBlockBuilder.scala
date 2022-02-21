@@ -17,7 +17,7 @@
 package services.submission
 
 import models.api.returns.Annual
-import models.{BackwardLook, ForwardLook, NonUk, SuppliesOutsideUk, Voluntary}
+import models.{BackwardLook, ForwardLook, NonUk, SuppliesOutsideUk, TransferOfAGoingConcern, Voluntary}
 import play.api.libs.json.JsObject
 import repositories.VatSchemeRepository
 import utils.JsonUtils.jsonObject
@@ -47,6 +47,7 @@ class AnnualAccountingBlockBuilder @Inject()(registrationMongoRepository: VatSch
                 case BackwardLook => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
                 case ForwardLook => Some(eligibilitySubmissionData.threshold.earliestDate)
                 case NonUk => eligibilitySubmissionData.threshold.thresholdOverseas
+                case TransferOfAGoingConcern => eligibilitySubmissionData.togcCole.map(_.dateOfTransfer)
               }
             }
           )

@@ -72,9 +72,9 @@ object EligibilitySubmissionData {
         ) and
         json.validate[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads) and
         json.validate[CustomerStatus](CustomerStatus.eligibilityDataJsonReads) and
-        (json \ "businessEntity-value").validate[PartyType] and
-        (json \ "registrationReason-value").validateOpt[String] and
-        (json \ "registeringBusiness-value").validate[String] and
+        (json \ "businessEntity").validate[PartyType] and
+        (json \ "registrationReason").validateOpt[String] and
+        (json \ "registeringBusiness").validate[String] and
         json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None))
       ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason, registeringBusiness, optTogcCole) =>
       EligibilitySubmissionData(

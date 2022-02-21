@@ -24,14 +24,14 @@ import utils.EligibilityDataJsonUtils
 class TurnoverEstimatesSpec extends BaseSpec with JsonFormatValidation {
 
   "TurnoverEstimates mongoReads" must {
-    "return model successfully when turnoverEstimate-value exists" in {
+    "return model successfully when turnoverEstimate exists" in {
       val json = Json.parse(
         s"""{
            |  "sections": [
            |   {
            |     "title": "Foo bar",
            |     "data": [
-           |       {"questionId":"turnoverEstimate-value","question": "VAT start date", "answer": "£123456" , "answerValue": 123456}
+           |       {"questionId":"turnoverEstimate","question": "VAT start date", "answer": "£123456" , "answerValue": 123456}
            |     ]
            |   }
            | ]
