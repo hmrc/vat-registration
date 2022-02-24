@@ -114,7 +114,7 @@ class SubmissionServiceSpec extends VatRegSpec
         ArgumentMatchers.eq(testDateTime),
         ArgumentMatchers.eq(testFormBundleId),
         ArgumentMatchers.eq(testUserHeaders)
-      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)))
+      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(Some(testNonRepudiationSubmissionId)))
 
       mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
         Future.successful(

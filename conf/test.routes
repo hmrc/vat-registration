@@ -6,5 +6,6 @@ DELETE      /api/traffic-management                                controllers.t
 DELETE      /registrations                                         controllers.test.DeleteAllRegistrationsController.deleteAllRegistrations
 
 POST        /vat/subscription                                      controllers.test.StubVatSubmissionController.processSubmission
+POST        /submission                                            controllers.test.StubNrsController.processSubmission
 
 GET         /submissions/:regId/submission-payload                 controllers.test.RetrieveVatSubmissionController.retrieveSubmissionJson(regId)

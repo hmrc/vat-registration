@@ -20,7 +20,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.monitoring.MockAuditService
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationSubmissionFailureAudit, NonRepudiationSubmissionSuccessAudit}
-import models.nonrepudiation.{NonRepudiationMetadata, NonRepudiationSubmissionAccepted}
+import models.nonrepudiation.{NonRepudiationMetadata, NonRepudiationSubmissionAccepted, NonRepudiationSubmissionFailed}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.concurrent.Eventually
@@ -28,7 +28,7 @@ import play.api.mvc.{AnyContent, Request}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Authorization}
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier}
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -89,7 +89,7 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
 
       val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testFormBundleId, testUserHeaders)
 
-      await(res) mustBe NonRepudiationSubmissionAccepted(testSubmissionId)
+      await(res) mustBe Some(testSubmissionId)
 
       eventually {
         verifyAudit(NonRepudiationSubmissionSuccessAudit(testRegistrationId, testSubmissionId))
@@ -130,11 +130,11 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
         ArgumentMatchers.eq(testEncodedPayload),
         ArgumentMatchers.eq(expectedMetadata)
       )(ArgumentMatchers.eq(hc)))
-        .thenReturn(Future.failed(new NotFoundException(testExceptionMessage)))
+        .thenReturn(Future.successful(NonRepudiationSubmissionFailed(testExceptionMessage, NOT_FOUND)))
 
       val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testFormBundleId, testUserHeaders)
 
-      intercept[NotFoundException](await(res))
+      await(res) mustBe None
 
       eventually {
         verifyAudit(NonRepudiationSubmissionFailureAudit(testRegistrationId, NOT_FOUND, testExceptionMessage))

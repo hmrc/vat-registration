@@ -32,7 +32,6 @@ import play.api.test.Helpers._
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.time.LocalDate
 import java.util.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -51,6 +50,9 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   FakeTimeMachine.hour = 0
 
+  val formBundleId = "123412341234"
+  val testSubmissionResponse = Json.obj("formBundle" -> formBundleId)
+
   val testAuthToken = "testAuthToken"
   val headerData = Map("testHeaderKey" -> "testHeaderValue")
   val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
@@ -64,15 +66,13 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     identityData = AuthTestData.testNonRepudiationIdentityData,
     userAuthToken = testAuthToken,
     headerData = headerData,
-    searchKeys = Map("postCode" -> testAddress.postcode.get)
+    searchKeys = Map("formBundleId" -> formBundleId)
   )
 
   val expectedNrsRequestJson: JsObject = Json.obj(
     "payload" -> testEncodedPayload(testNrsSubmissionPayload),
     "metadata" -> testNonRepudiationMetadata
   )
-
-  val testSubmissionResponse = Json.obj("formBundle" -> "123412341234")
 
   lazy val testPartner: Partner = Partner(
     details = testSoleTraderEntity.copy(businessVerification = None),
@@ -150,6 +150,11 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     )
   )
 
+  override def afterEach(): Unit = {
+    super.afterEach()
+    disable(ShortOrgName)
+  }
+
   "POST /new" should {
     "return CREATED if the daily quota has not been met" in new Setup {
       given
@@ -188,9 +193,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -204,10 +212,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -221,9 +231,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -239,9 +252,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -280,9 +296,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         )
 
         stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson.as[JsObject].deepMerge(agentTransactorJson), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -299,13 +318,15 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         ), repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testSubmissionJsonWithShortOrgName, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
-        disable(ShortOrgName)
       }
 
       "return OK if the submission is successful with an unregistered business partner and transactor details" in new Setup {
@@ -322,9 +343,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         )
 
         stubPost("/vatreg/test-only/vat/subscription", testTransactorSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -338,10 +362,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -355,10 +381,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner.copy(flatRateScheme = None), repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -374,9 +402,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testNetpVatScheme, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testNetpJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -393,9 +424,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         )
 
         stubPost("/vatreg/test-only/vat/subscription", testNetpJsonOverseas, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -411,9 +445,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testNonUkCompanyVatScheme, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testNonUkCompanyJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -429,10 +466,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(testMinimalVatSchemeWithTrust, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testVerifiedTrustJson, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
@@ -447,13 +486,15 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(generalPartnershipWithSoleTraderPartner, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson(generalPartnershipCustomerId, Some(soleTraderLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
-        disable(ShortOrgName)
       }
 
       "return OK if the submission is successful where the submission contains a UK Company partner" in new Setup {
@@ -464,13 +505,15 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(generalPartnershipWithUkCompanyPartner, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson(generalPartnershipCustomerId, Some(ukCompanyLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
-        disable(ShortOrgName)
       }
     }
 
@@ -482,13 +525,15 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(limitedPartnershipWithScotPartnershipPartner, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
-        disable(ShortOrgName)
       }
     }
 
@@ -500,13 +545,15 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .regRepo.insertIntoDb(limitedLiabilityPartnership, repo.insert)
 
         stubPost("/vatreg/test-only/vat/subscription", testSubmissionJson(limitedLiabilityPartnershipCustomerId, None), OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
-        disable(ShortOrgName)
       }
     }
 
@@ -523,13 +570,15 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           OK,
           Json.stringify(testSubmissionResponse)
         )
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
-        disable(ShortOrgName)
       }
     }
 
@@ -569,13 +618,15 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           OK,
           Json.stringify(testSubmissionResponse)
         )
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .put(Json.obj())
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
         )
 
         res.status mustBe OK
-        disable(ShortOrgName)
       }
     }
 
