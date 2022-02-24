@@ -67,10 +67,10 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         submission <- submissionPayloadBuilder.buildSubmissionPayload(regId)
         submissionResponse <- submit(submission, regId)
         _ <- logSubmission(vatScheme, submissionResponse)
-        formBundleId <- handleResponse(submissionResponse, regId)
-        _ <- submitToNrs(formBundleId, vatScheme, userHeaders)
+        formBundleId <- handleResponse(submissionResponse, regId) // chain ends here if the main submission failed
         _ <- auditSubmission(formBundleId, vatScheme)
         _ <- trafficManagementService.updateStatus(regId, Submitted)
+        optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders)
       } yield formBundleId
     } recover {
       case exception: ConflictException =>
@@ -119,14 +119,16 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                     vatScheme: VatScheme,
                                     userHeaders: Map[String, String])
                                    (implicit hc: HeaderCarrier,
-                                    request: Request[_]): Future[Unit] = {
+                                    request: Request[_]): Future[Option[String]] = {
     val encodedHtml = vatScheme.nrsSubmissionPayload
       .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
     val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
 
-    nonRepudiationService.submitNonRepudiation(vatScheme.id, payloadString, timeMachine.timestamp, formBundleId, userHeaders)
-
-    Future.successful()
+    nonRepudiationService.submitNonRepudiation(vatScheme.id, payloadString, timeMachine.timestamp, formBundleId, userHeaders).recover {
+      case _ =>
+        logger.error("[SubmissionService] NRS Returned an unexpected exception")
+        None
+    }
   }
 
   private[services] def auditSubmission(formBundleId: String,

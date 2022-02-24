@@ -18,7 +18,7 @@ package services
 
 import connectors.NonRepudiationConnector
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationSubmissionFailureAudit, NonRepudiationSubmissionSuccessAudit}
-import models.nonrepudiation.{IdentityData, NonRepudiationMetadata, NonRepudiationSubmissionAccepted}
+import models.nonrepudiation.{IdentityData, NonRepudiationMetadata, NonRepudiationSubmissionAccepted, NonRepudiationSubmissionFailed}
 import org.joda.time.LocalDate
 import play.api.mvc.Request
 import services.NonRepudiationService._
@@ -27,7 +27,7 @@ import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, HttpException, InternalServerException}
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier, InternalServerException}
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -46,7 +46,7 @@ class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationCon
                            submissionTimestamp: LocalDateTime,
                            formBundleId: String,
                            userHeaders: Map[String, String]
-                          )(implicit hc: HeaderCarrier, request: Request[_]): Future[NonRepudiationSubmissionAccepted] = for {
+                          )(implicit hc: HeaderCarrier, request: Request[_]): Future[Option[String]] = for {
     identityData <- retrieveIdentityData()
     payloadChecksum = MessageDigest.getInstance("SHA-256")
       .digest(payloadString.getBytes(StandardCharsets.UTF_8))
@@ -68,13 +68,12 @@ class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationCon
     )
     encodedPayloadString = Base64.getEncoder.encodeToString(payloadString.getBytes(StandardCharsets.UTF_8))
     nonRepudiationSubmissionResponse <- nonRepudiationConnector.submitNonRepudiation(encodedPayloadString, nonRepudiationMetadata).map {
-      case response@NonRepudiationSubmissionAccepted(submissionId) =>
+      case NonRepudiationSubmissionAccepted(submissionId) =>
         auditService.audit(NonRepudiationSubmissionSuccessAudit(registrationId, submissionId))
-        response
-    }.recoverWith {
-      case exception: HttpException =>
-        auditService.audit(NonRepudiationSubmissionFailureAudit(registrationId, exception.responseCode, exception.message))
-        Future.failed(exception)
+        Some(submissionId)
+      case NonRepudiationSubmissionFailed(body, status) =>
+        auditService.audit(NonRepudiationSubmissionFailureAudit(registrationId, status, body))
+        None
     }
   } yield nonRepudiationSubmissionResponse
 

@@ -77,7 +77,17 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
     val unincorpAssoc = servicesConfig.getInt("traffic-management.quotas.unincorp-assoc")
   }
 
-  lazy val nonRepudiationSubmissionUrl: String = servicesConfig.baseUrl("non-repudiation") + "/submission"
+  lazy val nonRepudiationUrl: String = servicesConfig.baseUrl("non-repudiation")
+  def nonRepudiationSubmissionUrl: String = {
+    val endpoint = "/submission"
+
+    if (isEnabled(StubSubmission)) {
+      s"$vatRegistrationUrl/vatreg/test-only$endpoint"
+    }
+    else {
+      nonRepudiationUrl + endpoint
+    }
+  }
   lazy val nonRepudiationApiKey: String = servicesConfig.getString("microservice.services.non-repudiation.api-key")
 
   lazy val expiryInSeconds: Int = servicesConfig.getInt("cache.expiryInSeconds")

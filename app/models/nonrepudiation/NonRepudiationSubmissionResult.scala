@@ -16,4 +16,6 @@
 
 package models.nonrepudiation
 
-case class NonRepudiationSubmissionAccepted(submissionId: String)
+sealed trait NonRepudiationSubmissionResult
+case class NonRepudiationSubmissionAccepted(submissionId: String) extends NonRepudiationSubmissionResult
+case class NonRepudiationSubmissionFailed(body: String, status: Int) extends NonRepudiationSubmissionResult
