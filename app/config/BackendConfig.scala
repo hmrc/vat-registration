@@ -93,4 +93,6 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
   lazy val expiryInSeconds: Int = servicesConfig.getInt("cache.expiryInSeconds")
   lazy val dailyQuotaExpiryInSeconds: Int = servicesConfig.getInt("traffic-management.quotas.time-to-live")
 
+  lazy val sdesUrl: String = servicesConfig.baseUrl("sdes")
+  lazy val sdesNotificationUrl: String = sdesUrl + "/notification/fileready"
 }
