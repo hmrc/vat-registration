@@ -16,17 +16,23 @@
 
 package repositories
 
+import config.BackendConfig
 import models.api.UpscanDetails
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{JsObject, JsString, Json}
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.indexes.{Index, IndexType}
+import reactivemongo.bson.{BSONDocument, BSONInteger}
 import uk.gov.hmrc.mongo.ReactiveRepository
+import utils.TimeMachine
 
+import java.time.ZoneOffset
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UpscanMongoRepository @Inject()(mongo: ReactiveMongoComponent)(implicit ec: ExecutionContext)
+class UpscanMongoRepository @Inject()(mongo: ReactiveMongoComponent,
+                                      timeMachine: TimeMachine,
+                                      backendConfig: BackendConfig)(implicit ec: ExecutionContext)
   extends ReactiveRepository(
     collectionName = "upscan",
     mongo = mongo.mongoConnector.db,
@@ -46,6 +52,14 @@ class UpscanMongoRepository @Inject()(mongo: ReactiveMongoComponent)(implicit ec
         "registrationId" -> IndexType.Ascending
       ),
       unique = true
+    ),
+    Index(
+      name = Some("TTL"),
+      key = Seq(
+        "timestamp" -> IndexType.Ascending
+      ),
+      unique = false,
+      options = BSONDocument("expireAfterSeconds" -> BSONInteger(backendConfig.expiryInSeconds))
     )
   )
 
@@ -57,9 +71,13 @@ class UpscanMongoRepository @Inject()(mongo: ReactiveMongoComponent)(implicit ec
     find("registrationId" -> JsString(registrationId))
 
   def upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] = {
-
     val selector = Json.obj("reference" -> upscanDetails.reference)
-    val modifier = Json.obj("$set" -> Json.toJson(upscanDetails))
+    val modifier = Json.obj("$set" -> (
+      Json.toJson(upscanDetails).as[JsObject] ++
+        Json.obj(
+          "timestamp" -> Json.obj("$date" -> timeMachine.timestamp.toInstant(ZoneOffset.UTC).toEpochMilli)
+        )
+      ))
 
     findAndUpdate(selector, modifier, fetchNewObject = true, upsert = true)
       .map(_.result[UpscanDetails] match {
