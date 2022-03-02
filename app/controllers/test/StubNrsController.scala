@@ -21,6 +21,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
@@ -29,8 +30,13 @@ class StubNrsController @Inject()(cc: ControllerComponents) extends BackendContr
 
   val processSubmission: Action[AnyContent] = Action.async {
     Future.successful(Accepted(Json.obj(
-      "nrSubmissionId" -> "1234567890"
+      "nrSubmissionId" -> UUID.randomUUID()
     )))
   }
 
+  val processAttachmentSubmission: Action[AnyContent] = Action.async {
+    Future.successful(Accepted(Json.obj(
+      "nrAttachmentId" -> UUID.randomUUID()
+    )))
+  }
 }

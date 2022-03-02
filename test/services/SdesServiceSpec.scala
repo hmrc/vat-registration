@@ -32,6 +32,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
 
   object TestService extends SdesService(
     mockSdesConnector,
+    mockNonRepudiationConnector,
     mockUpscanMongoRepository
   )
 

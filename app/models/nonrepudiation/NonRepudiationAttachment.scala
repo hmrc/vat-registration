@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package connectors.stubs
+package models.nonrepudiation
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import models.sdes.SdesNotification
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Json, OFormat}
 
-object SdesNotifyStub {
+case class NonRepudiationAttachment(attachmentUrl: String,
+                                    attachmentId: String,
+                                    attachmentSha256Checksum: String,
+                                    attachmentContentType: String,
+                                    nrSubmissionId: String)
 
-  def stubNrsNotification(payload: JsValue)(status: Int): StubMapping =
-    stubFor(post(urlPathMatching(s"/notification/fileready"))
-      .withRequestBody(equalToJson(payload.toString()))
-      .willReturn(aResponse()
-        .withStatus(status)
-      )
-    )
-
+object NonRepudiationAttachment {
+  implicit val format: OFormat[NonRepudiationAttachment] = Json.format[NonRepudiationAttachment]
 }

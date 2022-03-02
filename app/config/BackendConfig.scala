@@ -88,11 +88,30 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
       nonRepudiationUrl + endpoint
     }
   }
+  def attachmentNonRepudiationSubmissionUrl: String = {
+    val endpoint = "/attachment"
+
+    if (isEnabled(StubSubmission)) {
+      s"$vatRegistrationUrl/vatreg/test-only$endpoint"
+    }
+    else {
+      nonRepudiationUrl + endpoint
+    }
+  }
   lazy val nonRepudiationApiKey: String = servicesConfig.getString("microservice.services.non-repudiation.api-key")
 
   lazy val expiryInSeconds: Int = servicesConfig.getInt("cache.expiryInSeconds")
   lazy val dailyQuotaExpiryInSeconds: Int = servicesConfig.getInt("traffic-management.quotas.time-to-live")
 
   lazy val sdesUrl: String = servicesConfig.baseUrl("sdes")
-  lazy val sdesNotificationUrl: String = sdesUrl + "/notification/fileready"
+  def sdesNotificationUrl: String = {
+    val endpoint = "/notification/fileready"
+
+    if (isEnabled(StubSubmission)) {
+      s"$vatRegistrationUrl/vatreg/test-only$endpoint"
+    }
+    else {
+      sdesUrl + endpoint
+    }
+  }
 }

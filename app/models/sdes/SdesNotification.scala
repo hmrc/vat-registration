@@ -44,13 +44,6 @@ object Checksum {
   implicit val format: OFormat[Checksum] = Json.format[Checksum]
 }
 
-case class Property(name: String,
-                    value: String)
-
-object Property {
-  implicit val format: OFormat[Property] = Json.format[Property]
-}
-
 case class AuditDetals(correlationID: String)
 
 object AuditDetals {

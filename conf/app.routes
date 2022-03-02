@@ -11,7 +11,6 @@ DELETE       /traffic-management/:regId/reg-info    controllers.TrafficManagemen
 
 GET          /scheme                                controllers.VatRegistrationController.retrieveVatSchemeByInternalId()
 GET          /threshold/:date                        controllers.VatThresholdController.getThresholdForDate(date: String)
-POST         /upscan-callback                        controllers.UpscanController.upscanDetailsCallback
 
 GET          /:regId/get-scheme                     controllers.VatRegistrationController.retrieveVatScheme(regId: String)
 
@@ -57,6 +56,7 @@ PATCH       /:regId/nrs-payload                     controllers.NrsSubmissionPay
 
 POST        /:regId/upscan-reference                controllers.UpscanController.createUpscanDetails(regId: String)
 GET         /:regId/upscan-file-details/:reference  controllers.UpscanController.getUpscanDetails(regId: String, reference: String)
+POST        /upscan-callback                        controllers.UpscanController.upscanDetailsCallback
 
 GET         /:regId/partners/:index                 controllers.PartnersController.getPartner(regId: String, index: Int)
 PUT         /:regId/partners/:index                 controllers.PartnersController.upsertPartner(regId: String, index: Int)
@@ -65,3 +65,5 @@ GET         /:regId/partners                        controllers.PartnersControll
 
 GET         /:regId/attachments                     controllers.AttachmentsController.getAttachmentList(regId: String)
 PUT         /:regId/attachments                     controllers.AttachmentsController.storeAttachmentDetails(regId: String)
+
+POST        /sdes-notification-callback             controllers.SdesController.sdesCallback

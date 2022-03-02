@@ -7,5 +7,8 @@ DELETE      /registrations                                         controllers.t
 
 POST        /vat/subscription                                      controllers.test.StubVatSubmissionController.processSubmission
 POST        /submission                                            controllers.test.StubNrsController.processSubmission
+POST        /attachment                                            controllers.test.StubNrsController.processAttachmentSubmission
 
 GET         /submissions/:regId/submission-payload                 controllers.test.RetrieveVatSubmissionController.retrieveSubmissionJson(regId)
+
+POST        /notification/fileready                                controllers.test.StubSdesController.notificationStub

@@ -17,14 +17,15 @@
 package controllers
 
 import auth.{Authorisation, AuthorisationResource}
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import models.sdes.SdesCallback
+import play.api.mvc.{Action, ControllerComponents}
 import repositories.VatSchemeRepository
 import services.SdesService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SdesController @Inject()(sdesService: SdesService,
@@ -36,8 +37,8 @@ class SdesController @Inject()(sdesService: SdesService,
 
   val resourceConn: AuthorisationResource = registrationRepository
 
-  def sdesCallback: Action[AnyContent] = Action.async { implicit request =>
-    ???
+  def sdesCallback: Action[SdesCallback] = Action.async(parse.json[SdesCallback]) { implicit request =>
+    sdesService.processCallback(request.body).map(_ => Accepted)
   }
 
 }
