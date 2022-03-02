@@ -16,9 +16,10 @@
 
 package connectors
 
+import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
 import connectors.stubs.NonRepudiationStub._
 import itutil.IntegrationStubbing
-import models.nonrepudiation.{NonRepudiationMetadata, NonRepudiationSubmissionAccepted}
+import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationMetadata, NonRepudiationSubmissionAccepted}
 import play.api.libs.json.{JsObject, Json}
 import play.api.test.Helpers._
 
@@ -33,6 +34,8 @@ class NonRepudiationConnectorISpec extends IntegrationStubbing {
   "submitNonRepudiation" when {
     "the non-repudiation service returns a success" should {
       s"return $NonRepudiationSubmissionAccepted" in {
+        stubAudit(OK)
+        stubMergedAudit(OK)
         val testEncodedPayload = "testEncodedPayload"
         val testPayloadChecksum = "testPayloadChecksum"
         val testAuthToken = "testAuthToken"
@@ -64,6 +67,41 @@ class NonRepudiationConnectorISpec extends IntegrationStubbing {
         await(res) mustBe NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)
 
 
+      }
+    }
+  }
+
+  "submitAttachmentNonRepudiation" when {
+    "the non-repudiation service returns a success" should {
+      s"return $NonRepudiationAttachmentAccepted" in {
+        stubAudit(OK)
+        stubMergedAudit(OK)
+        val testUrl = "testUrl"
+        val testAttachmentId = "testAttachmentId"
+        val testChecksum = "testChecksum"
+        val testMimeType = "testMimeType"
+        val testNrSubmissionId = "testNrSubmissionId"
+
+        val testPayload = NonRepudiationAttachment(
+          attachmentUrl = testUrl,
+          attachmentId = testAttachmentId,
+          attachmentSha256Checksum = testChecksum,
+          attachmentContentType = testMimeType,
+          nrSubmissionId = testNrSubmissionId
+        )
+
+        val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+
+        stubAttachmentNonRepudiationSubmission(
+          Json.toJson(testPayload),
+          testNonRepudiationApiKey)(
+          ACCEPTED,
+          Json.obj("nrAttachmentId" -> testNonRepudiationSubmissionId)
+        )
+
+        val res = connector.submitAttachmentNonRepudiation(testPayload)
+
+        await(res) mustBe NonRepudiationAttachmentAccepted(testNonRepudiationSubmissionId)
       }
     }
   }

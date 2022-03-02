@@ -16,8 +16,10 @@
 
 package services
 
-import connectors.SdesConnector
+import connectors.{NonRepudiationConnector, SdesConnector}
+import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.sdes._
+import play.api.Logging
 import repositories.UpscanMongoRepository
 import services.SdesService._
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
@@ -30,7 +32,9 @@ import scala.concurrent.{ExecutionContext, Future}
 //scalastyle:off
 @Singleton
 class SdesService @Inject()(sdesConnector: SdesConnector,
-                            upscanMongoRepository: UpscanMongoRepository) {
+                            nonRepudiationConnector: NonRepudiationConnector,
+                            upscanMongoRepository: UpscanMongoRepository)
+                           (implicit executionContext: ExecutionContext) extends Logging {
 
   def notifySdes(regId: String,
                  formBundleId: String,
@@ -85,12 +89,48 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
           )
         )
 
-        sdesConnector.notifySdes(payload)
+        sdesConnector.notifySdes(payload).map {
+          case res@SdesNotificationSuccess =>
+            logger.info(s"[SdesService] SDES notification sent for ${details.reference}")
+            res
+          case res@SdesNotificationFailure(body, status) =>
+            logger.error(s"[SdesService] SDES notification failed with status: $status and body: $body")
+            res
+        }
       })
     }
   }
 
-  def sdesCallback(stuff: String)(implicit hc: HeaderCarrier) = ???
+  def processCallback(sdesCallback: SdesCallback)(implicit hc: HeaderCarrier): Future[Unit] = {
+    def getPropertyValue(key: String): Option[String] = sdesCallback.properties.find(_.name.equals(key)).map(_.value)
+
+    val optUrl = getPropertyValue(locationKey)
+    val optAttachmentId = getPropertyValue(attachmentReferenceKey)
+    val optMimeType = getPropertyValue(mimeTypeKey)
+    val optNrSubmissionId = getPropertyValue(nrsSubmissionKey)
+
+    (optUrl, optAttachmentId, optMimeType, optNrSubmissionId, sdesCallback.checksum) match {
+      case (Some(url), Some(attachmentId), Some(mimeType), Some(nrSubmissionId), Some(checksum)) =>
+        val payload = NonRepudiationAttachment(
+          attachmentUrl = url,
+          attachmentId = attachmentId,
+          attachmentSha256Checksum = checksum,
+          attachmentContentType = mimeType,
+          nrSubmissionId = nrSubmissionId
+        )
+
+        nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
+          case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
+            logger.info(s"[SdesService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId")
+          case NonRepudiationAttachmentFailed(body, status) =>
+            logger.error(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
+        }
+      case (Some(_), Some(_), Some(_), None, Some(_)) =>
+        Future.successful(logger.warn("[SdesService] Not sending attachment NRS payload as NRS failed for the Registration Submission"))
+      case _ =>
+        Future.successful(logger.error("[SdesService] Could not send attachment NRS payload due to missing data"))
+    }
+  }
 }
 
 object SdesService {
@@ -100,6 +140,7 @@ object SdesService {
   val attachmentReferenceKey = "attachmentId"
   val submissionDateKey = "submissionDate"
   val nrsSubmissionKey = "nrsSubmissionId"
+  val locationKey = "location"
 
   val checksumAlgorithm = "SHA256"
   val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter

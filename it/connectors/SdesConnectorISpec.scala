@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package connectors
 
 import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
 import connectors.stubs.SdesNotifyStub.stubNrsNotification
+import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.IntegrationStubbing
 import models.sdes._
 import play.api.http.Status.{BAD_REQUEST, NO_CONTENT}
@@ -27,7 +28,7 @@ import services.SdesService._
 
 import java.time.LocalDateTime
 
-class SdesConnectorISpec extends IntegrationStubbing {
+class SdesConnectorISpec extends IntegrationStubbing with FeatureSwitching {
 
   lazy val connector: SdesConnector = app.injector.instanceOf[SdesConnector]
 
@@ -88,6 +89,7 @@ class SdesConnectorISpec extends IntegrationStubbing {
   "notifySdes" when {
     "SDES returns NO_CONTENT" must {
       "return SdesNotificationSuccess" in {
+        disable(StubSubmission)
         stubAudit(OK)
         stubMergedAudit(OK)
         stubNrsNotification(Json.toJson(testPayload))(NO_CONTENT)
@@ -100,6 +102,7 @@ class SdesConnectorISpec extends IntegrationStubbing {
 
     "SDES returns an unexpected response" must {
       "return SdesNotificationFailure" in {
+        disable(StubSubmission)
         stubAudit(OK)
         stubMergedAudit(OK)
         stubNrsNotification(Json.toJson(testPayload))(BAD_REQUEST)

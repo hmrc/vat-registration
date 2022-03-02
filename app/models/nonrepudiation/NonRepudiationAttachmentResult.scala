@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,8 @@
  * limitations under the License.
  */
 
-package connectors.stubs
+package models.nonrepudiation
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import models.sdes.SdesNotification
-import play.api.libs.json.{JsValue, Json}
-
-object SdesNotifyStub {
-
-  def stubNrsNotification(payload: JsValue)(status: Int): StubMapping =
-    stubFor(post(urlPathMatching(s"/notification/fileready"))
-      .withRequestBody(equalToJson(payload.toString()))
-      .willReturn(aResponse()
-        .withStatus(status)
-      )
-    )
-
-}
+sealed trait NonRepudiationAttachmentResult
+case class NonRepudiationAttachmentAccepted(attachmentId: String) extends NonRepudiationAttachmentResult
+case class NonRepudiationAttachmentFailed(body: String, status: Int) extends NonRepudiationAttachmentResult

@@ -18,6 +18,7 @@ package connectors.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import models.nonrepudiation.NonRepudiationAttachment
 import play.api.libs.json.{JsObject, JsValue, Json}
 
 object NonRepudiationStub {
@@ -32,4 +33,14 @@ object NonRepudiationStub {
       )
     )
 
+  def stubAttachmentNonRepudiationSubmission(requestJson: JsValue, apiKey: String)
+                                            (status: Int, body: JsObject = Json.obj()): StubMapping =
+    stubFor(post(urlMatching(s"/attachment"))
+      .withRequestBody(equalToJson(requestJson.toString()))
+      .withHeader("X-API-Key", equalTo(apiKey))
+      .willReturn(aResponse()
+        .withStatus(status)
+        .withBody(body.toString())
+      )
+    )
 }

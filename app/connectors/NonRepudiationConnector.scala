@@ -17,19 +17,20 @@
 package connectors
 
 import config.BackendConfig
-import models.nonrepudiation.{NonRepudiationMetadata, NonRepudiationSubmissionAccepted, NonRepudiationSubmissionFailed, NonRepudiationSubmissionResult}
+import models.nonrepudiation._
 import play.api.http.Status.ACCEPTED
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpReadsHttpResponse, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReadsHttpResponse, HttpResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NonRepudiationConnector @Inject()(httpClient: HttpClient, config: BackendConfig)(implicit ec: ExecutionContext) extends HttpReadsHttpResponse {
+
   def submitNonRepudiation(encodedPayloadString: String,
-                           nonRepudiationMetadata: NonRepudiationMetadata
-                          )(implicit hc: HeaderCarrier): Future[NonRepudiationSubmissionResult] = {
+                           nonRepudiationMetadata: NonRepudiationMetadata)
+                          (implicit hc: HeaderCarrier): Future[NonRepudiationSubmissionResult] = {
     val jsonBody = Json.obj(
       "payload" -> encodedPayloadString,
       "metadata" -> nonRepudiationMetadata
@@ -50,4 +51,20 @@ class NonRepudiationConnector @Inject()(httpClient: HttpClient, config: BackendC
         }
     }
   }
+
+  def submitAttachmentNonRepudiation(payload: NonRepudiationAttachment)(implicit hc: HeaderCarrier): Future[NonRepudiationAttachmentResult] =
+    httpClient.POST[NonRepudiationAttachment, HttpResponse](
+      url = config.attachmentNonRepudiationSubmissionUrl,
+      body = payload,
+      headers = Seq("X-API-Key" -> config.nonRepudiationApiKey)
+    ).map {
+      response =>
+        response.status match {
+          case ACCEPTED =>
+            val attachmentId = (response.json \ "nrAttachmentId").as[String]
+            NonRepudiationAttachmentAccepted(attachmentId)
+          case _ =>
+            NonRepudiationAttachmentFailed(response.body, response.status)
+        }
+    }
 }
