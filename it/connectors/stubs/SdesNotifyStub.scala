@@ -18,17 +18,15 @@ package connectors.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import models.sdes.SdesNotification
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.JsValue
 
 object SdesNotifyStub {
 
-  def stubNrsNotification(payload: JsValue)(status: Int): StubMapping =
+  def stubSdesNotification(payload: JsValue)(status: Int): StubMapping =
     stubFor(post(urlPathMatching(s"/notification/fileready"))
       .withRequestBody(equalToJson(payload.toString()))
       .willReturn(aResponse()
         .withStatus(status)
       )
     )
-
 }

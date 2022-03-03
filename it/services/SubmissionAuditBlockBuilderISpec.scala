@@ -10,7 +10,6 @@ import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with SubmissionAuditFixture {
 
   val service = app.injector.instanceOf[SubmissionAuditBlockBuilder]
-  val testFormBundleId = "testFormBundleId"
 
   override lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     tradingDetails = Some(testTradingDetails),

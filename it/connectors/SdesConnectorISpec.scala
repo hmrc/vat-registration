@@ -17,7 +17,7 @@
 package connectors
 
 import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
-import connectors.stubs.SdesNotifyStub.stubNrsNotification
+import connectors.stubs.SdesNotifyStub.stubSdesNotification
 import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.IntegrationStubbing
 import models.sdes._
@@ -32,59 +32,7 @@ class SdesConnectorISpec extends IntegrationStubbing with FeatureSwitching {
 
   lazy val connector: SdesConnector = app.injector.instanceOf[SdesConnector]
 
-  val testReference = "testReference"
-  val testDownloadUrl = "testDownloadUrl"
-  val testFileName = "testFileName"
-  val testMimeType = "testMimeType"
-  val testTimeStamp = LocalDateTime.now()
-  val testChecksum = "1234567890"
-  val testSize = 123
-  val testFormBundleId = "123412341234"
-  val testNrsKey = "testNrsKey"
-  val testCorrelationid = "testCorrelationid"
-
-  val testPayload: SdesNotification = SdesNotification(
-    informationType = "S18",
-    file = FileDetails(
-      recipientOrSender = "123456789012",
-      name = testFileName,
-      location = testDownloadUrl,
-      checksum = Checksum(
-        algorithm = checksumAlgorithm,
-        value = testChecksum
-      ),
-      size = testSize,
-      properties = List(
-        Property(
-          name = mimeTypeKey,
-          value = testMimeType
-        ),
-        Property(
-          name = prefixedFormBundleKey,
-          value = s"VRS$testFormBundleId"
-        ),
-        Property(
-          name = formBundleKey,
-          value = testFormBundleId
-        ),
-        Property(
-          name = attachmentReferenceKey,
-          value = testReference
-        ),
-        Property(
-          name = submissionDateKey,
-          value = testTimeStamp.format(dateTimeFormatter)
-        ),
-        Property(
-          name = nrsSubmissionKey,
-          value = testNrsKey
-        )
-      )
-    ),
-    audit = AuditDetals(
-      correlationID = testCorrelationid
-    )
-  )
+  val testPayload: SdesNotification = testSdesPayload(testReference)
 
   "notifySdes" when {
     "SDES returns NO_CONTENT" must {
@@ -92,7 +40,7 @@ class SdesConnectorISpec extends IntegrationStubbing with FeatureSwitching {
         disable(StubSubmission)
         stubAudit(OK)
         stubMergedAudit(OK)
-        stubNrsNotification(Json.toJson(testPayload))(NO_CONTENT)
+        stubSdesNotification(Json.toJson(testPayload))(NO_CONTENT)
 
         val result = await(connector.notifySdes(testPayload))
 
@@ -105,7 +53,7 @@ class SdesConnectorISpec extends IntegrationStubbing with FeatureSwitching {
         disable(StubSubmission)
         stubAudit(OK)
         stubMergedAudit(OK)
-        stubNrsNotification(Json.toJson(testPayload))(BAD_REQUEST)
+        stubSdesNotification(Json.toJson(testPayload))(BAD_REQUEST)
 
         val result = await(connector.notifySdes(testPayload))
 

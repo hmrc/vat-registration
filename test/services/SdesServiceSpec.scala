@@ -18,9 +18,17 @@ package services
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import mocks.monitoring.MockAuditService
 import mocks.{MockSdesConnector, MockUpscanMongoRepository}
 import models.api.{Ready, UploadDetails, UpscanDetails}
+import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted}
+import models.sdes.SdesAuditing.SdesCallbackFailureAudit
 import models.sdes._
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.{verify, when}
+import org.scalatest.concurrent.Eventually.eventually
+import play.api.mvc.{AnyContent, Request}
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.SdesService._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -28,15 +36,17 @@ import uk.gov.hmrc.http.HeaderCarrier
 import java.time.LocalDateTime
 import scala.concurrent.Future
 
-class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUpscanMongoRepository with MockSdesConnector {
+class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUpscanMongoRepository with MockSdesConnector with MockAuditService {
 
   object TestService extends SdesService(
     mockSdesConnector,
     mockNonRepudiationConnector,
-    mockUpscanMongoRepository
+    mockUpscanMongoRepository,
+    mockAuditService
   )
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val request: Request[AnyContent] = FakeRequest()
 
   val testReference = "testReference"
   val testReference2 = "testReference2"
@@ -44,11 +54,11 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   val testDownloadUrl = "testDownloadUrl"
   val testFileName = "testFileName"
   val testMimeType = "testMimeType"
-  val testTimeStamp = LocalDateTime.now()
+  val testTimeStamp: LocalDateTime = LocalDateTime.now()
   val testChecksum = "1234567890"
   val testSize = 123
   val testFormBundleId = "123412341234"
-  val testNrsKey = "testNrsKey"
+  val testNrsId = "testNrsId"
   val testCorrelationid = "testCorrelationid"
 
   def testUpscanDetails(reference: String): UpscanDetails = UpscanDetails(
@@ -108,15 +118,49 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
     )
   )
 
+  val testFailureReason = "testFailureReason"
+
+  def testCallback(optFailureReason: Option[String]): SdesCallback = SdesCallback(
+    notification = testReference,
+    filename = testFileName,
+    correlationID = testCorrelationid,
+    dateTime = testDateTime,
+    checksumAlgorithm = Some(checksumAlgorithm),
+    checksum = Some(testChecksum),
+    availableUntil = Some(testDateTime),
+    properties = List(
+      Property(
+        name = mimeTypeKey,
+        value = testMimeType
+      ),
+      Property(
+        name = formBundleKey,
+        value = testFormBundleId
+      ),
+      Property(
+        name = attachmentReferenceKey,
+        value = testReference
+      ),
+      Property(
+        name = locationKey,
+        value = testDownloadUrl
+      ),
+      Property(
+        name = nrsSubmissionKey,
+        value = testNrsId
+      )),
+    failureReason = optFailureReason
+  )
+
   "notifySdes" must {
     "create a payload for every upscanDetails in repository and send it" in {
       val referenceList = Seq(testReference, testReference2, testReference3)
       mockGetAllUpscanDetails(testRegId)(Future.successful(referenceList.map(testUpscanDetails)))
       referenceList.map(reference =>
-        mockNotifySdes(testPayload(reference, Some(testNrsKey)), Future.successful(SdesNotificationSuccess))
+        mockNotifySdes(testPayload(reference, Some(testNrsId)), Future.successful(SdesNotificationSuccess))
       )
 
-      val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, Some(testNrsKey)))
+      val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, Some(testNrsId)))
 
       result mustBe Seq(SdesNotificationSuccess, SdesNotificationSuccess, SdesNotificationSuccess)
     }
@@ -131,6 +175,40 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, None))
 
       result mustBe Seq(SdesNotificationSuccess, SdesNotificationSuccess, SdesNotificationSuccess)
+    }
+  }
+
+  "processCallback" must {
+    "call NRS if callback is successful" in {
+      val testNrAttachmentId = "testNrAttachmentId"
+      val testNrsPayload = NonRepudiationAttachment(
+        attachmentUrl = testDownloadUrl,
+        attachmentId = testReference,
+        attachmentSha256Checksum = testChecksum,
+        attachmentContentType = testMimeType,
+        nrSubmissionId = testNrsId
+      )
+
+      when(mockNonRepudiationConnector.submitAttachmentNonRepudiation(
+        ArgumentMatchers.eq(testNrsPayload)
+      )(ArgumentMatchers.eq(hc))
+      ).thenReturn(Future.successful(NonRepudiationAttachmentAccepted(testNrAttachmentId)))
+
+      val res: Unit = await(TestService.processCallback(testCallback(None)))
+
+      eventually {
+        verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
+          ArgumentMatchers.eq(testNrsPayload)
+        )(ArgumentMatchers.eq(hc))
+      }
+    }
+
+    "audit a failure callback" in {
+      val res: Unit = await(TestService.processCallback(testCallback(Some(testFailureReason))))
+
+      eventually {
+        verifyAudit(SdesCallbackFailureAudit(testCallback(Some(testFailureReason))))
+      }
     }
   }
 }

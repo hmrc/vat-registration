@@ -23,11 +23,10 @@ import featureswitch.core.config.FeatureSwitching
 import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import httpparsers.VatSubmissionSuccess
-import mocks.{MockAttachmentsService, MockTrafficManagementService}
 import mocks.monitoring.MockAuditService
+import mocks.{MockAttachmentsService, MockSdesService, MockTrafficManagementService}
 import models.api._
 import models.monitoring.SubmissionAuditModel
-import models.nonrepudiation.NonRepudiationSubmissionAccepted
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._
@@ -36,7 +35,6 @@ import play.api.libs.json.JsObject
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.AttachmentsService
 import services.monitoring.buildermocks.MockSubmissionAuditBlockBuilder
 import services.submission.buildermocks.MockSubmissionPayloadBuilder
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
@@ -57,7 +55,8 @@ class SubmissionServiceSpec extends VatRegSpec
   with MockAttachmentsService
   with MockSubmissionPayloadBuilder
   with MockSubmissionAuditBlockBuilder
-  with FeatureSwitching {
+  with FeatureSwitching
+  with MockSdesService {
 
   class Setup {
 
@@ -73,6 +72,7 @@ class SubmissionServiceSpec extends VatRegSpec
       submissionPayloadBuilder = mockSubmissionPayloadBuilder,
       submissionAuditBlockBuilder = mockSubmissionAuditBlockBuilder,
       attachmentsService = mockAttachmentService,
+      sdesService = mockSdesService,
       idGenerator = TestIdGenerator,
       auditService = mockAuditService,
       timeMachine = mockTimeMachine,
@@ -89,6 +89,7 @@ class SubmissionServiceSpec extends VatRegSpec
     lastModified = testDate
   )
 
+  val testCorrelationId = "testCorrelationId"
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "testUrl")
 
@@ -113,7 +114,8 @@ class SubmissionServiceSpec extends VatRegSpec
         ArgumentMatchers.eq(testSubmissionPayload),
         ArgumentMatchers.eq(testDateTime),
         ArgumentMatchers.eq(testFormBundleId),
-        ArgumentMatchers.eq(testUserHeaders)
+        ArgumentMatchers.eq(testUserHeaders),
+        ArgumentMatchers.any[Boolean]
       )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(Some(testNonRepudiationSubmissionId)))
 
       mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
@@ -142,7 +144,8 @@ class SubmissionServiceSpec extends VatRegSpec
           ArgumentMatchers.eq(testSubmissionPayload),
           ArgumentMatchers.eq(testDateTime),
           ArgumentMatchers.eq(testFormBundleId),
-          ArgumentMatchers.eq(testUserHeaders)
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.any[Boolean]
         )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
       }
     }
@@ -159,7 +162,7 @@ class SubmissionServiceSpec extends VatRegSpec
       )
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testRegId)) mustBe Right(VatSubmissionSuccess(testFormBundleId))
+      await(service.submit(vatSubmissionJson.as[JsObject], testRegId, testCorrelationId)) mustBe Right(VatSubmissionSuccess(testFormBundleId))
     }
 
     "return a 502 response and successfully audit when submission fails with a 502" in new Setup {
@@ -172,7 +175,7 @@ class SubmissionServiceSpec extends VatRegSpec
       )
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testRegId)) mustBe Right(VatSubmissionSuccess(testFormBundleId))
+      await(service.submit(vatSubmissionJson.as[JsObject], testRegId, testCorrelationId)) mustBe Right(VatSubmissionSuccess(testFormBundleId))
     }
   }
 

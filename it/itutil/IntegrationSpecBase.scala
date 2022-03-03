@@ -29,7 +29,7 @@ import play.api.test.Helpers._
 import reactivemongo.api.commands.WriteResult
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import repositories.{UpscanMongoRepository, VatSchemeRepository}
-import utils.TimeMachine
+import utils.{IdGenerator, TimeMachine}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -79,6 +79,7 @@ trait IntegrationSpecBase extends PlaySpec
     .configure(config)
     .configure("application.router" -> "testOnlyDoNotUseInAppConf.Routes")
     .overrides(bind[TimeMachine].to[FakeTimeMachine])
+    .overrides(bind[IdGenerator].to[FakeIdGenerator])
     .build()
 
   lazy val repo: VatSchemeRepository = app.injector.instanceOf[VatSchemeRepository]

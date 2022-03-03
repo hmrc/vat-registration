@@ -18,6 +18,7 @@ package services
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import mocks.MockUpscanMongoRepository
 import mocks.monitoring.MockAuditService
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationSubmissionFailureAudit, NonRepudiationSubmissionSuccessAudit}
 import models.nonrepudiation.{NonRepudiationMetadata, NonRepudiationSubmissionAccepted, NonRepudiationSubmissionFailed}
@@ -35,12 +36,13 @@ import java.security.MessageDigest
 import java.util.Base64
 import scala.concurrent.Future
 
-class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with VatRegistrationFixture with Eventually {
+class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with VatRegistrationFixture with Eventually with MockUpscanMongoRepository {
 
   import AuthTestData._
 
   object TestService extends NonRepudiationService(
     mockNonRepudiationConnector,
+    mockUpscanMongoRepository,
     mockAuditService,
     mockAuthConnector
   )
@@ -77,7 +79,8 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
 
       when(mockNonRepudiationConnector.submitNonRepudiation(
         ArgumentMatchers.eq(testEncodedPayload),
-        ArgumentMatchers.eq(expectedMetadata)
+        ArgumentMatchers.eq(expectedMetadata),
+        ArgumentMatchers.eq(Nil)
       )(ArgumentMatchers.eq(hc)))
         .thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testSubmissionId)))
 
@@ -86,6 +89,8 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
         ArgumentMatchers.eq(NonRepudiationService.nonRepudiationIdentityRetrievals
         ))(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(executionContext))
       ).thenReturn(Future.successful(testAuthRetrievals))
+
+      mockGetAllUpscanDetails(testRegistrationId)(Future.successful(Nil))
 
       val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testFormBundleId, testUserHeaders)
 
@@ -128,9 +133,12 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
 
       when(mockNonRepudiationConnector.submitNonRepudiation(
         ArgumentMatchers.eq(testEncodedPayload),
-        ArgumentMatchers.eq(expectedMetadata)
+        ArgumentMatchers.eq(expectedMetadata),
+        ArgumentMatchers.eq(Nil)
       )(ArgumentMatchers.eq(hc)))
         .thenReturn(Future.successful(NonRepudiationSubmissionFailed(testExceptionMessage, NOT_FOUND)))
+
+      mockGetAllUpscanDetails(testRegistrationId)(Future.successful(Nil))
 
       val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testFormBundleId, testUserHeaders)
 

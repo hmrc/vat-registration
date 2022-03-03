@@ -36,15 +36,15 @@ class SdesControllerISpec extends IntegrationStubbing {
   val testNotification = "FileReady"
   val testFilename = "uploadedFilename.doc"
   val testChecksumAlgorithm = "SHA2"
-  val testChecksum = "23aab10f02dd6ca07bfdf270252904d754bcc844bf3ac1f52bbaa3b14126e266"
+  override val testChecksum = "23aab10f02dd6ca07bfdf270252904d754bcc844bf3ac1f52bbaa3b14126e266"
   val testCorrelationID: String = UUID.randomUUID().toString
   val testAvailableUntilString = "2021-01-06T10:01:00.889Z"
   val testFailureReason = "Virus Detected"
   val testDateTimeString = "2021-01-01T10:01:00.889Z"
-  val testMimeType = "application/pdf"
+  override val testMimeType = "application/pdf"
   val testNrsSubmissionId: String = UUID.randomUUID().toString
   val testAttachmentId: String = UUID.randomUUID().toString
-  val testFormBundleId = "1234123451234"
+  override val testFormBundleId = "1234123451234"
   val testLocation = "s3://bucketname/path/to/file/in/upscan"
   val testCallbackJson: JsObject = Json.obj(
     "notification" -> testNotification,
@@ -89,7 +89,7 @@ class SdesControllerISpec extends IntegrationStubbing {
   )
 
   s"POST $url" must {
-    "return OK after successfully parsing the callback  json and calling NRS" in new SetupHelper {
+    "return OK after successfully parsing the callback json and calling NRS" in new SetupHelper {
       stubAudit(OK)
       stubMergedAudit(OK)
       stubAttachmentNonRepudiationSubmission(
@@ -98,6 +98,15 @@ class SdesControllerISpec extends IntegrationStubbing {
         ACCEPTED,
         Json.obj("nrAttachmentId" -> testNonRepudiationAttachmentId)
       )
+
+      val res: WSResponse = await(client(url).post(testCallbackJson - "failureReason"))
+
+      res.status mustBe ACCEPTED
+    }
+
+    "return OK and audit after successfully parsing the callback auditing a failure from SDES" in new SetupHelper {
+      stubAudit(OK)
+      stubMergedAudit(OK)
 
       val res: WSResponse = await(client(url).post(testCallbackJson))
 

@@ -18,10 +18,13 @@ package services
 
 import connectors.{NonRepudiationConnector, SdesConnector}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
+import models.sdes.SdesAuditing.SdesCallbackFailureAudit
 import models.sdes._
 import play.api.Logging
+import play.api.mvc.Request
 import repositories.UpscanMongoRepository
 import services.SdesService._
+import services.monitoring.AuditService
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 
 import java.time.ZoneId
@@ -33,7 +36,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SdesService @Inject()(sdesConnector: SdesConnector,
                             nonRepudiationConnector: NonRepudiationConnector,
-                            upscanMongoRepository: UpscanMongoRepository)
+                            upscanMongoRepository: UpscanMongoRepository,
+                            auditService: AuditService)
                            (implicit executionContext: ExecutionContext) extends Logging {
 
   def notifySdes(regId: String,
@@ -101,16 +105,14 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
     }
   }
 
-  def processCallback(sdesCallback: SdesCallback)(implicit hc: HeaderCarrier): Future[Unit] = {
-    def getPropertyValue(key: String): Option[String] = sdesCallback.properties.find(_.name.equals(key)).map(_.value)
+  def processCallback(sdesCallback: SdesCallback)(implicit hc: HeaderCarrier, request: Request[_]): Future[Unit] = {
+    val optUrl = sdesCallback.getPropertyValue(locationKey)
+    val optAttachmentId = sdesCallback.getPropertyValue(attachmentReferenceKey)
+    val optMimeType = sdesCallback.getPropertyValue(mimeTypeKey)
+    val optNrSubmissionId = sdesCallback.getPropertyValue(nrsSubmissionKey)
 
-    val optUrl = getPropertyValue(locationKey)
-    val optAttachmentId = getPropertyValue(attachmentReferenceKey)
-    val optMimeType = getPropertyValue(mimeTypeKey)
-    val optNrSubmissionId = getPropertyValue(nrsSubmissionKey)
-
-    (optUrl, optAttachmentId, optMimeType, optNrSubmissionId, sdesCallback.checksum) match {
-      case (Some(url), Some(attachmentId), Some(mimeType), Some(nrSubmissionId), Some(checksum)) =>
+    (optUrl, optAttachmentId, optMimeType, optNrSubmissionId, sdesCallback.checksum, sdesCallback.failureReason) match {
+      case (Some(url), Some(attachmentId), Some(mimeType), Some(nrSubmissionId), Some(checksum), None) =>
         val payload = NonRepudiationAttachment(
           attachmentUrl = url,
           attachmentId = attachmentId,
@@ -125,7 +127,10 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
           case NonRepudiationAttachmentFailed(body, status) =>
             logger.error(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
         }
-      case (Some(_), Some(_), Some(_), None, Some(_)) =>
+      case (_, Some(attachmentId), _, _, _, Some(failureReason)) =>
+        logger.warn(s"[SdesService] Not sending attachment NRS payload as Callback for $attachmentId failed with reason: $failureReason")
+        Future.successful(auditService.audit(SdesCallbackFailureAudit(sdesCallback)))
+      case (Some(_), Some(_), Some(_), None, Some(_), _) =>
         Future.successful(logger.warn("[SdesService] Not sending attachment NRS payload as NRS failed for the Registration Submission"))
       case _ =>
         Future.successful(logger.error("[SdesService] Could not send attachment NRS payload due to missing data"))

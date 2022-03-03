@@ -14,7 +14,6 @@ class UpscanControllerISpec extends IntegrationStubbing {
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   override val testRegId = "testRegId"
-  val testReference = "testReference"
   val testUpscanDetails: UpscanDetails = UpscanDetails(
     Some(testRegId),
     testReference,
