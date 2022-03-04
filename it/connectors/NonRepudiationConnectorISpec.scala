@@ -41,6 +41,7 @@ class NonRepudiationConnectorISpec extends IntegrationStubbing {
         val testAuthToken = "testAuthToken"
         val headerData = Map("testHeaderKey" -> "testHeaderValue")
         val testPostcode = "testPostcode"
+        val testAttachmentId = "testAttachmentId"
 
         val testNonRepudiationMetadata = NonRepudiationMetadata(
           businessId = "vrs",
@@ -56,13 +57,13 @@ class NonRepudiationConnectorISpec extends IntegrationStubbing {
 
         val expectedRequestJson: JsObject = Json.obj(
           "payload" -> testEncodedPayload,
-          "metadata" -> testNonRepudiationMetadata
+          "metadata" -> (Json.toJson(testNonRepudiationMetadata).as[JsObject] ++ Json.obj("attachmentIds" -> Seq(testAttachmentId)))
         )
 
         val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
         stubNonRepudiationSubmission(expectedRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
-        val res = connector.submitNonRepudiation(testEncodedPayload, testNonRepudiationMetadata)
+        val res = connector.submitNonRepudiation(testEncodedPayload, testNonRepudiationMetadata, Seq(testAttachmentId))
 
         await(res) mustBe NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)
 

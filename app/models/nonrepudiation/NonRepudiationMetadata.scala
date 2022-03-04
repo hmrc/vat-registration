@@ -29,8 +29,7 @@ case class NonRepudiationMetadata(businessId: String,
                                   identityData: IdentityData,
                                   userAuthToken: String,
                                   headerData: Map[String, String],
-                                  searchKeys: Map[String, String]
-                                 )
+                                  searchKeys: Map[String, String])
 
 object NonRepudiationMetadata {
   implicit val format: OFormat[NonRepudiationMetadata] = Json.format[NonRepudiationMetadata]

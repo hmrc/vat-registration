@@ -23,14 +23,14 @@ import featureswitch.core.config.FeatureSwitching
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import models.api.EligibilitySubmissionData.{exceptionKey, exemptionKey}
 import models.api.returns.Annual
-import models.api.{PersonalDetails, Submitted, VatScheme}
+import models.api.{Attached, PersonalDetails, Submitted, VatScheme}
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import repositories._
 import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
-import services.{AttachmentsService, NonRepudiationService, TrafficManagementService}
+import services.{AttachmentsService, NonRepudiationService, SdesService, TrafficManagementService}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
@@ -50,6 +50,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   submissionPayloadBuilder: SubmissionPayloadBuilder,
                                   submissionAuditBlockBuilder: SubmissionAuditBlockBuilder,
                                   attachmentsService: AttachmentsService,
+                                  sdesService: SdesService,
                                   timeMachine: TimeMachine,
                                   auditService: AuditService,
                                   idGenerator: IdGenerator,
@@ -65,12 +66,15 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         vatScheme <- registrationRepository.retrieveVatScheme(regId)
           .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
         submission <- submissionPayloadBuilder.buildSubmissionPayload(regId)
-        submissionResponse <- submit(submission, regId)
+        correlationId = idGenerator.createId
+        submissionResponse <- submit(submission, regId, correlationId)
         _ <- logSubmission(vatScheme, submissionResponse)
         formBundleId <- handleResponse(submissionResponse, regId) // chain ends here if the main submission failed
         _ <- auditSubmission(formBundleId, vatScheme)
         _ <- trafficManagementService.updateStatus(regId, Submitted)
-        optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders)
+        digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
+        optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
+        _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, correlationId, optNrsId)) else Future.successful()
       } yield formBundleId
     } recover {
       case exception: ConflictException =>
@@ -86,11 +90,11 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
   }
 
   private[services] def submit(submission: JsObject,
-                               regId: String
+                               regId: String,
+                               correlationId: String
                               )(implicit hc: HeaderCarrier,
                                 request: Request[_]): Future[VatSubmissionResponse] = {
 
-    val correlationId = idGenerator.createId
     logger.info(s"VAT Submission API Correlation Id: $correlationId for the following regId: $regId")
 
     authorised().retrieve(credentials) { case Some(credentials) =>
@@ -117,14 +121,15 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
 
   private[services] def submitToNrs(formBundleId: String,
                                     vatScheme: VatScheme,
-                                    userHeaders: Map[String, String])
+                                    userHeaders: Map[String, String],
+                                    digitalAttachments: Boolean)
                                    (implicit hc: HeaderCarrier,
                                     request: Request[_]): Future[Option[String]] = {
     val encodedHtml = vatScheme.nrsSubmissionPayload
       .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
     val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
 
-    nonRepudiationService.submitNonRepudiation(vatScheme.id, payloadString, timeMachine.timestamp, formBundleId, userHeaders).recover {
+    nonRepudiationService.submitNonRepudiation(vatScheme.id, payloadString, timeMachine.timestamp, formBundleId, userHeaders, digitalAttachments).recover {
       case _ =>
         logger.error("[SubmissionService] NRS Returned an unexpected exception")
         None

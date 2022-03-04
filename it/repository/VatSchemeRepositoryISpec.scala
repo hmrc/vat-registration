@@ -59,7 +59,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   val registrationId: String = "reg-12345"
   val otherRegId = "other-reg-12345"
   val jsonEligiblityData = Json.obj("foo" -> "bar")
-  val testFormBundleId = "testFormBundleId"
 
   def vatSchemeWithEligibilityDataJson(regId: String = registrationId): JsObject = Json.parse(
     s"""

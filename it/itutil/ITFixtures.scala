@@ -20,8 +20,10 @@ import enums.VatRegStatus
 import models._
 import models.api._
 import models.api.returns._
+import models.sdes.{AuditDetals, Checksum, FileDetails, Property, SdesNotification}
 import models.submission._
 import play.api.libs.json.{JsValue, Json}
+import services.SdesService.{attachmentReferenceKey, checksumAlgorithm, dateTimeFormatter, formBundleKey, mimeTypeKey, nrsSubmissionKey, prefixedFormBundleKey, submissionDateKey}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -665,4 +667,75 @@ trait ITFixtures {
     declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
   )
 
+
+  val testReference = "testReference"
+  val testReference2 = "testReference2"
+
+  val testDownloadUrl = "testDownloadUrl"
+  val testFileName = "testFileName"
+  val testMimeType = "testMimeType"
+  val testTimeStamp = LocalDateTime.now()
+  val testChecksum = "1234567890"
+  val testSize = 123
+  val testFormBundleId = "123412341234"
+  val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+  val testCorrelationid = "testCorrelationid"
+
+  def testSdesPayload(attachmentReference: String): SdesNotification = SdesNotification(
+    informationType = "S18",
+    file = FileDetails(
+      recipientOrSender = "123456789012",
+      name = testFileName,
+      location = testDownloadUrl,
+      checksum = Checksum(
+        algorithm = checksumAlgorithm,
+        value = testChecksum
+      ),
+      size = testSize,
+      properties = List(
+        Property(
+          name = mimeTypeKey,
+          value = testMimeType
+        ),
+        Property(
+          name = prefixedFormBundleKey,
+          value = s"VRS$testFormBundleId"
+        ),
+        Property(
+          name = formBundleKey,
+          value = testFormBundleId
+        ),
+        Property(
+          name = attachmentReferenceKey,
+          value = attachmentReference
+        ),
+        Property(
+          name = submissionDateKey,
+          value = testTimeStamp.format(dateTimeFormatter)
+        ),
+        Property(
+          name = nrsSubmissionKey,
+          value = testNonRepudiationSubmissionId
+        )
+      )
+    ),
+    audit = AuditDetals(
+      correlationID = testCorrelationid
+    )
+  )
+
+  def testUpscanDetails(reference: String): UpscanDetails = UpscanDetails(
+    Some(testRegId),
+    reference,
+    Some(testDownloadUrl),
+    Ready,
+    Some(UploadDetails(
+      fileName = testFileName,
+      fileMimeType = testMimeType,
+      uploadTimestamp = testTimeStamp,
+      checksum = testChecksum,
+      size = testSize
+    )),
+    None
+  )
 }

@@ -39,5 +39,14 @@ trait JsonUtilities {
       case obj => obj
     }
 
+    def filterEmptyArrays: JsValue = json match {
+      case JsObject(fieldSet) => JsObject(fieldSet.flatMap {
+        case (_, JsArray(array)) if array.isEmpty => None
+        case (field, value) => Some((field, value.filterEmptyArrays))
+      })
+      case obj => obj
+    }
+
   }
+
 }

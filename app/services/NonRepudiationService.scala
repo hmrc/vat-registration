@@ -21,6 +21,7 @@ import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationSubmissionFai
 import models.nonrepudiation.{IdentityData, NonRepudiationMetadata, NonRepudiationSubmissionAccepted, NonRepudiationSubmissionFailed}
 import org.joda.time.LocalDate
 import play.api.mvc.Request
+import repositories.UpscanMongoRepository
 import services.NonRepudiationService._
 import services.monitoring.AuditService
 import uk.gov.hmrc.auth.core._
@@ -38,6 +39,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationConnector,
+                                      upscanMongoRepository: UpscanMongoRepository,
                                       auditService: AuditService,
                                       val authConnector: AuthConnector)(implicit ec: ExecutionContext) extends AuthorisedFunctions {
 
@@ -45,7 +47,8 @@ class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationCon
                            payloadString: String,
                            submissionTimestamp: LocalDateTime,
                            formBundleId: String,
-                           userHeaders: Map[String, String]
+                           userHeaders: Map[String, String],
+                           digitalAttachments: Boolean = false
                           )(implicit hc: HeaderCarrier, request: Request[_]): Future[Option[String]] = for {
     identityData <- retrieveIdentityData()
     payloadChecksum = MessageDigest.getInstance("SHA-256")
@@ -54,6 +57,11 @@ class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationCon
     userAuthToken = hc.authorization match {
       case Some(Authorization(authToken)) => authToken
       case _ => throw new InternalServerException("No auth token available for NRS")
+    }
+    digitalAttachmentIds <- if (digitalAttachments) {
+      upscanMongoRepository.getAllUpscanDetails(registrationId).map(_.map(_.reference))
+    } else {
+      Future.successful(Nil)
     }
     nonRepudiationMetadata = NonRepudiationMetadata(
       "vrs",
@@ -67,7 +75,7 @@ class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationCon
       Map("formBundleId" -> formBundleId)
     )
     encodedPayloadString = Base64.getEncoder.encodeToString(payloadString.getBytes(StandardCharsets.UTF_8))
-    nonRepudiationSubmissionResponse <- nonRepudiationConnector.submitNonRepudiation(encodedPayloadString, nonRepudiationMetadata).map {
+    nonRepudiationSubmissionResponse <- nonRepudiationConnector.submitNonRepudiation(encodedPayloadString, nonRepudiationMetadata, digitalAttachmentIds).map {
       case NonRepudiationSubmissionAccepted(submissionId) =>
         auditService.audit(NonRepudiationSubmissionSuccessAudit(registrationId, submissionId))
         Some(submissionId)
