@@ -16,7 +16,7 @@
 
 package httpparsers
 
-import httpparsers.VatSubmissionHttpParser.VatSubmissionHttpReads
+import httpparsers.VatSubmissionHttpParser._
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import play.api.test.Helpers._
@@ -40,21 +40,48 @@ class VatSubmissionHttpParserSpec extends PlaySpec {
 
     "fail when parsing the response with status BAD_REQUEST" when {
       "the code is INVALID_PAYLOAD" in {
-        val jsonBody = Json.obj(VatSubmissionHttpParser.CodeKey -> VatSubmissionHttpParser.InvalidPayloadKey).toString()
+        val jsonBody = Json.obj(failuresKey -> Json.arr(Json.obj(codeKey -> invalidPayloadKey))).toString()
 
-        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid payload"))
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe
+          Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - errors: Invalid Payload"))
       }
 
       "the code is INVALID_CREDENTIALID" in {
-        val jsonBody = Json.obj(VatSubmissionHttpParser.CodeKey -> VatSubmissionHttpParser.InvalidCredentialIdKey).toString()
+        val jsonBody = Json.obj(failuresKey -> Json.arr(Json.obj(codeKey -> invalidCredentialIdKey))).toString()
 
-        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid Credential ID"))
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe
+          Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - errors: Invalid Credential ID"))
       }
 
       "the code is INVALID_SESSIONID" in {
-        val jsonBody = Json.obj(VatSubmissionHttpParser.CodeKey -> VatSubmissionHttpParser.InvalidSessionIdKey).toString()
+        val jsonBody = Json.obj(failuresKey -> Json.arr(Json.obj(codeKey -> invalidSessionIdKey))).toString()
 
-        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - invalid Session ID"))
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe
+          Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - errors: Invalid Session ID"))
+      }
+
+      "the code is INVALID_CORRELATIONID" in {
+        val jsonBody = Json.obj(failuresKey -> Json.arr(Json.obj(codeKey -> invalidCorrelationIdKey))).toString()
+
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe
+          Left(VatSubmissionFailure(BAD_REQUEST, "VAT Submission API - errors: Invalid Correlation ID"))
+      }
+
+      "there are multiple codes" in {
+        val jsonBody = Json.obj(failuresKey -> Json.arr(
+          Json.obj(codeKey -> invalidPayloadKey),
+          Json.obj(codeKey -> invalidCredentialIdKey),
+          Json.obj(codeKey -> invalidSessionIdKey),
+          Json.obj(codeKey -> invalidCorrelationIdKey),
+          Json.obj(codeKey -> "error")
+        )).toString()
+
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe
+          Left(VatSubmissionFailure(
+            BAD_REQUEST,
+            "VAT Submission API - errors: Invalid Payload, Invalid Credential ID, Invalid Session ID," +
+              " Invalid Correlation ID, Unexpected Bad Request error reason"
+          ))
       }
     }
 
