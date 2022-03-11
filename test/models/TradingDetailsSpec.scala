@@ -25,45 +25,22 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
   val testTradingName = "testTradingName"
   val testShortOrgName = "testShortOrgName"
 
-  val fullJson: JsValue = Json.parse(
-    s"""
-       |{
-       |  "tradingName":"$testTradingName",
-       |  "eoriRequested":true,
-       |  "shortOrgName":"$testShortOrgName"
-       |}
-         """.stripMargin
+  val fullJson: JsValue = Json.obj(
+    "tradingName" -> s"$testTradingName",
+    "eoriRequested" -> true,
+    "shortOrgName" -> s"$testShortOrgName",
+    "tradeVatGoodsOutsideUk" -> true
   )
-  val fullModel: TradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName))
+  val fullModel: TradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName), Some(true))
 
-  val noNameJson: JsValue = Json.parse(
-    """
-      |{
-      |   "eoriRequested":true
-      |}
-    """.stripMargin
-  )
-  val noNameModel: TradingDetails = TradingDetails(None, Some(true), None)
+  val noNameJson: JsValue = Json.obj("eoriRequested" -> true)
+  val noNameModel: TradingDetails = TradingDetails(None, Some(true), None, None)
 
-  val noEoriJson: JsValue = Json.parse(
-    """
-      |{
-      |   "tradingName":"test-name"
-      |}
-    """.stripMargin
-  )
+  val noEoriJson: JsValue = Json.obj("tradingName" -> "test-name")
+  val noEoriModel: TradingDetails = TradingDetails(Some("test-name"), None, None, None)
 
-  val noEoriModel: TradingDetails = TradingDetails(Some("test-name"), None, None)
-
-  val emptyJson: JsValue = Json.parse(
-    """
-      |{
-      |
-      |}
-    """.stripMargin
-  )
-
-  val emptyModel: TradingDetails = TradingDetails(None, None, None)
+  val emptyJson: JsValue = Json.obj()
+  val emptyModel: TradingDetails = TradingDetails(None, None, None, None)
 
   "Creating a TradingDetails model from Json" should {
     "complete successfully from full Json" in {
