@@ -193,7 +193,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
   }
   "updateTradingDetails" should {
-    val tradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName))
+    val tradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName), Some(true))
 
     "update tradingDetails block in registration when there is no tradingDetails data" in new Setup {
       val result: Future[Option[TradingDetails]] = for {
@@ -223,7 +223,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
   }
   "Calling retrieveTradingDetails" should {
-    val tradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName))
+    val tradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName), Some(true))
 
     "return trading details data from an existing registration containing data" in new Setup {
       val result: Future[Option[TradingDetails]] = for {

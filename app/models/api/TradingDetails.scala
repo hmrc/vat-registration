@@ -22,10 +22,11 @@ import play.api.libs.json._
 
 case class TradingDetails(tradingName: Option[String],
                           eoriRequested: Option[Boolean],
-                          shortOrgName: Option[String]) extends RegistrationSection[TradingDetails] {
+                          shortOrgName: Option[String],
+                          tradeVatGoodsOutsideUk: Option[Boolean]) extends RegistrationSection[TradingDetails] {
 
   override def isComplete: TradingDetails => Boolean = {
-    case TradingDetails(_, _, _) => true //All can be none and it'd be valid
+    case TradingDetails(_, _, _, _) => true //All can be none and it'd be valid
     case _ => false
   }
 
@@ -36,7 +37,8 @@ object TradingDetails {
   implicit val format: OFormat[TradingDetails] = (
     (__ \ "tradingName").formatNullable[String] and
       (__ \ "eoriRequested").formatNullable[Boolean] and
-      (__ \ "shortOrgName").formatNullable[String]
+      (__ \ "shortOrgName").formatNullable[String] and
+      (__ \ "tradeVatGoodsOutsideUk").formatNullable[Boolean]
     ) (TradingDetails.apply, unlift(TradingDetails.unapply))
 
 }

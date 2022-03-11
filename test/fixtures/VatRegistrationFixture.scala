@@ -17,10 +17,10 @@
 package fixtures
 
 import enums.VatRegStatus
+import models._
 import models.api._
 import models.api.returns._
 import models.submission._
-import models._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -337,22 +337,12 @@ trait VatRegistrationFixture {
        |}
     """.stripMargin).as[JsObject]
 
-  lazy val validFullTradingDetails: TradingDetails = TradingDetails(tradingName = Some(testTradingName), eoriRequested = Some(true), None)
-  lazy val validFullTradingDetailsJson: JsObject = Json.parse(
-    s"""
-       |{
-       | "tradingName":"trading-name",
-       | "eoriRequested":true
-       |}
-     """.stripMargin).as[JsObject]
-
-  lazy val invalidTradingDetailsJson: JsObject = Json.parse(
-    s"""
-       |{
-       | "tradingName":"trading-name",
-       | "eriroREf":true
-       |}
-     """.stripMargin).as[JsObject]
+  lazy val validFullTradingDetails: TradingDetails = TradingDetails(tradingName = Some(testTradingName), eoriRequested = Some(true), None, Some(true))
+  lazy val validFullTradingDetailsJson: JsObject = Json.obj(
+    "tradingName" -> "trading-name",
+    "eoriRequested" -> true,
+    "tradeVatGoodsOutsideUk" -> true
+  )
 
   lazy val validFullFRSDetailsJsonWithBusinessGoods: JsObject = Json.parse(
     s"""
