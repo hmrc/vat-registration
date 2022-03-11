@@ -49,7 +49,9 @@ class DeclarationBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRe
               "applicantDetails" -> jsonObject(
                 "roleInBusiness" -> applicantDetails.roleInBusiness,
                 "name" -> formatName(applicantDetails.personalDetails.name),
-                optional("prevName" -> applicantDetails.changeOfName.map(formatFormerName)),
+                conditional(applicantDetails.changeOfName.exists(_.hasFormerName.contains(true)))(
+                  "prevName" -> applicantDetails.changeOfName.map(formatFormerName)
+                ),
                 optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
                 "currAddress" -> formatAddress(applicantDetails.currentAddress),
                 optional("prevAddress" -> applicantDetails.previousAddress.map(formatAddress)),

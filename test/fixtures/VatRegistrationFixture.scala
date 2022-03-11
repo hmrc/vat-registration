@@ -51,7 +51,7 @@ trait VatRegistrationFixture {
   lazy val testSicCode = SicCode("88888", "description", "displayDetails")
   lazy val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
   lazy val testOldName = Name(first = Some("Bob"), middle = None, last = "Smith")
-  lazy val testPreviousName = FormerName(name = Some(testOldName), change = Some(testDate))
+  lazy val testPreviousName = FormerName(hasFormerName = Some(true), name = Some(testOldName), change = Some(testDate))
   lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalId, status = VatRegStatus.draft)
   lazy val exception = new Exception("Exception")
   lazy val testVoluntaryThreshold = Threshold(mandatoryRegistration = false, None, None, None)
@@ -71,7 +71,7 @@ trait VatRegistrationFixture {
   lazy val testBic = "010203"
   lazy val testIban = "01023456"
   lazy val testBankDetailsOverseas = BankAccountOverseasDetails(testOverseasBankName, testBic, testIban)
-  lazy val testFormerName = FormerName(Some(testName), Some(testDate))
+  lazy val testFormerName = FormerName(hasFormerName = Some(true), Some(testName), Some(testDate))
   lazy val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
   lazy val zeroRatedSupplies: BigDecimal = 12.99
   lazy val testBpSafeId = "testBpSafeId"
