@@ -111,7 +111,7 @@ trait ITFixtures {
   val testRole = Director
   val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
   val testProperName = Name(first = Some(testFirstName), middle = None, last = testLastName)
-  val testFormerName = FormerName(name = Some(oldName), change = Some(testDate))
+  val testFormerName = FormerName(hasFormerName = Some(true), name = Some(oldName), change = Some(testDate))
   val testCompanyName = "testCompanyName"
   val testDateOfBirth = DateOfBirth(testDate)
   val testCrn = "testCrn"

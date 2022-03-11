@@ -16,19 +16,14 @@
 
 package models.api
 
+import play.api.libs.json._
+
 import java.time.LocalDate
 
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
-
-case class FormerName(name: Option[Name],
+case class FormerName(hasFormerName: Option[Boolean], //TODO: Remove optionality from boolean in 2 weeks (24/3/22)
+                      name: Option[Name],
                       change: Option[LocalDate])
 
 object FormerName {
   implicit val format = Json.format[FormerName]
-
-  val auditWrites: Format[FormerName] = (
-    (__).formatNullable[Name](Name.auditWrites) and
-    (__ \ "nameChangeDate").formatNullable[LocalDate]
-  )(FormerName.apply, unlift(FormerName.unapply))
 }
