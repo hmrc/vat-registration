@@ -240,13 +240,12 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
     }
   }
 
-  // TODO: Remove deprecated methods once migration to new /registrations API is complete
-
-  @deprecated("migrate to the new /registrations API")
   def retrieveVatScheme(regId: String): Future[Option[VatScheme]] = {
     implicit val format = VatScheme.format(Some(crypto))
     find("registrationId" -> regId).map(_.headOption)
   }
+
+  // TODO: Remove deprecated methods once migration to new /registrations API is complete
 
   def retrieveVatSchemeByInternalId(id: String): Future[Option[VatScheme]] = {
     implicit val format = VatScheme.format(Some(crypto))

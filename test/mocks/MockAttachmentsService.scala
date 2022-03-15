@@ -16,7 +16,7 @@
 
 package mocks
 
-import models.api.{AttachmentType, VatScheme}
+import models.api.{AttachmentType, Attachments, VatScheme}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.mockito.stubbing.OngoingStubbing
@@ -30,6 +30,11 @@ trait MockAttachmentsService extends MockitoSugar {
   self: Suite =>
 
   val mockAttachmentService: AttachmentsService = mock[AttachmentsService]
+
+  def mockGetAttachmentDetails(regId: String)
+                              (response: Future[Option[Attachments]]): OngoingStubbing[Future[Option[Attachments]]] =
+    when(mockAttachmentService.getAttachmentDetails(ArgumentMatchers.eq(regId)))
+      .thenReturn(response)
 
   def mockGetAttachmentList(regId: String)
                            (response: Future[Set[AttachmentType]]): OngoingStubbing[Future[Set[AttachmentType]]] =

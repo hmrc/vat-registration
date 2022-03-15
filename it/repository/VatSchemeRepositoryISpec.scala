@@ -170,7 +170,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
   }
   "Calling updateSubmissionStatus" should {
-    val testAckRef = "testAckRef"
     "set the status" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
         insert <- repository.insert(vatSchemeWithEligibilityData)

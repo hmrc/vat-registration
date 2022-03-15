@@ -65,6 +65,8 @@ trait IntegrationSpecBase extends PlaySpec
     "microservice.services.non-repudiation.port" -> mockPort,
     "microservice.services.sdes.host" -> mockHost,
     "microservice.services.sdes.port" -> mockPort,
+    "microservice.services.email.host" -> mockHost,
+    "microservice.services.email.port" -> mockPort,
     "mongo-encryption.key" -> "ABCDEFGHIJKLMNOPQRSTUV==",
     "traffic-management.quotas.uk-company-enrolled" -> "11",
     "traffic-management.quotas.uk-company" -> "1",

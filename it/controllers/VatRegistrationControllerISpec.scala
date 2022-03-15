@@ -196,6 +196,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -213,6 +214,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -230,6 +232,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -249,6 +252,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -291,6 +295,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testSubmissionJson.as[JsObject].deepMerge(agentTransactorJson), OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -312,6 +317,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testSubmissionJsonWithShortOrgName, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -335,6 +341,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testTransactorSubmissionJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -352,6 +359,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -369,6 +377,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -388,6 +397,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testNetpJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -408,6 +418,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testNetpJsonOverseas, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -427,6 +438,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testNonUkCompanyJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -446,6 +458,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testVerifiedTrustJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -466,6 +479,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testSubmissionJson(generalPartnershipCustomerId, Some(soleTraderLeadPartner)), OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -484,6 +498,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testSubmissionJson(generalPartnershipCustomerId, Some(ukCompanyLeadPartner)), OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -504,6 +519,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testSubmissionJson(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner)), OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -524,6 +540,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testSubmissionJson(limitedLiabilityPartnershipCustomerId, None), OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -549,6 +566,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           Json.stringify(testSubmissionResponse)
         )
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -597,6 +615,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           Json.stringify(testSubmissionResponse)
         )
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -629,6 +648,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost("/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(attachmentNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
         stubSdesNotification(Json.toJson(testSdesPayload(testReference)))(NO_CONTENT)
         stubSdesNotification(Json.toJson(testSdesPayload(testReference2)))(NO_CONTENT)

@@ -30,7 +30,7 @@ import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import repositories._
 import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
-import services.{AttachmentsService, NonRepudiationService, SdesService, TrafficManagementService}
+import services.{AttachmentsService, EmailService, NonRepudiationService, SdesService, TrafficManagementService}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
@@ -54,6 +54,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   timeMachine: TimeMachine,
                                   auditService: AuditService,
                                   idGenerator: IdGenerator,
+                                  emailService: EmailService,
                                   val authConnector: AuthConnector
                                  )(implicit executionContext: ExecutionContext) extends FutureInstances with AuthorisedFunctions with Logging with FeatureSwitching {
 
@@ -72,6 +73,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         formBundleId <- handleResponse(submissionResponse, regId) // chain ends here if the main submission failed
         _ <- auditSubmission(formBundleId, vatScheme)
         _ <- trafficManagementService.updateStatus(regId, Submitted)
+        _ <- emailService.sendRegistrationReceivedEmail(regId)
         digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
         optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
         _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, correlationId, optNrsId)) else Future.successful()

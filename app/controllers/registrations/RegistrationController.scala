@@ -36,7 +36,6 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
 
   override val resourceConn: AuthorisationResource = registrationService.vatSchemeRepository
 
-
   /** GET /registrations
    * ===Purpose===
    * Return a list of all registrations for the users's Internal ID

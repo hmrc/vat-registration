@@ -114,4 +114,8 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
       sdesUrl + endpoint
     }
   }
+
+  lazy val emailBaseUrl = servicesConfig.baseUrl("email")
+
+  def sendEmailUrl: String = s"$emailBaseUrl/hmrc/email"
 }
