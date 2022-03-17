@@ -18,13 +18,14 @@ package services.submission
 
 import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
+import connectors.EmailSent
 import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import httpparsers.VatSubmissionSuccess
 import mocks.monitoring.MockAuditService
-import mocks.{MockAttachmentsService, MockSdesService, MockTrafficManagementService}
+import mocks.{MockAttachmentsService, MockEmailService, MockSdesService, MockTrafficManagementService}
 import models.api._
 import models.monitoring.SubmissionAuditModel
 import org.mockito.ArgumentMatchers
@@ -55,6 +56,7 @@ class SubmissionServiceSpec extends VatRegSpec
   with MockAttachmentsService
   with MockSubmissionPayloadBuilder
   with MockSubmissionAuditBlockBuilder
+  with MockEmailService
   with FeatureSwitching
   with MockSdesService {
 
@@ -76,6 +78,7 @@ class SubmissionServiceSpec extends VatRegSpec
       idGenerator = TestIdGenerator,
       auditService = mockAuditService,
       timeMachine = mockTimeMachine,
+      emailService = mockEmailService,
       authConnector = mockAuthConnector
     )
   }
@@ -107,6 +110,8 @@ class SubmissionServiceSpec extends VatRegSpec
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testRegId)).thenReturn(Future.successful(vatSubmissionVoluntaryJson.as[JsObject]))
+      mockSendRegistrationReceivedEmail(testRegId)(Future.successful(EmailSent))
+
       val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
 
       when(mockNonRepudiationService.submitNonRepudiation(

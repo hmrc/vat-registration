@@ -71,4 +71,14 @@ trait WiremockHelper {
           withBody(responseBody)
       )
     )
+
+  def stubPostDelayed(url: String, requestBody: JsValue, status: Integer): StubMapping =
+    stubFor(post(urlEqualTo(url))
+      .withRequestBody(equalToJson(requestBody.toString()))
+      .willReturn(
+        aResponse()
+          .withStatus(status)
+          .withFixedDelay(1100)
+      )
+    )
 }
