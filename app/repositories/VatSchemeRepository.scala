@@ -26,9 +26,9 @@ import models.submission.PartyType
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.Cursor.FailOnError
-import reactivemongo.api.{ReadPreference, WriteConcern}
 import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
+import reactivemongo.api.{ReadPreference, WriteConcern}
 import reactivemongo.bson.{BSONDocument, BSONInteger, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
@@ -240,6 +240,23 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
     }
   }
 
+  def deleteSection(internalId: String, regId: String, section: String): Future[Boolean] = {
+    val update = Json.obj("$unset" -> Json.obj(section -> ""))
+    collection.update.one(registrationSelector(regId, Some(internalId)), update) map { updateResult =>
+      if (updateResult.n == 0) {
+        logger.warn(s"[RegistrationRepository] removing for regId : $regId - No document found")
+        true
+      } else {
+        logger.info(s"[RegistrationRepository] removing for regId : $regId - documents modified : ${updateResult.nModified}")
+        true
+      }
+    } recover {
+      case e =>
+        logger.warn(s"[RegistrationRepository] Unable to remove for regId: $regId, Error: ${e.getMessage}")
+        throw new InternalServerException(s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}")
+    }
+  }
+
   def retrieveVatScheme(regId: String): Future[Option[VatScheme]] = {
     implicit val format = VatScheme.format(Some(crypto))
     find("registrationId" -> regId).map(_.headOption)
@@ -363,7 +380,6 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
     }
   }
 
-  @deprecated("migrate to the new /registrations API")
   private[repositories] def registrationSelector(regId: String, internalId: Option[String] = None) =
     BSONDocument("registrationId" -> regId) ++
       internalId.map(id => BSONDocument("internalId" -> id))

@@ -101,4 +101,11 @@ trait MockVatSchemeRepository extends MockitoSugar {
       ArgumentMatchers.eq(key),
       ArgumentMatchers.eq(data)
     )(ArgumentMatchers.any())).thenReturn(Future.successful(response))
+
+  def mockDeleteSection(internalId: String, regId: String, key: String)(response: Boolean): OngoingStubbing[Future[Boolean]] =
+    when(mockVatSchemeRepository.deleteSection(
+      ArgumentMatchers.eq(internalId),
+      ArgumentMatchers.eq(regId),
+      ArgumentMatchers.eq(key)
+    )).thenReturn(Future.successful(response))
 }

@@ -46,7 +46,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
     await(repo.ensureIndexes)
   }
 
-  "createNewVatScheme()" must {
+  "createNewVatScheme" must {
     "create a new registration for the user" in new Setup {
       FakeRegistrationIdService.id = testRegId
       await(repo.createNewVatScheme(testRegId, testInternalid))
@@ -187,4 +187,23 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
     }
   }
 
+  "deleteSection" must {
+    "delete the section if it exists" in new Setup {
+      await(repo.createNewVatScheme(testRegId, testInternalid))
+      await(repo.upsertSection(testRegId, testInternalid, TransactorSectionId.repoKey, Json.toJson(testTransactorDetails)))
+
+      val res = await(repo.deleteSection(testInternalid, testRegId, TransactorSectionId.repoKey))
+      val regs = await(repo.find("internalId" -> testInternalid, "registrationId" -> testRegId))
+
+      res mustBe true
+      regs.headOption mustBe Some(testEmptyVatScheme(testRegId))
+    }
+    "pass after doing nothing if the registration doesn't exist" in new Setup {
+      val res = await(repo.deleteSection(testInternalid, testRegId, TransactorSectionId.repoKey))
+      val regs = await(repo.find("internalId" -> testInternalid, "registrationId" -> testRegId))
+
+      res mustBe true
+      regs.headOption mustBe None
+    }
+  }
 }

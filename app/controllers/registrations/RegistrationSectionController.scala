@@ -35,12 +35,11 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
 
   override val resourceConn: AuthorisationResource = registrationService.vatSchemeRepository
 
-  private val dataKey = "data"
-  private val isCompleteKey = "isComplete"
   /** GET /registrations/:regId/sections/:sectionId
    * ===Purpose===
    * Retrieve the data of the named section in the given registration
    * ===Detail===
+   *
    * @param regId
    * @param sectionId
    * @return OK - Json representation of the named section<br>
@@ -51,11 +50,8 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
       registrationService.getSection[JsValue](internalId, regId, section).flatMap {
         case Some(sectionData) =>
           sectionValidationService.validate(internalId, regId, section, sectionData).map {
-            case Right(ValidSection(_, isComplete)) =>
-              Ok(Json.obj(
-                isCompleteKey -> isComplete,
-                dataKey -> sectionData
-              ))
+            case Right(ValidSection(_)) =>
+              Ok(sectionData)
             case Left(response@InvalidSection(_)) =>
               InternalServerError(response.asString)
           }
@@ -69,6 +65,7 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
    * ===Purpose===
    * merge the given JSON with the stored JSON
    * ===Detail===
+   *
    * @param regId
    * @param sectionKey
    * @return OK - Json representation of the updated section<br>
@@ -83,11 +80,8 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
         validatedData = validationResponse.map(_.validatedModel).getOrElse(Json.obj())
         update <- registrationService.upsertSection(internalId, regId, section, validatedData)
       } yield (validationResponse, update) match {
-        case (Right(ValidSection(_, isComplete)), Some(updatedSection)) =>
-          Ok(Json.obj(
-            isCompleteKey -> isComplete,
-            dataKey -> updatedSection
-          ))
+        case (Right(ValidSection(_)), Some(updatedSection)) =>
+          Ok(updatedSection)
         case (_, None) =>
           InternalServerError(s"[RegistrationSectionController][upsertSection] Unable to update section ${section.key}")
         case (Left(response@InvalidSection(_)), _) =>
@@ -101,6 +95,7 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
    * ===Purpose===
    * Replaces the named section in the given registration with the given JSON
    * ===Detail===
+   *
    * @param regId
    * @param sectionKey
    * @return OK - Json representation of the updated section<br>
@@ -109,13 +104,10 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
   def replaceSection(regId: String, section: RegistrationSectionId): Action[JsValue] = Action.async(parse.json) { implicit request =>
     isAuthenticated { internalId =>
       sectionValidationService.validate(internalId, regId, section, request.body).flatMap {
-        case Right(ValidSection(validatedJson, isComplete)) =>
+        case Right(ValidSection(validatedJson)) =>
           registrationService.upsertSection[JsValue](internalId, regId, section, validatedJson).map {
             case Some(updatedSectionJson) =>
-              Ok(Json.obj(
-                isCompleteKey -> isComplete,
-                dataKey -> updatedSectionJson
-              ))
+              Ok(updatedSectionJson)
             case _ =>
               InternalServerError(s"[RegistrationSectionController][upsertSection] Unable to upsert section '${section.key}' for regId '$regId'")
           }
@@ -130,26 +122,17 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
    * ===Purpose===
    * Delete the named section in the given registration
    * ===Detail===
+   *
    * @param regId
    * @param sectionKey
    * @return NO_CONTENT
    */
   def deleteSection(regId: String, section: RegistrationSectionId): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
-      registrationService.getRegistration[JsValue](internalId, regId).flatMap {
-        case Some(registration) =>
-          registration.transform((JsPath \ section.key).prune) match {
-            case JsSuccess(updatedRegistration, _) =>
-              registrationService.upsertRegistration(internalId, regId, updatedRegistration)
-                .map(_ => NoContent)
-            case JsError(_) =>
-              Future.successful(InternalServerError(s"[RegistrationSectionController][deleteSection] Unable to remove section ${section.key}"))
-          }
-        case _ =>
-          Future.successful(NoContent)
+      registrationService.deleteSection(internalId, regId, section).map { _ =>
+        NoContent
       }
     }
-
   }
 
 }

@@ -17,7 +17,6 @@
 package models.api
 
 import models.BusinessEntity
-import models.registration.RegistrationSection
 import models.submission._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -29,13 +28,7 @@ case class ApplicantDetails(personalDetails: PersonalDetails,
                             previousAddress: Option[Address] = None,
                             contact: DigitalContactOptional,
                             changeOfName: Option[FormerName] = None,
-                            roleInBusiness: RoleInTheBusiness) extends RegistrationSection[ApplicantDetails] {
-
-  override def isComplete: ApplicantDetails => Boolean = {
-    _ => true
-  }
-
-}
+                            roleInBusiness: RoleInTheBusiness)
 
 object ApplicantDetails extends VatApplicantDetailsValidator
   with JsonUtilities {

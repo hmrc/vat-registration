@@ -43,7 +43,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(validApplicantDetails)(Format[ApplicantDetails](ApplicantDetails.reads(UkCompany), ApplicantDetails.writes))
         val res = await(Service.validate(testInternalId, testRegId, ApplicantSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
     }
     "the section is Attachments" must {
@@ -51,7 +51,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(Attachments(EmailMethod))
         val res = await(Service.validate(testInternalId, testRegId, AttachmentsSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
     }
     "the section is BankAccount" must {
@@ -59,7 +59,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(testBankAccount)
         val res = await(Service.validate(testInternalId, testRegId, BankAccountSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
     }
     "the section is BusinessContact (legacy)" must {
@@ -67,7 +67,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(testBusinessContact)
         val res = await(Service.validate(testInternalId, testRegId, BusinessContactSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
     }
     "the section is Compliance" must {
@@ -75,7 +75,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(testSicAndCompliance)
         val res = await(Service.validate(testInternalId, testRegId, ComplianceSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
     }
     "the section is Eligibility" must {
@@ -83,7 +83,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(testEligibilitySubmissionData)
         val res = await(Service.validate(testInternalId, testRegId, EligibilitySectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
       "return InvalidSection when required fields is missing" in {
         val res = await(Service.validate(testInternalId, testRegId, EligibilitySectionId, Json.obj()))
@@ -97,7 +97,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(validFullFlatRateScheme)
         val res = await(Service.validate(testInternalId, testRegId, FlatRateSchemeSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
     }
     "the section is Returns" must {
@@ -105,7 +105,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(testReturns)
         val res = await(Service.validate(testInternalId, testRegId, ReturnsSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
     }
     "the section is Transactor" must {
@@ -113,7 +113,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(validTransactorDetails)
         val res = await(Service.validate(testInternalId, testRegId, TransactorSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
       }
     }
     "the section is TradingDetails (legacy)" must {
@@ -121,7 +121,25 @@ class SectionValidationServiceSpec extends VatRegSpec
         val data = Json.toJson(validFullTradingDetails)
         val res = await(Service.validate(testInternalId, testRegId, TradingDetailsSectionId, data))
 
-        res mustBe Right(ValidSection(data, true))
+        res mustBe Right(ValidSection(data))
+      }
+    }
+  }
+
+  "validateIndex" when {
+    "the section is OtherBusinessInvolvements" must {
+      "return ValidSection when the data is valid" in {
+        val data = Json.toJson(validFullOtherBusinessInvolvement)
+        val res = await(Service.validateIndex(OtherBusinessInvolvementsSectionId, data))
+
+        res mustBe Right(ValidSection(data))
+      }
+
+      "throw InternalServerError when the data is invalid" in {
+        val data = Json.toJson(validFullTradingDetails)
+        val res = await(Service.validateIndex(OtherBusinessInvolvementsSectionId, data))
+
+        res mustBe Left(InvalidSection(Seq("/businessName", "/hasVrn", "/stillTrading")))
       }
     }
   }

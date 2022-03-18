@@ -14,3 +14,8 @@ GET             /:regId/sections/:section                       controllers.regi
 PATCH           /:regId/sections/:section                       controllers.registrations.RegistrationSectionController.upsertSection(regId: String, section: models.registration.RegistrationSectionId)
 PUT             /:regId/sections/:section                       controllers.registrations.RegistrationSectionController.replaceSection(regId: String, section: models.registration.RegistrationSectionId)
 DELETE          /:regId/sections/:section                       controllers.registrations.RegistrationSectionController.deleteSection(regId: String, section: models.registration.RegistrationSectionId)
+
+# /vatreg/registrations/:regId/sections/:sectionId/:index
+GET             /:regId/sections/:section/:index                controllers.registrations.RegistrationListSectionController.getSectionIndex(regId: String, section: models.registration.CollectionSectionId, index: Int)
+PUT             /:regId/sections/:section/:index                controllers.registrations.RegistrationListSectionController.replaceSectionIndex(regId: String, section: models.registration.CollectionSectionId, index: Int)
+DELETE          /:regId/sections/:section/:index                controllers.registrations.RegistrationListSectionController.deleteSectionIndex(regId: String, section: models.registration.CollectionSectionId, index: Int)

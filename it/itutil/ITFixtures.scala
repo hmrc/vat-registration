@@ -668,6 +668,14 @@ trait ITFixtures {
     declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
   )
 
+  lazy val testOtherBusinessInvolvement = OtherBusinessInvolvement(
+    businessName = testCompanyName,
+    hasVrn = true,
+    vrn = Some(testVrn),
+    hasUtr = Some(true),
+    utr = Some(testUtr),
+    stillTrading = true
+  )
 
   val testReference = "testReference"
   val testReference2 = "testReference2"

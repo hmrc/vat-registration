@@ -41,6 +41,7 @@ trait VatRegistrationFixture {
   lazy val testDateOfBirth = DateOfBirth(testDate)
   lazy val testCompanyName = "testCompanyName"
   lazy val testCrn = "testCrn"
+  lazy val testVrn = "testVrn"
   lazy val testUtr = "testUtr"
   lazy val testChrn = "testChrn"
   lazy val testCasc = "testCasc"
@@ -342,6 +343,16 @@ trait VatRegistrationFixture {
     "tradingName" -> "trading-name",
     "eoriRequested" -> true,
     "tradeVatGoodsOutsideUk" -> true
+  )
+
+  lazy val validFullOtherBusinessInvolvement: OtherBusinessInvolvement = OtherBusinessInvolvement(businessName = testCompanyName, hasVrn = true, vrn = Some(testVrn), hasUtr = Some(true), utr = Some(testUtr), stillTrading = true)
+  lazy val validFullObiJson: JsObject = Json.obj(
+    "businessName" -> s"$testCompanyName",
+    "hasVrn" -> true,
+    "vrn" -> s"$testVrn",
+    "hasUtr" -> true,
+    "utr" -> s"$testUtr",
+    "stillTrading" -> true
   )
 
   lazy val validFullFRSDetailsJsonWithBusinessGoods: JsObject = Json.parse(

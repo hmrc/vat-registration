@@ -16,10 +16,15 @@
 
 package models.api
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Json, OFormat}
 
-case class Attachments(method: AttachmentMethod)
+case class OtherBusinessInvolvement(businessName: String,
+                                    hasVrn: Boolean,
+                                    vrn: Option[String],
+                                    hasUtr: Option[Boolean],
+                                    utr: Option[String],
+                                    stillTrading: Boolean)
 
-object Attachments {
-  implicit val format: Format[Attachments] = Json.format[Attachments]
+object OtherBusinessInvolvement {
+  implicit val format: OFormat[OtherBusinessInvolvement] = Json.format[OtherBusinessInvolvement]
 }
