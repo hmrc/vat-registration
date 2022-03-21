@@ -38,7 +38,9 @@ class SubscriptionAuditBlockBuilder {
         "overThresholdInNextMonth" -> eligibilityData.threshold.thresholdNextThirtyDays.isDefined,
         optional("overThresholdInNextMonthDate" -> eligibilityData.threshold.thresholdNextThirtyDays),
         "reasonForSubscription" -> jsonObject(
-          optional("voluntaryOrEarlierDate" -> returns.startDate),
+          conditional(returns.startDate.exists(date => !eligibilityData.calculatedDate.contains(date)))(
+            "voluntaryOrEarlierDate" -> returns.startDate
+          ),
           "exemptionOrException" -> eligibilityData.exceptionOrExemption
         ),
         "businessActivities" -> jsonObject(

@@ -16,9 +16,9 @@
 
 package services.submission
 
-import models.api.returns.NIPCompliance
 import models._
-import play.api.libs.json.{JsBoolean, JsObject}
+import models.api.returns.NIPCompliance
+import play.api.libs.json.JsObject
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -52,7 +52,9 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: VatSchemeR
             case TransferOfAGoingConcern => eligibilityData.togcCole.map(_.dateOfTransfer)
           }
         },
-        optional("voluntaryOrEarlierDate" -> returns.startDate),
+        conditional(returns.startDate.exists(date => !eligibilityData.calculatedDate.contains(date)))(
+          "voluntaryOrEarlierDate" -> returns.startDate
+        ),
         "exemptionOrException" -> eligibilityData.exceptionOrExemption
       ),
       optional("corporateBodyRegistered" -> Option(applicantDetails.entity).collect {
