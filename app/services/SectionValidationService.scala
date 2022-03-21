@@ -16,8 +16,8 @@
 
 package services
 
-import models.api.returns.Returns
 import models.api._
+import models.api.returns.Returns
 import models.registration._
 import models.registration.sections.PartnersSection
 import models.submission.PartyType
@@ -53,12 +53,20 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
       case ReturnsSectionId => Future(validate[Returns](json))
       case TransactorSectionId => Future(validate[TransactorDetails](json))
       case TradingDetailsSectionId => Future(validate[TradingDetails](json))
+      case OtherBusinessInvolvementsSectionId => Future(validate[List[OtherBusinessInvolvement]](json))
+      case unknown => throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported section: ${unknown.toString}")
     }
 
-  private def validate[A <: RegistrationSection[A]](json: JsValue)(implicit format: Format[A]): Either[InvalidSection, ValidSection] =
+  def validateIndex(section: CollectionSectionId, json: JsValue): Future[Either[InvalidSection, ValidSection]] =
+    section match {
+      case OtherBusinessInvolvementsSectionId => Future(validate[OtherBusinessInvolvement](json))
+      case unknown => throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported collection section: ${unknown.toString}")
+    }
+
+  private def validate[A](json: JsValue)(implicit format: Format[A]): Either[InvalidSection, ValidSection] =
     json.validate[A] match {
       case JsSuccess(value, _) =>
-        Right(ValidSection(json, value.isComplete(value)))
+        Right(ValidSection(json))
       case JsError(errors) =>
         Left(InvalidSection(errors.map(_._1.toString())))
     }
@@ -73,4 +81,4 @@ case class InvalidSection(errors: Seq[String]) {
 
 sealed trait ValidSectionResponse
 
-case class ValidSection(validatedModel: JsValue, isComplete: Boolean)
+case class ValidSection(validatedModel: JsValue)

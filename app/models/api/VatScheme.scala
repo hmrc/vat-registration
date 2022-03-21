@@ -45,7 +45,8 @@ case class VatScheme(id: String,
                      partners: Option[PartnersSection] = None,
                      attachments: Option[Attachments] = None,
                      createdDate: Option[LocalDate] = None,
-                     applicationReference: Option[String] = None) {
+                     applicationReference: Option[String] = None,
+                     otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -75,7 +76,8 @@ object VatScheme {
         (__ \ "partners").readNullable[PartnersSection] and
         (__ \ "attachments").readNullable[Attachments] and
         (__ \ "createdDate").readNullable[LocalDate] and
-        (__ \ "applicationReference").readNullable[String]
+        (__ \ "applicationReference").readNullable[String] and
+        (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]]
         ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
@@ -97,7 +99,8 @@ object VatScheme {
         (__ \ "partners").readNullable[PartnersSection] and
         (__ \ "attachments").readNullable[Attachments] and
         (__ \ "createdDate").readNullable[LocalDate] and
-        (__ \ "applicationReference").readNullable[String]
+        (__ \ "applicationReference").readNullable[String] and
+        (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]]
         ) (VatScheme.apply _)
     }
 
@@ -121,7 +124,8 @@ object VatScheme {
     (__ \ "partners").writeNullable[PartnersSection] and
     (__ \ "attachments").writeNullable[Attachments] and
     (__ \ "createdDate").writeNullable[LocalDate] and
-    (__ \ "applicationReference").writeNullable[String]
+    (__ \ "applicationReference").writeNullable[String] and
+    (__ \ "otherBusinessInvolvements").writeNullable[List[OtherBusinessInvolvement]]
     ) (unlift(VatScheme.unapply))
 
   def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =

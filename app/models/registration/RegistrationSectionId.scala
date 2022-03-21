@@ -18,23 +18,17 @@ package models.registration
 
 import play.api.mvc.PathBindable
 
-trait RegistrationSection[T] {
-  def isComplete: T => Boolean
-}
-
-sealed trait RegistrationSectionId {
+trait RegistrationSectionId {
   val key: String
-  val repoKey: String   // TODO: Temporary while migrating model - remove once done
+  val repoKey: String
 }
-
-sealed trait LegacySection
 
 case object ApplicantSectionId extends RegistrationSectionId {
   val key = "applicant"
   val repoKey = "applicantDetails"
 }
 
-case object AttachmentsSectionId extends RegistrationSectionId with LegacySection {
+case object AttachmentsSectionId extends RegistrationSectionId {
   val key = "attachments"
   val repoKey = key
 }
@@ -44,7 +38,7 @@ case object BankAccountSectionId extends RegistrationSectionId {
   val repoKey = "bankAccount"
 }
 
-case object BusinessContactSectionId extends RegistrationSectionId with LegacySection {
+case object BusinessContactSectionId extends RegistrationSectionId {
   val key = "business-contact"
   val repoKey = "businessContact"
 }
@@ -59,13 +53,13 @@ case object EligibilitySectionId extends RegistrationSectionId {
   val repoKey = "eligibilitySubmissionData"
 }
 
-case object FlatRateSchemeSectionId extends RegistrationSectionId with LegacySection {
+case object FlatRateSchemeSectionId extends RegistrationSectionId {
   val key = "flat-rate-scheme"
   val repoKey = "flatRateScheme"
 }
 
 // TODO Rename to 'entities' in preparedness for VAT groups
-case object PartnersSectionId extends RegistrationSectionId with LegacySection {
+case object PartnersSectionId extends RegistrationSectionId {
   val key = "partners"
   val repoKey = key
 }
@@ -80,7 +74,7 @@ case object TransactorSectionId extends RegistrationSectionId {
   val repoKey = "transactorDetails"
 }
 
-case object TradingDetailsSectionId extends RegistrationSectionId with LegacySection {
+case object TradingDetailsSectionId extends RegistrationSectionId {
   val key = "trading-details"
   val repoKey = "tradingDetails"
 }
@@ -104,6 +98,7 @@ object RegistrationSectionId {
             case ("section", ReturnsSectionId.key) => Right(ReturnsSectionId)
             case ("section", TransactorSectionId.key) => Right(TransactorSectionId)
             case ("section", TradingDetailsSectionId.key) => Right(TradingDetailsSectionId)
+            case ("section", OtherBusinessInvolvementsSectionId.key) => Right(OtherBusinessInvolvementsSectionId)
             case _ => Left("Invalid registration section")
           }
         } yield section

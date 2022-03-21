@@ -17,16 +17,9 @@
 package models.registration.sections
 
 import models.api.Partner
-import models.registration.RegistrationSection
 import play.api.libs.json.{Format, Json, Reads, Writes}
 
-case class PartnersSection(partners: List[Partner]) extends RegistrationSection[PartnersSection] {
-
-  override def isComplete: PartnersSection => Boolean = {
-    _ => true
-  }
-
-}
+case class PartnersSection(partners: List[Partner])
 
 object PartnersSection {
   implicit val format: Format[PartnersSection] = Format[PartnersSection](

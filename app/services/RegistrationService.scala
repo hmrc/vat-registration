@@ -18,9 +18,10 @@ package services
 
 import featureswitch.core.config.FeatureSwitching
 import models.api.VatScheme
-import models.registration.RegistrationSectionId
+import models.registration.{CollectionSectionId, RegistrationSectionId}
 import play.api.libs.json._
 import repositories.VatSchemeRepository
+import services.RegistrationService.{indexOffset, recordsToReplace}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -69,6 +70,9 @@ class RegistrationService @Inject()(val vatSchemeRepository: VatSchemeRepository
   def upsertSection[T](internalId: String, regId: String, section: RegistrationSectionId, data: T)(implicit writes: Writes[T]): Future[Option[T]] =
     vatSchemeRepository.upsertSection(internalId, regId, section.repoKey, data)
 
+  def deleteSection(internalId: String, regId: String, section: RegistrationSectionId): Future[Boolean] =
+    vatSchemeRepository.deleteSection(internalId, regId, section.repoKey)
+
   def getAnswer[T](internalId: String, regId: String, section: RegistrationSectionId, answer: String)(implicit reads: Reads[T]): Future[Option[T]] =
     getSection[JsObject](internalId, regId, section) collect {
       case Some(sectionData) =>
@@ -78,4 +82,36 @@ class RegistrationService @Inject()(val vatSchemeRepository: VatSchemeRepository
       case None => None
     }
 
+  def getSectionIndex(internalId: String, regId: String, section: CollectionSectionId, index: Int): Future[Option[JsValue]] =
+    for {
+      optFoundSection <- vatSchemeRepository.getSection[JsArray](internalId, regId, section.repoKey)
+      optSectionIndex = optFoundSection.flatMap(_.value.lift(index - indexOffset))
+    } yield optSectionIndex
+
+  def upsertSectionIndex(internalId: String, regId: String, section: CollectionSectionId, data: JsValue, index: Int): Future[Option[JsValue]] = {
+    for {
+      oldSectionData <- vatSchemeRepository.getSection[JsArray](internalId, regId, section.repoKey).map(_.getOrElse(JsArray(Nil)))
+      updatedSectionData = oldSectionData.copy(value = oldSectionData.value.patch(index - indexOffset, Seq(data), recordsToReplace))
+      result <- vatSchemeRepository.upsertSection[JsArray](internalId, regId, section.repoKey, updatedSectionData)
+      resultIndex = result.flatMap(_.value.lift(index - indexOffset))
+    } yield resultIndex
+  }
+
+  def deleteSectionIndex(internalId: String, regId: String, section: CollectionSectionId, index: Int): Future[Option[JsValue]] = {
+    for {
+      oldSectionData <- vatSchemeRepository.getSection[JsArray](internalId, regId, section.repoKey).map(_.getOrElse(JsArray(Nil)))
+      updatedSectionData = oldSectionData.copy(value = oldSectionData.value.patch(index - indexOffset, Nil, recordsToReplace))
+      result <- if (updatedSectionData.value.isEmpty) {
+        deleteSection(internalId, regId, section).map(_ => None)
+      } else {
+        vatSchemeRepository.upsertSection[JsArray](internalId, regId, section.repoKey, updatedSectionData)
+      }
+    } yield result
+  }
+
+}
+
+object RegistrationService {
+  val indexOffset = 1
+  val recordsToReplace = 1
 }

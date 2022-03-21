@@ -16,7 +16,6 @@
 
 package models.api
 
-import models.registration.RegistrationSection
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -24,12 +23,8 @@ case class SicAndCompliance(businessDescription: String,
                             labourCompliance: Option[ComplianceLabour],
                             mainBusinessActivity: SicCode,
                             businessActivities: List[SicCode],
-                            hasLandAndProperty: Option[Boolean] = None) extends RegistrationSection[SicAndCompliance] {
+                            hasLandAndProperty: Option[Boolean] = None) {
   //TODO remove option from L&P when related feature switches are removed
-
-  override def isComplete: SicAndCompliance => Boolean = {
-    _ => true
-  }
 
   lazy val otherBusinessActivities: List[SicCode] =
     businessActivities.filterNot(_ == mainBusinessActivity)
