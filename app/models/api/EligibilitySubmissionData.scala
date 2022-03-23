@@ -27,7 +27,6 @@ import java.time.LocalDate
 case class EligibilitySubmissionData(threshold: Threshold,
                                      exceptionOrExemption: String,
                                      estimates: TurnoverEstimates,
-                                     customerStatus: CustomerStatus,
                                      partyType: PartyType,
                                      registrationReason: RegistrationReason,
                                      togcCole: Option[TogcCole] = None,
@@ -64,21 +63,19 @@ object EligibilitySubmissionData {
           }
         ) and
         json.validate[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads) and
-        json.validate[CustomerStatus](CustomerStatus.eligibilityDataJsonReads) and
         (json \ "businessEntity").validate[PartyType] and
         (json \ "registrationReason").validateOpt[String] and
         (json \ "registeringBusiness").validate[String] and
         json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None))
-      ) ((threshold, exceptionOrException, turnoverEstimates, customerStatus, businessEntity, registrationReason, registeringBusiness, optTogcCole) =>
+      ) ((threshold, exceptionOrException, turnoverEstimates, businessEntity, registrationReason, registeringBusiness, optTogcCole) =>
       EligibilitySubmissionData(
         threshold,
         exceptionOrException,
         turnoverEstimates,
-        customerStatus,
         businessEntity,
         registrationReason match {
           case Some(`sellingGoodsAndServices`) | None => threshold match {
-            case Threshold(true, _, _, _, Some(thresholdOverseas)) =>
+            case Threshold(true, _, _, _, Some(_)) =>
               NonUk
             case Threshold(false, _, _, _, _) =>
               Voluntary
@@ -116,7 +113,6 @@ object EligibilitySubmissionData {
     (__ \ "threshold").format[Threshold] and
       (__ \ "exceptionOrExemption").format[String] and
       (__ \ "estimates").format[TurnoverEstimates] and
-      (__ \ "customerStatus").format[CustomerStatus] and
       (__ \ "partyType").format[PartyType] and
       (__ \ "registrationReason").format[RegistrationReason] and
       (__ \ "togcBlock").formatNullable[TogcCole] and

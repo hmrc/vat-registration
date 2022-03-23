@@ -89,7 +89,7 @@ class SectionValidationServiceSpec extends VatRegSpec
         val res = await(Service.validate(testInternalId, testRegId, EligibilitySectionId, Json.obj()))
 
 
-        res mustBe Left(InvalidSection(Seq("/exceptionOrExemption", "/registrationReason", "/threshold", "/estimates", "/customerStatus", "/partyType")))
+        res mustBe Left(InvalidSection(Seq("/exceptionOrExemption", "/registrationReason", "/threshold", "/estimates", "/partyType")))
       }
     }
     "the section is FlatRateScheme (legacy)" must {

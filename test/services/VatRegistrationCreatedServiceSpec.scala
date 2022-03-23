@@ -20,13 +20,12 @@ import common.exceptions._
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.{ForwardLook, Voluntary}
-import models.api.{Threshold, TurnoverEstimates, _}
+import models.api._
 import models.submission.UkCompany
+import models.{ForwardLook, Voluntary}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -185,7 +184,6 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         ),
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(123456),
-        customerStatus = MTDfB,
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false
@@ -218,7 +216,6 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
         ),
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(10001),
-        customerStatus = MTDfB,
         partyType = UkCompany,
         registrationReason = Voluntary,
         isTransactor = false

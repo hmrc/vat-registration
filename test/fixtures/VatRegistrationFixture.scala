@@ -92,7 +92,6 @@ trait VatRegistrationFixture {
     threshold = testMandatoryThreshold,
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
-    customerStatus = MTDfB,
     partyType = UkCompany,
     registrationReason = ForwardLook,
     isTransactor = false

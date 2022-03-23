@@ -34,7 +34,8 @@ case class SubmissionAuditModel(userAnswers: JsValue,
 
   private val messageType = "SubscriptionCreate"
   private val registeredStatus = "0"
-  private val cidVerificationStatus: String = "1"
+  private val cidVerificationStatus = "1"
+  private val MTDfB = "2"
 
   override val auditType: String = "SubscriptionSubmitted"
   override val transactionName: String = "subscription-submitted"
@@ -49,7 +50,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           "formBundleId" -> formBundleId,
           optional("agentReferenceNumber" -> optAgentReferenceNumber.filterNot(_ == "")),
           "messageType" -> messageType,
-          "customerStatus" -> eligibilityData.customerStatus.toString,
+          "customerStatus" -> MTDfB,
           conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
             "overseasTrader" -> true
           ),

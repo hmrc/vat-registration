@@ -25,9 +25,8 @@ import enums.VatRegStatus
 import models.api.{Threshold, TurnoverEstimates, VatScheme}
 import models.submission.PartyType
 import org.slf4j.LoggerFactory
-import play.api.libs.json._
 import repositories.VatSchemeRepository
-import uk.gov.hmrc.http.{HttpClient, InternalServerException}
+import uk.gov.hmrc.http.HttpClient
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}

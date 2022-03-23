@@ -16,7 +16,7 @@
 
 package models
 
-import models.api.{EligibilitySubmissionData, MTDfB, Threshold, TurnoverEstimates}
+import models.api.{EligibilitySubmissionData, Threshold, TurnoverEstimates}
 import models.submission.UkCompany
 import play.api.libs.json.{JsArray, JsObject, JsSuccess, Json}
 import utils.EligibilityDataJsonUtils
@@ -76,7 +76,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         ),
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(123456),
-        customerStatus = MTDfB,
         partyType = UkCompany,
         registrationReason = ForwardLook,
         togcCole = Some(TogcCole(
@@ -131,7 +130,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           ),
           exceptionOrExemption = "0",
           estimates = TurnoverEstimates(1234),
-          customerStatus = MTDfB,
           partyType = UkCompany,
           registrationReason = TransferOfAGoingConcern,
           togcCole = Some(TogcCole(
@@ -178,7 +176,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           ),
           exceptionOrExemption = "0",
           estimates = TurnoverEstimates(123456),
-          customerStatus = MTDfB,
           partyType = UkCompany,
           registrationReason = NonUk,
           isTransactor = false,
@@ -218,7 +215,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           ),
           exceptionOrExemption = "0",
           estimates = TurnoverEstimates(123456),
-          customerStatus = MTDfB,
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
@@ -258,7 +254,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           ),
           exceptionOrExemption = "0",
           estimates = TurnoverEstimates(123456),
-          customerStatus = MTDfB,
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
@@ -298,7 +293,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           ),
           exceptionOrExemption = "0",
           estimates = TurnoverEstimates(123456),
-          customerStatus = MTDfB,
           partyType = UkCompany,
           registrationReason = BackwardLook,
           isTransactor = false,
@@ -339,7 +333,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         ),
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(123456),
-        customerStatus = MTDfB,
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false,
@@ -361,7 +354,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         ),
         exceptionOrExemption = "0",
         estimates = TurnoverEstimates(123456),
-        customerStatus = MTDfB,
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false,
@@ -379,7 +371,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         "estimates" -> Json.obj(
           "turnoverEstimate" -> 123456
         ),
-        "customerStatus" -> "2",
         "partyType" -> "50",
         "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook),
         "isTransactor" -> false,
