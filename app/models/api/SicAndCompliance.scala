@@ -16,15 +16,15 @@
 
 package models.api
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class SicAndCompliance(businessDescription: String,
                             labourCompliance: Option[ComplianceLabour],
                             mainBusinessActivity: SicCode,
                             businessActivities: List[SicCode],
-                            hasLandAndProperty: Option[Boolean] = None) {
-  //TODO remove option from L&P when related feature switches are removed
+                            hasLandAndProperty: Option[Boolean] = None,
+                            otherBusinessInvolvement: Option[Boolean] = None) {
+  //TODO remove option from L&P and OBI when related feature switches are removed
 
   lazy val otherBusinessActivities: List[SicCode] =
     businessActivities.filterNot(_ == mainBusinessActivity)
