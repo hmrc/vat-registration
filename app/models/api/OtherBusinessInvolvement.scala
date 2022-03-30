@@ -16,6 +16,7 @@
 
 package models.api
 
+import models.submission.{IdType, UtrIdType, VrnIdType}
 import play.api.libs.json.{Json, OFormat}
 
 case class OtherBusinessInvolvement(businessName: String,
@@ -23,7 +24,20 @@ case class OtherBusinessInvolvement(businessName: String,
                                     vrn: Option[String],
                                     hasUtr: Option[Boolean],
                                     utr: Option[String],
-                                    stillTrading: Boolean)
+                                    stillTrading: Boolean) {
+  val optIdType: Option[IdType] = if (hasVrn) {
+    Some(VrnIdType)
+  } else if (hasUtr.contains(true)) {
+    Some(UtrIdType)
+  } else {
+    None
+  }
+
+  val optIdValue: Option[String] = optIdType.flatMap {
+    case VrnIdType => vrn
+    case UtrIdType => utr
+  }
+}
 
 object OtherBusinessInvolvement {
   implicit val format: OFormat[OtherBusinessInvolvement] = Json.format[OtherBusinessInvolvement]

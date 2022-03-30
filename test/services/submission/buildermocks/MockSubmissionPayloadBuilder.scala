@@ -31,9 +31,9 @@ trait MockSubmissionPayloadBuilder extends MockitoSugar {
 
   val mockSubmissionPayloadBuilder: SubmissionPayloadBuilder = mock[SubmissionPayloadBuilder]
 
-  def mockBuildSubmissionPayload(regId: String)
+  def mockBuildSubmissionPayload(internalId: String, regId: String)
                                 (response: Future[JsObject]): OngoingStubbing[Future[JsObject]] =
-    when(mockSubmissionPayloadBuilder.buildSubmissionPayload(ArgumentMatchers.eq(regId)))
+    when(mockSubmissionPayloadBuilder.buildSubmissionPayload(ArgumentMatchers.eq(internalId), ArgumentMatchers.eq(regId)))
       .thenReturn(response)
 
 }

@@ -13,7 +13,7 @@ class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with Submissi
 
   override lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     tradingDetails = Some(testTradingDetails),
-    sicAndCompliance = Some(testFullSicAndCompliance),
+    sicAndCompliance = Some(testFullSicAndCompliance.copy(otherBusinessInvolvement = Some(true))),
     businessContact = Some(testFullBusinessContactDetails),
     bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
     flatRateScheme = Some(testFlatRateScheme),
@@ -21,7 +21,24 @@ class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with Submissi
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     confirmInformationDeclaration = Some(true),
     returns = Some(testAASReturns),
-    nrsSubmissionPayload = Some(testEncodedPayload)
+    nrsSubmissionPayload = Some(testEncodedPayload),
+    otherBusinessInvolvements = Some(List(
+      testOtherBusinessInvolvement.copy(
+        hasUtr = None,
+        utr = None
+      ),
+      testOtherBusinessInvolvement.copy(
+        hasVrn = false,
+        vrn = None
+      ),
+      testOtherBusinessInvolvement.copy(
+        hasVrn = false,
+        vrn = None,
+        hasUtr = Some(false),
+        utr = None,
+        stillTrading = false
+      )
+    ))
   )
 
   "buildAuditJson" must {

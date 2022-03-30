@@ -87,14 +87,14 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
 
   def submitVATRegistration(regId: String): Action[JsValue] = Action.async(parse.json) {
     implicit request =>
-      isAuthenticated { _ =>
+      isAuthenticated { internalId =>
         val userHeaders = (request.body \ "userHeaders").asOpt[Map[String, String]].getOrElse(Map.empty)
 
         registrationService.getStatus(regId).flatMap {
           case `locked` => Future.successful(TooManyRequests(Json.obj()))
           case `submitted` => Future.successful(Ok(Json.obj()))
           case `duplicateSubmission` => Future.successful(Conflict(Json.obj()))
-          case _ => submissionService.submitVatRegistration(regId, userHeaders).map { _ =>
+          case _ => submissionService.submitVatRegistration(internalId, regId, userHeaders).map { _ =>
             Ok(Json.obj())
           }
         }

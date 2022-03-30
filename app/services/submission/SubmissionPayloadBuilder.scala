@@ -35,12 +35,12 @@ class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
                                          entitiesBlockBuilder: EntitiesBlockBuilder
                                         )(implicit ec: ExecutionContext) {
 
-  def buildSubmissionPayload(regId: String): Future[JsObject] = for {
+  def buildSubmissionPayload(internalId: String, regId: String): Future[JsObject] = for {
     adminBlock <- adminBlockBuilder.buildAdminBlock(regId)
     declarationBlock <- declarationBlockBuilder.buildDeclarationBlock(regId)
     customerIdentificationBlock <- customerIdentificationBlockBuilder.buildCustomerIdentificationBlock(regId)
     contactBlock <- contactBlockBuilder.buildContactBlock(regId)
-    subscriptionBlock <- subscriptionBlockBuilder.buildSubscriptionBlock(regId)
+    subscriptionBlock <- subscriptionBlockBuilder.buildSubscriptionBlock(internalId, regId)
     periodsBlock <- periodsBlockBuilder.buildPeriodsBlock(regId)
     complianceBlock <- complianceBlockBuilder.buildComplianceBlock(regId)
     bankDetailsBlock <- bankDetailsBlockBuilder.buildBankDetailsBlock(regId)

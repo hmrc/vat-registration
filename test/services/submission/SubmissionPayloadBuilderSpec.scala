@@ -217,7 +217,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildContactBlock(testRegId)(Future.successful(testContactBlockJson))
 
-        mockBuildSubscriptionBlock(testRegId)(Future.successful(testSubscriptionBlockJson))
+        mockBuildSubscriptionBlock(testInternalId, testRegId)(Future.successful(testSubscriptionBlockJson))
 
         mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
 
@@ -229,7 +229,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildEntitiesBlock(testRegId)(Future.successful(Some(testEntitiesBlockJson)))
 
-        val result = await(TestBuilder.buildSubmissionPayload(testRegId))
+        val result = await(TestBuilder.buildSubmissionPayload(testInternalId, testRegId))
 
         result mustBe expectedJson
       }
@@ -244,7 +244,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
 
-        mockBuildSubscriptionBlock(testRegId)(Future.successful(testSubscriptionBlockJson))
+        mockBuildSubscriptionBlock(testInternalId, testRegId)(Future.successful(testSubscriptionBlockJson))
 
         mockBuildComplianceBlock(testRegId)(Future.successful(None))
 
@@ -252,7 +252,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildAnnualAccountingBlock(testRegId)(Future.successful(Some(testAnnualAccountingBlockJson)))
 
-        val result = await(TestBuilder.buildSubmissionPayload(testRegId))
+        val result = await(TestBuilder.buildSubmissionPayload(testInternalId, testRegId))
 
         result mustBe expectedJson - "compliance"
       }
@@ -265,7 +265,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildContactBlock(testRegId)(Future.successful(testContactBlockJson))
 
-        mockBuildSubscriptionBlock(testRegId)(Future.successful(testSubscriptionBlockJson))
+        mockBuildSubscriptionBlock(testInternalId, testRegId)(Future.successful(testSubscriptionBlockJson))
 
         mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
 
@@ -277,7 +277,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
         mockBuildEntitiesBlock(testRegId)(Future.successful(None))
 
-        val result = await(TestBuilder.buildSubmissionPayload(testRegId))
+        val result = await(TestBuilder.buildSubmissionPayload(testInternalId, testRegId))
 
         result mustBe expectedJson - "entities"
       }
@@ -288,7 +288,7 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
         mockBuildAdminBlock(testRegId)(Future.failed(new InternalServerException("Data not in database")))
 
         intercept[InternalServerException] {
-          await(TestBuilder.buildSubmissionPayload(testRegId))
+          await(TestBuilder.buildSubmissionPayload(testInternalId, testRegId))
         }
       }
     }
