@@ -18,49 +18,70 @@ package models
 
 import helpers.BaseSpec
 import models.api.{ComplianceLabour, SicAndCompliance, SicCode}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsObject, JsSuccess, Json}
 
 class SicAndComplianceSpec extends BaseSpec {
 
+  val testBusinessDescription = "testBusinessDescription"
+  val testDesc = "testDesc"
+  val testDetails = "testDetails"
+  val testSic1 = "00998"
+  val testSic2 = "12345"
+  val testSic3 = "00889"
+
   lazy val businessActivities: List[SicCode] = List(
-    SicCode("00998", "testDesc", "testDetails"),
-    SicCode("12345", "testDesc", "testDetails"),
-    SicCode("00889", "testDesc", "testDetails")
+    SicCode(testSic1, testDesc, testDetails),
+    SicCode(testSic2, testDesc, testDetails),
+    SicCode(testSic3, testDesc, testDetails)
   )
 
   lazy val sicAndCompliance: SicAndCompliance = SicAndCompliance(
-    "test business description",
+    testBusinessDescription,
     Some(ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = Some(true), supplyWorkers = true)),
-    SicCode("12345", "testDesc", "testDetails"),
-    businessActivities
+    SicCode(testSic2, testDesc, testDetails),
+    businessActivities,
+    Some(false),
+    Some(false)
   )
 
-  val validFullSubmissionJson: JsValue = Json.obj(
-    "subscription" -> Json.obj(
-      "businessActivities" -> Json.obj(
-        "SICCodes" -> Json.obj(
-          "primaryMainCode" -> "12345",
-          "mainCode2" -> "00998",
-          "mainCode3" -> "00889"
-        ),
-        "description" -> "test business description"
-      )
-    ),
-    "compliance" -> Json.obj(
+  lazy val sicJson: JsObject = Json.obj(
+    "businessDescription" -> testBusinessDescription,
+    "labourCompliance" -> Json.obj(
       "numOfWorkersSupplied" -> 1000,
       "intermediaryArrangement" -> true,
       "supplyWorkers" -> true
-    )
+    ),
+    "mainBusinessActivity" -> Json.obj(
+      "code" -> testSic2,
+      "desc" -> testDesc,
+      "indexes" -> testDetails
+    ),
+    "businessActivities" -> Json.arr(
+      Json.obj(
+        "code" -> testSic1,
+        "desc" -> testDesc,
+        "indexes" -> testDetails
+      ), Json.obj(
+        "code" -> testSic2,
+        "desc" -> testDesc,
+        "indexes" -> testDetails
+      ), Json.obj(
+        "code" -> testSic3,
+        "desc" -> testDesc,
+        "indexes" -> testDetails
+      )
+    ),
+    "hasLandAndProperty" -> false,
+    "otherBusinessInvolvement" -> false
   )
 
-  val validSubmissionJson: JsValue = Json.obj(
-    "subscription" -> Json.obj(
-      "businessActivities" -> Json.obj(
-        "SICCodes" -> Json.obj(
-          "primaryMainCode" -> "12345"
-        ),
-        "description" -> "test business description"
-      )
-    )
-  )
+  "format" must {
+    "read the json back into a model" in {
+      SicAndCompliance.format.reads(sicJson) mustBe JsSuccess(sicAndCompliance)
+    }
+
+    "write the model into a json" in {
+      SicAndCompliance.format.writes(sicAndCompliance) mustBe sicJson
+    }
+  }
 }
