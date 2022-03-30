@@ -29,8 +29,8 @@ import javax.inject.Singleton
 class SubscriptionAuditBlockBuilder {
 
   def buildSubscriptionBlock(vatScheme: VatScheme): JsObject =
-    (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.sicAndCompliance, vatScheme.flatRateScheme) match {
-      case (Some(eligibilityData), Some(returns), Some(sicAndCompliance), optFlatRateScheme) => jsonObject(
+    (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.sicAndCompliance, vatScheme.flatRateScheme, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
+      case (Some(eligibilityData), Some(returns), Some(sicAndCompliance), optFlatRateScheme, otherBusinessInvolvements) => jsonObject(
         "overThresholdIn12MonthPeriod" -> eligibilityData.threshold.thresholdInTwelveMonths.isDefined,
         optional("overThresholdIn12MonthDate" -> eligibilityData.threshold.thresholdInTwelveMonths),
         "overThresholdInPreviousMonth" -> eligibilityData.threshold.thresholdPreviousThirtyDays.isDefined,
@@ -95,7 +95,17 @@ class SubscriptionAuditBlockBuilder {
               false
             })
           )
-        })
+        }),
+        conditional(sicAndCompliance.otherBusinessInvolvement.contains(true) && otherBusinessInvolvements.nonEmpty)(
+          "otherBusinessActivities" -> otherBusinessInvolvements.map { involvement =>
+            jsonObject(
+              "businessName" -> involvement.businessName,
+              optional("idType" -> involvement.optIdType),
+              optional("idValue" -> involvement.optIdValue),
+              "stillTrading" -> involvement.stillTrading
+            )
+          }
+        )
       )
       case _ =>
         throw new InternalServerException(

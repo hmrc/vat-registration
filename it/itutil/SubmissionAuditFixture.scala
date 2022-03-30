@@ -2,6 +2,7 @@
 package itutil
 
 import models.api.Submitted
+import models.submission.{IdType, UtrIdType, VrnIdType}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 
@@ -120,6 +121,24 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
           "mainCode4" -> "00004"
         ),
         "description" -> "businessDesc"
+      ),
+      "otherBusinessActivities" -> Json.arr(
+        Json.obj(
+          "businessName" -> testCompanyName,
+          "idType" -> Json.toJson[IdType](VrnIdType),
+          "idValue" -> testVrn,
+          "stillTrading" -> true
+        ),
+        Json.obj(
+          "businessName" -> testCompanyName,
+          "idType" -> Json.toJson[IdType](UtrIdType),
+          "idValue" -> testUtr,
+          "stillTrading" -> true
+        ),
+        Json.obj(
+          "businessName" -> testCompanyName,
+          "stillTrading" -> false
+        )
       )
     )
 

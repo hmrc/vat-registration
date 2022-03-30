@@ -31,9 +31,9 @@ trait MockSubscriptionBlockBuilder extends MockitoSugar {
 
   val mockSubscriptionBlockBuilder: SubscriptionBlockBuilder = mock[SubscriptionBlockBuilder]
 
-  def mockBuildSubscriptionBlock(regId: String)
+  def mockBuildSubscriptionBlock(internalId: String, regId: String)
                                 (response: Future[JsObject]): OngoingStubbing[Future[JsObject]] =
-    when(mockSubscriptionBlockBuilder.buildSubscriptionBlock(ArgumentMatchers.eq(regId)))
+    when(mockSubscriptionBlockBuilder.buildSubscriptionBlock(ArgumentMatchers.eq(internalId), ArgumentMatchers.eq(regId)))
       .thenReturn(response)
 
 }

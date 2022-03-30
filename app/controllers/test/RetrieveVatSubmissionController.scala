@@ -16,9 +16,12 @@
 
 package controllers.test
 
+import auth.Authorisation
 import play.api.Logging
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import repositories.VatSchemeRepository
 import services.submission.SubmissionPayloadBuilder
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -26,11 +29,15 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class RetrieveVatSubmissionController @Inject()(cc: ControllerComponents,
-                                                submissionPayloadBuilder: SubmissionPayloadBuilder
-                                               )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging {
+                                                submissionPayloadBuilder: SubmissionPayloadBuilder,
+                                                val authConnector: AuthConnector,
+                                                val resourceConn: VatSchemeRepository
+                                               )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging with Authorisation {
 
-  def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { _ =>
-    submissionPayloadBuilder.buildSubmissionPayload(regId) map (Ok(_))
+  def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { implicit request =>
+    isAuthenticated { internalId =>
+      submissionPayloadBuilder.buildSubmissionPayload(internalId, regId) map (Ok(_))
+    }
   }
 
 }

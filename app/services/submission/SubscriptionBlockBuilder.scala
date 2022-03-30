@@ -17,7 +17,9 @@
 package services.submission
 
 import models._
+import models.api.OtherBusinessInvolvement
 import models.api.returns.NIPCompliance
+import models.registration.OtherBusinessInvolvementsSectionId
 import play.api.libs.json.JsObject
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
@@ -30,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)(implicit ec: ExecutionContext) {
 
-  def buildSubscriptionBlock(regId: String): Future[JsObject] = for {
+  def buildSubscriptionBlock(internalId: String, regId: String): Future[JsObject] = for {
     optEligibilityData <- registrationMongoRepository.fetchEligibilitySubmissionData(regId)
     optReturns <- registrationMongoRepository.fetchReturns(regId)
     partyType = optEligibilityData.map(_.partyType).getOrElse(
@@ -39,8 +41,11 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: VatSchemeR
     optApplicantDetails <- registrationMongoRepository.getApplicantDetails(regId, partyType)
     optSicAndCompliance <- registrationMongoRepository.fetchSicAndCompliance(regId)
     optFlatRateScheme <- registrationMongoRepository.fetchFlatRateScheme(regId)
-  } yield (optEligibilityData, optReturns, optApplicantDetails, optSicAndCompliance, optFlatRateScheme) match {
-    case (Some(eligibilityData), Some(returns), Some(applicantDetails), Some(sicAndCompliance), optFlatRateScheme) => jsonObject(
+    otherBusinessInvolvements <- registrationMongoRepository
+      .getSection[List[OtherBusinessInvolvement]](internalId, regId, OtherBusinessInvolvementsSectionId.repoKey)
+      .map(_.getOrElse(Nil))
+  } yield (optEligibilityData, optReturns, optApplicantDetails, optSicAndCompliance, optFlatRateScheme, otherBusinessInvolvements) match {
+    case (Some(eligibilityData), Some(returns), Some(applicantDetails), Some(sicAndCompliance), optFlatRateScheme, otherBusinessInvolvements) => jsonObject(
       "reasonForSubscription" -> jsonObject(
         "registrationReason" -> eligibilityData.registrationReason.key,
         "relevantDate" -> {
@@ -117,7 +122,17 @@ class SubscriptionBlockBuilder @Inject()(registrationMongoRepository: VatSchemeR
             false
           })
         )
-      })
+      }),
+      conditional(sicAndCompliance.otherBusinessInvolvement.contains(true) && otherBusinessInvolvements.nonEmpty)(
+        "otherBusinessActivities" -> otherBusinessInvolvements.map { involvement =>
+          jsonObject(
+            "businessName" -> involvement.businessName,
+            optional("idType" -> involvement.optIdType),
+            optional("idValue" -> involvement.optIdValue),
+            "stillTrading" -> involvement.stillTrading
+          )
+        }
+      )
     )
     case _ =>
       throw new InternalServerException(
