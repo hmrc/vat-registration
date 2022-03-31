@@ -80,7 +80,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
     registrationRepository.retrieveVatScheme(regId).flatMap {
       case Some(vatScheme) =>
         oldEligibilityData match {
-          case EligibilitySubmissionData(_, _, _, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
+          case EligibilitySubmissionData(_, _, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
             registrationRepository.insertVatScheme(vatScheme.copy(
               tradingDetails = None,
               returns = None,
@@ -97,7 +97,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               eligibilitySubmissionData = None
             ))
 
-          case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _, _, _, oldTransactorFlag, _)
+          case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _, _, oldTransactorFlag, _)
             if !oldTurnoverEstimates.equals(eligibilityData.estimates) || !oldTransactorFlag.equals(eligibilityData.isTransactor) =>
             val clearedFRS = if (oldTurnoverEstimates.turnoverEstimate > 150000L) {
               None

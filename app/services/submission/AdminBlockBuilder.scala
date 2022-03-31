@@ -32,6 +32,7 @@ class AdminBlockBuilder @Inject()(registrationMongoRepository: VatSchemeReposito
                                   attachmentsService: AttachmentsService)
                                  (implicit ec: ExecutionContext) {
 
+  private val MTDfB = "2"
   def buildAdminBlock(regId: String): Future[JsObject] = for {
     optEligibilityData <- registrationMongoRepository.fetchEligibilitySubmissionData(regId)
     optTradingDetails <- registrationMongoRepository.retrieveTradingDetails(regId)
@@ -41,7 +42,7 @@ class AdminBlockBuilder @Inject()(registrationMongoRepository: VatSchemeReposito
     case (Some(eligibilityData), Some(tradingDetails)) =>
       jsonObject(
         "additionalInformation" -> jsonObject(
-          "customerStatus" -> eligibilityData.customerStatus,
+          "customerStatus" -> MTDfB,
           conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
             "overseasTrader" -> true
           )

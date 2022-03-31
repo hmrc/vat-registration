@@ -257,7 +257,6 @@ trait ITFixtures {
     threshold = testThreshold,
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
-    customerStatus = MTDfB,
     partyType = UkCompany,
     registrationReason = ForwardLook,
     isTransactor = false
@@ -267,7 +266,6 @@ trait ITFixtures {
     threshold = testThreshold,
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
-    customerStatus = MTDfB,
     partyType = Individual,
     registrationReason = ForwardLook,
     isTransactor = false
@@ -584,7 +582,6 @@ trait ITFixtures {
     threshold = Threshold(mandatoryRegistration = true, None, None, None, Some(testDate)),
     exceptionOrExemption = "0",
     estimates = TurnoverEstimates(123456),
-    customerStatus = MTDfB,
     partyType = NETP,
     registrationReason = NonUk,
     isTransactor = false

@@ -16,7 +16,7 @@
 
 package controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlPathMatching, verify}
+import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMatching, verify}
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import connectors.stubs.SdesNotifyStub.stubSdesNotification
 import enums.VatRegStatus
@@ -26,9 +26,10 @@ import models.api._
 import models.nonrepudiation.NonRepudiationMetadata
 import models.registration.sections.PartnersSection
 import models.submission.IdVerificationStatus.toJsString
-import models.submission.{DeclarationCapacity, _}
+import models.submission._
 import models.{GroupRegistration, TogcCole, TransferOfAGoingConcern}
 import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.time.{Millis, Seconds, Span}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
@@ -660,12 +661,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         res.status mustBe OK
 
-        eventually {
+        eventually(timeout(Span(1, Seconds)), interval(Span(50, Millis))) {
           val requestsHappened = try {
-            verify(2, postRequestedFor(urlPathMatching(s"/notification/fileready")))
+            verify(2, postRequestedFor(urlMatching("/notification/fileready")))
             true
           } catch {
-            case e: Exception => false
+            case _: Exception => false
           }
           requestsHappened mustBe true
         }

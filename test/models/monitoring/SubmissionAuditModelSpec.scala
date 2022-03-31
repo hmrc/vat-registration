@@ -19,8 +19,8 @@ package models.monitoring
 import enums.VatRegStatus
 import fixtures.SubmissionAuditFixture
 import helpers.VatRegSpec
+import models.api.VatScheme
 import models.{BackwardLook, Voluntary}
-import models.api.{MTDfB, VatScheme}
 import play.api.libs.json.Json
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.http.InternalServerException
@@ -63,7 +63,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             "registrationReason" -> "Forward Look",
             "registrationRelevantDate" -> "2020-10-07",
             "messageType" -> "SubscriptionCreate",
-            "customerStatus" -> MTDfB.toString,
+            "customerStatus" -> "2",
             "eoriRequested" -> true,
             "corporateBodyRegistered" -> Json.obj(
               "dateOfIncorporation" -> testDateOFIncorp,
@@ -88,7 +88,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             "registrationReason" -> "Forward Look",
             "registrationRelevantDate" -> "2020-10-07",
             "messageType" -> "SubscriptionCreate",
-            "customerStatus" -> MTDfB.toString,
+            "customerStatus" -> "2",
             "eoriRequested" -> true,
             "corporateBodyRegistered" -> Json.obj(
               "dateOfIncorporation" -> testDateOFIncorp,
@@ -122,7 +122,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             "registrationRelevantDate" -> "2020-12-01",
             "userType" -> "Organisation",
             "messageType" -> "SubscriptionCreate",
-            "customerStatus" -> MTDfB.toString,
+            "customerStatus" -> "2",
             "eoriRequested" -> true,
             "corporateBodyRegistered" -> Json.obj(
               "dateOfIncorporation" -> testDateOFIncorp,
@@ -150,7 +150,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
             "registrationRelevantDate" -> "2018-01-01",
             "messageType" -> "SubscriptionCreate",
             "userType" -> "Organisation",
-            "customerStatus" -> MTDfB.toString,
+            "customerStatus" -> "2",
             "eoriRequested" -> true,
             "corporateBodyRegistered" -> Json.obj(
               "dateOfIncorporation" -> testDateOFIncorp,
