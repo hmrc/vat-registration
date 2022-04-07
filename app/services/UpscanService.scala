@@ -16,7 +16,7 @@
 
 package services
 
-import models.api.{InProgress, UpscanDetails}
+import models.api.{InProgress, UpscanCreate, UpscanDetails}
 import repositories.UpscanMongoRepository
 
 import javax.inject.{Inject, Singleton}
@@ -31,10 +31,11 @@ class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) {
   def getAllUpscanDetails(registrationId: String): Future[Seq[UpscanDetails]] =
     upscanMongoRepository.getAllUpscanDetails(registrationId)
 
-  def createUpscanDetails(registrationId: String, reference: String): Future[UpscanDetails] = {
+  def createUpscanDetails(registrationId: String, details: UpscanCreate): Future[UpscanDetails] = {
     val newUpscanDetails = UpscanDetails(
       registrationId = Some(registrationId),
-      reference = reference,
+      reference = details.reference,
+      attachmentType = Some(details.attachmentType),
       fileStatus = InProgress
     )
 
@@ -44,4 +45,9 @@ class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) {
   def upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] =
     upscanMongoRepository.upsertUpscanDetails(upscanDetails)
 
+  def deleteUpscanDetails(reference: String): Future[Boolean] =
+    upscanMongoRepository.deleteUpscanDetails(reference)
+
+  def deleteAllUpscanDetails(registrationId: String): Future[Boolean] =
+    upscanMongoRepository.deleteAllUpscanDetails(registrationId)
 }

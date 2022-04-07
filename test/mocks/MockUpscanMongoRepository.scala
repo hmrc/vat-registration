@@ -46,4 +46,13 @@ trait MockUpscanMongoRepository extends MockitoSugar {
       ArgumentMatchers.eq(upscanDetails)
     )).thenReturn(response)
 
+  def mockDeleteUpscanDetails(reference: String)(response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
+    when(mockUpscanMongoRepository.deleteUpscanDetails(
+      ArgumentMatchers.eq(reference)
+    )).thenReturn(response)
+
+  def mockDeleteAllUpscanDetails(regId: String)(response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
+    when(mockUpscanMongoRepository.deleteAllUpscanDetails(
+      ArgumentMatchers.eq(regId)
+    )).thenReturn(response)
 }

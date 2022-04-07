@@ -733,6 +733,7 @@ trait ITFixtures {
   def testUpscanDetails(reference: String): UpscanDetails = UpscanDetails(
     Some(testRegId),
     reference,
+    Some(PrimaryIdentityEvidence),
     Some(testDownloadUrl),
     Ready,
     Some(UploadDetails(

@@ -17,6 +17,7 @@
 package services
 
 import connectors.{NonRepudiationConnector, SdesConnector}
+import models.api.{Ready, UpscanDetails}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.sdes.SdesAuditing.SdesCallbackFailureAudit
 import models.sdes._
@@ -25,7 +26,7 @@ import play.api.mvc.Request
 import repositories.UpscanMongoRepository
 import services.SdesService._
 import services.monitoring.AuditService
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -47,60 +48,58 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
                 (implicit hc: HeaderCarrier,
                  executionContext: ExecutionContext): Future[Seq[SdesNotificationResult]] = {
     upscanMongoRepository.getAllUpscanDetails(regId).flatMap { upscanDetailsList =>
-      Future.sequence(upscanDetailsList.map { details =>
-        val uploadDetails = details.uploadDetails
-          .getOrElse(throw new InternalServerException("[SdesService] Attempted to submit unfinished/failed upscan details to SDES"))
-
-        val payload: SdesNotification = SdesNotification(
-          informationType = "S18", //TODO Update when clarified
-          file = FileDetails(
-            recipientOrSender = "123456789012", //TODO Update when clarified
-            name = uploadDetails.fileName,
-            location = details.downloadUrl.getOrElse("[SdesService] Missing file download url"),
-            checksum = Checksum(
-              algorithm = checksumAlgorithm,
-              value = uploadDetails.checksum
+      Future.sequence(upscanDetailsList.collect {
+        case UpscanDetails(_, reference, _, Some(downloadUrl), Ready, Some(uploadDetails), _) =>
+          val payload: SdesNotification = SdesNotification(
+            informationType = "S18", //TODO Update when clarified
+            file = FileDetails(
+              recipientOrSender = "123456789012", //TODO Update when clarified
+              name = uploadDetails.fileName,
+              location = downloadUrl,
+              checksum = Checksum(
+                algorithm = checksumAlgorithm,
+                value = uploadDetails.checksum
+              ),
+              size = uploadDetails.size,
+              properties = List(
+                Property(
+                  name = mimeTypeKey,
+                  value = uploadDetails.fileMimeType
+                ),
+                Property(
+                  name = prefixedFormBundleKey,
+                  value = s"VRS$formBundleId"
+                ),
+                Property(
+                  name = formBundleKey,
+                  value = formBundleId
+                ),
+                Property(
+                  name = attachmentReferenceKey,
+                  value = reference
+                ),
+                Property(
+                  name = submissionDateKey,
+                  value = uploadDetails.uploadTimestamp.format(dateTimeFormatter)
+                )
+              ) ++ nrsSubmissionId.map(id => Property(
+                name = nrsSubmissionKey,
+                value = id
+              ))
             ),
-            size = uploadDetails.size,
-            properties = List(
-              Property(
-                name = mimeTypeKey,
-                value = uploadDetails.fileMimeType
-              ),
-              Property(
-                name = prefixedFormBundleKey,
-                value = s"VRS$formBundleId"
-              ),
-              Property(
-                name = formBundleKey,
-                value = formBundleId
-              ),
-              Property(
-                name = attachmentReferenceKey,
-                value = details.reference
-              ),
-              Property(
-                name = submissionDateKey,
-                value = uploadDetails.uploadTimestamp.format(dateTimeFormatter)
-              )
-            ) ++ nrsSubmissionId.map(id => Property(
-              name = nrsSubmissionKey,
-              value = id
-            ))
-          ),
-          audit = AuditDetals(
-            correlationID = correlationId
+            audit = AuditDetals(
+              correlationID = correlationId
+            )
           )
-        )
 
-        sdesConnector.notifySdes(payload).map {
-          case res@SdesNotificationSuccess =>
-            logger.info(s"[SdesService] SDES notification sent for ${details.reference}")
-            res
-          case res@SdesNotificationFailure(body, status) =>
-            logger.error(s"[SdesService] SDES notification failed with status: $status and body: $body")
-            res
-        }
+          sdesConnector.notifySdes(payload).map {
+            case res@SdesNotificationSuccess =>
+              logger.info(s"[SdesService] SDES notification sent for ${reference}")
+              res
+            case res@SdesNotificationFailure(body, status) =>
+              logger.error(s"[SdesService] SDES notification failed with status: $status and body: $body")
+              res
+          }
       })
     }
   }

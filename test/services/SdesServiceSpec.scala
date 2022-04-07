@@ -20,7 +20,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.monitoring.MockAuditService
 import mocks.{MockSdesConnector, MockUpscanMongoRepository}
-import models.api.{Ready, UploadDetails, UpscanDetails}
+import models.api.{PrimaryIdentityEvidence, Ready, UploadDetails, UpscanDetails}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted}
 import models.sdes.SdesAuditing.SdesCallbackFailureAudit
 import models.sdes._
@@ -64,6 +64,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   def testUpscanDetails(reference: String): UpscanDetails = UpscanDetails(
     Some(testRegId),
     reference,
+    Some(PrimaryIdentityEvidence),
     Some(testDownloadUrl),
     Ready,
     Some(UploadDetails(

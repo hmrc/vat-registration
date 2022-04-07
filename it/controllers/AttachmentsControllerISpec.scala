@@ -23,9 +23,13 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
 
+import scala.concurrent.ExecutionContext
+
 class AttachmentsControllerISpec extends IntegrationStubbing {
 
   class Setup extends SetupHelper
+
+  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   val attachmentsUrl: String = routes.AttachmentsController.getAttachmentList(testRegId).url
 
@@ -149,4 +153,35 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
     }
   }
 
+  "GET /:regId/incomplete-attachments" must {
+    val url = controllers.routes.AttachmentsController.getIncompleteAttachments(testRegId).url
+    "return a list of required attachment uploads for a user that needs identity evidence" when {
+      val testVatScheme: VatScheme = testEmptyVatScheme(testRegId).copy(
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP))
+      )
+      "no attachments have been uploaded yet" in new Setup {
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testVatScheme, repo.insert)
+
+        val res: WSResponse = await(client(url).get())
+
+        res.status mustBe OK
+        res.body mustBe Json.toJson(List[AttachmentType](PrimaryIdentityEvidence, ExtraIdentityEvidence, ExtraIdentityEvidence)).toString()
+      }
+
+      "some attachments have been uploaded" in new Setup {
+        given
+          .user.isAuthorised
+          .regRepo.insertIntoDb(testVatScheme, repo.insert)
+          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference), upscanMongoRepository.insert)
+          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference2).copy(attachmentType = Some(ExtraIdentityEvidence)), upscanMongoRepository.insert)
+
+        val res: WSResponse = await(client(url).get())
+
+        res.status mustBe OK
+        res.body mustBe Json.toJson(List[AttachmentType](ExtraIdentityEvidence)).toString()
+      }
+    }
+  }
 }

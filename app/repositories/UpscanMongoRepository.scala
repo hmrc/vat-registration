@@ -39,6 +39,9 @@ class UpscanMongoRepository @Inject()(mongo: ReactiveMongoComponent,
     domainFormat = UpscanDetails.format
   ) {
 
+  val referenceKey = "reference"
+  val registrationIdKey = "registrationId"
+
   override def indexes: Seq[Index] = Seq(
     Index(
       name = Some("reference"),
@@ -64,14 +67,20 @@ class UpscanMongoRepository @Inject()(mongo: ReactiveMongoComponent,
   )
 
   def getUpscanDetails(reference: String): Future[Option[UpscanDetails]] =
-    find("reference" -> JsString(reference))
+    find(referenceKey -> JsString(reference))
       .map(_.headOption)
 
   def getAllUpscanDetails(registrationId: String): Future[Seq[UpscanDetails]] =
-    find("registrationId" -> JsString(registrationId))
+    find(registrationIdKey -> JsString(registrationId))
+
+  def deleteUpscanDetails(reference: String): Future[Boolean] =
+    remove(referenceKey -> JsString(reference)).map(_.ok)
+
+  def deleteAllUpscanDetails(registrationId: String): Future[Boolean] =
+    remove(registrationIdKey -> JsString(registrationId)).map(_.ok)
 
   def upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] = {
-    val selector = Json.obj("reference" -> upscanDetails.reference)
+    val selector = Json.obj(referenceKey -> upscanDetails.reference)
     val modifier = Json.obj("$set" -> (
       Json.toJson(upscanDetails).as[JsObject] ++
         Json.obj(

@@ -1,9 +1,10 @@
 
 package controllers
 
+import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
 import itutil.IntegrationStubbing
-import models.api.{InProgress, UpscanDetails}
-import play.api.libs.json.{JsString, JsValue, Json}
+import models.api.{AttachmentType, InProgress, PrimaryIdentityEvidence, UpscanDetails}
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
 
@@ -14,9 +15,10 @@ class UpscanControllerISpec extends IntegrationStubbing {
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   override val testRegId = "testRegId"
-  val testUpscanDetails: UpscanDetails = UpscanDetails(
+  lazy val testUpscanDetails: UpscanDetails = UpscanDetails(
     Some(testRegId),
     testReference,
+    Some(PrimaryIdentityEvidence),
     None,
     InProgress,
     None,
@@ -36,6 +38,11 @@ class UpscanControllerISpec extends IntegrationStubbing {
        |        "size": 987
        |    }
        |}""".stripMargin)
+
+  val testReferenceJson: JsValue = Json.obj(
+    "reference" -> testReference,
+    "attachmentType" -> Json.toJson[AttachmentType](PrimaryIdentityEvidence)
+  )
 
   "GET /:regId/upscan-file-details/:reference" must {
     "return OK with upscan details if data exists" in new SetupHelper {
@@ -67,7 +74,7 @@ class UpscanControllerISpec extends IntegrationStubbing {
         .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.createUpscanDetails(testRegId).url)
-        .post(JsString(testReference)))
+        .post(testReferenceJson))
 
       res.status mustBe OK
     }
@@ -77,8 +84,8 @@ class UpscanControllerISpec extends IntegrationStubbing {
     "return OK after successfully storing callback" in new SetupHelper {
       given.upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
 
-      stubPost("/write/audit", OK, """{"x":2}""")
-      stubPost("/write/audit/merged", OK, """{"x":2}""")
+      stubAudit(OK)
+      stubMergedAudit(OK)
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.upscanDetailsCallback.url)
         .post(Json.toJson(testCallbackJson(testReference))))
@@ -87,13 +94,52 @@ class UpscanControllerISpec extends IntegrationStubbing {
     }
 
     "throw an exception if callback attempts to update non-existant upscan details" in new SetupHelper {
-      stubPost("/write/audit", OK, """{"x":2}""")
-      stubPost("/write/audit/merged", OK, """{"x":2}""")
+      stubAudit(OK)
+      stubMergedAudit(OK)
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.upscanDetailsCallback.url)
         .post(testCallbackJson(testReference)))
 
       res.status mustBe INTERNAL_SERVER_ERROR
+    }
+  }
+
+  "DELETE /regId/upscan-file-details/reference" must {
+    "return NO_CONTENT after successfully deleting upscan details" in new SetupHelper {
+      given
+        .user.isAuthorised
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+
+      stubAudit(OK)
+      stubMergedAudit(OK)
+
+      val res: WSResponse = await(
+        client(controllers.routes.UpscanController.deleteUpscanDetails(testRegId, testReference).url).delete()
+      )
+
+      res.status mustBe NO_CONTENT
+      await(upscanMongoRepository.getUpscanDetails(testReference)) mustBe None
+    }
+  }
+
+  "DELETE /regId/upscan-file-details" must {
+    "return NO_CONTENT after successfully deleting upscan details" in new SetupHelper {
+      given
+        .user.isAuthorised
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails.copy(reference = testReference2), upscanMongoRepository.insert)
+        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+
+      stubAudit(OK)
+      stubMergedAudit(OK)
+
+      val res: WSResponse = await(
+        client(controllers.routes.UpscanController.deleteAllUpscanDetails(testRegId).url).delete()
+      )
+
+      res.status mustBe NO_CONTENT
+      await(upscanMongoRepository.getAllUpscanDetails(testRegId)) mustBe Nil
     }
   }
 }

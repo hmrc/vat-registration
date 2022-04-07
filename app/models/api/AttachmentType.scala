@@ -32,6 +32,12 @@ case object TaxRepresentativeAuthorisation extends AttachmentType
 case object TaxAgentAuthorisation extends AttachmentType
 case object OtherAttachments extends AttachmentType
 
+sealed trait DetailedIdentityEvidence extends AttachmentType
+case object PrimaryIdentityEvidence extends DetailedIdentityEvidence
+case object ExtraIdentityEvidence extends DetailedIdentityEvidence
+case object PrimaryTransactorIdentityEvidence extends DetailedIdentityEvidence
+case object ExtraTransactorIdentityEvidence extends DetailedIdentityEvidence
+
 object AttachmentType {
   val map: Map[AttachmentType, String] = Map(
     LetterOfAuthority -> "letterOfAuthority",
@@ -45,7 +51,11 @@ object AttachmentType {
     TransactorIdentityEvidence -> "transactorIdentityEvidence",
     TaxRepresentativeAuthorisation -> "taxRepresentativeAuthorisation",
     TaxAgentAuthorisation -> "taxAgentAuthorisation",
-    OtherAttachments -> "otherAttachments"
+    OtherAttachments -> "otherAttachments",
+    PrimaryIdentityEvidence -> "primaryIdentityEvidence",
+    ExtraIdentityEvidence -> "extraIdentityEvidence",
+    PrimaryTransactorIdentityEvidence -> "primaryTransactorIdentityEvidence",
+    ExtraTransactorIdentityEvidence -> "extraTransactorIdentityEvidence"
   )
   val inverseMap: Map[String, AttachmentType] = map.map(_.swap)
 
@@ -58,7 +68,7 @@ object AttachmentType {
     Json.toJson(
       attachments
         .map {
-          case TransactorIdentityEvidence => IdentityEvidence
+          case TransactorIdentityEvidence | _: DetailedIdentityEvidence => IdentityEvidence
           case attachment => attachment
         }
         .map { attachmentType =>
