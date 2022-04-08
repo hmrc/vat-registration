@@ -17,7 +17,7 @@
 package controllers
 
 import auth.{Authorisation, AuthorisationResource}
-import models.api.UpscanDetails
+import models.api.{UpscanCreate, UpscanDetails}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.VatSchemeRepository
@@ -39,7 +39,7 @@ class UpscanController @Inject()(controllerComponents: ControllerComponents,
 
   override val resourceConn: AuthorisationResource = registrationRepository
 
-  def createUpscanDetails(regId: String): Action[String] = Action.async(parse.json[String]) { implicit request =>
+  def createUpscanDetails(regId: String): Action[UpscanCreate] = Action.async(parse.json[UpscanCreate]) { implicit request =>
     isAuthorised(regId) { authResult =>
       authResult.ifAuthorised(regId, "UpscanController", "createUpscanDetails") {
         upscanService.createUpscanDetails(regId, request.body).map(_ => Ok)
@@ -64,8 +64,27 @@ class UpscanController @Inject()(controllerComponents: ControllerComponents,
         val updatedDetails = request.body.copy(registrationId = details.registrationId)
         upscanService.upsertUpscanDetails(updatedDetails).map(_ => Ok)
       case None =>
-        throw new InternalServerException("[UpscanController] Callback attempted to update non-existant UpscanDetails")
+        throw new InternalServerException("[UpscanController] Callback attempted to update non-existent UpscanDetails")
     }
   }
 
+  def deleteUpscanDetails(regId: String, reference: String): Action[AnyContent] = Action.async { implicit request =>
+    isAuthorised(regId) { authResult =>
+      authResult.ifAuthorised(regId, "UpscanController", "deleteUpscanDetails") {
+        upscanService.deleteUpscanDetails(reference).map { _ =>
+          NoContent
+        }
+      }
+    }
+  }
+
+  def deleteAllUpscanDetails(regId: String): Action[AnyContent] = Action.async { implicit request =>
+    isAuthorised(regId) { authResult =>
+      authResult.ifAuthorised(regId, "UpscanController", "deleteAllUpscanDetails") {
+        upscanService.deleteAllUpscanDetails(regId).map { _ =>
+          NoContent
+        }
+      }
+    }
+  }
 }

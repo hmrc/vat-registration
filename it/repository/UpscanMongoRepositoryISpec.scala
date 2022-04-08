@@ -17,7 +17,7 @@
 package repository
 
 import itutil.IntegrationSpecBase
-import models.api.{InProgress, UpscanDetails}
+import models.api.{InProgress, PrimaryIdentityEvidence, UpscanDetails}
 import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext
@@ -34,6 +34,7 @@ class UpscanMongoRepositoryISpec extends IntegrationSpecBase {
   val testUpscanDetails1: UpscanDetails = UpscanDetails(
     Some(testRegId),
     testReference1,
+    Some(PrimaryIdentityEvidence),
     None,
     InProgress,
     None,

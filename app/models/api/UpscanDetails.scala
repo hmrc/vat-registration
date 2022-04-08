@@ -22,6 +22,7 @@ import java.time.LocalDateTime
 
 case class UpscanDetails(registrationId: Option[String],
                          reference: String,
+                         attachmentType: Option[AttachmentType],
                          downloadUrl: Option[String] = None,
                          fileStatus: FileStatus,
                          uploadDetails: Option[UploadDetails] = None,

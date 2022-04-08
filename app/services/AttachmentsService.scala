@@ -19,13 +19,14 @@ package services
 import models.GroupRegistration
 import models.api._
 import models.submission._
-import repositories.VatSchemeRepository
+import repositories.{UpscanMongoRepository, VatSchemeRepository}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AttachmentsService @Inject()(val registrationRepository: VatSchemeRepository
+class AttachmentsService @Inject()(val registrationRepository: VatSchemeRepository,
+                                   upscanMongoRepository: UpscanMongoRepository
                                   )(implicit executionContext: ExecutionContext) {
 
   private val attachmentDetailsKey = "attachments"
@@ -35,6 +36,22 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
       case Some(vatScheme) => attachmentList(vatScheme)
       case None => Set.empty
     }
+
+  def getIncompleteAttachments(regId: String): Future[List[AttachmentType]] = {
+    for {
+      attachmentList <- getAttachmentList(regId)
+      requiredAttachments = attachmentList.toList.flatMap {
+        case IdentityEvidence => List(PrimaryIdentityEvidence, ExtraIdentityEvidence, ExtraIdentityEvidence)
+        case TransactorIdentityEvidence => List(PrimaryTransactorIdentityEvidence, ExtraTransactorIdentityEvidence, ExtraTransactorIdentityEvidence)
+        case attachmentType => List(attachmentType)
+      }
+      upscanDetails <- upscanMongoRepository.getAllUpscanDetails(regId)
+      completeAttachments = upscanDetails.collect {
+        case UpscanDetails(_, _, Some(attachmentType), _, Ready, _, _) => attachmentType
+      }
+      incompleteAttachments = requiredAttachments.diff(completeAttachments)
+    } yield incompleteAttachments
+  }
 
   def attachmentList(vatScheme: VatScheme): Set[AttachmentType] = {
     Set(

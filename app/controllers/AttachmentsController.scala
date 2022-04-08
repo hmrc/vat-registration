@@ -52,6 +52,16 @@ class AttachmentsController @Inject()(controllerComponents: ControllerComponents
     }
   }
 
+  def getIncompleteAttachments(regId: String): Action[AnyContent] = Action.async { implicit request =>
+    isAuthorised(regId) { authResult =>
+      authResult.ifAuthorised(regId, "AttachmentsController", "getAttachmentsToUpload") {
+        attachmentsService.getIncompleteAttachments(regId).map { attachmentList =>
+          Ok(Json.toJson(attachmentList))
+        }
+      }
+    }
+  }
+
   def storeAttachmentDetails(regId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     isAuthorised(regId) { authResult =>
       authResult.ifAuthorised(regId, "AttachmentsController", "storeAttachmentDetails") {

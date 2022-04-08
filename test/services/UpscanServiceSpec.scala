@@ -18,7 +18,7 @@ package services
 
 import helpers.VatRegSpec
 import mocks.MockUpscanMongoRepository
-import models.api.{InProgress, UpscanDetails}
+import models.api.{InProgress, PrimaryIdentityEvidence, UpscanCreate, UpscanDetails}
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
@@ -31,6 +31,7 @@ class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
   val testUpscanDetails: UpscanDetails = UpscanDetails(
     Some(testRegId),
     testReference,
+    Some(PrimaryIdentityEvidence),
     None,
     InProgress,
     None,
@@ -77,7 +78,7 @@ class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
     "return the inserted object" in {
       mockUpsertUpscanDetails(testUpscanDetails)(Future.successful(testUpscanDetails))
 
-      val res = await(TestService.createUpscanDetails(testRegId, testReference))
+      val res = await(TestService.createUpscanDetails(testRegId, UpscanCreate(testReference, PrimaryIdentityEvidence)))
 
       res mustBe testUpscanDetails
     }
@@ -90,6 +91,26 @@ class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
       val res = await(TestService.upsertUpscanDetails(testUpscanDetails))
 
       res mustBe testUpscanDetails
+    }
+  }
+
+  "deleteUpscanDetails" must {
+    "return a boolean after deleting" in {
+      mockDeleteUpscanDetails(testReference)(Future.successful(true))
+
+      val res = await(TestService.deleteUpscanDetails(testReference))
+
+      res mustBe true
+    }
+  }
+
+  "deleteAllUpscanDetails" must {
+    "return a boolean after deleting" in {
+      mockDeleteAllUpscanDetails(testRegId)(Future.successful(true))
+
+      val res = await(TestService.deleteAllUpscanDetails(testRegId))
+
+      res mustBe true
     }
   }
 }

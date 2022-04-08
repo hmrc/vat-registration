@@ -56,6 +56,8 @@ PATCH       /:regId/nrs-payload                     controllers.NrsSubmissionPay
 
 POST        /:regId/upscan-reference                controllers.UpscanController.createUpscanDetails(regId: String)
 GET         /:regId/upscan-file-details/:reference  controllers.UpscanController.getUpscanDetails(regId: String, reference: String)
+DELETE      /:regId/upscan-file-details/:reference  controllers.UpscanController.deleteUpscanDetails(regId: String, reference: String)
+DELETE      /:regId/upscan-file-details             controllers.UpscanController.deleteAllUpscanDetails(regId: String)
 POST        /upscan-callback                        controllers.UpscanController.upscanDetailsCallback
 
 GET         /:regId/partners/:index                 controllers.PartnersController.getPartner(regId: String, index: Int)
@@ -64,6 +66,7 @@ DELETE      /:regId/partners/:index                 controllers.PartnersControll
 GET         /:regId/partners                        controllers.PartnersController.getPartners(regId: String)
 
 GET         /:regId/attachments                     controllers.AttachmentsController.getAttachmentList(regId: String)
+GET         /:regId/incomplete-attachments          controllers.AttachmentsController.getIncompleteAttachments(regId: String)
 PUT         /:regId/attachments                     controllers.AttachmentsController.storeAttachmentDetails(regId: String)
 
 POST        /sdes-notification-callback             controllers.SdesController.sdesCallback

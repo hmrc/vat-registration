@@ -18,7 +18,7 @@ package services
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import mocks.MockVatSchemeRepository
+import mocks.{MockUpscanMongoRepository, MockVatSchemeRepository}
 import models.GroupRegistration
 import models.api._
 import models.submission.{LtdLiabilityPartnership, NETP, Partnership}
@@ -26,9 +26,9 @@ import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
-class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
+class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository with MockUpscanMongoRepository {
 
-  object Service extends AttachmentsService(mockVatSchemeRepository)
+  object Service extends AttachmentsService(mockVatSchemeRepository, mockUpscanMongoRepository)
 
   val attachmentsKey = "attachments"
   val netpEligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
@@ -173,4 +173,64 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
     }
   }
 
+  "getIncompleteAttachments" must {
+    val testReference = "testReference"
+
+    def testUpscanDetails(attachmentType: AttachmentType): UpscanDetails = UpscanDetails(
+      registrationId = Some(testRegId),
+      reference = testReference,
+      attachmentType = Some(attachmentType),
+      fileStatus = Ready
+    )
+
+    "return a list of the required attachments for a UKCompany with unmatched personal details" when {
+      "the user has no complete upscan details" in {
+        mockGetVatScheme(testRegId)(Some(testUnverifiedUserVatScheme))
+        mockGetAllUpscanDetails(testRegId)(Future.successful(Nil))
+
+        val res = await(Service.getIncompleteAttachments(testRegId))
+
+        res mustBe List(PrimaryIdentityEvidence, ExtraIdentityEvidence, ExtraIdentityEvidence)
+      }
+
+      "the user has some complete upscan details" in {
+        mockGetVatScheme(testRegId)(Some(testUnverifiedUserVatScheme))
+        mockGetAllUpscanDetails(testRegId)(
+          Future.successful(List(
+            testUpscanDetails(PrimaryIdentityEvidence),
+            testUpscanDetails(ExtraIdentityEvidence)
+          ))
+        )
+
+        val res = await(Service.getIncompleteAttachments(testRegId))
+
+        res mustBe List(ExtraIdentityEvidence)
+      }
+    }
+
+    "return transactorIdentityEvidence in the attachment list fot a transactor with unverified personal details" when {
+      "the user has no complete upscan details" in {
+        mockGetVatScheme(testRegId)(Some(testUnverifiedTransactorVatScheme))
+        mockGetAllUpscanDetails(testRegId)(Future.successful(Nil))
+
+        val res = await(Service.getIncompleteAttachments(testRegId))
+
+        res mustBe List(PrimaryTransactorIdentityEvidence, ExtraTransactorIdentityEvidence, ExtraTransactorIdentityEvidence)
+      }
+
+      "the user has some complete upscan details" in {
+        mockGetVatScheme(testRegId)(Some(testUnverifiedTransactorVatScheme))
+        mockGetAllUpscanDetails(testRegId)(
+          Future.successful(List(
+            testUpscanDetails(PrimaryTransactorIdentityEvidence),
+            testUpscanDetails(ExtraTransactorIdentityEvidence)
+          ))
+        )
+
+        val res = await(Service.getIncompleteAttachments(testRegId))
+
+        res mustBe List(ExtraTransactorIdentityEvidence)
+      }
+    }
+  }
 }
