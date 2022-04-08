@@ -16,7 +16,7 @@
 
 package controllers.registrations
 
-import auth.{Authorisation, AuthorisationResource}
+import auth.{Authorisation, AuthorisationResource, CryptoSCRS}
 import models.api.VatScheme
 import play.api.libs.json.{Format, JsError, JsObject, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -31,7 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RegistrationController @Inject()(val authConnector: AuthConnector,
                                        val registrationService: RegistrationService,
-                                       controllerComponents: ControllerComponents
+                                       controllerComponents: ControllerComponents,
+                                       crypto: CryptoSCRS
                                       )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
 
   override val resourceConn: AuthorisationResource = registrationService.vatSchemeRepository
@@ -77,9 +78,9 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
    * */
   def getRegistration(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
-      registrationService.getRegistration[JsValue](internalId, regId).map {
+      registrationService.getRegistration[VatScheme](internalId, regId)(VatScheme.format(Some(crypto))).map {
         case Some(registration) =>
-          Ok(registration)
+          Ok(Json.toJson(registration)(VatScheme.format()))
         case _ =>
           NotFound
       }
