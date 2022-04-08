@@ -66,7 +66,7 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
   private def validate[A](json: JsValue)(implicit format: Format[A]): Either[InvalidSection, ValidSection] =
     json.validate[A] match {
       case JsSuccess(value, _) =>
-        Right(ValidSection(json))
+        Right(ValidSection(Json.toJson(value)))
       case JsError(errors) =>
         Left(InvalidSection(errors.map(_._1.toString())))
     }

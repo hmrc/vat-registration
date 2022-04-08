@@ -34,8 +34,6 @@ class SectionValidationServiceSpec extends VatRegSpec
 
   object Service extends SectionValidationService(mockRegistrationService)
 
-  val crypto = app.injector.instanceOf[CryptoSCRS]
-
   "validate" when {
     "the section is Applicant" must {
       "return ValidSection when the data is valid" in {
