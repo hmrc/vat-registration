@@ -27,7 +27,8 @@ class FeatureSwitchingModule extends Module with FeatureSwitchRegistry {
 
   val switches = Seq(
     StubSubmission,
-    ShortOrgName
+    ShortOrgName,
+    TrnFix
   )
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
@@ -45,4 +46,9 @@ case object StubSubmission extends FeatureSwitch {
 case object ShortOrgName extends FeatureSwitch {
   val configName: String = "feature-switch.short-org-name-be"
   val displayName: String = "Enable Short Org Name submission changes"
+}
+
+case object TrnFix extends FeatureSwitch {
+  val configName: String = "feature-switch.trn-fix"
+  val displayName: String = "Stop TRN from being populated in "
 }

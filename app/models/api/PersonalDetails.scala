@@ -16,6 +16,7 @@
 
 package models.api
 
+import featureswitch.core.config.{FeatureSwitching, TrnFix}
 import models.submission._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -27,7 +28,7 @@ case class PersonalDetails(name: Name,
                            trn: Option[String],
                            arn: Option[String],
                            identifiersMatch: Boolean,
-                           dateOfBirth: Option[LocalDate]) {
+                           dateOfBirth: Option[LocalDate]) extends FeatureSwitching {
 
   def personalIdentifiers: List[CustomerId] =
     List(
@@ -38,7 +39,7 @@ case class PersonalDetails(name: Name,
           if (identifiersMatch) IdVerified else IdVerificationFailed,
           date = dateOfBirth
         )),
-      trn.map(trn =>
+      if (isEnabled(TrnFix)) None else trn.map(trn =>
         CustomerId(
           trn,
           TempNinoIDType,
