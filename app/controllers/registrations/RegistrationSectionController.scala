@@ -31,7 +31,7 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
                                               val registrationService: RegistrationService,
                                               val sectionValidationService: SectionValidationService,
                                               controllerComponents: ControllerComponents,
-                                              cipherService: CipherService,
+                                              cipherService: CipherService
                                              )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
 
   override val resourceConn: AuthorisationResource = registrationService.vatSchemeRepository
