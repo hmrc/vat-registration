@@ -850,7 +850,15 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "telephone" -> testDigitalContactOptional.tel,
           "mobileNumber" -> testDigitalContactOptional.mobile
         ),
-        "dateOfBirth" -> testDate
+        "dateOfBirth" -> testDate,
+        "identifiers" -> Json.arr(
+          Json.obj(
+            "date" -> testDate,
+            "idType" -> "TEMPNI",
+            "idValue" -> testTrn,
+            "IDsVerificationStatus" -> "2"
+          )
+        )
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
@@ -968,7 +976,15 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "telephone" -> testDigitalContactOptional.tel,
           "mobileNumber" -> testDigitalContactOptional.mobile
         ),
-        "dateOfBirth" -> testDate
+        "dateOfBirth" -> testDate,
+        "identifiers" -> Json.arr(
+          Json.obj(
+            "date" -> testDate,
+            "idType" -> "TEMPNI",
+            "idValue" -> testTrn,
+            "IDsVerificationStatus" -> "2"
+          )
+        )
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
@@ -1095,7 +1111,15 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "telephone" -> testDigitalContactOptional.tel,
           "mobileNumber" -> testDigitalContactOptional.mobile
         ),
-        "dateOfBirth" -> testDate
+        "dateOfBirth" -> testDate,
+        "identifiers" -> Json.arr(
+          Json.obj(
+            "date" -> testDate,
+            "idType" -> "TEMPNI",
+            "idValue" -> testTrn,
+            "IDsVerificationStatus" -> "2"
+          )
+        )
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
