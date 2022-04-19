@@ -56,6 +56,7 @@ PATCH       /:regId/nrs-payload                     controllers.NrsSubmissionPay
 
 POST        /:regId/upscan-reference                controllers.UpscanController.createUpscanDetails(regId: String)
 GET         /:regId/upscan-file-details/:reference  controllers.UpscanController.getUpscanDetails(regId: String, reference: String)
+GET         /:regId/upscan-file-details             controllers.UpscanController.getAllUpscanDetails(regId: String)
 DELETE      /:regId/upscan-file-details/:reference  controllers.UpscanController.deleteUpscanDetails(regId: String, reference: String)
 DELETE      /:regId/upscan-file-details             controllers.UpscanController.deleteAllUpscanDetails(regId: String)
 POST        /upscan-callback                        controllers.UpscanController.upscanDetailsCallback

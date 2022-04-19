@@ -4,13 +4,15 @@ package controllers
 import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
 import itutil.IntegrationStubbing
 import models.api.{AttachmentType, InProgress, PrimaryIdentityEvidence, UpscanDetails}
-import play.api.libs.json.{JsValue, Json}
+import org.scalatest.MustMatchers
+import org.scalatest.MustMatchers.{a, convertToAnyMustWrapper}
+import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext
 
-class UpscanControllerISpec extends IntegrationStubbing {
+class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
 
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
@@ -64,6 +66,36 @@ class UpscanControllerISpec extends IntegrationStubbing {
       val res: WSResponse = await(client(controllers.routes.UpscanController.getUpscanDetails(testRegId, testReference).url).get)
 
       res.status mustBe NOT_FOUND
+    }
+  }
+
+  "GET /:regId/upscan-file-details" must {
+    "return OK with all upscan details if data exists" in new SetupHelper {
+      given
+        .user.isAuthorised
+        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+
+      val res: WSResponse = await(client(controllers.routes.UpscanController.getAllUpscanDetails(testRegId).url).get)
+
+      res.status mustBe OK
+
+      val parsedResult: JsValue = Json.parse(res.body)
+      parsedResult mustBe a[JsArray]
+      parsedResult.asInstanceOf[JsArray].value.size mustBe 1
+    }
+
+    "return OK with empty list of upscan details if not data available" in new SetupHelper {
+      given
+        .user.isAuthorised
+        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+
+      val res: WSResponse = await(client(controllers.routes.UpscanController.getAllUpscanDetails(testRegId).url).get)
+
+      res.status mustBe OK
+      val parsedResult: JsValue = Json.parse(res.body)
+      parsedResult mustBe a[JsArray]
+      parsedResult.asInstanceOf[JsArray].value.size mustBe 0
     }
   }
 
