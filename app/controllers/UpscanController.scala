@@ -58,6 +58,14 @@ class UpscanController @Inject()(controllerComponents: ControllerComponents,
     }
   }
 
+  def getAllUpscanDetails(regId: String): Action[AnyContent] = Action.async { implicit request =>
+    isAuthorised(regId) { authResult =>
+      authResult.ifAuthorised(regId, "UpscanController", "getUpscanDetails") {
+        upscanService.getAllUpscanDetails(regId).map(upscanDetails => Ok(Json.toJson(upscanDetails)))
+      }
+    }
+  }
+
   def upscanDetailsCallback: Action[UpscanDetails] = Action.async(parse.json[UpscanDetails]) { implicit request =>
     upscanService.getUpscanDetails(request.body.reference).flatMap {
       case Some(details) =>
