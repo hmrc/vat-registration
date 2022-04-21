@@ -36,7 +36,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
       "businessCommunicationDetails" -> Json.obj(
         "telephone" -> "12345678910",
         "emailAddress" -> "test@test.com",
-        "emailVerified" -> true,
+        "emailVerified" -> false,
         "webAddress" -> "www.foo.com",
         "preference" -> "ZEL"
       )

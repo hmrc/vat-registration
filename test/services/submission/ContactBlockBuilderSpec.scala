@@ -18,6 +18,7 @@ package services.submission
 
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
+import models.api.DigitalContactOptional
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsObject, Json}
@@ -41,6 +42,7 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
       |      "mobileNumber": "54321",
       |      "telephone": "12345",
       |      "email": "email@email.com",
+      |      "emailVerified": true,
       |      "commsPreference": "ZEL"
       |    },
       |    "address": {
@@ -55,8 +57,16 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
   "ContactBlockBuilder" should {
     "return the built contact block" when {
       "business contact details are available" in new Setup {
-        when(mockRegistrationMongoRepository.fetchBusinessContact(any()))
-          .thenReturn(Future.successful(Some(validFullBusinessContact)))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
+          .thenReturn(Future.successful(Some(testVatScheme.copy(
+            businessContact = Some(validFullBusinessContact),
+            applicantDetails = Some(validApplicantDetails.copy(
+              contact = DigitalContactOptional(
+                email = Some(validFullBusinessContact.digitalContact.email),
+                emailVerified = Some(true)
+              )
+            ))
+          ))))
 
         val result: JsObject = await(service.buildContactBlock(testRegId))
         result mustBe contactBlockJson
@@ -65,7 +75,7 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
 
     "throw an Interval Server Exception" when {
       "contact details do not exist" in new Setup {
-        when(mockRegistrationMongoRepository.fetchBusinessContact(any()))
+        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
           .thenReturn(Future.successful(None))
 
         intercept[InternalServerException](await(service.buildContactBlock(testRegId)))
