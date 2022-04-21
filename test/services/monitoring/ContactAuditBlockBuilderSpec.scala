@@ -35,7 +35,7 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       |    },
       |    "businessCommunicationDetails": {
       |      "emailAddress": "email@email.com",
-      |      "emailVerified": true,
+      |      "emailVerified": false,
       |      "preference": "ZEL"
       |    }
       |}
@@ -72,7 +72,8 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           website = None,
           ppob = Address("line1", Some("line2"), None, None, None, None, None),
           commsPreference = Email
-        )))
+        )),
+        applicantDetails = Some(validApplicantDetails))
 
       val res = TestService.buildContactBlock(vatScheme)
 
@@ -86,7 +87,12 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           website = Some("www.foo.com"),
           ppob = Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some(testPostcode), Some(Country(Some("GB"), None))),
           commsPreference = Email
+        )),
+        applicantDetails = Some(validApplicantDetails.copy(contact = DigitalContactOptional(
+          email = Some("email@email.com"),
+          emailVerified = Some(true)
         )))
+      )
 
       val res = TestService.buildContactBlock(vatScheme)
 

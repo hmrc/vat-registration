@@ -27,8 +27,8 @@ import javax.inject.Singleton
 class ContactAuditBlockBuilder {
 
   def buildContactBlock(vatScheme: VatScheme): JsObject =
-    vatScheme.businessContact match {
-      case Some(businessContact) =>
+    (vatScheme.businessContact, vatScheme.applicantDetails) match {
+      case (Some(businessContact), Some(applicantDetails)) =>
         jsonObject(
           "address" -> jsonObject(
             "line1" -> businessContact.ppob.line1,
@@ -42,7 +42,12 @@ class ContactAuditBlockBuilder {
           "businessCommunicationDetails" -> jsonObject(
             optional("telephone" -> businessContact.digitalContact.tel),
             "emailAddress" -> businessContact.digitalContact.email,
-            "emailVerified" -> true,
+            "emailVerified" -> (
+              if (applicantDetails.contact.email.contains(businessContact.digitalContact.email) && applicantDetails.contact.emailVerified.contains(true)) {
+                true
+              } else {
+                false
+              }),
             optional("webAddress" -> businessContact.website),
             "preference" -> (businessContact.commsPreference match {
               case Email => ContactPreference.electronic

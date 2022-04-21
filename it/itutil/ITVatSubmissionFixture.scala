@@ -56,7 +56,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
-        //"webAddress" -> Do we need this?
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL" //electronic
       )
     ),
@@ -218,7 +218,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
-        //"webAddress" -> Do we need this?
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL" //electronic
       )
     ),
@@ -379,7 +379,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
-        //"webAddress" -> Do we need this?
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL" //electronic
       )
     ),
@@ -554,7 +554,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
-        //"webAddress" -> Do we need this?
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL" //electronic
       )
     ),
@@ -665,6 +665,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
     ),
@@ -785,6 +786,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
     ),
@@ -903,6 +905,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
     ),
@@ -1030,6 +1033,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
     ),
@@ -1150,6 +1154,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
     ),
@@ -1264,6 +1269,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
     ),
@@ -1363,6 +1369,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "telephone" -> testContactDetails.tel,
         "mobileNumber" -> testContactDetails.mobile,
         "email" -> testContactDetails.email,
+        "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
     ),
