@@ -55,8 +55,8 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
 
   def attachmentList(vatScheme: VatScheme): Set[AttachmentType] = {
     Set(
-      getIdentityEvidenceAttachment(vatScheme),
       getTransactorIdentityEvidenceAttachment(vatScheme),
+      getIdentityEvidenceAttachment(vatScheme),
       getVat2Attachment(vatScheme),
       getVat51Attachment(vatScheme),
       getVat5LAttachment(vatScheme)
