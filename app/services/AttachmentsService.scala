@@ -70,9 +70,8 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
     registrationRepository.updateBlock[Attachments](regId, attachmentDetails, attachmentDetailsKey)
 
   private def getIdentityEvidenceAttachment(vatScheme: VatScheme): Option[IdentityEvidence.type] = {
-    val needIdentityDoc = vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType))
     val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.identifiersMatch)
-    if (needIdentityDoc || unverifiedPersonalDetails) Some(IdentityEvidence) else None
+    if (unverifiedPersonalDetails) Some(IdentityEvidence) else None
   }
 
   private def getTransactorIdentityEvidenceAttachment(vatScheme: VatScheme): Option[TransactorIdentityEvidence.type] = {

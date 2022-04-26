@@ -18,7 +18,6 @@ package controllers
 
 import itutil.IntegrationStubbing
 import models.api._
-import models.submission.NETP
 import play.api.libs.json.Json
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
@@ -34,29 +33,17 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
   val attachmentsUrl: String = routes.AttachmentsController.getAttachmentList(testRegId).url
 
   s"GET /:regId/attachments " must {
-    "return OK with identityEvidence for a NETP vat scheme" in new Setup {
+
+    "return OK with identityEvidence attachments if identifiers match not complete" in new Setup {
       given.user.isAuthorised
-      insertIntoDb(testSoleTraderVatScheme.copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP))))
+      insertIntoDb(
+        testEmptyVatScheme(testRegId).copy(
+          applicantDetails = Some(testUnregisteredApplicantDetails.copy(personalDetails = testPersonalDetails.copy(identifiersMatch = false))),
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData)
+        )
+      )
 
       val testJson = Json.obj("attachments" -> Json.arr(Json.toJson[AttachmentType](IdentityEvidence)))
-
-      val response: WSResponse = await(client(attachmentsUrl).get())
-
-      response.status mustBe OK
-      response.json mustBe testJson
-    }
-
-    "return OK with the attachment method and identityEvidence for a NETP vat scheme" in new Setup {
-      given.user.isAuthorised
-      insertIntoDb(testSoleTraderVatScheme.copy(
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP)),
-        attachments = Some(Attachments(method = Post))
-      ))
-
-      val testJson = Json.obj(
-        "method" -> Json.toJson[AttachmentMethod](Post),
-        "attachments" -> Json.arr(Json.toJson[AttachmentType](IdentityEvidence))
-      )
 
       val response: WSResponse = await(client(attachmentsUrl).get())
 
@@ -157,7 +144,8 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
     val url = controllers.routes.AttachmentsController.getIncompleteAttachments(testRegId).url
     "return a list of required attachment uploads for a user that needs identity evidence" when {
       val testVatScheme: VatScheme = testEmptyVatScheme(testRegId).copy(
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP))
+        applicantDetails = Some(testUnregisteredApplicantDetails.copy(personalDetails = testPersonalDetails.copy(identifiersMatch = false))),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData)
       )
       "no attachments have been uploaded yet" in new Setup {
         given
