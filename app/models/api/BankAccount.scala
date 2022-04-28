@@ -38,15 +38,15 @@ object BankAccount {
   implicit val format: Format[BankAccount] = Json.format[BankAccount]
 }
 
-object BankAccountDetails extends VatBankAccountValidator {
+object BankAccountDetails {
   implicit val format: Format[BankAccountDetails] = Json.format[BankAccountDetails]
 }
 
-object BankAccountOverseasDetails extends VatBankAccountValidator {
+object BankAccountOverseasDetails {
   implicit val format: Format[BankAccountOverseasDetails] = Json.format[BankAccountOverseasDetails]
 }
 
-object BankAccountDetailsMongoFormat extends VatBankAccountValidator {
+object BankAccountDetailsMongoFormat {
   def format(crypto: CryptoSCRS): Format[BankAccountDetails] = (
     (__ \ "name").format[String] and
       (__ \ "sortCode").format[String] and
@@ -55,7 +55,7 @@ object BankAccountDetailsMongoFormat extends VatBankAccountValidator {
     ) (BankAccountDetails.apply, unlift(BankAccountDetails.unapply))
 }
 
-object BankAccountOverseasDetailsMongoFormat extends VatBankAccountValidator {
+object BankAccountOverseasDetailsMongoFormat {
   def format(crypto: CryptoSCRS): Format[BankAccountOverseasDetails] = (
     (__ \ "name").format[String] and
       (__ \ "bic").format[String](crypto.rds)(crypto.wts) and
@@ -64,7 +64,7 @@ object BankAccountOverseasDetailsMongoFormat extends VatBankAccountValidator {
 }
 
 
-object BankAccountMongoFormat extends VatBankAccountValidator {
+object BankAccountMongoFormat {
   def encryptedFormat(crypto: CryptoSCRS): OFormat[BankAccount] = (
     (__ \ "isProvided").format[Boolean] and
       (__ \ "details").formatNullable[BankAccountDetails](BankAccountDetailsMongoFormat.format(crypto)) and

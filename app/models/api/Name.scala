@@ -23,17 +23,17 @@ case class Name(first: Option[String],
                 middle: Option[String],
                 last: String)
 
-object Name extends VatApplicantDetailsValidator {
+object Name {
   implicit val format: Format[Name] = (
-    (__ \ "first").formatNullable[String](nameValidator) and
-    (__ \ "middle").formatNullable[String](nameValidator) and
-    (__ \ "last").format[String](nameValidator)
+    (__ \ "first").formatNullable[String] and
+    (__ \ "middle").formatNullable[String] and
+    (__ \ "last").format[String]
   )(Name.apply, unlift(Name.unapply))
 
   val auditWrites: Format[Name] = (
-    (__ \ "firstName").formatNullable[String](nameValidator) and
-    (__ \ "middleName").formatNullable[String](nameValidator) and
-    (__ \ "lastName").format[String](nameValidator)
+    (__ \ "firstName").formatNullable[String] and
+    (__ \ "middleName").formatNullable[String] and
+    (__ \ "lastName").format[String]
   )(Name.apply, unlift(Name.unapply))
 
 }

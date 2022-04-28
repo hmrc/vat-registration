@@ -23,10 +23,10 @@ case class SicCode(id: String,
                    description: String,
                    displayDetails: String)
 
-object SicCode extends SicCodeValidator {
+object SicCode {
 
   implicit val apiFormat: Format[SicCode] = (
-    (__ \ "code").format[String](idValidator) and
+    (__ \ "code").format[String] and
       (__ \ "desc").format[String] and
       (__ \ "indexes").format[String]
     ) (SicCode.apply, unlift(SicCode.unapply))
