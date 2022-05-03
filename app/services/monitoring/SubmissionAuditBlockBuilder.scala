@@ -16,7 +16,7 @@
 
 package services.monitoring
 
-import models.api.{AttachmentType, Post, VatScheme}
+import models.api.{AttachmentType, VatScheme}
 import models.monitoring.SubmissionAuditModel
 import services.AttachmentsService
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -60,7 +60,9 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
       "bankDetails" -> bankAuditBlockBuilder.buildBankAuditBlock(vatScheme),
       "periods" -> periodsAuditBlockBuilder.buildPeriodsBlock(vatScheme),
       optional("joinAA" -> annualAccountingAuditBlockBuilder.buildAnnualAccountingAuditBlock(vatScheme)),
-      conditional(attachmentList.nonEmpty)("attachments" -> AttachmentType.submissionWrites(Post).writes(attachmentList)),
+      optionalRequiredIf(attachmentList.nonEmpty)("attachments" -> vatScheme.attachments.map(attachments =>
+        AttachmentType.submissionWrites(attachments.method).writes(attachmentList)
+      )),
       optional("entities" -> entitiesAuditBlockBuilder.buildEntitiesAuditBlock(vatScheme))
     )
 

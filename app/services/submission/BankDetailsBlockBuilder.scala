@@ -17,50 +17,46 @@
 package services.submission
 
 import models.api.NoUKBankAccount.reasonId
-import models.api.{BankAccount, IndeterminateStatus, OverseasAccount}
+import models.api.{BankAccount, IndeterminateStatus, OverseasAccount, VatScheme}
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
-import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BankDetailsBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)(implicit ec: ExecutionContext) {
+class BankDetailsBlockBuilder @Inject()() {
 
-  def buildBankDetailsBlock(regId: String): Future[Option[JsObject]] = for {
-    optBankAccount <- registrationMongoRepository.fetchBankAccount(regId)
-    optPartyType <- registrationMongoRepository.fetchEligibilitySubmissionData(regId).map(_.map(_.partyType))
-  } yield (optBankAccount, optPartyType) match {
-    case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) if !List(NETP, NonUkNonEstablished).contains(partyType) =>
-      Some(jsonObject(
-        "UK" -> jsonObject(
-          "accountName" -> details.name,
-          "sortCode" -> details.sortCode.replaceAll("-", ""),
-          "accountNumber" -> details.number,
-          conditional(details.status.equals(IndeterminateStatus))("bankDetailsNotValid" -> true)
-        )
-      ))
-    case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(NETP | NonUkNonEstablished)) =>
-      Some(jsonObject(
-        "Overseas" -> jsonObject(
-          "name" -> overseasDetails.name,
-          "bic" -> overseasDetails.bic,
-          "iban" -> overseasDetails.iban
-        )
-      ))
-    case (Some(BankAccount(false, _, _, Some(reason))), _) =>
-      Some(jsonObject(
-        "UK" -> jsonObject(
-          "reasonBankAccNotProvided" -> reasonId(reason)
-        )
-      ))
-    case (None, Some(NETP | NonUkNonEstablished)) =>
-      Some(jsonObject("UK" -> jsonObject(
-        "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
-      )))
-    case _ => throw new InternalServerException("Could not build bank details block for submission due to missing bank account")
-  }
+  def buildBankDetailsBlock(vatScheme: VatScheme): Option[JsObject] =
+    (vatScheme.bankAccount, vatScheme.partyType) match {
+      case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) if !List(NETP, NonUkNonEstablished).contains(partyType) =>
+        Some(jsonObject(
+          "UK" -> jsonObject(
+            "accountName" -> details.name,
+            "sortCode" -> details.sortCode.replaceAll("-", ""),
+            "accountNumber" -> details.number,
+            conditional(details.status.equals(IndeterminateStatus))("bankDetailsNotValid" -> true)
+          )
+        ))
+      case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(NETP | NonUkNonEstablished)) =>
+        Some(jsonObject(
+          "Overseas" -> jsonObject(
+            "name" -> overseasDetails.name,
+            "bic" -> overseasDetails.bic,
+            "iban" -> overseasDetails.iban
+          )
+        ))
+      case (Some(BankAccount(false, _, _, Some(reason))), _) =>
+        Some(jsonObject(
+          "UK" -> jsonObject(
+            "reasonBankAccNotProvided" -> reasonId(reason)
+          )
+        ))
+      case (None, Some(NETP | NonUkNonEstablished)) =>
+        Some(jsonObject("UK" -> jsonObject(
+          "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
+        )))
+      case _ => throw new InternalServerException("Could not build bank details block for submission due to missing bank account")
+    }
 }

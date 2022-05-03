@@ -16,11 +16,12 @@
 
 package services.submission
 
+import models.api.VatScheme
 import play.api.libs.json.JsObject
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
@@ -35,28 +36,18 @@ class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
                                          entitiesBlockBuilder: EntitiesBlockBuilder
                                         )(implicit ec: ExecutionContext) {
 
-  def buildSubmissionPayload(internalId: String, regId: String): Future[JsObject] = for {
-    adminBlock <- adminBlockBuilder.buildAdminBlock(regId)
-    declarationBlock <- declarationBlockBuilder.buildDeclarationBlock(regId)
-    customerIdentificationBlock <- customerIdentificationBlockBuilder.buildCustomerIdentificationBlock(regId)
-    contactBlock <- contactBlockBuilder.buildContactBlock(regId)
-    subscriptionBlock <- subscriptionBlockBuilder.buildSubscriptionBlock(internalId, regId)
-    periodsBlock <- periodsBlockBuilder.buildPeriodsBlock(regId)
-    complianceBlock <- complianceBlockBuilder.buildComplianceBlock(regId)
-    bankDetailsBlock <- bankDetailsBlockBuilder.buildBankDetailsBlock(regId)
-    annualAccountingBlockBuilder <- annualAccountingBlockBuilder.buildAnnualAccountingBlock(regId)
-    entities <- entitiesBlockBuilder.buildEntitiesBlock(regId)
-  } yield jsonObject(
-    "messageType" -> "SubscriptionCreate",
-    "admin" -> adminBlock,
-    "declaration" -> declarationBlock,
-    "customerIdentification" -> customerIdentificationBlock,
-    "contact" -> contactBlock,
-    "subscription" -> subscriptionBlock,
-    "periods" -> periodsBlock,
-    optional("bankDetails" -> bankDetailsBlock),
-    optional("joinAA" -> annualAccountingBlockBuilder),
-    optional("compliance" -> complianceBlock),
-    optional("entities" -> entities)
-  )
+  def buildSubmissionPayload(vatScheme: VatScheme): JsObject =
+    jsonObject(
+      "messageType" -> "SubscriptionCreate",
+      "admin" -> adminBlockBuilder.buildAdminBlock(vatScheme),
+      "declaration" -> declarationBlockBuilder.buildDeclarationBlock(vatScheme),
+      "customerIdentification" -> customerIdentificationBlockBuilder.buildCustomerIdentificationBlock(vatScheme),
+      "contact" -> contactBlockBuilder.buildContactBlock(vatScheme),
+      "subscription" -> subscriptionBlockBuilder.buildSubscriptionBlock(vatScheme),
+      "periods" -> periodsBlockBuilder.buildPeriodsBlock(vatScheme),
+      optional("bankDetails" -> bankDetailsBlockBuilder.buildBankDetailsBlock(vatScheme)),
+      optional("joinAA" -> annualAccountingBlockBuilder.buildAnnualAccountingBlock(vatScheme)),
+      optional("compliance" -> complianceBlockBuilder.buildComplianceBlock(vatScheme)),
+      optional("entities" -> entitiesBlockBuilder.buildEntitiesBlock(vatScheme))
+    )
 }

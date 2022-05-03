@@ -16,6 +16,7 @@
 
 package services.submission.buildermocks
 
+import models.api.VatScheme
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
@@ -24,16 +25,14 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import services.submission.SubmissionPayloadBuilder
 
-import scala.concurrent.Future
-
 trait MockSubmissionPayloadBuilder extends MockitoSugar {
   self: Suite =>
 
   val mockSubmissionPayloadBuilder: SubmissionPayloadBuilder = mock[SubmissionPayloadBuilder]
 
-  def mockBuildSubmissionPayload(internalId: String, regId: String)
-                                (response: Future[JsObject]): OngoingStubbing[Future[JsObject]] =
-    when(mockSubmissionPayloadBuilder.buildSubmissionPayload(ArgumentMatchers.eq(internalId), ArgumentMatchers.eq(regId)))
+  def mockBuildSubmissionPayload(vatScheme: VatScheme)
+                                (response: JsObject): OngoingStubbing[JsObject] =
+    when(mockSubmissionPayloadBuilder.buildSubmissionPayload(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 
 }

@@ -20,12 +20,7 @@ import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import models.submission.{EntitiesArrayType, Individual, PartnerEntity, PartyType}
 import play.api.libs.json.{JsObject, Json}
-import play.api.test.Helpers._
-import services.monitoring.buildermocks.MockEntitiesBlockBuilder
 import services.submission.buildermocks._
-import uk.gov.hmrc.http.InternalServerException
-
-import scala.concurrent.Future
 
 class SubmissionPayloadBuilderSpec extends VatRegSpec
   with VatRegistrationFixture
@@ -209,87 +204,51 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
   "buildSubmissionPayload" should {
     "return a submission json object" when {
       "all required pieces of data are available in the database" in {
-        mockBuildAdminBlock(testRegId)(Future.successful(testAdminBlockJson))
+        mockBuildAdminBlock(testVatScheme)(testAdminBlockJson)
+        mockBuildDeclarationBlock(testVatScheme)(testDeclarationBlockJson)
+        mockBuildCustomerIdentificationBlock(testVatScheme)(testCustomerIdentificationBlockJson)
+        mockBuildContactBlock(testVatScheme)(testContactBlockJson)
+        mockBuildSubscriptionBlock(testVatScheme)(testSubscriptionBlockJson)
+        mockBuildBankDetailsBlock(testVatScheme)(Some(testBankDetailsBlockJson))
+        mockBuildComplianceBlock(testVatScheme)(Some(testComplianceJson))
+        mockBuildPeriodsBlock(testVatScheme)(testPeriodsBlockJson)
+        mockBuildAnnualAccountingBlock(testVatScheme)(Some(testAnnualAccountingBlockJson))
+        mockBuildEntitiesBlock(testVatScheme)(Some(testEntitiesBlockJson))
 
-        mockBuildDeclarationBlock(testRegId)(Future.successful(testDeclarationBlockJson))
-
-        mockBuildCustomerIdentificationBlock(testRegId)(Future.successful(testCustomerIdentificationBlockJson))
-
-        mockBuildContactBlock(testRegId)(Future.successful(testContactBlockJson))
-
-        mockBuildSubscriptionBlock(testInternalId, testRegId)(Future.successful(testSubscriptionBlockJson))
-
-        mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
-
-        mockBuildComplianceBlock(testRegId)(Future.successful(Some(testComplianceJson)))
-
-        mockBuildPeriodsBlock(testRegId)(Future.successful(testPeriodsBlockJson))
-
-        mockBuildAnnualAccountingBlock(testRegId)(Future.successful(Some(testAnnualAccountingBlockJson)))
-
-        mockBuildEntitiesBlock(testRegId)(Future.successful(Some(testEntitiesBlockJson)))
-
-        val result = await(TestBuilder.buildSubmissionPayload(testInternalId, testRegId))
+        val result = TestBuilder.buildSubmissionPayload(testVatScheme)
 
         result mustBe expectedJson
       }
       "there are no compliance answers in the database" in {
-        mockBuildAdminBlock(testRegId)(Future.successful(testAdminBlockJson))
+        mockBuildAdminBlock(testVatScheme)(testAdminBlockJson)
+        mockBuildDeclarationBlock(testVatScheme)(testDeclarationBlockJson)
+        mockBuildCustomerIdentificationBlock(testVatScheme)(testCustomerIdentificationBlockJson)
+        mockBuildContactBlock(testVatScheme)(testContactBlockJson)
+        mockBuildSubscriptionBlock(testVatScheme)(testSubscriptionBlockJson)
+        mockBuildBankDetailsBlock(testVatScheme)(Some(testBankDetailsBlockJson))
+        mockBuildComplianceBlock(testVatScheme)(None)
+        mockBuildPeriodsBlock(testVatScheme)(testPeriodsBlockJson)
+        mockBuildAnnualAccountingBlock(testVatScheme)(Some(testAnnualAccountingBlockJson))
 
-        mockBuildDeclarationBlock(testRegId)(Future.successful(testDeclarationBlockJson))
-
-        mockBuildCustomerIdentificationBlock(testRegId)(Future.successful(testCustomerIdentificationBlockJson))
-
-        mockBuildContactBlock(testRegId)(Future.successful(testContactBlockJson))
-
-        mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
-
-        mockBuildSubscriptionBlock(testInternalId, testRegId)(Future.successful(testSubscriptionBlockJson))
-
-        mockBuildComplianceBlock(testRegId)(Future.successful(None))
-
-        mockBuildPeriodsBlock(testRegId)(Future.successful(testPeriodsBlockJson))
-
-        mockBuildAnnualAccountingBlock(testRegId)(Future.successful(Some(testAnnualAccountingBlockJson)))
-
-        val result = await(TestBuilder.buildSubmissionPayload(testInternalId, testRegId))
+        val result = TestBuilder.buildSubmissionPayload(testVatScheme)
 
         result mustBe expectedJson - "compliance"
       }
       "the entities section is not present" in {
-        mockBuildAdminBlock(testRegId)(Future.successful(testAdminBlockJson))
+        mockBuildAdminBlock(testVatScheme)(testAdminBlockJson)
+        mockBuildDeclarationBlock(testVatScheme)(testDeclarationBlockJson)
+        mockBuildCustomerIdentificationBlock(testVatScheme)(testCustomerIdentificationBlockJson)
+        mockBuildContactBlock(testVatScheme)(testContactBlockJson)
+        mockBuildSubscriptionBlock(testVatScheme)(testSubscriptionBlockJson)
+        mockBuildBankDetailsBlock(testVatScheme)(Some(testBankDetailsBlockJson))
+        mockBuildComplianceBlock(testVatScheme)(Some(testComplianceJson))
+        mockBuildPeriodsBlock(testVatScheme)(testPeriodsBlockJson)
+        mockBuildAnnualAccountingBlock(testVatScheme)(Some(testAnnualAccountingBlockJson))
+        mockBuildEntitiesBlock(testVatScheme)(None)
 
-        mockBuildDeclarationBlock(testRegId)(Future.successful(testDeclarationBlockJson))
-
-        mockBuildCustomerIdentificationBlock(testRegId)(Future.successful(testCustomerIdentificationBlockJson))
-
-        mockBuildContactBlock(testRegId)(Future.successful(testContactBlockJson))
-
-        mockBuildSubscriptionBlock(testInternalId, testRegId)(Future.successful(testSubscriptionBlockJson))
-
-        mockBuildBankDetailsBlock(testRegId)(Future.successful(Some(testBankDetailsBlockJson)))
-
-        mockBuildComplianceBlock(testRegId)(Future.successful(Some(testComplianceJson)))
-
-        mockBuildPeriodsBlock(testRegId)(Future.successful(testPeriodsBlockJson))
-
-        mockBuildAnnualAccountingBlock(testRegId)(Future.successful(Some(testAnnualAccountingBlockJson)))
-
-        mockBuildEntitiesBlock(testRegId)(Future.successful(None))
-
-        val result = await(TestBuilder.buildSubmissionPayload(testInternalId, testRegId))
+        val result = TestBuilder.buildSubmissionPayload(testVatScheme)
 
         result mustBe expectedJson - "entities"
-      }
-    }
-
-    "throw an exception" when {
-      "one of the required pieces of data is available in the database" in {
-        mockBuildAdminBlock(testRegId)(Future.failed(new InternalServerException("Data not in database")))
-
-        intercept[InternalServerException] {
-          await(TestBuilder.buildSubmissionPayload(testInternalId, testRegId))
-        }
       }
     }
   }

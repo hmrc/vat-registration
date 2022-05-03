@@ -21,12 +21,11 @@ import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api.DigitalContactOptional
 import play.api.libs.json.Json
-import play.api.test.Helpers._
 import uk.gov.hmrc.http.InternalServerException
 
 class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
 
-  object TestBuilder extends DeclarationBlockBuilder(mockVatSchemeRepository)
+  object TestBuilder extends DeclarationBlockBuilder
 
   val testApplicantDetails = validApplicantDetails.copy(changeOfName = None)
   val declarationVatScheme = testVatScheme.copy(applicantDetails = Some(testApplicantDetails), confirmInformationDeclaration = Some(true))
@@ -34,9 +33,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
   "The declaration block builder" must {
     "return valid json" when {
       "the user has no previous address" in {
-        mockGetVatScheme(testRegId)(Some(declarationVatScheme))
-
-        val res = await(TestBuilder.buildDeclarationBlock(testRegId))
+        val res = TestBuilder.buildDeclarationBlock(declarationVatScheme)
 
         res mustBe Json.parse(
           """{
@@ -75,9 +72,9 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       }
       "the user has a previous address" in {
         val applicantDetails = testApplicantDetails.copy(previousAddress = Some(testAddress))
-        mockGetVatScheme(testRegId)(Some(declarationVatScheme.copy(applicantDetails = Some(applicantDetails))))
+        val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
 
-        val res = await(TestBuilder.buildDeclarationBlock(testRegId))
+        val res = TestBuilder.buildDeclarationBlock(vatScheme)
 
         res mustBe Json.parse(
           """
@@ -124,9 +121,9 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       }
       "the user has a previous name" in {
         val applicantDetails = testApplicantDetails.copy(changeOfName = Some(testFormerName))
-        mockGetVatScheme(testRegId)(Some(declarationVatScheme.copy(applicantDetails = Some(applicantDetails))))
+        val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
 
-        val res = await(TestBuilder.buildDeclarationBlock(testRegId))
+        val res = TestBuilder.buildDeclarationBlock(vatScheme)
 
         res mustBe Json.parse(
           """{
@@ -176,9 +173,9 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           emailVerified = Some(true)
         )
         val applicantDetails = testApplicantDetails.copy(contact = contactDetails)
-        mockGetVatScheme(testRegId)(Some(declarationVatScheme.copy(applicantDetails = Some(applicantDetails))))
+        val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
 
-        val res = await(TestBuilder.buildDeclarationBlock(testRegId))
+        val res = TestBuilder.buildDeclarationBlock(vatScheme)
 
         res mustBe Json.parse(
           """{
@@ -219,28 +216,26 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       }
     }
     "throw an exception if the user hasn't answered the declaration question" in {
-      mockGetVatScheme(testRegId)(Some(testFullVatScheme.copy(confirmInformationDeclaration = None)))
+      val vatScheme = testFullVatScheme.copy(confirmInformationDeclaration = None)
 
       val res = intercept[InternalServerException] {
-        await(TestBuilder.buildDeclarationBlock(testRegId))
+        TestBuilder.buildDeclarationBlock(vatScheme)
       }
 
       res.getMessage mustBe "Could not construct declaration block because the following are missing: declaration"
     }
     "throw an exception if vat scheme doesn't contain applicant details" in {
-      mockGetVatScheme(testRegId)(Some(testFullVatScheme.copy(applicantDetails = None)))
+      val vatScheme = testFullVatScheme.copy(applicantDetails = None)
 
       val res = intercept[InternalServerException] {
-        await(TestBuilder.buildDeclarationBlock(testRegId))
+        TestBuilder.buildDeclarationBlock(vatScheme)
       }
 
       res.getMessage mustBe "Could not construct declaration block because the following are missing: applicantDetails"
     }
-    "throw an exception when the VAT scheme is missing" in {
-      mockGetVatScheme(testRegId)(None)
-
+    "throw an exception when the VAT scheme is empty" in {
       intercept[InternalServerException] {
-        await(TestBuilder.buildDeclarationBlock(testRegId))
+        TestBuilder.buildDeclarationBlock(testVatScheme)
       }
     }
   }

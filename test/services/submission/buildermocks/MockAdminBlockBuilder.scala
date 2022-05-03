@@ -16,6 +16,7 @@
 
 package services.submission.buildermocks
 
+import models.api.VatScheme
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
@@ -24,16 +25,14 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import services.submission.AdminBlockBuilder
 
-import scala.concurrent.Future
-
 trait MockAdminBlockBuilder extends MockitoSugar {
   self: Suite =>
 
   val mockAdminBlockBuilder: AdminBlockBuilder = mock[AdminBlockBuilder]
 
-  def mockBuildAdminBlock(regId: String)
-                         (response: Future[JsObject]): OngoingStubbing[Future[JsObject]] =
-    when(mockAdminBlockBuilder.buildAdminBlock(ArgumentMatchers.eq(regId)))
+  def mockBuildAdminBlock(vatScheme: VatScheme)
+                         (response: JsObject): OngoingStubbing[JsObject] =
+    when(mockAdminBlockBuilder.buildAdminBlock(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 
 }

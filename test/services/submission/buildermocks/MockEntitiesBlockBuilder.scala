@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-package services.monitoring.buildermocks
+package services.submission.buildermocks
 
+import models.api.VatScheme
 import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.when
+import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
-import org.mockito.Mockito._
-import org.mockito.stubbing.OngoingStubbing
 import play.api.libs.json.JsValue
 import services.submission.EntitiesBlockBuilder
-
-import scala.concurrent.Future
 
 trait MockEntitiesBlockBuilder extends MockitoSugar {
   self: Suite =>
 
   val mockEntitiesBlockBuilder = mock[EntitiesBlockBuilder]
 
-  def mockBuildEntitiesBlock(regId: String)(response: Future[Option[JsValue]]): OngoingStubbing[Future[Option[JsValue]]] =
+  def mockBuildEntitiesBlock(vatScheme: VatScheme)(response: Option[JsValue]): OngoingStubbing[Option[JsValue]] =
     when(mockEntitiesBlockBuilder.buildEntitiesBlock(
-      ArgumentMatchers.eq(regId)
+      ArgumentMatchers.eq(vatScheme)
     )).thenReturn(response)
 
 }

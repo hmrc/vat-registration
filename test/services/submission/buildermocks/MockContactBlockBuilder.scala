@@ -16,6 +16,7 @@
 
 package services.submission.buildermocks
 
+import models.api.VatScheme
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
@@ -24,16 +25,14 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import services.submission.ContactBlockBuilder
 
-import scala.concurrent.Future
-
 trait MockContactBlockBuilder extends MockitoSugar {
   self: Suite =>
 
   val mockContactBlockBuilder: ContactBlockBuilder = mock[ContactBlockBuilder]
 
-  def mockBuildContactBlock(regId: String)
-                           (response: Future[JsObject]): OngoingStubbing[Future[JsObject]] =
-    when(mockContactBlockBuilder.buildContactBlock(ArgumentMatchers.eq(regId)))
+  def mockBuildContactBlock(vatScheme: VatScheme)
+                           (response: JsObject): OngoingStubbing[JsObject] =
+    when(mockContactBlockBuilder.buildContactBlock(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 
 }

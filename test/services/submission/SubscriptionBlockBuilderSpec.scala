@@ -22,20 +22,15 @@ import mocks.MockVatSchemeRepository
 import models._
 import models.api._
 import models.api.returns._
-import models.registration.OtherBusinessInvolvementsSectionId
 import models.submission.{IdType, NETP, UtrIdType, VrnIdType}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Helpers._
 import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
-import scala.concurrent.Future
 
 class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
 
-  object TestService extends SubscriptionBlockBuilder(mockVatSchemeRepository)
+  object TestService extends SubscriptionBlockBuilder
 
   override lazy val testDate = LocalDate.of(2020, 2, 2)
   override lazy val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
@@ -195,225 +190,172 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   "buildSubscriptionBlock" should {
     "build a full subscription json when all data is provided and user is mandatory on a forward look" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails)))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(Some(testReturns)))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+      val vatScheme = testVatScheme.copy(
+        applicantDetails = Some(validApplicantDetails),
+        returns = Some(testReturns),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(
             mandatoryRegistration = true, Some(LocalDate.of(2020, 10, 1)), None, None
           ),
           registrationReason = ForwardLook
-        ))))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(Some(validFullFlatRateScheme)))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(Some(testSicAndCompliance)))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
+        )),
+        flatRateScheme = Some(validFullFlatRateScheme),
+        sicAndCompliance = Some(testSicAndCompliance)
+      )
 
-      val result = await(TestService.buildSubscriptionBlock(testInternalId, testRegId))
+      val result = TestService.buildSubscriptionBlock(vatScheme)
 
       result mustBe fullSubscriptionBlockJson(reason = ForwardLook.key)
     }
 
     "build a full subscription json when all data is provided and user is mandatory on a backward look" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails)))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(Some(testReturns)))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+      val vatScheme = testVatScheme.copy(
+        applicantDetails = Some(validApplicantDetails),
+        returns = Some(testReturns),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(
             mandatoryRegistration = true, None, Some(LocalDate.of(2020, 10, 1)), None
           ),
           registrationReason = BackwardLook
-        ))))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(Some(validFullFlatRateScheme)))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(Some(testSicAndCompliance)))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
+        )),
+        flatRateScheme = Some(validFullFlatRateScheme),
+        sicAndCompliance = Some(testSicAndCompliance)
+      )
 
-      val result = await(TestService.buildSubscriptionBlock(testInternalId, testRegId))
+      val result = TestService.buildSubscriptionBlock(vatScheme)
 
       result mustBe fullSubscriptionBlockJson(reason = BackwardLook.key)
     }
 
     "build a full subscription json when all data is provided and user is NETP" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails.copy(
+      val vatScheme = testVatScheme.copy(
+        applicantDetails = Some(validApplicantDetails.copy(
           entity = testSoleTraderEntity.copy(
             nino = None,
             trn = Some(testTrn)
           )
-        ))))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(Some(testOverseasReturns)))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+        )),
+        returns = Some(testOverseasReturns),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(
             mandatoryRegistration = true, None, None, None, Some(LocalDate.of(2020, 10, 1))
           ),
           partyType = NETP,
           registrationReason = NonUk
-        ))))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(Some(validFullFlatRateScheme)))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(Some(testSicAndCompliance)))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
+        )),
+        flatRateScheme = Some(validFullFlatRateScheme),
+        sicAndCompliance = Some(testSicAndCompliance)
+      )
 
-      val result = await(TestService.buildSubscriptionBlock(testInternalId, testRegId))
+      val result = TestService.buildSubscriptionBlock(vatScheme)
 
       result mustBe fullNetpSubscriptionBlockJson
     }
 
     "build a minimal subscription json when minimum data is provided and user is voluntary" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails)))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(Some(testReturns)))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+      val vatScheme = testVatScheme.copy(
+        applicantDetails = Some(validApplicantDetails),
+        returns = Some(testReturns),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           exceptionOrExemption = "1",
           registrationReason = Voluntary
-        ))))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(Some(validEmptyFlatRateScheme)))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(Some(testSicAndCompliance.copy(businessActivities = List.empty))))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
+        )),
+        flatRateScheme = Some(validEmptyFlatRateScheme),
+        sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty))
+      )
 
-      val result = await(TestService.buildSubscriptionBlock(testInternalId, testRegId))
+      val result = TestService.buildSubscriptionBlock(vatScheme)
 
       result mustBe minimalSubscriptionBlockJson
     }
 
     "build a minimal subscription json when no Flat Rate Scheme is provided" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails)))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(Some(testReturns)))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+      val vatScheme = testVatScheme.copy(
+        applicantDetails = Some(validApplicantDetails),
+        returns = Some(testReturns),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           exceptionOrExemption = "1",
           registrationReason = Voluntary
-        ))))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(None))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(Some(testSicAndCompliance.copy(businessActivities = List.empty))))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
+        )),
+        sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty))
+      )
 
-      val result = await(TestService.buildSubscriptionBlock(testInternalId, testRegId))
+      val result = TestService.buildSubscriptionBlock(vatScheme)
 
       result mustBe minimalSubscriptionBlockJson
     }
 
     "build a minimal subscription json with other business involvements" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails)))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(Some(testReturns)))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(
+      val vatScheme = testVatScheme.copy(
+        applicantDetails = Some(validApplicantDetails),
+        returns = Some(testReturns),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           exceptionOrExemption = "1",
           registrationReason = Voluntary
-        ))))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(None))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(Some(testSicAndCompliance.copy(businessActivities = List.empty, otherBusinessInvolvement = Some(true)))))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(
-        List(
-          OtherBusinessInvolvement(
-            businessName = testCompanyName,
-            hasVrn = true,
-            vrn = Some(testVrn),
-            hasUtr = None,
-            utr = None,
-            stillTrading = true
-          ),
-          OtherBusinessInvolvement(
-            businessName = testCompanyName,
-            hasVrn = false,
-            vrn = None,
-            hasUtr = Some(true),
-            utr = Some(testUtr),
-            stillTrading = true
-          ),
-          OtherBusinessInvolvement(
-            businessName = testCompanyName,
-            hasVrn = false,
-            vrn = None,
-            hasUtr = Some(false),
-            utr = None,
-            stillTrading = false
+        )),
+        sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty, otherBusinessInvolvement = Some(true))),
+        otherBusinessInvolvements = Some(
+          List(
+            OtherBusinessInvolvement(
+              businessName = testCompanyName,
+              hasVrn = true,
+              vrn = Some(testVrn),
+              hasUtr = None,
+              utr = None,
+              stillTrading = true
+            ),
+            OtherBusinessInvolvement(
+              businessName = testCompanyName,
+              hasVrn = false,
+              vrn = None,
+              hasUtr = Some(true),
+              utr = Some(testUtr),
+              stillTrading = true
+            ),
+            OtherBusinessInvolvement(
+              businessName = testCompanyName,
+              hasVrn = false,
+              vrn = None,
+              hasUtr = Some(false),
+              utr = None,
+              stillTrading = false
+            )
           )
         )
-      )))
+      )
 
-      val result = await(TestService.buildSubscriptionBlock(testInternalId, testRegId))
+      val result = TestService.buildSubscriptionBlock(vatScheme)
 
       result mustBe otherBusinessInvolvementsJson
     }
 
     "fail if the Flat Rate Scheme is invalid" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails)))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(Some(testReturns)))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(Some(invalidEmptyFlatRateScheme)))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(Some(testSicAndCompliance)))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
+      val vatScheme = testVatScheme.copy(
+        applicantDetails = Some(validApplicantDetails),
+        returns = Some(testReturns),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+        flatRateScheme = Some(invalidEmptyFlatRateScheme),
+        sicAndCompliance = Some(testSicAndCompliance)
+      )
 
-      val result = TestService.buildSubscriptionBlock(testInternalId, testRegId)
-
-      intercept[InternalServerException](await(result)).message mustBe "[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true"
-    }
-
-    "fail if the party type cannot be retrieved from the eligibility data" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(None))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(None))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(None))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(None))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(None))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
-
-      val result = TestService.buildSubscriptionBlock(testInternalId, testRegId)
-
-      intercept[InternalServerException](await(result)).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block due to missing party type"
+      intercept[InternalServerException](
+        TestService.buildSubscriptionBlock(vatScheme)
+      ).message mustBe "[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true"
     }
 
     "fail if any of the repository requests return nothing" in {
-      when(mockVatSchemeRepository.getApplicantDetails(any(), any()))
-        .thenReturn(Future.successful(Some(validApplicantDetails)))
-      when(mockVatSchemeRepository.fetchReturns(any()))
-        .thenReturn(Future.successful(None))
-      when(mockVatSchemeRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
-      when(mockVatSchemeRepository.fetchFlatRateScheme(any()))
-        .thenReturn(Future.successful(Some(validEmptyFlatRateScheme)))
-      when(mockVatSchemeRepository.fetchSicAndCompliance(any()))
-        .thenReturn(Future.successful(None))
-      mockGetSection[List[OtherBusinessInvolvement]](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
+      val vatScheme = testVatScheme.copy(
+        applicantDetails = Some(validApplicantDetails),
+        eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+        flatRateScheme = Some(validEmptyFlatRateScheme)
+      )
 
-      val result = TestService.buildSubscriptionBlock(testInternalId, testRegId)
-
-      intercept[InternalServerException](await(result)).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
+      intercept[InternalServerException](
+        TestService.buildSubscriptionBlock(vatScheme)
+      ).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: ApplicantDetails found - true, EligibilitySubmissionData found - true, " +
         "Returns found - false, SicAndCompliance found - false."
     }

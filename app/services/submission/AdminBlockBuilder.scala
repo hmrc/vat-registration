@@ -16,51 +16,45 @@
 
 package services.submission
 
-import models.api.AttachmentType
+import models.api.{AttachmentType, VatScheme}
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.{JsObject, Json}
-import repositories.VatSchemeRepository
 import services.AttachmentsService
 import uk.gov.hmrc.http.InternalServerException
-import utils.JsonUtils.{conditional, jsonObject, optional}
+import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AdminBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository,
-                                  attachmentsService: AttachmentsService)
-                                 (implicit ec: ExecutionContext) {
+class AdminBlockBuilder @Inject()(attachmentsService: AttachmentsService) {
 
   private val MTDfB = "2"
-  def buildAdminBlock(regId: String): Future[JsObject] = for {
-    optEligibilityData <- registrationMongoRepository.fetchEligibilitySubmissionData(regId)
-    optTradingDetails <- registrationMongoRepository.retrieveTradingDetails(regId)
-    attachments <- attachmentsService.getAttachmentList(regId)
-    optAttachmentMethod <- attachmentsService.getAttachmentDetails(regId).map(_.map(_.method))
-  } yield (optEligibilityData, optTradingDetails) match {
-    case (Some(eligibilityData), Some(tradingDetails)) =>
-      jsonObject(
-        "additionalInformation" -> jsonObject(
-          "customerStatus" -> MTDfB,
-          conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
-            "overseasTrader" -> true
-          )
-        ),
-        "attachments" -> (jsonObject(
-          optional("EORIrequested" -> tradingDetails.eoriRequested)) ++ {
-          optAttachmentMethod match {
-            case Some(attachmentMethod) => AttachmentType.submissionWrites(attachmentMethod).writes(attachments).as[JsObject]
-            case None => Json.obj()
-          }
-        })
-      )
-    case (None, Some(_)) =>
-      throw new InternalServerException("Could not build admin block for submission due to missing eligibility data")
-    case (Some(_), None) =>
-      throw new InternalServerException("Could not build admin block for submission due to missing trading details data")
-    case _ =>
-      throw new InternalServerException("Could not build admin block for submission due to no available data")
-  }
 
+  def buildAdminBlock(vatScheme: VatScheme): JsObject = {
+    val attachmentList = attachmentsService.attachmentList(vatScheme)
+    (vatScheme.eligibilitySubmissionData, vatScheme.tradingDetails) match {
+      case (Some(eligibilityData), Some(tradingDetails)) =>
+        jsonObject(
+          "additionalInformation" -> jsonObject(
+            "customerStatus" -> MTDfB,
+            conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
+              "overseasTrader" -> true
+            )
+          ),
+          "attachments" -> (jsonObject(
+            optional("EORIrequested" -> tradingDetails.eoriRequested)) ++ {
+            vatScheme.attachments.map(_.method) match {
+              case Some(attachmentMethod) => AttachmentType.submissionWrites(attachmentMethod).writes(attachmentList).as[JsObject]
+              case None => Json.obj()
+            }
+          })
+        )
+      case (None, Some(_)) =>
+        throw new InternalServerException("Could not build admin block for submission due to missing eligibility data")
+      case (Some(_), None) =>
+        throw new InternalServerException("Could not build admin block for submission due to missing trading details data")
+      case _ =>
+        throw new InternalServerException("Could not build admin block for submission due to no available data")
+    }
+  }
 }

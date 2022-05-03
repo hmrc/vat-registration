@@ -21,12 +21,11 @@ import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api.ComplianceLabour
 import play.api.libs.json.Json
-import play.api.test.Helpers._
 import uk.gov.hmrc.http.InternalServerException
 
 class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository with VatRegistrationFixture {
 
-  object TestBuilder extends ComplianceBlockBuilder(mockVatSchemeRepository)
+  object TestBuilder extends ComplianceBlockBuilder
 
   val emptyLabourCompliance = ComplianceLabour(
     numOfWorkersSupplied = None,
@@ -36,9 +35,9 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
 
   "The compliance block builder" must {
     "build the correct json when only the supplyWorkers flag is set" in {
-      mockFetchSicAndCompliance(testRegId)(Some(testSicAndCompliance.copy(labourCompliance = Some(emptyLabourCompliance))))
+      val vatScheme = testVatScheme.copy(sicAndCompliance = Some(testSicAndCompliance.copy(labourCompliance = Some(emptyLabourCompliance))))
 
-      val res = await(TestBuilder.buildComplianceBlock(testRegId))
+      val res = TestBuilder.buildComplianceBlock(vatScheme)
 
       res mustBe Some(Json.obj(
         "supplyWorkers" -> true
@@ -49,10 +48,9 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
         numOfWorkersSupplied = Some(1),
         intermediaryArrangement = Some(true)
       )
+      val vatScheme = testVatScheme.copy(sicAndCompliance = Some(testSicAndCompliance.copy(labourCompliance = Some(fullLabourCompliance))))
 
-      mockFetchSicAndCompliance(testRegId)(Some(testSicAndCompliance.copy(labourCompliance = Some(fullLabourCompliance))))
-
-      val res = await(TestBuilder.buildComplianceBlock(testRegId))
+      val res = TestBuilder.buildComplianceBlock(vatScheme)
 
       res mustBe Some(Json.obj(
         "numOfWorkersSupplied" -> 1,
@@ -61,18 +59,16 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
       ))
     }
     "return None when the labourCompliance section is not defined" in {
-      val noCompliance = Some(testSicAndCompliance.copy(labourCompliance = None))
-      mockFetchSicAndCompliance(testRegId)(noCompliance)
+      val noCompliance = testSicAndCompliance.copy(labourCompliance = None)
+      val vatScheme = testVatScheme.copy(sicAndCompliance = Some(noCompliance))
 
-      val res = await(TestBuilder.buildComplianceBlock(testRegId))
+      val res = TestBuilder.buildComplianceBlock(vatScheme)
 
       res mustBe None
     }
     "throw an exception when the sicAndCompliance section is not defined" in {
-      mockFetchSicAndCompliance(testRegId)(None)
-
       intercept[InternalServerException] {
-        await(TestBuilder.buildComplianceBlock(testRegId))
+        TestBuilder.buildComplianceBlock(testVatScheme)
       }
     }
   }
