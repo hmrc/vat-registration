@@ -18,18 +18,12 @@ package services.submission
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import org.mockito.Mockito.when
 import play.api.libs.json.{JsObject, Json}
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
-
-import scala.concurrent.Future
 
 class AnnualAccountingBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   class Setup {
-    val service: AnnualAccountingBlockBuilder = new AnnualAccountingBlockBuilder(
-      registrationMongoRepository = mockRegistrationMongoRepository
-    )
+    val service: AnnualAccountingBlockBuilder = new AnnualAccountingBlockBuilder
   }
 
   val annualAccountingBlockJson: JsObject = Json.parse(
@@ -48,12 +42,12 @@ class AnnualAccountingBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
   "buildAnnualAccountingBlock" should {
     "return the correct json" when {
       "the applicant wants to join AAS and all data is provided" in new Setup {
-        when(mockRegistrationMongoRepository.fetchReturns(testRegId))
-          .thenReturn(Future.successful(Some(validAASReturns)))
-        when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(testRegId))
-          .thenReturn(Future.successful(Some(testEligibilitySubmissionData)))
+        val vatScheme = testVatScheme.copy(
+          returns = Some(validAASReturns),
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData)
+        )
 
-        val result: Option[JsObject] = await(service.buildAnnualAccountingBlock(testRegId))
+        val result: Option[JsObject] = service.buildAnnualAccountingBlock(vatScheme)
         result mustBe Some(annualAccountingBlockJson)
       }
     }

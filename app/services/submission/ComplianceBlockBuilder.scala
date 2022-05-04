@@ -16,22 +16,18 @@
 
 package services.submission
 
+import models.api.VatScheme
 import play.api.libs.json.JsObject
-import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
-import utils.JsonUtils.{optional, _}
+import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ComplianceBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)
-                                      (implicit ec: ExecutionContext) {
+class ComplianceBlockBuilder @Inject()() {
 
-  def buildComplianceBlock(regId: String): Future[Option[JsObject]] = {
-    for {
-      optSicAndCompliance <- registrationMongoRepository.fetchSicAndCompliance(regId)
-    } yield optSicAndCompliance match {
+  def buildComplianceBlock(vatScheme: VatScheme): Option[JsObject] =
+    vatScheme.sicAndCompliance match {
       case Some(sicAndCompliance) => sicAndCompliance.labourCompliance map (labourCompliance =>
         jsonObject(
           optional("numOfWorkersSupplied" -> labourCompliance.numOfWorkersSupplied),
@@ -41,6 +37,5 @@ class ComplianceBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRep
       case _ =>
         throw new InternalServerException("Couldn't build compliance block due to missing sicAndCompliance data")
     }
-  }
 
 }

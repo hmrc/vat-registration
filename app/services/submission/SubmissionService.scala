@@ -58,7 +58,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   val authConnector: AuthConnector
                                  )(implicit executionContext: ExecutionContext) extends FutureInstances with AuthorisedFunctions with Logging with FeatureSwitching {
 
-  def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String])
+  def submitVatRegistration(regId: String, userHeaders: Map[String, String])
                            (implicit hc: HeaderCarrier,
                             request: Request[_]): Future[String] = {
     {
@@ -66,7 +66,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         _ <- registrationRepository.updateSubmissionStatus(regId, VatRegStatus.locked)
         vatScheme <- registrationRepository.retrieveVatScheme(regId)
           .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
-        submission <- submissionPayloadBuilder.buildSubmissionPayload(internalId, regId)
+        submission = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
         correlationId = idGenerator.createId
         submissionResponse <- submit(submission, regId, correlationId)
         _ <- logSubmission(vatScheme, submissionResponse)

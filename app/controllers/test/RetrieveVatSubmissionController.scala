@@ -22,6 +22,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.VatSchemeRepository
 import services.submission.SubmissionPayloadBuilder
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -35,8 +36,12 @@ class RetrieveVatSubmissionController @Inject()(cc: ControllerComponents,
                                                )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging with Authorisation {
 
   def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { implicit request =>
-    isAuthenticated { internalId =>
-      submissionPayloadBuilder.buildSubmissionPayload(internalId, regId) map (Ok(_))
+    isAuthenticated { _ =>
+      for {
+        vatScheme <- resourceConn.retrieveVatScheme(regId)
+          .map(_.getOrElse(throw new InternalServerException("Missing VatScheme")))
+        payload = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
+      } yield Ok(payload)
     }
   }
 

@@ -16,21 +16,21 @@
 
 package services.submission.buildermocks
 
-import org.scalatest.Suite
-import org.scalatestplus.mockito.MockitoSugar
+import models.api.VatScheme
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
+import org.scalatest.Suite
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import services.submission.DeclarationBlockBuilder
-
-import scala.concurrent.Future
 
 trait MockDeclarationBlockBuilder extends MockitoSugar {
   self: Suite =>
 
   val mockDeclarationBlockBuilder = mock[DeclarationBlockBuilder]
 
-  def mockBuildDeclarationBlock(regId: String)(response: Future[JsObject]): OngoingStubbing[Future[JsObject]] =
-    when(mockDeclarationBlockBuilder.buildDeclarationBlock(regId)) thenReturn response
+  def mockBuildDeclarationBlock(vatScheme: VatScheme)(response: JsObject): OngoingStubbing[JsObject] =
+    when(mockDeclarationBlockBuilder.buildDeclarationBlock(ArgumentMatchers.eq(vatScheme))) thenReturn response
 
 }

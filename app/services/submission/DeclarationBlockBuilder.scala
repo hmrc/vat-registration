@@ -16,81 +16,70 @@
 
 package services.submission
 
-import models.api.{Address, FormerName, Name}
+import models.api.{Address, FormerName, Name, VatScheme}
 import models.submission.CustomerId
 import play.api.libs.json.{JsObject, Json}
-import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
-import utils.JsonUtils.{jsonObject, _}
+import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 // scalastyle:off
 @Singleton
-class DeclarationBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)
-                                       (implicit ec: ExecutionContext) {
+class DeclarationBlockBuilder @Inject()() {
 
-  def buildDeclarationBlock(regId: String): Future[JsObject] = {
-    for {
-      vatScheme <- registrationMongoRepository.retrieveVatScheme(regId)
-    } yield vatScheme match {
-      case Some(scheme) =>
-        (scheme.applicantDetails, scheme.confirmInformationDeclaration, scheme.transactorDetails) match {
-          case (Some(applicantDetails), Some(declaration), optTransactorDetails) =>
-            jsonObject(
-              "declarationSigning" -> jsonObject(
-                "confirmInformationDeclaration" -> declaration,
-                "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity.role).getOrElse(
-                  applicantDetails.roleInBusiness.toDeclarationCapacity
-                ),
-                optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.otherRole))
-              ),
-              "applicantDetails" -> jsonObject(
-                "roleInBusiness" -> applicantDetails.roleInBusiness,
-                "name" -> formatName(applicantDetails.personalDetails.name),
-                conditional(applicantDetails.changeOfName.exists(_.hasFormerName.contains(true)))(
-                  "prevName" -> applicantDetails.changeOfName.map(formatFormerName)
-                ),
-                optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
-                "currAddress" -> formatAddress(applicantDetails.currentAddress),
-                optional("prevAddress" -> applicantDetails.previousAddress.map(formatAddress)),
-                "commDetails" -> jsonObject(
-                  optional("email" -> applicantDetails.contact.email),
-                  optional("telephone" -> applicantDetails.contact.tel),
-                  optional("mobileNumber" -> applicantDetails.contact.mobile)
-                ),
-                conditional(applicantDetails.personalDetails.personalIdentifiers.nonEmpty)(
-                  "identifiers" -> applicantDetails.personalDetails.personalIdentifiers
-                )
-              ),
-              optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>
-                jsonObject(
-                  "individualName" -> formatName(transactorDetails.personalDetails.name),
-                  optionalRequiredIf(transactorDetails.isPartOfOrganisation.contains(true))("organisationName" -> transactorDetails.organisationName),
-                  "commDetails" -> jsonObject(
-                    "telephone" -> transactorDetails.telephone,
-                    "email" -> transactorDetails.email
-                  ),
-                  optionalRequiredIf(transactorDetails.personalDetails.arn.isEmpty)("address" -> transactorDetails.address.map(formatAddress)),
-                  conditional(transactorDetails.personalDetails.personalIdentifiers.nonEmpty)(
-                    "identification" -> transactorDetails.personalDetails.personalIdentifiers.map(identifier =>
-                      Json.toJson(identifier)(CustomerId.transactorWrites)
-                    )
-                  )
-                )
-              })
+  def buildDeclarationBlock(vatScheme: VatScheme): JsObject =
+    (vatScheme.applicantDetails, vatScheme.confirmInformationDeclaration, vatScheme.transactorDetails) match {
+      case (Some(applicantDetails), Some(declaration), optTransactorDetails) =>
+        jsonObject(
+          "declarationSigning" -> jsonObject(
+            "confirmInformationDeclaration" -> declaration,
+            "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity.role).getOrElse(
+              applicantDetails.roleInBusiness.toDeclarationCapacity
+            ),
+            optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.otherRole))
+          ),
+          "applicantDetails" -> jsonObject(
+            "roleInBusiness" -> applicantDetails.roleInBusiness,
+            "name" -> formatName(applicantDetails.personalDetails.name),
+            conditional(applicantDetails.changeOfName.exists(_.hasFormerName.contains(true)))(
+              "prevName" -> applicantDetails.changeOfName.map(formatFormerName)
+            ),
+            optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
+            "currAddress" -> formatAddress(applicantDetails.currentAddress),
+            optional("prevAddress" -> applicantDetails.previousAddress.map(formatAddress)),
+            "commDetails" -> jsonObject(
+              optional("email" -> applicantDetails.contact.email),
+              optional("telephone" -> applicantDetails.contact.tel),
+              optional("mobileNumber" -> applicantDetails.contact.mobile)
+            ),
+            conditional(applicantDetails.personalDetails.personalIdentifiers.nonEmpty)(
+              "identifiers" -> applicantDetails.personalDetails.personalIdentifiers
             )
-          case _ =>
-            val appDetailsMissing = scheme.applicantDetails.fold(Option("applicantDetails"))(_ => None)
-            val declarationMissing = scheme.confirmInformationDeclaration.fold(Option("declaration"))(_ => None)
-            val message = Seq(appDetailsMissing, declarationMissing).flatten.mkString(", ")
-            throw new InternalServerException(s"Could not construct declaration block because the following are missing: $message")
-        }
+          ),
+          optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>
+            jsonObject(
+              "individualName" -> formatName(transactorDetails.personalDetails.name),
+              optionalRequiredIf(transactorDetails.isPartOfOrganisation.contains(true))("organisationName" -> transactorDetails.organisationName),
+              "commDetails" -> jsonObject(
+                "telephone" -> transactorDetails.telephone,
+                "email" -> transactorDetails.email
+              ),
+              optionalRequiredIf(transactorDetails.personalDetails.arn.isEmpty)("address" -> transactorDetails.address.map(formatAddress)),
+              conditional(transactorDetails.personalDetails.personalIdentifiers.nonEmpty)(
+                "identification" -> transactorDetails.personalDetails.personalIdentifiers.map(identifier =>
+                  Json.toJson(identifier)(CustomerId.transactorWrites)
+                )
+              )
+            )
+          })
+        )
       case _ =>
-        throw new InternalServerException("Could not construct declaration block due to missing VatScheme")
+        val appDetailsMissing = vatScheme.applicantDetails.fold(Option("applicantDetails"))(_ => None)
+        val declarationMissing = vatScheme.confirmInformationDeclaration.fold(Option("declaration"))(_ => None)
+        val message = Seq(appDetailsMissing, declarationMissing).flatten.mkString(", ")
+        throw new InternalServerException(s"Could not construct declaration block because the following are missing: $message")
     }
-  }
 
   private def formatName(name: Name): JsObject = jsonObject(
     optional("firstName" -> name.first),

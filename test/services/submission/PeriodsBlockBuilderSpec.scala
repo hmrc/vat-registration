@@ -21,12 +21,11 @@ import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api.returns._
 import play.api.libs.json.Json
-import play.api.test.Helpers._
 import uk.gov.hmrc.http.InternalServerException
 
 class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository with VatRegistrationFixture {
 
-  object TestBuilder extends PeriodsBlockBuilder(mockVatSchemeRepository)
+  object TestBuilder extends PeriodsBlockBuilder
 
   val emptyReturns: Returns = Returns(
     zeroRatedSupplies = None,
@@ -42,9 +41,9 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
   "the periods block builder" should {
     "write the correct json for the monthly stagger" in {
       val monthlyReturns = testReturns.copy(returnsFrequency = Monthly, staggerStart = MonthlyStagger)
-      mockGetVatScheme(testRegId)(Some(testVatScheme.copy(returns = Some(monthlyReturns))))
+      val vatScheme = testVatScheme.copy(returns = Some(monthlyReturns))
 
-      val res = await(TestBuilder.buildPeriodsBlock(testRegId))
+      val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
       res mustBe Json.obj(
         "customerPreferredPeriodicity" -> "MM"
@@ -52,9 +51,9 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
     }
     "write the correct json for stagger 1" in {
       val stagger1Returns = testReturns.copy(staggerStart = JanuaryStagger)
-      mockGetVatScheme(testRegId)(Some(testVatScheme.copy(returns = Some(stagger1Returns))))
+      val vatScheme = testVatScheme.copy(returns = Some(stagger1Returns))
 
-      val res = await(TestBuilder.buildPeriodsBlock(testRegId))
+      val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
       res mustBe Json.obj(
         "customerPreferredPeriodicity" -> "MA"
@@ -62,9 +61,9 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
     }
     "write the correct json for stagger 2" in {
       val stagger2Returns = testReturns.copy(staggerStart = FebruaryStagger)
-      mockGetVatScheme(testRegId)(Some(testVatScheme.copy(returns = Some(stagger2Returns))))
+      val vatScheme = testVatScheme.copy(returns = Some(stagger2Returns))
 
-      val res = await(TestBuilder.buildPeriodsBlock(testRegId))
+      val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
       res mustBe Json.obj(
         "customerPreferredPeriodicity" -> "MB"
@@ -72,19 +71,17 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
     }
     "write the correct json for stagger 3" in {
       val stagger3Returns = testReturns.copy(staggerStart = MarchStagger)
-      mockGetVatScheme(testRegId)(Some(testVatScheme.copy(returns = Some(stagger3Returns))))
+      val vatScheme = testVatScheme.copy(returns = Some(stagger3Returns))
 
-      val res = await(TestBuilder.buildPeriodsBlock(testRegId))
+      val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
       res mustBe Json.obj(
         "customerPreferredPeriodicity" -> "MC"
       )
     }
     "throw an exception if the returns section is missing" in {
-      mockGetVatScheme(testRegId)(Some(testVatScheme.copy(returns = None)))
-
       intercept[InternalServerException] {
-        await(TestBuilder.buildPeriodsBlock(testRegId))
+        TestBuilder.buildPeriodsBlock(testVatScheme)
       }
     }
   }

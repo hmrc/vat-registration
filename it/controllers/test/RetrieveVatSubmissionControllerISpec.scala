@@ -17,7 +17,7 @@ class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with Inte
       given.user.isAuthorised
         .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
 
-      val expectedJson = await(builder.buildSubmissionPayload(testInternalid, testRegId))
+      val expectedJson = builder.buildSubmissionPayload(testFullVatSchemeWithUnregisteredBusinessPartner)
       val res = client(url).get
 
       whenReady(res) { result =>

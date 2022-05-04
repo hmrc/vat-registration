@@ -2,7 +2,7 @@
 package itutil
 
 import models.api.returns.{StoringGoodsForDispatch, StoringWithinUk}
-import models.api.{AttachmentMethod, Post}
+import models.api.{AttachmentMethod, AttachmentType, Post}
 import models.submission._
 import models.{ForwardLook, RegistrationReason}
 import play.api.libs.json.{JsArray, JsObject, Json}
@@ -1343,15 +1343,15 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
-  def testSubmissionJson(customerIdentification: JsObject, entities: Option[JsArray], regReason: RegistrationReason = ForwardLook, optSubscriptionBlock: Option[JsObject] = None): JsObject = Json.obj(
+  def testSubmissionJson(customerIdentification: JsObject, entities: Option[JsArray], regReason: RegistrationReason = ForwardLook, optSubscriptionBlock: Option[JsObject] = None, attachmentList: Set[AttachmentType] = Set()): JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> Json.obj(
       "additionalInformation" -> Json.obj(
         "customerStatus" -> "2"
       ),
-      "attachments" -> Json.obj(
+      "attachments" -> (Json.obj(
         "EORIrequested" -> true
-      )
+      ) ++ AttachmentType.submissionWrites(Post).writes(attachmentList).as[JsObject])
     ),
     "customerIdentification" -> customerIdentification,
     "contact" -> Json.obj(

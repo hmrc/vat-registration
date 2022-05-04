@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package services.submission.buildermocks
+package mocks
 
 import models.api.Partner
 import models.registration.sections.PartnersSection
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.when
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
@@ -41,7 +41,7 @@ trait MockPartnersService extends MockitoSugar {
   def mockGetPartners(regId: String)(response: Future[Option[PartnersSection]]): OngoingStubbing[Future[Option[PartnersSection]]] =
     when(mockPartnersService.getPartners(ArgumentMatchers.eq(regId))).thenReturn(response)
 
-  def mockStorePartner(regId: String, partner: Partner, index: Int)(response: Future[Partner]):OngoingStubbing[Future[Partner]] =
+  def mockStorePartner(regId: String, partner: Partner, index: Int)(response: Future[Partner]): OngoingStubbing[Future[Partner]] =
     when(mockPartnersService.storePartner(
       ArgumentMatchers.eq(regId),
       ArgumentMatchers.eq(partner),

@@ -101,7 +101,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
+    attachments = Some(Attachments(Post))
   )
 
   lazy val generalPartnershipWithUkCompanyPartner: VatScheme = testFullVatScheme.copy(
@@ -112,7 +113,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
+    attachments = Some(Attachments(Post))
   )
 
   lazy val limitedPartnershipWithScotPartnershipPartner: VatScheme = testFullVatScheme.copy(
@@ -125,15 +127,17 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
+    attachments = Some(Attachments(Post))
   )
 
   lazy val limitedLiabilityPartnership: VatScheme = limitedPartnershipWithScotPartnershipPartner.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)),
-    partners = None
+    partners = None,
+    attachments = None
   )
 
-  lazy val vatGroupVatscheme: VatScheme = testFullVatScheme.copy(
+  lazy val vatGroupVatScheme: VatScheme = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
     applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testLtdCoEntity.copy(
       companyNumber = testCrn,
@@ -142,7 +146,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvPass),
       registration = FailedStatus
     ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
+    attachments = Some(Attachments(Post))
   )
 
   lazy val corporateBodyRegisteredJson = Json.obj(
@@ -478,7 +483,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .user.isAuthorised
           .regRepo.insertIntoDb(generalPartnershipWithSoleTraderPartner, repo.insert)
 
-        stubPost("/vat/subscription", testSubmissionJson(generalPartnershipCustomerId, Some(soleTraderLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost(
+          "/vat/subscription",
+          testSubmissionJson(generalPartnershipCustomerId, Some(soleTraderLeadPartner), attachmentList = Set(VAT2)),
+          OK,
+          Json.stringify(testSubmissionResponse)
+        )
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
         stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
@@ -497,7 +507,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .user.isAuthorised
           .regRepo.insertIntoDb(generalPartnershipWithUkCompanyPartner, repo.insert)
 
-        stubPost("/vat/subscription", testSubmissionJson(generalPartnershipCustomerId, Some(ukCompanyLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost(
+          "/vat/subscription",
+          testSubmissionJson(generalPartnershipCustomerId, Some(ukCompanyLeadPartner), attachmentList = Set(VAT2)),
+          OK,
+          Json.stringify(testSubmissionResponse)
+        )
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
         stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
@@ -518,7 +533,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .user.isAuthorised
           .regRepo.insertIntoDb(limitedPartnershipWithScotPartnershipPartner, repo.insert)
 
-        stubPost("/vat/subscription", testSubmissionJson(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner)), OK, Json.stringify(testSubmissionResponse))
+        stubPost(
+          "/vat/subscription",
+          testSubmissionJson(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner), attachmentList = Set(VAT2)),
+          OK,
+          Json.stringify(testSubmissionResponse)
+        )
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
         stubPost("/hmrc/email", ACCEPTED, "")
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
@@ -558,11 +578,11 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         enable(ShortOrgName)
         given
           .user.isAuthorised
-          .regRepo.insertIntoDb(vatGroupVatscheme, repo.insert)
+          .regRepo.insertIntoDb(vatGroupVatScheme, repo.insert)
 
         stubPost(
           "/vat/subscription",
-          testSubmissionJson(vatGroupCustomerId, Some(ukCompanyLeadEntity), GroupRegistration, Some(corporateBodyRegisteredJson)),
+          testSubmissionJson(vatGroupCustomerId, Some(ukCompanyLeadEntity), GroupRegistration, Some(corporateBodyRegisteredJson), Set(VAT51)),
           OK,
           Json.stringify(testSubmissionResponse)
         )

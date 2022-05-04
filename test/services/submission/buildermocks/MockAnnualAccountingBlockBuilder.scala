@@ -16,6 +16,7 @@
 
 package services.submission.buildermocks
 
+import models.api.VatScheme
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.mockito.stubbing.OngoingStubbing
@@ -24,16 +25,14 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import services.submission.AnnualAccountingBlockBuilder
 
-import scala.concurrent.Future
-
 trait MockAnnualAccountingBlockBuilder extends MockitoSugar {
   self: Suite =>
 
   val mockAnnualAccountingBlockBuilder: AnnualAccountingBlockBuilder = mock[AnnualAccountingBlockBuilder]
 
-  def mockBuildAnnualAccountingBlock(regId: String)
-                                    (response: Future[Option[JsObject]]): OngoingStubbing[Future[Option[JsObject]]] =
-    when(mockAnnualAccountingBlockBuilder.buildAnnualAccountingBlock(ArgumentMatchers.eq(regId)))
+  def mockBuildAnnualAccountingBlock(vatScheme: VatScheme)
+                                    (response: Option[JsObject]): OngoingStubbing[Option[JsObject]] =
+    when(mockAnnualAccountingBlockBuilder.buildAnnualAccountingBlock(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 
 }

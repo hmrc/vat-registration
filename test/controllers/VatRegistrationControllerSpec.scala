@@ -269,7 +269,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
-        ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders)
       )(any[HeaderCarrier], any[Request[_]]))
@@ -288,7 +287,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
-        ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders)
       )(any[HeaderCarrier], any[Request[_]]))
@@ -306,7 +304,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
-        ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders)
       )(any[HeaderCarrier], any[Request[_]]))

@@ -94,7 +94,7 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
           case `locked` => Future.successful(TooManyRequests(Json.obj()))
           case `submitted` => Future.successful(Ok(Json.obj()))
           case `duplicateSubmission` => Future.successful(Conflict(Json.obj()))
-          case _ => submissionService.submitVatRegistration(internalId, regId, userHeaders).map { _ =>
+          case _ => submissionService.submitVatRegistration(regId, userHeaders).map { _ =>
             Ok(Json.obj())
           }
         }

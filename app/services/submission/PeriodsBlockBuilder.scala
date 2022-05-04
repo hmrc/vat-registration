@@ -16,27 +16,22 @@
 
 package services.submission
 
+import models.api.VatScheme
 import play.api.libs.json.JsObject
-import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.jsonObject
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class PeriodsBlockBuilder @Inject()(registrationMongoRepository: VatSchemeRepository)
-                                   (implicit ec: ExecutionContext) {
+class PeriodsBlockBuilder @Inject()() {
 
-  def buildPeriodsBlock(regId: String): Future[JsObject] = {
-    registrationMongoRepository.retrieveVatScheme(regId) map { scheme =>
-      scheme.flatMap(_.returns) match {
-        case Some(returns) =>
-          jsonObject("customerPreferredPeriodicity" -> returns.staggerStart)
-        case None =>
-          throw new InternalServerException("Couldn't build periods section due to missing returns section in vat scheme")
-      }
+  def buildPeriodsBlock(vatScheme: VatScheme): JsObject =
+    vatScheme.returns match {
+      case Some(returns) =>
+        jsonObject("customerPreferredPeriodicity" -> returns.staggerStart)
+      case None =>
+        throw new InternalServerException("Couldn't build periods section due to missing returns section in vat scheme")
     }
-  }
 
 }

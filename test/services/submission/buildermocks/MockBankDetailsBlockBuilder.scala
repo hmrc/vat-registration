@@ -16,6 +16,7 @@
 
 package services.submission.buildermocks
 
+import models.api.VatScheme
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.mockito.stubbing.OngoingStubbing
@@ -24,16 +25,14 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import services.submission.BankDetailsBlockBuilder
 
-import scala.concurrent.Future
-
 trait MockBankDetailsBlockBuilder extends MockitoSugar {
   self: Suite =>
 
   val mockBankDetailsBlockBuilder: BankDetailsBlockBuilder = mock[BankDetailsBlockBuilder]
 
-  def mockBuildBankDetailsBlock(regId: String)
-                               (response: Future[Option[JsObject]]): OngoingStubbing[Future[Option[JsObject]]] =
-    when(mockBankDetailsBlockBuilder.buildBankDetailsBlock(ArgumentMatchers.eq(regId)))
+  def mockBuildBankDetailsBlock(vatScheme: VatScheme)
+                               (response: Option[JsObject]): OngoingStubbing[Option[JsObject]] =
+    when(mockBankDetailsBlockBuilder.buildBankDetailsBlock(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 
 }

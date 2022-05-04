@@ -19,20 +19,13 @@ package services.submission
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import models.api.DigitalContactOptional
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
 import play.api.libs.json.{JsObject, Json}
-import play.api.test.Helpers._
 import uk.gov.hmrc.http.InternalServerException
-
-import scala.concurrent.Future
 
 class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with VatSubmissionFixture {
 
   class Setup {
-    val service: ContactBlockBuilder = new ContactBlockBuilder(
-      registrationMongoRepository = mockRegistrationMongoRepository
-    )
+    val service: ContactBlockBuilder = new ContactBlockBuilder
   }
 
   lazy val contactBlockJson: JsObject = Json.parse(
@@ -57,28 +50,24 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
   "ContactBlockBuilder" should {
     "return the built contact block" when {
       "business contact details are available" in new Setup {
-        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
-          .thenReturn(Future.successful(Some(testVatScheme.copy(
-            businessContact = Some(validFullBusinessContact),
-            applicantDetails = Some(validApplicantDetails.copy(
-              contact = DigitalContactOptional(
-                email = Some(validFullBusinessContact.digitalContact.email),
-                emailVerified = Some(true)
-              )
-            ))
-          ))))
+        val vatScheme = testVatScheme.copy(
+          businessContact = Some(validFullBusinessContact),
+          applicantDetails = Some(validApplicantDetails.copy(
+            contact = DigitalContactOptional(
+              email = Some(validFullBusinessContact.digitalContact.email),
+              emailVerified = Some(true)
+            )
+          ))
+        )
 
-        val result: JsObject = await(service.buildContactBlock(testRegId))
+        val result: JsObject = service.buildContactBlock(vatScheme)
         result mustBe contactBlockJson
       }
     }
 
     "throw an Interval Server Exception" when {
       "contact details do not exist" in new Setup {
-        when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
-          .thenReturn(Future.successful(None))
-
-        intercept[InternalServerException](await(service.buildContactBlock(testRegId)))
+        intercept[InternalServerException](service.buildContactBlock(testVatScheme))
       }
     }
   }

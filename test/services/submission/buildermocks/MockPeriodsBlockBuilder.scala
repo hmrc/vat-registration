@@ -16,6 +16,7 @@
 
 package services.submission.buildermocks
 
+import models.api.VatScheme
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
@@ -24,16 +25,14 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import services.submission.PeriodsBlockBuilder
 
-import scala.concurrent.Future
-
 trait MockPeriodsBlockBuilder extends MockitoSugar {
   self: Suite =>
 
   val mockPeriodsBlockBuilder: PeriodsBlockBuilder = mock[PeriodsBlockBuilder]
 
-  def mockBuildPeriodsBlock(regId: String)
-                           (response: Future[JsObject]): OngoingStubbing[Future[JsObject]] =
-    when(mockPeriodsBlockBuilder.buildPeriodsBlock(ArgumentMatchers.eq(regId)))
+  def mockBuildPeriodsBlock(vatScheme: VatScheme)
+                           (response: JsObject): OngoingStubbing[JsObject] =
+    when(mockPeriodsBlockBuilder.buildPeriodsBlock(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 
 }
