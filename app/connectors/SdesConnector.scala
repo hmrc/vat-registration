@@ -17,9 +17,9 @@
 package connectors
 
 import config.BackendConfig
-import models.sdes.{SdesNotification, SdesNotificationFailure, SdesNotificationResult, SdesNotificationSuccess}
-import play.api.http.Status._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReadsHttpResponse, HttpResponse}
+import httpparsers.SdesNotificationHttpParser.SdesNotificationHttpReads
+import models.sdes.{SdesNotification, SdesNotificationResult}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReadsHttpResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,17 +27,16 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SdesConnector @Inject()(httpClient: HttpClient,
                               config: BackendConfig)
-                             (implicit ec: ExecutionContext) extends HttpReadsHttpResponse {
+                             (implicit executionContext: ExecutionContext) extends HttpReadsHttpResponse {
 
   def notifySdes(payload: SdesNotification)(implicit hc: HeaderCarrier): Future[SdesNotificationResult] =
-    httpClient.POST[SdesNotification, HttpResponse](
+    httpClient.POST[SdesNotification, SdesNotificationResult](
       url = config.sdesNotificationUrl,
       body = payload
-    ).map {
-      response =>
-        response.status match {
-          case NO_CONTENT => SdesNotificationSuccess
-          case BAD_REQUEST | INTERNAL_SERVER_ERROR => SdesNotificationFailure(response.status, response.body)
-        }
-    }
+    )(
+      wts = SdesNotification.format,
+      rds = SdesNotificationHttpReads,
+      hc = hc,
+      ec = executionContext
+    )
 }

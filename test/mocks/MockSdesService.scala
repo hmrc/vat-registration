@@ -21,13 +21,13 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.mvc.Request
 import services.SdesService
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait MockSdesService extends HttpClientMock {
-
   this: MockitoSugar =>
 
   val mockSdesService: SdesService = mock[SdesService]
@@ -44,6 +44,7 @@ trait MockSdesService extends HttpClientMock {
         ArgumentMatchers.eq(correlationId),
         ArgumentMatchers.eq(nrsSubmissionId)
       )(ArgumentMatchers.any[HeaderCarrier],
+        ArgumentMatchers.any[Request[_]],
         ArgumentMatchers.any[ExecutionContext])
     ).thenReturn(result)
 }

@@ -18,9 +18,33 @@ package models.sdes
 
 import play.api.libs.json.{Json, OFormat}
 
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
 case class Property(name: String,
                     value: String)
 
 object Property {
   implicit val format: OFormat[Property] = Json.format[Property]
+}
+
+trait PropertyExtractor {
+  val properties: List[Property]
+
+  def getPropertyValue(key: String): Option[String] = this.properties.find(_.name.equals(key)).map(_.value)
+}
+
+object PropertyExtractor {
+  val mimeTypeKey = "mimeType"
+  val prefixedFormBundleKey = "prefixedFormBundleId"
+  val formBundleKey = "formBundleId"
+  val attachmentReferenceKey = "attachmentId"
+  val submissionDateKey = "submissionDate"
+  val nrsSubmissionKey = "nrsSubmissionId"
+  val locationKey = "location"
+
+  val checksumAlgorithm = "SHA256"
+  val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter
+    .ofPattern("dd/MM/yyyy hh:mm:ss")
+    .withZone(ZoneId.of("UTC"))
 }

@@ -16,6 +16,13 @@
 
 package models.sdes
 
-sealed trait SdesNotificationResult
-case object SdesNotificationSuccess extends SdesNotificationResult
-case class SdesNotificationFailure(status: Int, Body: String) extends SdesNotificationResult
+sealed trait SdesNotificationResult {
+  val status: Int
+  val body: String
+}
+
+case class SdesNotificationSuccess(status: Int, body: String) extends SdesNotificationResult
+
+case class SdesNotificationFailure(status: Int, body: String) extends SdesNotificationResult
+
+case class SdesNotificationUnexpectedFailure(status: Int, body: String) extends SdesNotificationResult
