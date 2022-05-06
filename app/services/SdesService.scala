@@ -18,6 +18,7 @@ package services
 
 import connectors.{NonRepudiationConnector, SdesConnector}
 import models.api.{Ready, UpscanDetails}
+import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.sdes.PropertyExtractor._
 import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesFileSubmissionAudit}
@@ -128,8 +129,10 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
 
         nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
           case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
+            auditService.audit(NonRepudiationAttachmentSuccessAudit(sdesCallback, nrAttachmentId))
             logger.info(s"[SdesService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId")
           case NonRepudiationAttachmentFailed(body, status) =>
+            auditService.audit(NonRepudiationAttachmentFailureAudit(sdesCallback, status))
             logger.error(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
         }
       case (_, Some(attachmentId), _, _, _, Some(failureReason)) =>
