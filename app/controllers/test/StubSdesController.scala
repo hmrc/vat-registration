@@ -17,10 +17,10 @@
 package controllers.test
 
 import config.BackendConfig
+import models.sdes.PropertyExtractor.locationKey
 import models.sdes.{Property, SdesCallback, SdesNotification}
 import play.api.Logging
 import play.api.mvc.{Action, ControllerComponents}
-import services.SdesService.locationKey
 import uk.gov.hmrc.http.{HttpClient, HttpReadsHttpResponse, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 

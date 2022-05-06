@@ -28,9 +28,7 @@ case class SdesCallback(notification: String,
                         checksum: Option[String] = None,
                         availableUntil: Option[LocalDateTime] = None,
                         properties: List[Property] = Nil,
-                        failureReason: Option[String] = None) {
-  def getPropertyValue(key: String): Option[String] = this.properties.find(_.name.equals(key)).map(_.value)
-}
+                        failureReason: Option[String] = None) extends PropertyExtractor
 
 object SdesCallback {
   implicit val format: OFormat[SdesCallback] = Json.format[SdesCallback]

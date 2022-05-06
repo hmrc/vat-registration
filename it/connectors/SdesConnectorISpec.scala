@@ -24,9 +24,6 @@ import models.sdes._
 import play.api.http.Status.{BAD_REQUEST, NO_CONTENT}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{OK, await}
-import services.SdesService._
-
-import java.time.LocalDateTime
 
 class SdesConnectorISpec extends IntegrationStubbing with FeatureSwitching {
 
@@ -44,7 +41,7 @@ class SdesConnectorISpec extends IntegrationStubbing with FeatureSwitching {
 
         val result = await(connector.notifySdes(testPayload))
 
-        result mustBe SdesNotificationSuccess
+        result mustBe SdesNotificationSuccess(NO_CONTENT, "")
       }
     }
 

@@ -31,7 +31,7 @@ case class FileDetails(recipientOrSender: String,
                        location: String,
                        checksum: Checksum,
                        size: Int,
-                       properties: List[Property])
+                       properties: List[Property]) extends PropertyExtractor
 
 object FileDetails {
   implicit val format: OFormat[FileDetails] = Json.format[FileDetails]

@@ -22,7 +22,8 @@ import mocks.monitoring.MockAuditService
 import mocks.{MockSdesConnector, MockUpscanMongoRepository}
 import models.api.{PrimaryIdentityEvidence, Ready, UploadDetails, UpscanDetails}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted}
-import models.sdes.SdesAuditing.SdesCallbackFailureAudit
+import models.sdes.PropertyExtractor._
+import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesFileSubmissionAudit}
 import models.sdes._
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{verify, when}
@@ -30,7 +31,6 @@ import org.scalatest.concurrent.Eventually.eventually
 import play.api.mvc.{AnyContent, Request}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.SdesService._
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDateTime
@@ -158,24 +158,36 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       val referenceList = Seq(testReference, testReference2, testReference3)
       mockGetAllUpscanDetails(testRegId)(Future.successful(referenceList.map(testUpscanDetails)))
       referenceList.map(reference =>
-        mockNotifySdes(testPayload(reference, Some(testNrsId)), Future.successful(SdesNotificationSuccess))
+        mockNotifySdes(testPayload(reference, Some(testNrsId)), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
       )
 
       val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, Some(testNrsId)))
 
-      result mustBe Seq(SdesNotificationSuccess, SdesNotificationSuccess, SdesNotificationSuccess)
+      result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
+
+      eventually {
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, "")))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, "")))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, "")))
+      }
     }
 
     "create a payload without nrsSubmissionId and send it" in {
       val referenceList = Seq(testReference, testReference2, testReference3)
       mockGetAllUpscanDetails(testRegId)(Future.successful(referenceList.map(testUpscanDetails)))
       referenceList.map(reference =>
-        mockNotifySdes(testPayload(reference, None), Future.successful(SdesNotificationSuccess))
+        mockNotifySdes(testPayload(reference, None), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
       )
 
       val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, None))
 
-      result mustBe Seq(SdesNotificationSuccess, SdesNotificationSuccess, SdesNotificationSuccess)
+      result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
+
+      eventually {
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, None), SdesNotificationSuccess(NO_CONTENT, "")))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, None), SdesNotificationSuccess(NO_CONTENT, "")))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, None), SdesNotificationSuccess(NO_CONTENT, "")))
+      }
     }
   }
 

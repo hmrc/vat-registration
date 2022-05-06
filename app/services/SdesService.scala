@@ -19,17 +19,15 @@ package services
 import connectors.{NonRepudiationConnector, SdesConnector}
 import models.api.{Ready, UpscanDetails}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
-import models.sdes.SdesAuditing.SdesCallbackFailureAudit
+import models.sdes.PropertyExtractor._
+import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesFileSubmissionAudit}
 import models.sdes._
 import play.api.Logging
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
-import services.SdesService._
 import services.monitoring.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,6 +44,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
                  correlationId: String,
                  nrsSubmissionId: Option[String])
                 (implicit hc: HeaderCarrier,
+                 request: Request[_],
                  executionContext: ExecutionContext): Future[Seq[SdesNotificationResult]] = {
     upscanMongoRepository.getAllUpscanDetails(regId).flatMap { upscanDetailsList =>
       Future.sequence(upscanDetailsList.collect {
@@ -92,13 +91,20 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
             )
           )
 
-          sdesConnector.notifySdes(payload).map {
-            case res@SdesNotificationSuccess =>
-              logger.info(s"[SdesService] SDES notification sent for ${reference}")
-              res
-            case res@SdesNotificationFailure(body, status) =>
-              logger.error(s"[SdesService] SDES notification failed with status: $status and body: $body")
-              res
+          sdesConnector.notifySdes(payload).map { result =>
+            auditService.audit(SdesFileSubmissionAudit(payload, result))
+
+            result match {
+              case res: SdesNotificationSuccess =>
+                logger.info(s"[SdesService] SDES notification sent for $reference")
+                res
+              case res@SdesNotificationFailure(body, status) =>
+                logger.error(s"[SdesService] SDES notification failed with status: $status and body: $body")
+                res
+              case res@SdesNotificationUnexpectedFailure(status, body) =>
+                logger.error(s"[SdesService] SDES notification failed with an unexpected status: $status and body: $body")
+                res
+            }
           }
       })
     }
@@ -132,22 +138,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
       case (Some(_), Some(_), Some(_), None, Some(_), _) =>
         Future.successful(logger.warn("[SdesService] Not sending attachment NRS payload as NRS failed for the Registration Submission"))
       case _ =>
-        Future.successful(logger.error("[SdesService] Could not send attachment NRS payload due to missing data"))
+        Future.successful(logger.error("[SdesService] Could not send attachment NRS payload due to missing data in the callback"))
     }
   }
-}
-
-object SdesService {
-  val mimeTypeKey = "mimeType"
-  val prefixedFormBundleKey = "prefixedFormBundleId"
-  val formBundleKey = "formBundleId"
-  val attachmentReferenceKey = "attachmentId"
-  val submissionDateKey = "submissionDate"
-  val nrsSubmissionKey = "nrsSubmissionId"
-  val locationKey = "location"
-
-  val checksumAlgorithm = "SHA256"
-  val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter
-    .ofPattern("dd/MM/yyyy hh:mm:ss")
-    .withZone(ZoneId.of("UTC"))
 }

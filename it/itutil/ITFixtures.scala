@@ -20,10 +20,10 @@ import enums.VatRegStatus
 import models._
 import models.api._
 import models.api.returns._
-import models.sdes.{AuditDetals, Checksum, FileDetails, Property, SdesNotification}
+import models.sdes.PropertyExtractor._
+import models.sdes._
 import models.submission._
 import play.api.libs.json.{JsValue, Json}
-import services.SdesService.{attachmentReferenceKey, checksumAlgorithm, dateTimeFormatter, formBundleKey, mimeTypeKey, nrsSubmissionKey, prefixedFormBundleKey, submissionDateKey}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
