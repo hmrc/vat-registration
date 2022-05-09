@@ -21,7 +21,8 @@ import helpers.VatRegSpec
 import mocks.monitoring.MockAuditService
 import mocks.{MockSdesConnector, MockUpscanMongoRepository}
 import models.api.{PrimaryIdentityEvidence, Ready, UploadDetails, UpscanDetails}
-import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted}
+import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
+import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.sdes.PropertyExtractor._
 import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesFileSubmissionAudit}
 import models.sdes._
@@ -192,7 +193,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   }
 
   "processCallback" must {
-    "call NRS if callback is successful" in {
+    "call and audit NRS success if callback is successful" in {
       val testNrAttachmentId = "testNrAttachmentId"
       val testNrsPayload = NonRepudiationAttachment(
         attachmentUrl = testDownloadUrl,
@@ -207,17 +208,42 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       )(ArgumentMatchers.eq(hc))
       ).thenReturn(Future.successful(NonRepudiationAttachmentAccepted(testNrAttachmentId)))
 
-      val res: Unit = await(TestService.processCallback(testCallback(None)))
+      await(TestService.processCallback(testCallback(None)))
 
       eventually {
         verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
           ArgumentMatchers.eq(testNrsPayload)
         )(ArgumentMatchers.eq(hc))
+        verifyAudit(NonRepudiationAttachmentSuccessAudit(testCallback(None), testNrAttachmentId))
+      }
+    }
+
+    "call and audit NRS failure if callback is successful" in {
+      val testNrsPayload = NonRepudiationAttachment(
+        attachmentUrl = testDownloadUrl,
+        attachmentId = testReference,
+        attachmentSha256Checksum = testChecksum,
+        attachmentContentType = testMimeType,
+        nrSubmissionId = testNrsId
+      )
+
+      when(mockNonRepudiationConnector.submitAttachmentNonRepudiation(
+        ArgumentMatchers.eq(testNrsPayload)
+      )(ArgumentMatchers.eq(hc))
+      ).thenReturn(Future.successful(NonRepudiationAttachmentFailed("", BAD_REQUEST)))
+
+      await(TestService.processCallback(testCallback(None)))
+
+      eventually {
+        verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
+          ArgumentMatchers.eq(testNrsPayload)
+        )(ArgumentMatchers.eq(hc))
+        verifyAudit(NonRepudiationAttachmentFailureAudit(testCallback(None), BAD_REQUEST))
       }
     }
 
     "audit a failure callback" in {
-      val res: Unit = await(TestService.processCallback(testCallback(Some(testFailureReason))))
+      await(TestService.processCallback(testCallback(Some(testFailureReason))))
 
       eventually {
         verifyAudit(SdesCallbackFailureAudit(testCallback(Some(testFailureReason))))

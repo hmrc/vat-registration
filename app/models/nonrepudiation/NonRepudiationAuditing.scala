@@ -16,8 +16,11 @@
 
 package models.nonrepudiation
 
+import models.sdes.PropertyExtractor.{attachmentReferenceKey, formBundleKey, nrsSubmissionKey}
+import models.sdes.SdesCallback
 import play.api.libs.json.{JsValue, Json}
 import services.monitoring.AuditModel
+import utils.JsonUtils._
 
 object NonRepudiationAuditing {
 
@@ -43,4 +46,35 @@ object NonRepudiationAuditing {
     )
   }
 
+  case class NonRepudiationAttachmentSuccessAudit(sdesCallback: SdesCallback, nrAttachmentId: String) extends AuditModel {
+    override val auditType: String = "SubmitAttachmentToNrs"
+    override val transactionName: String = "submit-attachment-to-nrs"
+    override val detail: JsValue = jsonObject(
+      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
+      "filename" -> sdesCallback.filename,
+      "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
+      "checksum" -> sdesCallback.checksum,
+      "correlationID" -> sdesCallback.correlationID,
+      "availableUntil" -> sdesCallback.correlationID,
+      "nrAttachmentId" -> nrAttachmentId,
+      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey)
+    )
+  }
+
+  case class NonRepudiationAttachmentFailureAudit(sdesCallback: SdesCallback, status: Int) extends AuditModel {
+    override val auditType: String = "SubmitAttachmentToNRSError"
+    override val transactionName: String = "submit-attachment-to-nrs"
+    override val detail: JsValue = jsonObject(
+      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
+      "filename" -> sdesCallback.filename,
+      "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
+      "checksum" -> sdesCallback.checksum,
+      "correlationID" -> sdesCallback.correlationID,
+      "availableUntil" -> sdesCallback.correlationID,
+      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey),
+      "statusCode" -> status
+    )
+  }
 }

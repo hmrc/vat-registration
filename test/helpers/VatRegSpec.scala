@@ -41,6 +41,7 @@ trait VatRegSpec extends PlaySpec with Inside with MockitoSugar with VatMocks
     reset(mockHttpClient)
     reset(mockSubmissionService)
     reset(mockVatRegistrationService)
+    reset(mockNonRepudiationConnector)
   }
 }
 
