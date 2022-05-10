@@ -174,7 +174,8 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     }
     val appliedForAas = if (vatScheme.returns.map(_.returnsFrequency).contains(Annual)) Some("AnnualAccountingScheme") else None
     val appliedForFrs = if (vatScheme.flatRateScheme.exists(_.joinFrs)) Some("FlatRateScheme") else None
-    val specialSituations = List(exceptionOrExemption, appliedForAas, appliedForFrs).flatten
+    val hasObi = if (vatScheme.otherBusinessInvolvements.exists(_.nonEmpty)) Some("OtherBusinessInvolvements") else None
+    val specialSituations = List(exceptionOrExemption, appliedForAas, appliedForFrs, hasObi).flatten
 
     val attachmentList = attachmentsService.attachmentList(vatScheme).map(_.toString)
 
