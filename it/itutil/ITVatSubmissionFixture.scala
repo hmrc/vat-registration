@@ -53,9 +53,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true //false if manually entered by user
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL" //electronic
       )
@@ -215,9 +215,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true //false if manually entered by user
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL" //electronic
       )
@@ -376,9 +376,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL" //electronic
       )
@@ -551,9 +551,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true //false if manually entered by user
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL" //electronic
       )
@@ -662,9 +662,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
@@ -783,9 +783,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> false
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
@@ -902,9 +902,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> false
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
@@ -1030,9 +1030,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> false
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
@@ -1151,9 +1151,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
@@ -1266,9 +1266,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
@@ -1366,9 +1366,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testContactDetails.tel,
-        "mobileNumber" -> testContactDetails.mobile,
-        "email" -> testContactDetails.email,
+        "telephone" -> testBusinessContactDetails.telephoneNumber,
+        "mobileNumber" -> testBusinessContactDetails.mobile,
+        "email" -> testBusinessContactDetails.email,
         "emailVerified" -> false,
         "commsPreference" -> "ZEL"
       )
@@ -1578,9 +1578,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "countryCode" -> "GB"
         ),
         "commDetails" -> Json.obj(
-          "email" -> testBusinessContactDetails.digitalContact.email,
-          "telephone" -> testBusinessContactDetails.digitalContact.tel,
-          "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
+          "email" -> testBusinessContactDetails.email,
+          "telephone" -> testBusinessContactDetails.telephoneNumber,
+          "mobileNumber" -> testBusinessContactDetails.mobile
         )
       )
     )
@@ -1662,9 +1662,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "countryCode" -> "GB"
         ),
         "commDetails" -> Json.obj(
-          "email" -> testBusinessContactDetails.digitalContact.email,
-          "telephone" -> testBusinessContactDetails.digitalContact.tel,
-          "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
+          "email" -> testBusinessContactDetails.email,
+          "telephone" -> testBusinessContactDetails.telephoneNumber,
+          "mobileNumber" -> testBusinessContactDetails.mobile
         )
       )
     )
@@ -1697,9 +1697,9 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "countryCode" -> "GB"
         ),
         "commDetails" -> Json.obj(
-          "email" -> testBusinessContactDetails.digitalContact.email,
-          "telephone" -> testBusinessContactDetails.digitalContact.tel,
-          "mobileNumber" -> testBusinessContactDetails.digitalContact.mobile
+          "email" -> testBusinessContactDetails.email,
+          "telephone" -> testBusinessContactDetails.telephoneNumber,
+          "mobileNumber" -> testBusinessContactDetails.mobile
         )
       )
     )

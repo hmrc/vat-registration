@@ -98,9 +98,9 @@ class EntitiesBlockBuilder @Inject()() extends FeatureSwitching {
                     optional("email" -> applicantDetails.contact.email)
                   )
                   case _ => jsonObject(
-                    optional("telephone" -> businessContact.digitalContact.tel),
-                    optional("mobileNumber" -> businessContact.digitalContact.mobile),
-                    "email" -> businessContact.digitalContact.email
+                    optional("telephone" -> businessContact.telephoneNumber),
+                    optional("mobileNumber" -> businessContact.mobile),
+                    "email" -> businessContact.email
                   )
                 }
               }

@@ -41,11 +41,11 @@ class ContactBlockBuilder @Inject()() {
             optional("addressValidated" -> businessContact.ppob.addressValidated)
           ),
           "commDetails" -> jsonObject(
-            optional("telephone" -> businessContact.digitalContact.tel),
-            optional("mobileNumber" -> businessContact.digitalContact.mobile),
-            "email" -> businessContact.digitalContact.email,
+            optional("telephone" -> businessContact.telephoneNumber),
+            optional("mobileNumber" -> businessContact.mobile),
+            optional("email" -> businessContact.email),
             "emailVerified" -> (
-              if (applicantDetails.contact.email.contains(businessContact.digitalContact.email) && applicantDetails.contact.emailVerified.contains(true)) {
+              if (applicantDetails.contact.email.exists(businessContact.email.contains(_)) && applicantDetails.contact.emailVerified.contains(true)) {
                 true
               } else {
                 false

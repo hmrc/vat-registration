@@ -104,7 +104,6 @@ trait ITFixtures {
   val testAddress = Address("line1", Some("line2"), None, None, None, Some("XX XX"), Some(testCountry), addressValidated = Some(true))
   val testFullAddress = Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some("XX XX"), Some(testCountry), addressValidated = Some(true))
   val testOverseasAddress = testFullAddress.copy(country = Some(Country(Some("EE"), None)), addressValidated = Some(false))
-  val testContactDetails = DigitalContact("test@test.com", Some("12345678910"), Some("12345678910"))
   val testDigitalContactOptional = DigitalContactOptional(Some("skylake@vilikariet.com"), Some("1234567890"), Some("1234567890"), Some(true))
   val testNino = "NB686868C"
   val testTrn = "testTrn"
@@ -213,8 +212,8 @@ trait ITFixtures {
       roleInBusiness = OwnerProprietor
     )
 
-  val testBusinessContactDetails = BusinessContact(digitalContact = testContactDetails, website = None, ppob = testFullAddress, commsPreference = Email)
-  val testFullBusinessContactDetails = BusinessContact(digitalContact = testContactDetails, website = Some(testWebsite), ppob = testFullAddress, commsPreference = Email)
+  val testBusinessContactDetails = BusinessContact(email = Some("test@test.com"), telephoneNumber = Some("12345678910"), mobile = Some("12345678910"), website = None, ppob = testFullAddress, commsPreference = Email, hasWebsite = Some(false))
+  val testFullBusinessContactDetails = BusinessContact(email = Some("test@test.com"), telephoneNumber = Some("12345678910"), mobile = Some("12345678910"), website = Some(testWebsite), ppob = testFullAddress, commsPreference = Email, hasWebsite = Some(true))
 
   val testSicAndCompliance = SicAndCompliance(
     businessDescription = "businessDesc",

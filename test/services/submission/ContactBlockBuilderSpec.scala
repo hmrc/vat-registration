@@ -54,7 +54,7 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
           businessContact = Some(validFullBusinessContact),
           applicantDetails = Some(validApplicantDetails.copy(
             contact = DigitalContactOptional(
-              email = Some(validFullBusinessContact.digitalContact.email),
+              email = validFullBusinessContact.email,
               emailVerified = Some(true)
             )
           ))

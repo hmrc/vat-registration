@@ -212,10 +212,13 @@ trait VatRegistrationFixture {
   )
 
   lazy val testBusinessContact = Some(BusinessContact(
-    digitalContact = DigitalContact("email@email.com", Some("12345"), Some("54321")),
+    email = Some("email@email.com"),
+    telephoneNumber = Some("12345"),
+    mobile = Some("54321"),
     website = Some("www.foo.com"),
     ppob = Address("line1", Some("line2"), None, None, None, Some(testPostcode), Some(Country(Some("GB"), None))),
-    commsPreference = Email
+    commsPreference = Email,
+    hasWebsite = Some(true)
   ))
 
   lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None, None)
@@ -265,14 +268,17 @@ trait VatRegistrationFixture {
   lazy val invalidEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = true, None)
 
   lazy val validFullBusinessContact: BusinessContact = BusinessContact(
-    digitalContact = DigitalContact(email = "email@email.com", tel = Some("12345"), mobile = Some("54321")),
+    email = Some("email@email.com"),
+    telephoneNumber = Some("12345"),
+    mobile = Some("54321"),
     website = Some("www.foo.com"),
     ppob = Address(
       line1 = "line1",
       line2 = Some("line2"),
       postcode = Some(testPostcode),
       country = Some(Country(code = Some("GB"), name = Some("UK")))),
-    commsPreference = Email)
+    commsPreference = Email,
+    hasWebsite = Some(true))
 
   val testSubmissionPayload = "testSubmissionPayload"
   val testEncodedPayload: String = Base64.getEncoder.encodeToString(testSubmissionPayload.getBytes(StandardCharsets.UTF_8))
@@ -292,11 +298,10 @@ trait VatRegistrationFixture {
 
   lazy val validBusinessContactJson: JsObject = Json.parse(
     s"""{
-       |"digitalContact":{
        |"email": "email@email.com",
-       |"tel": "12345",
-       |"mobile": "54321"
-       |},
+       |"telephoneNumber": "12345",
+       |"mobile": "54321",
+       |"hasWebsite": true,
        |"website": "www.foo.com",
        |"ppob": {
        |  "line1": "line1",
