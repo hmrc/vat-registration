@@ -40,10 +40,10 @@ class ContactAuditBlockBuilder {
             optional("countryCode" -> businessContact.ppob.country.flatMap(_.code))
           ),
           "businessCommunicationDetails" -> jsonObject(
-            optional("telephone" -> businessContact.digitalContact.tel),
-            "emailAddress" -> businessContact.digitalContact.email,
+            optional("telephone" -> businessContact.telephoneNumber),
+            "emailAddress" -> businessContact.email,
             "emailVerified" -> (
-              if (applicantDetails.contact.email.contains(businessContact.digitalContact.email) && applicantDetails.contact.emailVerified.contains(true)) {
+              if (applicantDetails.contact.email.exists(businessContact.email.contains(_)) && applicantDetails.contact.emailVerified.contains(true)) {
                 true
               } else {
                 false

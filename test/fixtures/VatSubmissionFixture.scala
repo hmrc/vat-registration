@@ -742,11 +742,10 @@ trait VatSubmissionFixture {
       |    ]
       |  },
       |  "businessContact": {
-      |    "digitalContact": {
-      |      "email": "email@email.com",
-      |      "tel": "12345",
-      |      "mobile": "54321"
-      |    },
+      |    "email": "email@email.com",
+      |    "telephoneNumber": "12345",
+      |    "mobile": "54321",
+      |    "hasWebsite": true,
       |    "website": "www.foo.com",
       |    "ppob": {
       |      "line1": "line1",

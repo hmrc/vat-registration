@@ -29,16 +29,14 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
   object Builder extends EntitiesBlockBuilder
 
   val testPhone = "01234 567890"
-  val testContact = DigitalContact(
-    email = testEmail,
-    tel = Some(testPhone),
-    mobile = Some(testPhone)
-  )
   val businessContact = BusinessContact(
-    digitalContact = testContact,
+    email = Some(testEmail),
+    telephoneNumber = Some(testPhone),
+    mobile = Some(testPhone),
     website = None,
     ppob = testAddress,
-    commsPreference = Email
+    commsPreference = Email,
+    hasWebsite = Some(false)
   )
   val testEntity = testSoleTraderEntity.copy(bpSafeId = Some(testBpSafeId))
   val testEntityNoSafeId = testSoleTraderEntity.copy(bpSafeId = None)
@@ -180,7 +178,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       "return the correct JSON without the phone number" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-          businessContact = Some(businessContact.copy(digitalContact = testContact.copy(tel = None))),
+          businessContact = Some(businessContact.copy(telephoneNumber = None)),
           partners = Some(PartnersSection(List(testPartner))),
           applicantDetails = Some(validApplicantDetails)
         )

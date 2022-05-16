@@ -487,7 +487,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       val json: JsValue = Json.toJson(
         Json.obj("registrationId" -> testRegId,
           "status" -> VatRegStatus.draft,
-          "businessContact" -> Json.toJson(testBusinessContactDetails).as[JsObject].-("digitalContact")))
+          "businessContact" -> Json.toJson(testBusinessContactDetails).as[JsObject].-("ppob")))
       insert(json.as[JsObject])
       an[Exception] mustBe thrownBy(await(repository.fetchBusinessContact(vatSchemeWithEligibilityData.id)))
     }
@@ -506,7 +506,9 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
     "return an amended Option BusinessContact Model when an entry already exists and all fields have changed in the model" in new Setup {
       val amendedModel: BusinessContact = testBusinessContactDetails.copy(
-        digitalContact = DigitalContact("foozle", Some("2434738"), Some("37483784")),
+        email = Some("foozle"),
+        telephoneNumber = Some("2434738"),
+        mobile = Some("37483784"),
         website = Some("myLittleWebsite"),
         ppob = Address("lino1", Some("lino2"), None, None, None, None, Some(testCountry))
       )

@@ -3,7 +3,7 @@ package controllers
 
 import auth.CryptoSCRS
 import itutil.IntegrationStubbing
-import models.api.{Address, BusinessContact, DigitalContact, Letter, VatScheme}
+import models.api.{Address, BusinessContact, Letter, VatScheme}
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
@@ -17,19 +17,21 @@ class BusinessContactControllerISpec extends IntegrationStubbing {
   class Setup extends SetupHelper
 
   val validBusinessContact: Option[BusinessContact] = Some(BusinessContact(
-    digitalContact = DigitalContact("email@email.com",Some("12345"),Some("54321")),
+    email = Some("email@email.com"),
+    telephoneNumber = Some("12345"),
+    mobile = Some("54321"),
     website = Some("www.foo.com"),
     ppob = Address("line1", Some("line2"), None, None, None, None, Some(testCountry)),
-    commsPreference = Letter
+    commsPreference = Letter,
+    hasWebsite = Some(true)
   ))
 
   val validBusinessContactJson: JsObject = Json.parse(
     s"""{
-       |"digitalContact":{
        |"email": "email@email.com",
-       |"tel": "12345",
-       |"mobile": "54321"
-       |},
+       |"telephoneNumber": "12345",
+       |"mobile": "54321",
+       |"hasWebsite": true,
        |"website": "www.foo.com",
        |"ppob": {
        |  "line1": "line1",
@@ -46,11 +48,10 @@ class BusinessContactControllerISpec extends IntegrationStubbing {
 
   val validUpdatedBusinessContactJson: JsObject = Json.parse(
     s"""{
-       |"digitalContact":{
        |"email": "email@email1.com",
-       |"tel": "123456",
-       |"mobile": "543210"
-       |},
+       |"telephoneNumber": "123456",
+       |"mobile": "543210",
+       |"hasWebsite": true,
        |"website": "www.foobar.com",
        |"ppob": {
        |  "line1": "line1a",
