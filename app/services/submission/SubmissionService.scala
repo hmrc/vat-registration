@@ -32,8 +32,8 @@ import repositories._
 import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
 import services.{AttachmentsService, EmailService, NonRepudiationService, SdesService, TrafficManagementService}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.~
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
+import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{BadRequestException, ConflictException, HeaderCarrier, InternalServerException}
 import utils.JsonUtils.{conditional, jsonObject, optional}
 import utils.{IdGenerator, TimeMachine}
@@ -71,12 +71,13 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         submissionResponse <- submit(submission, regId, correlationId)
         _ <- logSubmission(vatScheme, submissionResponse)
         formBundleId <- handleResponse(submissionResponse, regId) // chain ends here if the main submission failed
-        _ <- auditSubmission(formBundleId, vatScheme)
+        (providerId, affinityGroup, optAgentCode) <- retrieveIdentityDetails
+        _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
         _ <- trafficManagementService.updateStatus(regId, Submitted)
         _ <- emailService.sendRegistrationReceivedEmail(regId)
         digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
         optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
-        _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, correlationId, optNrsId)) else Future.successful()
+        _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, correlationId, optNrsId, providerId)) else Future.successful()
       } yield formBundleId
     } recover {
       case exception: ConflictException =>
@@ -138,24 +139,33 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     }
   }
 
-  private[services] def auditSubmission(formBundleId: String,
-                                        vatScheme: VatScheme)
-                                       (implicit hc: HeaderCarrier,
-                                        request: Request[_]): Future[Unit] = {
+  private[services] def retrieveIdentityDetails(implicit hc: HeaderCarrier,
+                                                request: Request[_]): Future[(String, AffinityGroup, Option[String])] =
     authorised().retrieve(credentials and affinityGroup and agentCode) {
       case Some(credentials) ~ Some(affinity) ~ optAgentCode =>
-        auditService.audit(
-          submissionAuditBlockBuilder.buildAuditJson(
-            vatScheme = vatScheme,
-            authProviderId = credentials.providerId,
-            affinityGroup = affinity,
-            optAgentReferenceNumber = optAgentCode,
-            formBundleId = formBundleId
-          )
-        )
-
-        Future.successful()
+        Future.successful((credentials.providerId, affinity, optAgentCode))
+      case _ =>
+        Future.failed(throw new InternalServerException("Couldn't retrieve auth details for user"))
     }
+
+  private[services] def auditSubmission(formBundleId: String,
+                                        vatScheme: VatScheme,
+                                        providerId: String,
+                                        affinityGroup: AffinityGroup,
+                                        optAgentCode: Option[String])
+                                       (implicit hc: HeaderCarrier,
+                                        request: Request[_]): Future[Unit] = {
+      auditService.audit(
+        submissionAuditBlockBuilder.buildAuditJson(
+          vatScheme = vatScheme,
+          authProviderId = providerId,
+          affinityGroup = affinityGroup,
+          optAgentReferenceNumber = optAgentCode,
+          formBundleId = formBundleId
+        )
+      )
+
+      Future.successful()
   }
 
   private[services] def logSubmission(vatScheme: VatScheme,

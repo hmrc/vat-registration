@@ -36,13 +36,15 @@ trait MockSdesService extends HttpClientMock {
                      formBundleId: String,
                      correlationId: String,
                      nrsSubmissionId: Option[String],
+                     providerId: String,
                      result: Future[Seq[SdesNotificationResult]]): OngoingStubbing[Future[Seq[SdesNotificationResult]]] =
     when(
       mockSdesService.notifySdes(
         ArgumentMatchers.eq(regId),
         ArgumentMatchers.eq(formBundleId),
         ArgumentMatchers.eq(correlationId),
-        ArgumentMatchers.eq(nrsSubmissionId)
+        ArgumentMatchers.eq(nrsSubmissionId),
+        ArgumentMatchers.eq(providerId)
       )(ArgumentMatchers.any[HeaderCarrier],
         ArgumentMatchers.any[Request[_]],
         ArgumentMatchers.any[ExecutionContext])

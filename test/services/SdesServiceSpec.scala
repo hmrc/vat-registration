@@ -162,14 +162,14 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
         mockNotifySdes(testPayload(reference, Some(testNrsId)), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
       )
 
-      val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, Some(testNrsId)))
+      val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, Some(testNrsId), testProviderId))
 
       result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
 
       eventually {
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, "")))
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, "")))
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, "")))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
       }
     }
 
@@ -180,14 +180,14 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
         mockNotifySdes(testPayload(reference, None), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
       )
 
-      val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, None))
+      val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, None, testProviderId))
 
       result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
 
       eventually {
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, None), SdesNotificationSuccess(NO_CONTENT, "")))
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, None), SdesNotificationSuccess(NO_CONTENT, "")))
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, None), SdesNotificationSuccess(NO_CONTENT, "")))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, None), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, None), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, None), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
       }
     }
   }

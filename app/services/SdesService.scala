@@ -43,7 +43,8 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
   def notifySdes(regId: String,
                  formBundleId: String,
                  correlationId: String,
-                 nrsSubmissionId: Option[String])
+                 nrsSubmissionId: Option[String],
+                 providerId: String)
                 (implicit hc: HeaderCarrier,
                  request: Request[_],
                  executionContext: ExecutionContext): Future[Seq[SdesNotificationResult]] = {
@@ -93,7 +94,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
           )
 
           sdesConnector.notifySdes(payload).map { result =>
-            auditService.audit(SdesFileSubmissionAudit(payload, result))
+            auditService.audit(SdesFileSubmissionAudit(payload, result, providerId))
 
             result match {
               case res: SdesNotificationSuccess =>

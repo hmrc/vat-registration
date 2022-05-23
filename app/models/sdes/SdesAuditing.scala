@@ -23,10 +23,11 @@ import utils.JsonUtils._
 
 object SdesAuditing {
 
-  case class SdesFileSubmissionAudit(sdesPayload: SdesNotification, response: SdesNotificationResult) extends AuditModel {
+  case class SdesFileSubmissionAudit(sdesPayload: SdesNotification, response: SdesNotificationResult, providerId: String) extends AuditModel {
     override val auditType: String = "SDESFileSubmission"
     override val transactionName: String = "SDESFileSubmission"
     override val detail: JsValue = jsonObject(
+      "authProviderId" -> providerId,
       "informationType" -> sdesPayload.informationType,
       "file" -> jsonObject(
         "recipientOrSender" -> sdesPayload.file.recipientOrSender,
