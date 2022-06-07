@@ -58,7 +58,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         Json.obj("questionId" -> "keepOldVrn", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> true),
         Json.obj("questionId" -> "termsAndConditions", "question" -> "testQuestion", "answer" -> "testQuestion",
-          "answerValue" -> true)
+          "answerValue" -> true),
+        Json.obj("questionId" -> "currentlyTrading", "question" -> "testQuestion", "answer" -> "testAnswer",
+          "answerValue" -> false)
       )
       val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
       val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -115,7 +117,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "keepOldVrn", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> true),
           Json.obj("questionId" -> "termsAndConditions", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> true)
+            "answerValue" -> true),
+          Json.obj("questionId" -> "currentlyTrading", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> false)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(togcColeBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -160,7 +164,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "50")
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "currentlyTrading", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> false)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdOverseasBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -199,7 +205,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "50")
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "currentlyTrading", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> false)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdPrevThirtyDaysBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -238,7 +246,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "50")
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "currentlyTrading", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> false)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdNextThirtyDaysBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -277,7 +287,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "50")
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "currentlyTrading", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> false)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdNextTwelveMonthsBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)

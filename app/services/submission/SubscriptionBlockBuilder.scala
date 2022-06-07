@@ -36,7 +36,7 @@ class SubscriptionBlockBuilder @Inject()() {
           "registrationReason" -> eligibilityData.registrationReason.key,
           "relevantDate" -> {
             eligibilityData.registrationReason match {
-              case Voluntary | SuppliesOutsideUk | GroupRegistration => returns.startDate
+              case Voluntary | SuppliesOutsideUk | GroupRegistration | IntendingTrader => returns.startDate
               case BackwardLook => eligibilityData.threshold.thresholdInTwelveMonths
               case ForwardLook => Some(eligibilityData.threshold.earliestDate)
               case NonUk => eligibilityData.threshold.thresholdOverseas

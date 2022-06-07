@@ -31,7 +31,8 @@ object RegistrationReason {
     NonUk.key -> NonUk,
     TransferOfAGoingConcern.key -> TransferOfAGoingConcern,
     GroupRegistration.key -> GroupRegistration,
-    SuppliesOutsideUk.key -> SuppliesOutsideUk
+    SuppliesOutsideUk.key -> SuppliesOutsideUk,
+    IntendingTrader.key -> IntendingTrader
   )
   val inverseMapping: Map[RegistrationReason, String] = mapping.map(_.swap)
 
@@ -73,4 +74,9 @@ case object GroupRegistration extends RegistrationReason {
 case object TransferOfAGoingConcern extends RegistrationReason {
   val key = "0014"
   val humanReadableKey = "Transfer of a Going Concern"
+}
+
+case object IntendingTrader extends RegistrationReason {
+  val key = "0013"
+  val humanReadableKey = "Intending Trader"
 }

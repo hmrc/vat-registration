@@ -40,7 +40,7 @@ class AnnualAccountingBlockBuilder @Inject()() {
               "estimatedTurnover" -> eligibilitySubmissionData.estimates.turnoverEstimate,
               "reqStartDate" -> {
                 eligibilitySubmissionData.registrationReason match {
-                  case Voluntary | SuppliesOutsideUk => returns.startDate
+                  case Voluntary | SuppliesOutsideUk | IntendingTrader => returns.startDate
                   case BackwardLook => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
                   case ForwardLook => Some(eligibilitySubmissionData.threshold.earliestDate)
                   case NonUk => eligibilitySubmissionData.threshold.thresholdOverseas

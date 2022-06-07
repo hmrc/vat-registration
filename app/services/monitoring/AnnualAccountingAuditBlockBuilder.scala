@@ -18,7 +18,7 @@ package services.monitoring
 
 import models.api.VatScheme
 import models.api.returns.Annual
-import models.{BackwardLook, ForwardLook, NonUk, SuppliesOutsideUk, TransferOfAGoingConcern, Voluntary}
+import models.{BackwardLook, ForwardLook, IntendingTrader, NonUk, SuppliesOutsideUk, TransferOfAGoingConcern, Voluntary}
 import play.api.libs.json.JsObject
 import utils.JsonUtils._
 
@@ -40,7 +40,7 @@ class AnnualAccountingAuditBlockBuilder @Inject()() {
               "estimatedTurnover" -> eligibilitySubmissionData.estimates.turnoverEstimate,
               "reqStartDate" -> {
                 eligibilitySubmissionData.registrationReason match {
-                  case Voluntary | SuppliesOutsideUk => returns.startDate
+                  case Voluntary | SuppliesOutsideUk | IntendingTrader => returns.startDate
                   case BackwardLook => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
                   case ForwardLook => Some(eligibilitySubmissionData.threshold.earliestDate)
                   case NonUk => eligibilitySubmissionData.threshold.thresholdOverseas
