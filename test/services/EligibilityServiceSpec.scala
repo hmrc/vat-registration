@@ -73,7 +73,8 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
       Json.obj("questionId" -> "turnoverEstimate", "question" -> "Some Question 21", "answer" -> "Some Answer 21", "answerValue" -> 123456),
       Json.obj("questionId" -> "testQId22", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "val22"),
       Json.obj("questionId" -> "registeringBusiness", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "own"),
-      Json.obj("questionId" -> "businessEntity", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "50")
+      Json.obj("questionId" -> "businessEntity", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "50"),
+      Json.obj("questionId" -> "currentlyTrading", "question" -> "Some Question 24", "answer" -> "Some Answer 24", "answerValue" -> false)
     )
     val section1 = Json.obj("title" -> "test TITLE 1", "data" -> JsArray(questions1))
     val section2 = Json.obj("title" -> "test TITLE 2", "data" -> JsArray(questions2))
