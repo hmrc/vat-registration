@@ -72,6 +72,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
     Future.successful()
   }
 
+  // scalastyle:off
   private def removeInvalidFields(regId: String,
                                   eligibilityData: EligibilitySubmissionData,
                                   oldEligibilityData: EligibilitySubmissionData
@@ -87,14 +88,15 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               sicAndCompliance = None,
               businessContact = None,
               bankAccount = None,
+              flatRateScheme = None,
+              eligibilityData = None,
+              eligibilitySubmissionData = None,
               applicantDetails = None,
               transactorDetails = None,
-              flatRateScheme = None,
+              nrsSubmissionPayload = None,
               partners = None,
               attachments = None,
-              nrsSubmissionPayload = None,
-              eligibilityData = None,
-              eligibilitySubmissionData = None
+              otherBusinessInvolvements = None
             ))
 
           case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _, _, oldTransactorFlag, _)

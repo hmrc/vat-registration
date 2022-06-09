@@ -18,8 +18,7 @@ package controllers
 
 import auth.{Authorisation, AuthorisationResource}
 import cats.instances.FutureInstances
-import common.exceptions.{InvalidSubmissionStatus, LeftState}
-import enums.VatRegStatus
+import common.exceptions.LeftState
 import enums.VatRegStatus._
 import models.api._
 import play.api.libs.json._
@@ -115,28 +114,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
       isAuthorised(regId) { authResult =>
         authResult.ifAuthorised(regId, "VatRegistrationController", "getTurnoverEstimates") {
           registrationService.getTurnoverEstimates(regId) sendResult("getTurnoverEstimates", regId)
-        }
-      }
-  }
-
-  def getThreshold(regId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "getThreshold") {
-          registrationService.getThreshold(regId) sendResult("getThreshold", regId)
-        }
-      }
-  }
-
-  def deleteVatScheme(regId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "deleteVatScheme") {
-          registrationService.deleteVatScheme(regId, VatRegStatus.draft) map { deleted =>
-            if (deleted) Ok else InternalServerError
-          } recover {
-            case _: InvalidSubmissionStatus => PreconditionFailed
-          }
         }
       }
   }

@@ -49,9 +49,7 @@ trait VatMocks extends HttpClientMock {
   lazy val mockVatRegistrationService: VatRegistrationService = mock[VatRegistrationService]
   lazy val mockVatSubmissionConnector: VatSubmissionConnector = mock[VatSubmissionConnector]
   lazy val mockEligibilityService: EligibilityService = mock[EligibilityService]
-  lazy val mockApplicantDetailsService: ApplicantDetailsService = mock[ApplicantDetailsService]
   lazy val mockSicAndComplianceService: SicAndComplianceService = mock[SicAndComplianceService]
-  lazy val mockBusinessContactService: BusinessContactService = mock[BusinessContactService]
   lazy val mockTradingDetailsService: TradingDetailsService = mock[TradingDetailsService]
   lazy val mockFlatRateSchemeService: FlatRateSchemeService = mock[FlatRateSchemeService]
   lazy val mockAnnualAccountingSchemeService: ReturnsService = mock[ReturnsService]
@@ -133,22 +131,6 @@ trait VatMocks extends HttpClientMock {
       when(mockVatRegistrationService.retrieveVatScheme(idMatcher))
         .thenReturn(serviceResult(vatScheme))
     }
-
-    def mockDeleteVatScheme(id: String): Unit = {
-      when(mockVatRegistrationService.deleteVatScheme(Matchers.eq(id), any()))
-        .thenReturn(Future.successful(true))
-    }
-
-    def mockDeleteVatSchemeFail(id: String): Unit = {
-      when(mockVatRegistrationService.deleteVatScheme(Matchers.eq(id), any()))
-        .thenReturn(Future.successful(false))
-    }
-
-    def mockDeleteVatSchemeInvalidStatus(id: String): Unit = {
-      when(mockVatRegistrationService.deleteVatScheme(Matchers.eq(id), any()))
-        .thenReturn(Future.failed(new InvalidSubmissionStatus("")))
-    }
-
 
     def mockSuccessfulCreateNewRegistration(registrationId: String, internalId: String): Unit = {
       when(mockVatRegistrationService.createNewRegistration(Matchers.eq(internalId)))

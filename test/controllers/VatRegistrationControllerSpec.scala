@@ -197,29 +197,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
         status(controller.getDocumentStatus(testRegId)(FakeRequest())) mustBe NOT_FOUND
       }
     }
-
-    "deleteVatScheme" should {
-      "call to deleteVatScheme return Ok with VatScheme" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        ServiceMocks.mockDeleteVatScheme(testRegId)
-
-        status(controller.deleteVatScheme(testRegId)(FakeRequest())) mustBe OK
-      }
-
-      "call to deleteVatScheme return Internal server error" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        ServiceMocks.mockDeleteVatSchemeFail(testRegId)
-
-        status(controller.deleteVatScheme(testRegId)(FakeRequest())) mustBe INTERNAL_SERVER_ERROR
-      }
-
-      "call to deleteVatScheme return Precondition failed" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        ServiceMocks.mockDeleteVatSchemeInvalidStatus(testRegId)
-
-        status(controller.deleteVatScheme(testRegId)(FakeRequest())) mustBe PRECONDITION_FAILED
-      }
-    }
   }
 
   "Calling submitVATRegistration" should {
@@ -344,45 +321,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
         .thenReturn(Future.failed(MissingRegDocument(testRegId)))
 
       val result: Future[Result] = controller.getTurnoverEstimates(testRegId)(FakeRequest())
-      status(result) mustBe 404
-    }
-  }
-
-  "call to getThreshold" should {
-    "return a 200 and TurnoverEstimates json when it is returned from the repository" in new Setup {
-      val threshold: Threshold = Threshold(mandatoryRegistration = true,
-        thresholdPreviousThirtyDays = Some(LocalDate.of(2016, 5, 12)),
-        thresholdInTwelveMonths = Some(LocalDate.of(2016, 6, 25))
-      )
-
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      when(mockVatRegistrationService.getThreshold(any()))
-        .thenReturn(Future.successful(Some(threshold)))
-
-      val result: Future[Result] = controller.getThreshold(testRegId)(FakeRequest())
-      val expectedJson: JsValue = Json.obj("mandatoryRegistration" -> true,
-        "thresholdPreviousThirtyDays" -> "2016-05-12",
-        "thresholdInTwelveMonths" -> "2016-06-25")
-
-      status(result) mustBe 200
-      contentAsJson(result) mustBe expectedJson
-    }
-
-    "return a 204 and no json when a None is returned from the repository" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      when(mockVatRegistrationService.getThreshold(any()))
-        .thenReturn(Future.successful(None))
-
-      val result: Future[Result] = controller.getThreshold(testRegId)(FakeRequest())
-      status(result) mustBe 204
-    }
-
-    "return a 404 when a MissingRegDocument exception is thrown" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      when(mockVatRegistrationService.getThreshold(any()))
-        .thenReturn(Future.failed(MissingRegDocument(testRegId)))
-
-      val result: Future[Result] = controller.getThreshold(testRegId)(FakeRequest())
       status(result) mustBe 404
     }
   }
