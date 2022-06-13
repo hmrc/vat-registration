@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMat
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import connectors.stubs.SdesNotifyStub.stubSdesNotification
 import enums.VatRegStatus
-import featureswitch.core.config.{FeatureSwitching, ShortOrgName, StubSubmission, TrnFix}
+import featureswitch.core.config.{FeatureSwitching, ShortOrgName, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
 import models.api._
 import models.nonrepudiation.NonRepudiationMetadata
@@ -193,7 +193,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   "PUT /:regID/submit-registration" when {
     disable(StubSubmission)
-    enable(TrnFix)
     "the user is a Sole Trader" should {
       "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
         given
