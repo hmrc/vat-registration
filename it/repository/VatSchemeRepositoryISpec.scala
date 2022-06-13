@@ -164,11 +164,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       repository.insert(vatSchemeWithEligibilityData).flatMap(_ => repository.retrieveVatScheme("fakeRegId")) returns None
     }
   }
-  "Calling deleteVatScheme" should {
-    "delete a VatScheme object" in new Setup {
-      repository.insert(vatSchemeWithEligibilityData).flatMap(_ => repository.deleteVatScheme(vatSchemeWithEligibilityData.id)) returns true
-    }
-  }
   "Calling updateSubmissionStatus" should {
     "set the status" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
@@ -459,79 +454,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       a[MissingRegDocument] mustBe thrownBy(await(result))
     }
   }
-  "calling getBusinessContact" should {
-
-    "return a BusinessContact Model from existing data based on the reg Id" in new Setup {
-      val result: Future[Option[BusinessContact]] = for {
-        _ <- repository.insert(vatSchemeWithEligibilityData)
-        _ <- repository.updateBusinessContact(vatSchemeWithEligibilityData.id, testBusinessContactDetails)
-        _ = count mustBe 1
-        res <- repository.fetchBusinessContact(vatSchemeWithEligibilityData.id)
-      } yield res
-
-      await(result).get mustBe testBusinessContactDetails
-    }
-    "return None from an existing registration that exists but BusinessContact does not exist" in new Setup {
-      val result: Future[Option[BusinessContact]] = for {
-        _ <- repository.insert(vatSchemeWithEligibilityData)
-        res <- repository.fetchBusinessContact(vatSchemeWithEligibilityData.id)
-      } yield res
-      await(result) mustBe None
-    }
-    "return a MissingRegDocument when nothing is returned from mongo for the reg id" in new Setup {
-      val result: Future[Option[BusinessContact]] = repository.fetchBusinessContact("madeUpRegId")
-
-      a[MissingRegDocument] mustBe thrownBy(await(result))
-    }
-    "return an exception if the json is incorrect in the repository (an element is missing)" in new Setup {
-      val json: JsValue = Json.toJson(
-        Json.obj("registrationId" -> testRegId,
-          "status" -> VatRegStatus.draft,
-          "businessContact" -> Json.toJson(testBusinessContactDetails).as[JsObject].-("ppob")))
-      insert(json.as[JsObject])
-      an[Exception] mustBe thrownBy(await(repository.fetchBusinessContact(vatSchemeWithEligibilityData.id)))
-    }
-  }
-  "calling updateBusinessContact" should {
-    "return an amended Business Contact Model when an entry already exists in the repo for 1 field" in new Setup {
-      val amendedModel: BusinessContact = testBusinessContactDetails.copy(website = Some("fooBARUpdated"))
-
-      val result: Future[BusinessContact] = for {
-        _ <- repository.insert(vatSchemeWithEligibilityData.copy(businessContact = Some(testBusinessContactDetails)))
-        _ = count mustBe 1
-        res <- repository.updateBusinessContact(vatSchemeWithEligibilityData.id, amendedModel)
-      } yield res
-
-      await(result) mustBe amendedModel
-    }
-    "return an amended Option BusinessContact Model when an entry already exists and all fields have changed in the model" in new Setup {
-      val amendedModel: BusinessContact = testBusinessContactDetails.copy(
-        email = Some("foozle"),
-        telephoneNumber = Some("2434738"),
-        mobile = Some("37483784"),
-        website = Some("myLittleWebsite"),
-        ppob = Address("lino1", Some("lino2"), None, None, None, None, Some(testCountry))
-      )
-      val result: Future[BusinessContact] = for {
-        _ <- repository.insert(vatSchemeWithEligibilityData.copy(businessContact = Some(testBusinessContactDetails)))
-        res <- repository.updateBusinessContact(vatSchemeWithEligibilityData.id, amendedModel)
-      } yield res
-      await(result) mustBe amendedModel
-    }
-    "return an BusinessContact Model when the block did not exist in the existing reg doc" in new Setup {
-      val result: Future[BusinessContact] = for {
-        _ <- repository.insert(vatSchemeWithEligibilityData)
-        _ = count mustBe 1
-        res <- repository.updateBusinessContact(vatSchemeWithEligibilityData.id, testBusinessContactDetails)
-      } yield res
-      await(result) mustBe testBusinessContactDetails
-    }
-
-    "return an MissingRegDocument if registration document does not exist for the registration id" in new Setup {
-      val result: Future[BusinessContact] = repository.updateBusinessContact("madeUpRegId", testBusinessContactDetails)
-      a[MissingRegDocument] mustBe thrownBy(await(result))
-    }
-  }
   "fetchFlatRateScheme" should {
     "return flat rate scheme data from an existing registration containing data" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
@@ -611,36 +533,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
     "return a None when no regId document is found" in new Setup {
       await(repository.getInternalId(vatSchemeWithEligibilityData.id)) mustBe None
-    }
-  }
-  "getApplicantDetails" should {
-    "return applicant details if they exist" in new Setup {
-      await(repository.insert(vatSchemeWithEligibilityData.copy(applicantDetails = Some(testUnregisteredApplicantDetails))))
-      await(repository.count) mustBe 1
-
-      val res = await(repository.getApplicantDetails(vatSchemeWithEligibilityData.id, UkCompany))
-      res mustBe Some(testUnregisteredApplicantDetails)
-    }
-    "return None if the record is missing" in new Setup {
-      await(repository.insert(vatSchemeWithEligibilityData))
-      await(repository.count) mustBe 1
-
-      val res = await(repository.getApplicantDetails(vatSchemeWithEligibilityData.id, UkCompany))
-      res mustBe None
-    }
-    "return an exception if no vatscheme doc exists" in new Setup {
-      intercept[MissingRegDocument](await(repository.getApplicantDetails("1", UkCompany)))
-    }
-  }
-  "patchApplicantDetails" should {
-    "patch with details only" in new Setup {
-      val updatedApplicantDetails = testUnregisteredApplicantDetails.copy(previousAddress = Some(testAddress))
-
-      await(repository.insert(vatSchemeWithEligibilityData))
-      await(repository.count) mustBe 1
-      await(repository.patchApplicantDetails(vatSchemeWithEligibilityData.id, updatedApplicantDetails))
-      await(repository.count) mustBe 1
-      (fetchAll.get \ "applicantDetails").as[JsObject] mustBe Json.toJson(updatedApplicantDetails)
     }
   }
   "getEligibilityData" should {

@@ -22,7 +22,7 @@ import cats.syntax.ApplicativeSyntax
 import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
-import models.api.{Threshold, TurnoverEstimates, VatScheme}
+import models.api.{TurnoverEstimates, VatScheme}
 import models.submission.PartyType
 import org.slf4j.LoggerFactory
 import repositories.VatSchemeRepository
@@ -77,28 +77,12 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
   def retrieveVatSchemeByInternalId(internalId: String): ServiceResult[VatScheme] =
     OptionT(registrationRepository.retrieveVatSchemeByInternalId(internalId)).toRight(ResourceNotFound(internalId))
 
-  def deleteVatScheme(regId: String, validStatuses: VatRegStatus.Value*): Future[Boolean] = {
-    for {
-      someDocument <- registrationRepository.retrieveVatScheme(regId)
-      document <- someDocument.fold(throw new MissingRegDocument(regId))(doc => Future.successful(doc))
-      deleted <- if (validStatuses.contains(document.status)) {
-        registrationRepository.deleteVatScheme(regId)
-      } else {
-        throw new InvalidSubmissionStatus(s"[deleteVatScheme] - VAT reg doc for regId $regId was not deleted as the status was ${document.status}; not ${validStatuses.toString}")
-      }
-    } yield deleted
-  }
-
   def retrieveAcknowledgementReference(regId: String): ServiceResult[String] = {
     retrieveVatScheme(regId).subflatMap(_.acknowledgementReference.toRight(ResourceNotFound("AcknowledgementId")))
   }
 
   def getPartyType(regId: String): Future[Option[PartyType]] = {
     registrationRepository.retrieveVatScheme(regId).map(_.flatMap(_.partyType))
-  }
-
-  def getThreshold(regId: String): Future[Option[Threshold]] = {
-    registrationRepository.fetchEligibilitySubmissionData(regId).map(_.map(_.threshold))
   }
 
   def getTurnoverEstimates(regId: String): Future[Option[TurnoverEstimates]] = {

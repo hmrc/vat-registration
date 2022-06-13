@@ -26,8 +26,6 @@ PATCH        /:regId/returns                        controllers.ReturnsControlle
 
 GET          /:regId/acknowledgement-reference      controllers.VatRegistrationController.getAcknowledgementReference(regId: String)
 
-DELETE       /:regId/delete-scheme                  controllers.VatRegistrationController.deleteVatScheme(regId: String)
-
 PUT          /:regID/submit-registration            controllers.VatRegistrationController.submitVATRegistration(regID : String)
 
 GET          /:regId/status                         controllers.VatRegistrationController.getDocumentStatus(regId: String)
@@ -38,17 +36,10 @@ PATCH        /:regId/bank-account                   controllers.VatRegistrationC
 GET         /:regId/sicAndComp                      controllers.SicAndComplianceController.getSicAndCompliance(regId: String)
 PATCH       /:regId/sicAndComp                      controllers.SicAndComplianceController.updateSicAndCompliance(regId: String)
 
-GET         /:regId/business-contact                controllers.BusinessContactController.getBusinessContact(regId: String)
-PATCH       /:regId/business-contact                controllers.BusinessContactController.updateBusinessContact(regId: String)
-
 GET         /:regId/eligibility-data                controllers.EligibilityController.getEligibilityData(regId: String)
 PATCH       /:regId/eligibility-data                controllers.EligibilityController.updateEligibilityData(regId: String)
 
-GET         /:regId/threshold-data                  controllers.VatRegistrationController.getThreshold(regId: String)
 GET         /:regId/turnover-estimates-data         controllers.VatRegistrationController.getTurnoverEstimates(regId: String)
-
-GET         /:regId/applicant-details               controllers.ApplicantDetailsController.getApplicantDetailsData(regId: String)
-PATCH       /:regId/applicant-details               controllers.ApplicantDetailsController.updateApplicantDetailsData(regId: String)
 
 PATCH       /:regId/honesty-declaration             controllers.VatRegistrationController.storeHonestyDeclaration(regId: String)
 

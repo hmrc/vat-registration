@@ -107,41 +107,6 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
 
   }
 
-  "call to deleteVatScheme" should {
-    "return true" when {
-      "the document has been deleted" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Some(testVatScheme)))
-
-        when(mockRegistrationMongoRepository.deleteVatScheme(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(true))
-
-        await(service.deleteVatScheme(testRegId, VatRegStatus.draft)) mustBe true
-      }
-    }
-
-    "throw a MissingRegDoc exception" when {
-      "no reg doc is found" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(None))
-
-        intercept[MissingRegDocument](await(service.deleteVatScheme(testRegId, VatRegStatus.draft)))
-      }
-    }
-
-    "throw an InvalidSubmissionStatus exception" when {
-      "the reg doc status is not valid for cancellation" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        when(mockRegistrationMongoRepository.retrieveVatScheme(ArgumentMatchers.any()))
-          .thenReturn(Future.successful(Some(testVatScheme.copy(status = VatRegStatus.submitted))))
-
-        intercept[InvalidSubmissionStatus](await(service.deleteVatScheme(testRegId, VatRegStatus.draft)))
-      }
-    }
-  }
-
   "call to retrieveAcknowledgementReference" should {
 
     "call to retrieveAcknowledgementReference return AcknowledgementReference from DB" in new Setup {
@@ -161,44 +126,6 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(testVatScheme)))
 
       await(service.getStatus(testRegId)) mustBe VatRegStatus.draft
-    }
-  }
-
-  "call to getThresholds" should {
-    val thresholdPreviousThirtyDays = LocalDate.of(2017, 5, 23)
-    val thresholdInTwelveMonths = LocalDate.of(2017, 7, 16)
-
-    "return nothing if nothing in EligibilityData" in new Setup {
-      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any())).thenReturn(Future.successful(None))
-
-      await(service.getThreshold("regId")) mustBe None
-    }
-
-    "return correct Threshold model" in new Setup {
-      val eligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
-        threshold = Threshold(
-          mandatoryRegistration = true,
-          thresholdInTwelveMonths = Some(thresholdInTwelveMonths),
-          thresholdNextThirtyDays = None,
-          thresholdPreviousThirtyDays = Some(thresholdPreviousThirtyDays)
-        ),
-        exceptionOrExemption = "0",
-        estimates = TurnoverEstimates(123456),
-        partyType = UkCompany,
-        registrationReason = ForwardLook,
-        isTransactor = false
-      )
-
-      val expected: Threshold = Threshold(
-        mandatoryRegistration = true,
-        thresholdPreviousThirtyDays = Some(thresholdPreviousThirtyDays),
-        thresholdInTwelveMonths = Some(thresholdInTwelveMonths),
-        thresholdNextThirtyDays = None
-      )
-
-      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any())).thenReturn(Future.successful(Some(eligibilitySubmissionData)))
-
-      await(service.getThreshold("regId")) mustBe Some(expected)
     }
   }
 

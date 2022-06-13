@@ -35,6 +35,7 @@ class EligibilityController @Inject()(val eligibilityService: EligibilityService
 
   val resourceConn: VatSchemeRepository = eligibilityService.registrationRepository
 
+  //Full eligibility json
   def getEligibilityData(regId: String): Action[AnyContent] = Action.async {
     implicit request =>
       isAuthorised(regId) { authResult =>
