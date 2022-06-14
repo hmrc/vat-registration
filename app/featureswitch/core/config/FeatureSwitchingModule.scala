@@ -25,10 +25,7 @@ import javax.inject.Singleton
 @Singleton
 class FeatureSwitchingModule extends Module with FeatureSwitchRegistry {
 
-  val switches = Seq(
-    StubSubmission,
-    ShortOrgName
-  )
+  val switches = Seq(StubSubmission)
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
     Seq(
@@ -40,9 +37,4 @@ class FeatureSwitchingModule extends Module with FeatureSwitchRegistry {
 case object StubSubmission extends FeatureSwitch {
   override val configName: String = "feature-switch.submission-stub"
   override val displayName: String = "Use stub for Submission to DES"
-}
-
-case object ShortOrgName extends FeatureSwitch {
-  val configName: String = "feature-switch.short-org-name-be"
-  val displayName: String = "Enable Short Org Name submission changes"
 }

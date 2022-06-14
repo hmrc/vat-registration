@@ -16,7 +16,7 @@
 
 package services.submission
 
-import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
+import featureswitch.core.config.FeatureSwitching
 import models._
 import models.api.{Address, Partner, VatScheme}
 import models.submission._
@@ -28,7 +28,7 @@ import utils.StringNormaliser
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class EntitiesBlockBuilder @Inject()() extends FeatureSwitching {
+class EntitiesBlockBuilder @Inject()() {
 
   private val addPartnerAction = "1"
 
@@ -124,15 +124,14 @@ class EntitiesBlockBuilder @Inject()() extends FeatureSwitching {
 
   private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String]): JsObject =
     (orgName.map(StringNormaliser.normaliseString), optShortOrgName.map(StringNormaliser.normaliseString)) match {
-      case (Some(orgName), Some(shortOrgName)) if isEnabled(ShortOrgName) => jsonObject(
+      case (Some(orgName), Some(shortOrgName)) => jsonObject(
         "shortOrgName" -> shortOrgName,
         "organisationName" -> orgName
       )
-      case (Some(orgName), None) if isEnabled(ShortOrgName) => jsonObject(
+      case (Some(orgName), None) => jsonObject(
         "shortOrgName" -> orgName,
         "organisationName" -> orgName
       )
-      case (Some(orgName), _) => jsonObject("shortOrgName" -> orgName)
       case _ => throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
     }
 

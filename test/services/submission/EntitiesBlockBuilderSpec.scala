@@ -223,7 +223,8 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
           "customerIdentification" -> Json.obj(
             "customerID" -> Json.toJson(testLtdCoEntity.identifiers),
-            "shortOrgName" -> testCompanyName
+            "shortOrgName" -> testCompanyName,
+            "organisationName" -> testCompanyName
           ),
           "businessContactDetails" -> Json.obj(
             "address" -> Json.obj(

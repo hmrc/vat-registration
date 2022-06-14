@@ -49,6 +49,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
       "ctUTR" -> testCtUtr
     ),
     "shortOrgName" -> testCompanyName,
+    "organisationName" -> testCompanyName,
     "dateOfBirth" -> testDateOfBirth,
     "tradingName" -> testTradingName
   )

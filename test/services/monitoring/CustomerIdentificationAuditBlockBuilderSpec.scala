@@ -36,6 +36,7 @@ class CustomerIdentificationAuditBlockBuilderSpec extends VatRegSpec with VatReg
               "ctUTR" -> testUtr
             ),
             "shortOrgName" -> testCompanyName,
+            "organisationName" -> testCompanyName,
             "dateOfBirth" -> testDateOfBirth,
             "tradingName" -> testTradingName
           )
@@ -53,6 +54,7 @@ class CustomerIdentificationAuditBlockBuilderSpec extends VatRegSpec with VatReg
               "ctUTR" -> testUtr
             ),
             "shortOrgName" -> testCompanyName,
+            "organisationName" -> testCompanyName,
             "dateOfBirth" -> testDateOfBirth
           )
         }

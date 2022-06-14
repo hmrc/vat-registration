@@ -38,6 +38,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       //No prime BP safe ID included as not registered on ETMP
       "shortOrgName" -> testCompanyName,
+      "organisationName" -> testCompanyName,
       //name, dateOfBirth not included as company
       "tradingName" -> testTradingDetails.tradingName.get
     ),
@@ -362,6 +363,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         )
       ),
       "shortOrgName" -> testCompanyName,
+      "organisationName" -> testCompanyName,
       "tradingName" -> testTradingDetails.tradingName.get
     ),
     "contact" -> Json.obj(
@@ -888,7 +890,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
         )
       ),
       "tradingName" -> testTradingDetails.tradingName.get,
-      "shortOrgName" -> testCompanyName
+      "shortOrgName" -> testCompanyName,
+      "organisationName" -> testCompanyName
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(

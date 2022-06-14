@@ -16,7 +16,7 @@
 
 package services.monitoring
 
-import featureswitch.core.config.{FeatureSwitching, ShortOrgName}
+import featureswitch.core.config.FeatureSwitching
 import models.api.{ApplicantDetails, VatScheme}
 import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.JsValue
@@ -27,7 +27,7 @@ import javax.inject.Singleton
 
 // scalastyle:off
 @Singleton
-class CustomerIdentificationAuditBlockBuilder extends FeatureSwitching {
+class CustomerIdentificationAuditBlockBuilder {
 
   def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsValue = {
     (vatScheme.applicantDetails, vatScheme.tradingDetails) match {
@@ -60,15 +60,14 @@ class CustomerIdentificationAuditBlockBuilder extends FeatureSwitching {
           optional("tradingName" -> tradingDetails.tradingName)
         ) ++ {
           (tradingDetails.shortOrgName, getCompanyName(applicantDetails)) match {
-            case (Some(shortOrgName), Some(companyName)) if isEnabled(ShortOrgName) => jsonObject(
+            case (Some(shortOrgName), Some(companyName)) => jsonObject(
               "shortOrgName" -> shortOrgName,
               "organisationName" -> companyName
             )
-            case (None, optCompanyName) if isEnabled(ShortOrgName) => jsonObject(
+            case (None, optCompanyName) => jsonObject(
               optional("shortOrgName" -> optCompanyName),
               optional("organisationName" -> optCompanyName)
             )
-            case (_, optCompanyName) => jsonObject(optional("shortOrgName" -> optCompanyName))
           }
         }
       case (None, _) =>
