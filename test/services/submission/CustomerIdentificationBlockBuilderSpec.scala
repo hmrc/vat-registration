@@ -45,6 +45,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
        |    "tradingName": "trading-name",
        |    "tradersPartyType": "50",
        |    "shortOrgName": "testCompanyName",
+       |    "organisationName": "testCompanyName",
        |    "customerID": [
        |      {
        |        "idValue": "testUtr",

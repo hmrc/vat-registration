@@ -108,6 +108,9 @@ components:
         shortOrgName:
           type: string
           pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
+        organisationName:
+          type: string
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         name:
           $ref: '#/components/schemas/nameType'
         dateOfBirth:

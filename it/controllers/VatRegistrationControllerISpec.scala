@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMat
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import connectors.stubs.SdesNotifyStub.stubSdesNotification
 import enums.VatRegStatus
-import featureswitch.core.config.{FeatureSwitching, ShortOrgName, StubSubmission}
+import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
 import models.api._
 import models.nonrepudiation.NonRepudiationMetadata
@@ -160,7 +160,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   override def afterEach(): Unit = {
     super.afterEach()
-    disable(ShortOrgName)
   }
 
   "POST /new" should {
@@ -312,8 +311,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful with an unregistered business partner and a short org name different from companyName" in new Setup {
-        enable(ShortOrgName)
-
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner.copy(
@@ -477,7 +474,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a General Partnership" should {
       "return OK if the submission is successful where the submission contains a Sole Trader partner" in new Setup {
-        enable(ShortOrgName)
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(generalPartnershipWithSoleTraderPartner, repo.insert)
@@ -501,7 +497,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful where the submission contains a UK Company partner" in new Setup {
-        enable(ShortOrgName)
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(generalPartnershipWithUkCompanyPartner, repo.insert)
@@ -527,7 +522,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a Limited Partnership" should {
       "return OK if the submission is successful where the submission contains a Scottish Partnership partner" in new Setup {
-        enable(ShortOrgName)
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(limitedPartnershipWithScotPartnershipPartner, repo.insert)
@@ -553,7 +547,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a Limited Liability Partnership" should {
       "return OK if the submission is successful" in new Setup {
-        enable(ShortOrgName)
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(limitedLiabilityPartnership, repo.insert)
@@ -574,7 +567,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a UK Company registering a VAT Group" should {
       "return OK if the submission is successful" in new Setup {
-        enable(ShortOrgName)
         given
           .user.isAuthorised
           .regRepo.insertIntoDb(vatGroupVatScheme, repo.insert)
@@ -600,7 +592,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is registering with a TOGC reg reason" should {
       "return OK if the submission is successful" in new Setup {
-        enable(ShortOrgName)
 
         lazy val togcBlock: TogcCole = TogcCole(
           dateOfTransfer = testDate,
