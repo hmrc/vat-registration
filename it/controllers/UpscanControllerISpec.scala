@@ -5,7 +5,6 @@ import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
 import itutil.IntegrationStubbing
 import models.api.{AttachmentType, InProgress, PrimaryIdentityEvidence, UpscanDetails}
 import org.scalatest.MustMatchers
-import org.scalatest.MustMatchers.{a, convertToAnyMustWrapper}
 import play.api.libs.json.{JsArray, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._

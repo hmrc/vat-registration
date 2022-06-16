@@ -21,7 +21,7 @@ import helpers.VatRegSpec
 import mocks.{MockUpscanMongoRepository, MockVatSchemeRepository}
 import models.GroupRegistration
 import models.api._
-import models.submission.{LtdLiabilityPartnership, NETP, Partnership}
+import models.submission.{LtdLiabilityPartnership, Partnership}
 import play.api.test.Helpers._
 
 import scala.concurrent.Future

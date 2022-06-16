@@ -91,7 +91,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
 
   "buildSubscriptionBlock" should {
     val testDate = LocalDate.of(2020, 2, 2)
-    val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
+    val testReturns = Returns(None, None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
     val otherActivities = List(
       SicCode("00002", "testBusiness 2", "testDetails"),
       SicCode("00003", "testBusiness 3", "testDetails"),
@@ -120,11 +120,10 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
     "build a minimal subscription json when minimum data is provided" in {
       val vatScheme = testVatScheme.copy(
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          exceptionOrExemption = "1"
+          threshold = Threshold(mandatoryRegistration = false, None, None, None)
         )),
         sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty)),
-        returns = Some(testReturns),
+        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
         flatRateScheme = Some(validEmptyFlatRateScheme)
       )
 
@@ -136,11 +135,10 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
     "build a minimal subscription json when no Flat Rate Scheme is provided" in {
       val vatScheme = testVatScheme.copy(
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          exceptionOrExemption = "1"
+          threshold = Threshold(mandatoryRegistration = false, None, None, None)
         )),
         sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty)),
-        returns = Some(testReturns),
+        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
         flatRateScheme = None
       )
 

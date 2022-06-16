@@ -3,7 +3,7 @@ package controllers
 
 import itutil.IntegrationStubbing
 import models.api._
-import models.submission.{PartyType, ScotPartnership, UkCompany}
+import models.submission.UkCompany
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 

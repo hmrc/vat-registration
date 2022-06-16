@@ -41,6 +41,8 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
   val testZeroRatedSupplies = 10000.5
 
   val testAnnualReturns: Returns = Returns(
+    None,
+    None,
     Some(testZeroRatedSupplies),
     reclaimVatOnMostReturns = false,
     Annual,

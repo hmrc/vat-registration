@@ -46,7 +46,7 @@ class SubscriptionBlockBuilder @Inject()() {
           conditional(returns.startDate.exists(date => !eligibilityData.calculatedDate.contains(date)))(
             "voluntaryOrEarlierDate" -> returns.startDate
           ),
-          "exemptionOrException" -> eligibilityData.exceptionOrExemption
+          "exemptionOrException" -> VatScheme.exceptionOrExemption(eligibilityData, returns)
         ),
         optional("corporateBodyRegistered" -> Option(applicantDetails.entity).collect {
           case IncorporatedEntity(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
@@ -71,11 +71,20 @@ class SubscriptionBlockBuilder @Inject()() {
           optional("FHDDSWarehouseNumber" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseNumber)),
           optional("nameOfWarehouse" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
         ),
-        "yourTurnover" -> (jsonObject(
-          "turnoverNext12Months" -> eligibilityData.estimates.turnoverEstimate,
-          "zeroRatedSupplies" -> returns.zeroRatedSupplies,
-          "VATRepaymentExpected" -> returns.reclaimVatOnMostReturns
-        ) ++ {
+        "yourTurnover" -> (
+          jsonObject(
+            "turnoverNext12Months" ->
+              returns.turnoverEstimate.getOrElse(
+                BigDecimal(
+                  eligibilityData.estimates.map(_.turnoverEstimate)
+                    .getOrElse(
+                      throw new InternalServerException("[SubscriptionBlockBuilder] turnoverEstimate is missing")
+                    )
+                )
+              ),
+            "zeroRatedSupplies" -> returns.zeroRatedSupplies,
+            "VATRepaymentExpected" -> returns.reclaimVatOnMostReturns
+          ) ++ {
           returns.northernIrelandProtocol match {
             case Some(NIPCompliance(goodsToEU, goodsFromEU)) => jsonObject(
               conditional(goodsFromEU.answer)("goodsFromOtherEU" -> goodsFromEU.value),

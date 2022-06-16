@@ -21,8 +21,8 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.{MockAttachmentsService, MockEmailConnector, MockVatSchemeRepository}
 import models.api.{Attachments, EmailMethod}
-import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier, InternalServerException}
 import play.api.test.Helpers._
+import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier}
 
 import scala.concurrent.Future
 

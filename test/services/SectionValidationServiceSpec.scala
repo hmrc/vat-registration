@@ -16,7 +16,6 @@
 
 package services
 
-import auth.CryptoSCRS
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockRegistrationService
@@ -86,8 +85,7 @@ class SectionValidationServiceSpec extends VatRegSpec
       "return InvalidSection when required fields is missing" in {
         val res = await(Service.validate(testInternalId, testRegId, EligibilitySectionId, Json.obj()))
 
-
-        res mustBe Left(InvalidSection(Seq("/exceptionOrExemption", "/registrationReason", "/threshold", "/estimates", "/partyType")))
+        res mustBe Left(InvalidSection(Seq("/threshold", "/partyType", "/registrationReason", "/exceptionOrExemption")))
       }
     }
     "the section is FlatRateScheme (legacy)" must {

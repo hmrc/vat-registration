@@ -20,6 +20,7 @@ import models.api.VatScheme
 import models.api.returns.Annual
 import models.{BackwardLook, ForwardLook, IntendingTrader, NonUk, SuppliesOutsideUk, TransferOfAGoingConcern, Voluntary}
 import play.api.libs.json.JsObject
+import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
@@ -37,7 +38,14 @@ class AnnualAccountingAuditBlockBuilder @Inject()() {
               "paymentMethod" -> details.paymentMethod,
               "annualStagger" -> returns.staggerStart,
               "paymentFrequency" -> details.paymentFrequency,
-              "estimatedTurnover" -> eligibilitySubmissionData.estimates.turnoverEstimate,
+              "estimatedTurnover" ->
+                returns.turnoverEstimate.getOrElse(
+                  BigDecimal(eligibilitySubmissionData.estimates.map(_.turnoverEstimate)
+                    .getOrElse(
+                      throw new InternalServerException("[AnnualAccountingAuditBlockBuilder] turnoverEstimate is missing")
+                    )
+                  )
+                ),
               "reqStartDate" -> {
                 eligibilitySubmissionData.registrationReason match {
                   case Voluntary | SuppliesOutsideUk | IntendingTrader => returns.startDate

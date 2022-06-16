@@ -33,7 +33,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
   object TestService extends SubscriptionBlockBuilder
 
   override lazy val testDate = LocalDate.of(2020, 2, 2)
-  override lazy val testReturns = Returns(Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
+  override lazy val testReturns = Returns(None, None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
   lazy val otherActivities = List(
     SicCode("00002", "testBusiness 2", "testDetails"),
     SicCode("00003", "testBusiness 3", "testDetails"),
@@ -255,10 +255,9 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a minimal subscription json when minimum data is provided and user is voluntary" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns),
+        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          exceptionOrExemption = "1",
           registrationReason = Voluntary
         )),
         flatRateScheme = Some(validEmptyFlatRateScheme),
@@ -273,10 +272,9 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a minimal subscription json when no Flat Rate Scheme is provided" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns),
+        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          exceptionOrExemption = "1",
           registrationReason = Voluntary
         )),
         sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty))
@@ -290,10 +288,9 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a minimal subscription json with other business involvements" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns),
+        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          exceptionOrExemption = "1",
           registrationReason = Voluntary
         )),
         sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty, otherBusinessInvolvement = Some(true))),
