@@ -16,7 +16,6 @@
 
 package services.monitoring
 
-import featureswitch.core.config.FeatureSwitching
 import models._
 import models.api.{Address, Partner, VatScheme}
 import models.submission._

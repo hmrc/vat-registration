@@ -62,6 +62,8 @@ trait ITFixtures {
   val testVrn = "testVrn"
 
   val testReturns: Returns = Returns(
+    turnoverEstimate = None,
+    appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
     returnsFrequency = Quarterly,
@@ -86,6 +88,8 @@ trait ITFixtures {
   )
 
   val testAASReturns: Returns = Returns(
+    turnoverEstimate = None,
+    appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
     returnsFrequency = Annual,
@@ -255,7 +259,8 @@ trait ITFixtures {
   val testEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = testThreshold,
     exceptionOrExemption = "0",
-    estimates = TurnoverEstimates(123456),
+    appliedForException = None,
+    estimates = Some(TurnoverEstimates(123456)),
     partyType = UkCompany,
     registrationReason = ForwardLook,
     isTransactor = false
@@ -264,7 +269,8 @@ trait ITFixtures {
   val testEligibilitySubmissionDataSoleTrader: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = testThreshold,
     exceptionOrExemption = "0",
-    estimates = TurnoverEstimates(123456),
+    appliedForException = None,
+    estimates = Some(TurnoverEstimates(123456)),
     partyType = Individual,
     registrationReason = ForwardLook,
     isTransactor = false
@@ -528,6 +534,8 @@ trait ITFixtures {
   }
 
   val testNetpReturns: Returns = Returns(
+    turnoverEstimate = None,
+    appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
     returnsFrequency = Quarterly,
@@ -580,7 +588,8 @@ trait ITFixtures {
   val testNetpEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = Threshold(mandatoryRegistration = true, None, None, None, Some(testDate)),
     exceptionOrExemption = "0",
-    estimates = TurnoverEstimates(123456),
+    appliedForException = None,
+    estimates = Some(TurnoverEstimates(123456)),
     partyType = NETP,
     registrationReason = NonUk,
     isTransactor = false

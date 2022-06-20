@@ -18,10 +18,9 @@ package repository
 
 import common.exceptions._
 import enums.VatRegStatus
-import itutil.{FakeTimeMachine, FutureAssertions, ITFixtures, IntegrationStubbing, MongoBaseSpec}
+import itutil._
 import models.api._
 import models.api.returns._
-import models.submission.UkCompany
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -326,7 +325,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     val otherUsersVatScheme = vatSchemeWithEligibilityDataJson(otherRegId)
     val dateValue = LocalDate of(1990, 10, 10)
     val startDate = dateValue
-    val returns: Returns = Returns(Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None, None, None)
+    val returns: Returns = Returns(None, None, Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None, None, None)
     val vatSchemeWithEligibilityDataWithReturns = Json.parse(
       s"""
          |{

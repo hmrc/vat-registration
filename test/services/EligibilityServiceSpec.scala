@@ -125,7 +125,7 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
       when(mockRegistrationMongoRepository.updateEligibilityData(any(), any()))
         .thenReturn(Future.successful(eligibilityData))
       when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any()))
-        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(estimates = TurnoverEstimates(1500000L)))))
+        .thenReturn(Future.successful(Some(testEligibilitySubmissionData.copy(estimates = Some(TurnoverEstimates(1500000L))))))
       when(mockRegistrationMongoRepository.retrieveVatScheme(any()))
         .thenReturn(Future.successful(Some(vatSchemeWithFRSandAAS)))
       when(mockRegistrationMongoRepository.insertVatScheme(ArgumentMatchers.eq(vatSchemeWithoutFRSorAAS)))

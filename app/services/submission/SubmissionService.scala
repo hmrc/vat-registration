@@ -172,14 +172,17 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                       vatSubmissionStatus: VatSubmissionResponse): Future[Unit] = {
 
     val agentOrTransactor = (vatScheme.transactorDetails.map(_.personalDetails), vatScheme.eligibilitySubmissionData.map(_.isTransactor)) match {
-      case (Some(PersonalDetails(_, _, _, Some(arn), _, _)), Some(true)) => Some("AgentFlow")
+      case (Some(PersonalDetails(_, _, _, Some(_), _, _)), Some(true)) => Some("AgentFlow")
       case (Some(_), Some(true)) => Some("TransactorFlow")
       case _ => None
     }
 
-    val exceptionOrExemption = vatScheme.eligibilitySubmissionData.map(_.exceptionOrExemption).flatMap {
-      case `exceptionKey` => Some("Exception")
-      case `exemptionKey` => Some("Exemption")
+    val exceptionOrExemption = (vatScheme.eligibilitySubmissionData, vatScheme.returns) match {
+      case (Some(eligibilityData), Some(returns)) => VatScheme.exceptionOrExemption(eligibilityData, returns) match {
+        case VatScheme.exceptionKey => Some("Exception")
+        case VatScheme.exemptionKey => Some("Exemption")
+        case _ => None
+      }
       case _ => None
     }
     val appliedForAas = if (vatScheme.returns.map(_.returnsFrequency).contains(Annual)) Some("AnnualAccountingScheme") else None

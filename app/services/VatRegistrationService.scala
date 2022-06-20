@@ -86,7 +86,7 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
   }
 
   def getTurnoverEstimates(regId: String): Future[Option[TurnoverEstimates]] = {
-    registrationRepository.fetchEligibilitySubmissionData(regId).map(_.map(_.estimates))
+    registrationRepository.fetchEligibilitySubmissionData(regId).map(_.flatMap(_.estimates))
   }
 
   def storeHonestyDeclaration(regId: String, honestyDeclarationStatus: Boolean): Future[Boolean] = {

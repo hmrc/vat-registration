@@ -23,6 +23,7 @@ import models.registration.sections.PartnersSection
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
@@ -53,6 +54,21 @@ case class VatScheme(id: String,
 }
 
 object VatScheme {
+
+  val exceptionKey = "2"
+  val exemptionKey = "1"
+  val nonExceptionOrExemptionKey = "0"
+  def exceptionOrExemption(eligibilityData: EligibilitySubmissionData, returns: Returns): String = {
+    (eligibilityData.appliedForException, returns.appliedForExemption) match {
+      case (Some(true), Some(true)) =>
+        throw new InternalServerException("EligibilitySubmission exception/exemption data is invalid")
+      case (Some(true), _) => exceptionKey
+      case (_, Some(true)) => exemptionKey
+      case (Some(false), Some(false)) => nonExceptionOrExemptionKey
+      // TODO: Merge the below case with the above one when exceptionOrException is removed
+      case (None, None) => eligibilityData.exceptionOrExemption
+    }
+  }
 
   def reads(crypto: Option[CryptoSCRS] = None): Reads[VatScheme] =
     (__ \ "eligibilitySubmissionData" \ "partyType").readNullable[PartyType] flatMap {

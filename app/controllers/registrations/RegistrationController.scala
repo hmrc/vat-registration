@@ -18,15 +18,14 @@ package controllers.registrations
 
 import auth.{Authorisation, AuthorisationResource, CryptoSCRS}
 import models.api.VatScheme
-import play.api.libs.json.{Format, JsError, JsObject, JsSuccess, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.RegistrationService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class RegistrationController @Inject()(val authConnector: AuthConnector,

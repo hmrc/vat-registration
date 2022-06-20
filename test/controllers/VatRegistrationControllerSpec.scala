@@ -32,9 +32,8 @@ import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
 import repositories.VatSchemeRepository
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
-import java.time.LocalDate
 import scala.concurrent.Future
 
 class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationService {

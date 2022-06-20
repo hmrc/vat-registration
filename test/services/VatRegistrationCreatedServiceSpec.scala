@@ -20,16 +20,14 @@ import common.exceptions._
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import models.Voluntary
 import models.api._
 import models.submission.UkCompany
-import models.{ForwardLook, Voluntary}
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 
-import java.time.LocalDate
 import scala.concurrent.Future
 
 class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationFixture {
@@ -142,7 +140,8 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
           mandatoryRegistration = false
         ),
         exceptionOrExemption = "0",
-        estimates = TurnoverEstimates(10001),
+        appliedForException = None,
+        estimates = Some(TurnoverEstimates(10001)),
         partyType = UkCompany,
         registrationReason = Voluntary,
         isTransactor = false

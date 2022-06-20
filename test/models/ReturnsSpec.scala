@@ -34,6 +34,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val testMonthlyReturns: Returns = Returns(
+    None,
+    None,
     Some(testTurnover),
     reclaimVatOnMostReturns = true,
     Monthly,
@@ -45,6 +47,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val testQuarterlyReturns: Returns = Returns(
+    None,
+    None,
     Some(testTurnover),
     reclaimVatOnMostReturns = false,
     Quarterly,
@@ -56,6 +60,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val testAnnualReturns: Returns = Returns(
+    None,
+    None,
     Some(testTurnover),
     reclaimVatOnMostReturns = false,
     Annual,

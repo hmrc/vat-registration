@@ -18,7 +18,6 @@ package connectors.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import models.nonrepudiation.NonRepudiationAttachment
 import play.api.libs.json.{JsObject, JsValue, Json}
 
 object NonRepudiationStub {

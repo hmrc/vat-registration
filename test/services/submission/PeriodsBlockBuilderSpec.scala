@@ -28,6 +28,8 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
   object TestBuilder extends PeriodsBlockBuilder
 
   val emptyReturns: Returns = Returns(
+    turnoverEstimate = None,
+    appliedForExemption = None,
     zeroRatedSupplies = None,
     reclaimVatOnMostReturns = false,
     returnsFrequency = Quarterly,

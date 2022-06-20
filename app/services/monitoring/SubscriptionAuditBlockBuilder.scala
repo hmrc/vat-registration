@@ -41,7 +41,7 @@ class SubscriptionAuditBlockBuilder {
           conditional(returns.startDate.exists(date => !eligibilityData.calculatedDate.contains(date)))(
             "voluntaryOrEarlierDate" -> returns.startDate
           ),
-          "exemptionOrException" -> eligibilityData.exceptionOrExemption
+          "exemptionOrException" -> VatScheme.exceptionOrExemption(eligibilityData, returns)
         ),
         "businessActivities" -> jsonObject(
           "description" -> sicAndCompliance.businessDescription,
@@ -59,7 +59,14 @@ class SubscriptionAuditBlockBuilder {
           optional("nameOfWarehouse" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
         ),
         "yourTurnover" -> (jsonObject(
-          "turnoverNext12Months" -> eligibilityData.estimates.turnoverEstimate,
+          "turnoverNext12Months" ->
+            returns.turnoverEstimate.getOrElse(
+              BigDecimal(
+                eligibilityData.estimates.map(_.turnoverEstimate).getOrElse(
+                    throw new InternalServerException("[SubscriptionAuditBlockBuilder] turnoverEstimate is missing")
+                )
+              )
+            ),
           "zeroRatedSupplies" -> returns.zeroRatedSupplies,
           "vatRepaymentExpected" -> returns.reclaimVatOnMostReturns
         ) ++ {

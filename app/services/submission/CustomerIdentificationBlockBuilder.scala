@@ -37,9 +37,9 @@ class CustomerIdentificationBlockBuilder @Inject()() {
         jsonObject(
           "tradersPartyType" -> {
             eligibilityData match {
-              case EligibilitySubmissionData(_, _, _, _, GroupRegistration, _, _, _) => TaxGroups
-              case EligibilitySubmissionData(_, _, _, NETP, _, _, _, _) => Individual
-              case EligibilitySubmissionData(_, _, _, partyType, _, _, _, _) => partyType
+              case EligibilitySubmissionData(_, _, _, _, _, GroupRegistration, _, _, _) => TaxGroups
+              case EligibilitySubmissionData(_, _, _, _, NETP, _, _, _, _) => Individual
+              case EligibilitySubmissionData(_, _, _, _, partyType, _, _, _, _) => partyType
             }
           },
           optional("tradingName" -> tradingDetails.tradingName.map(StringNormaliser.normaliseString))

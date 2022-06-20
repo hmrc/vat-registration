@@ -77,7 +77,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           thresholdPreviousThirtyDays = Some(LocalDate.now())
         ),
         exceptionOrExemption = "0",
-        estimates = TurnoverEstimates(123456),
+        appliedForException = None,
+        estimates = Some(TurnoverEstimates(123456)),
         partyType = UkCompany,
         registrationReason = ForwardLook,
         togcCole = Some(TogcCole(
@@ -133,7 +134,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             mandatoryRegistration = false
           ),
           exceptionOrExemption = "0",
-          estimates = TurnoverEstimates(1234),
+          appliedForException = None,
+          estimates = Some(TurnoverEstimates(1234)),
           partyType = UkCompany,
           registrationReason = TransferOfAGoingConcern,
           togcCole = Some(TogcCole(
@@ -181,7 +183,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             thresholdOverseas = Some(LocalDate.now)
           ),
           exceptionOrExemption = "0",
-          estimates = TurnoverEstimates(123456),
+          appliedForException = None,
+          estimates = Some(TurnoverEstimates(123456)),
           partyType = UkCompany,
           registrationReason = NonUk,
           isTransactor = false,
@@ -222,7 +225,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             thresholdPreviousThirtyDays = Some(LocalDate.now)
           ),
           exceptionOrExemption = "0",
-          estimates = TurnoverEstimates(123456),
+          appliedForException = None,
+          estimates = Some(TurnoverEstimates(123456)),
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
@@ -263,7 +267,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             thresholdNextThirtyDays = Some(LocalDate.now)
           ),
           exceptionOrExemption = "0",
-          estimates = TurnoverEstimates(123456),
+          appliedForException = None,
+          estimates = Some(TurnoverEstimates(123456)),
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
@@ -304,7 +309,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             thresholdInTwelveMonths = Some(LocalDate.now)
           ),
           exceptionOrExemption = "0",
-          estimates = TurnoverEstimates(123456),
+          appliedForException = None,
+          estimates = Some(TurnoverEstimates(123456)),
           partyType = UkCompany,
           registrationReason = BackwardLook,
           isTransactor = false,
@@ -344,7 +350,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           thresholdPreviousThirtyDays = Some(LocalDate.now())
         ),
         exceptionOrExemption = "0",
-        estimates = TurnoverEstimates(123456),
+        appliedForException = None,
+        estimates = Some(TurnoverEstimates(123456)),
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false,
@@ -365,7 +372,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           thresholdPreviousThirtyDays = Some(LocalDate.now())
         ),
         exceptionOrExemption = "0",
-        estimates = TurnoverEstimates(123456),
+        appliedForException = None,
+        estimates = Some(TurnoverEstimates(123456)),
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false,

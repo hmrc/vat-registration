@@ -2,12 +2,9 @@
 package connectors
 
 import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
-import itutil.{FakeIdGenerator, FakeTimeMachine, IntegrationStubbing}
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
+import itutil.IntegrationStubbing
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers._
-import utils.{IdGenerator, TimeMachine}
 
 class EmailConnectorISpec extends IntegrationStubbing {
 

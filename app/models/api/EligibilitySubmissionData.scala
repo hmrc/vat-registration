@@ -26,7 +26,8 @@ import java.time.LocalDate
 
 case class EligibilitySubmissionData(threshold: Threshold,
                                      exceptionOrExemption: String,
-                                     estimates: TurnoverEstimates,
+                                     appliedForException: Option[Boolean],
+                                     estimates: Option[TurnoverEstimates],
                                      partyType: PartyType,
                                      registrationReason: RegistrationReason,
                                      togcCole: Option[TogcCole] = None,
@@ -62,16 +63,18 @@ object EligibilitySubmissionData {
               throw new InternalServerException("[EligibilitySubmissionData][eligibilityReads] eligibility returned invalid exception/exemption data")
           }
         ) and
-        json.validate[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads) and
+        (json \ "vatRegistrationException").validateOpt[Boolean] and
+        json.validateOpt[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads).orElse(JsSuccess(None)) and
         (json \ "businessEntity").validate[PartyType] and
         (json \ "registrationReason").validateOpt[String] and
         (json \ "registeringBusiness").validate[String] and
         json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None)) and
         (json \ "currentlyTrading").validateOpt[Boolean]
-      ) ((threshold, exceptionOrException, turnoverEstimates, businessEntity, registrationReason, registeringBusiness, optTogcCole, optCurrentlyTrading) =>
+      ) ((threshold, exceptionOrException, exception, turnoverEstimates, businessEntity, registrationReason, registeringBusiness, optTogcCole, optCurrentlyTrading) =>
       EligibilitySubmissionData(
         threshold,
         exceptionOrException,
+        exception,
         turnoverEstimates,
         businessEntity,
         registrationReason match {
@@ -115,7 +118,8 @@ object EligibilitySubmissionData {
   implicit val format: Format[EligibilitySubmissionData] = (
     (__ \ "threshold").format[Threshold] and
       (__ \ "exceptionOrExemption").format[String] and
-      (__ \ "estimates").format[TurnoverEstimates] and
+      (__ \ "appliedForException").formatNullable[Boolean] and
+      (__ \ "estimates").formatNullable[TurnoverEstimates] and
       (__ \ "partyType").format[PartyType] and
       (__ \ "registrationReason").format[RegistrationReason] and
       (__ \ "togcBlock").formatNullable[TogcCole] and

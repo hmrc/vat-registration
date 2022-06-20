@@ -16,13 +16,12 @@
 
 package services
 
-import models.api.EligibilitySubmissionData.{exceptionKey, exemptionKey}
 import models.api.{EligibilitySubmissionData, VatScheme}
 import play.api.Logging
 import play.api.libs.json.{JsObject, JsResultException}
 import repositories.VatSchemeRepository
 import utils.EligibilityDataJsonUtils
-import utils.JsonUtils.{jsonObject, optional}
+import utils.JsonUtils.jsonObject
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,19 +53,12 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
   private def logEligibilityPayload(regId: String,
                                     eligibilitySubmissionData: EligibilitySubmissionData): Future[Unit] = {
 
-    val exceptionOrExemption = eligibilitySubmissionData.exceptionOrExemption match {
-      case `exceptionKey` => Some("Exception")
-      case `exemptionKey` => Some("Exemption")
-      case _ => None
-    }
-
     logger.info(jsonObject(
       "logInfo" -> "EligibilityPayloadLog",
       "regId" -> regId,
       "partyType" -> eligibilitySubmissionData.partyType.toString,
       "regReason" -> eligibilitySubmissionData.registrationReason.toString,
-      "isTransactor" -> eligibilitySubmissionData.isTransactor,
-      optional("exceptionOrExemption" -> exceptionOrExemption)
+      "isTransactor" -> eligibilitySubmissionData.isTransactor
     ).toString())
 
     Future.successful()
@@ -81,7 +73,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
     registrationRepository.retrieveVatScheme(regId).flatMap {
       case Some(vatScheme) =>
         oldEligibilityData match {
-          case EligibilitySubmissionData(_, _, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
+          case EligibilitySubmissionData(_, _, _, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
             registrationRepository.insertVatScheme(vatScheme.copy(
               tradingDetails = None,
               returns = None,
@@ -99,8 +91,8 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               otherBusinessInvolvements = None
             ))
 
-          case EligibilitySubmissionData(_, _, oldTurnoverEstimates, _, _, _, oldTransactorFlag, _)
-            if !oldTurnoverEstimates.equals(eligibilityData.estimates) || !oldTransactorFlag.equals(eligibilityData.isTransactor) =>
+          case EligibilitySubmissionData(_, _, _, Some(oldTurnoverEstimates), _, _, _, oldTransactorFlag, _)
+            if !eligibilityData.estimates.map(_.turnoverEstimate).exists(oldTurnoverEstimates.turnoverEstimate.equals) || !oldTransactorFlag.equals(eligibilityData.isTransactor) =>
             val clearedFRS = if (oldTurnoverEstimates.turnoverEstimate > 150000L) {
               None
             } else {
