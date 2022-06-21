@@ -66,7 +66,7 @@ object VatScheme {
       case (_, Some(true)) => exemptionKey
       case (Some(false), Some(false)) => nonExceptionOrExemptionKey
       // TODO: Merge the below case with the above one when exceptionOrException is removed
-      case (None, None) => eligibilityData.exceptionOrExemption
+      case _ => eligibilityData.exceptionOrExemption
     }
   }
 
