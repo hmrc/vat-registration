@@ -34,7 +34,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val testMonthlyReturns: Returns = Returns(
-    None,
+    testTurnover,
     None,
     Some(testTurnover),
     reclaimVatOnMostReturns = true,
@@ -47,7 +47,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val testQuarterlyReturns: Returns = Returns(
-    None,
+    testTurnover,
     None,
     Some(testTurnover),
     reclaimVatOnMostReturns = false,
@@ -60,7 +60,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val testAnnualReturns: Returns = Returns(
-    None,
+    testTurnover,
     None,
     Some(testTurnover),
     reclaimVatOnMostReturns = false,
@@ -82,6 +82,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )))
 
   val validMonthlyReturnsJson: JsObject = Json.obj(
+    "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testTurnover,
     "reclaimVatOnMostReturns" -> true,
     "returnsFrequency" -> Json.toJson[ReturnsFrequency](Monthly),
@@ -99,6 +100,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val validQuarterlyReturnsJson: JsObject = Json.obj(
+    "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testTurnover,
     "reclaimVatOnMostReturns" -> false,
     "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
@@ -117,6 +119,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
 
   def validAnnualReturnsJson(startDate: Option[LocalDate] = Some(testDate)): JsObject =
     Json.obj(
+      "turnoverEstimate" -> testTurnover,
       "zeroRatedSupplies" -> testTurnover,
       "reclaimVatOnMostReturns" -> false,
       "returnsFrequency" -> Json.toJson[ReturnsFrequency](Annual),
@@ -138,6 +141,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     )
 
   val invalidReturnsJson: JsObject = Json.obj(
+    "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testTurnover,
     "returnsFrequency" -> "invalidFrequency",
     "staggerStart" -> "invalidStagger",
@@ -158,6 +162,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val validOverseasJson: JsObject = Json.obj(
+    "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testTurnover,
     "reclaimVatOnMostReturns" -> false,
     "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),

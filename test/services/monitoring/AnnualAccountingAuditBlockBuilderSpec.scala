@@ -23,17 +23,17 @@ import play.api.libs.json.{JsObject, Json}
 class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   val annualAccountingAuditBlockJson: JsObject = Json.parse(
-    """
+    s"""
       {"submissionType":"1",
-      |"customerRequest":{
-      |   "paymentMethod":"01",
-      |   "annualStagger":"YA",
-      |   "paymentFrequency":"M",
-      |   "estimatedTurnover":123456,
-      |   "reqStartDate":"2020-10-07"
-      |   }
-      |}
-      |""".stripMargin).as[JsObject]
+       |"customerRequest":{
+       |   "paymentMethod":"01",
+       |   "annualStagger":"YA",
+       |   "paymentFrequency":"M",
+       |   "estimatedTurnover":$testTurnover,
+       |   "reqStartDate":"2020-10-07"
+       |   }
+       |}
+       |""".stripMargin).as[JsObject]
 
   object TestBuilder extends AnnualAccountingAuditBlockBuilder
 

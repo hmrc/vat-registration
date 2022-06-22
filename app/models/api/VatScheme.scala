@@ -61,12 +61,10 @@ object VatScheme {
   def exceptionOrExemption(eligibilityData: EligibilitySubmissionData, returns: Returns): String = {
     (eligibilityData.appliedForException, returns.appliedForExemption) match {
       case (Some(true), Some(true)) =>
-        throw new InternalServerException("EligibilitySubmission exception/exemption data is invalid")
+        throw new InternalServerException("User has applied for both exception and exemption")
       case (Some(true), _) => exceptionKey
       case (_, Some(true)) => exemptionKey
-      case (Some(false), Some(false)) => nonExceptionOrExemptionKey
-      // TODO: Merge the below case with the above one when exceptionOrException is removed
-      case _ => eligibilityData.exceptionOrExemption
+      case _ => nonExceptionOrExemptionKey
     }
   }
 

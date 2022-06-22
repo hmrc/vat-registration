@@ -41,7 +41,7 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
   val testZeroRatedSupplies = 10000.5
 
   val testAnnualReturns: Returns = Returns(
-    None,
+    testTurnover,
     None,
     Some(testZeroRatedSupplies),
     reclaimVatOnMostReturns = false,
@@ -54,6 +54,7 @@ class ReturnsControllerSpec extends VatRegSpec with VatRegistrationFixture {
   )
 
   val validAnnualReturnsJson: JsObject = Json.obj(
+    "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testZeroRatedSupplies,
     "reclaimVatOnMostReturns" -> false,
     "returnsFrequency" -> Json.toJson[ReturnsFrequency](Annual),

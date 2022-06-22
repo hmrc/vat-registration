@@ -30,68 +30,68 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
   object TestService extends SubscriptionAuditBlockBuilder
 
   val fullSubscriptionBlockJson: JsValue = Json.parse(
-    """
-      |{
-      | "overThresholdIn12MonthPeriod": true,
-      | "overThresholdIn12MonthDate": "2020-10-07",
-      | "overThresholdInPreviousMonth": true,
-      | "overThresholdInPreviousMonthDate": "2020-10-07",
-      | "overThresholdInNextMonth": true,
-      | "overThresholdInNextMonthDate": "2020-10-07",
-      | "reasonForSubscription": {
-      |   "voluntaryOrEarlierDate": "2020-02-02",
-      |   "exemptionOrException": "0"
-      | },
-      | "yourTurnover": {
-      |   "vatRepaymentExpected": false,
-      |   "turnoverNext12Months": 123456,
-      |   "zeroRatedSupplies": 12.99
-      | },
-      | "schemes": {
-      |   "startDate": "2018-01-01",
-      |   "flatRateSchemeCategory": "testCategory",
-      |   "flatRateSchemePercentage": 15,
-      |   "limitedCostTrader": false
-      | },
-      | "businessActivities": {
-      |   "sicCodes": {
-      |     "primaryMainCode": "12345",
-      |     "mainCode2": "00002",
-      |     "mainCode3": "00003",
-      |     "mainCode4": "00004"
-      |   },
-      |   "description": "testDescription"
-      | }
-      |}""".stripMargin
+    s"""
+       |{
+       | "overThresholdIn12MonthPeriod": true,
+       | "overThresholdIn12MonthDate": "2020-10-07",
+       | "overThresholdInPreviousMonth": true,
+       | "overThresholdInPreviousMonthDate": "2020-10-07",
+       | "overThresholdInNextMonth": true,
+       | "overThresholdInNextMonthDate": "2020-10-07",
+       | "reasonForSubscription": {
+       |   "voluntaryOrEarlierDate": "2020-02-02",
+       |   "exemptionOrException": "0"
+       | },
+       | "yourTurnover": {
+       |   "vatRepaymentExpected": false,
+       |   "turnoverNext12Months": $testTurnover,
+       |   "zeroRatedSupplies": 12.99
+       | },
+       | "schemes": {
+       |   "startDate": "2018-01-01",
+       |   "flatRateSchemeCategory": "testCategory",
+       |   "flatRateSchemePercentage": 15,
+       |   "limitedCostTrader": false
+       | },
+       | "businessActivities": {
+       |   "sicCodes": {
+       |     "primaryMainCode": "12345",
+       |     "mainCode2": "00002",
+       |     "mainCode3": "00003",
+       |     "mainCode4": "00004"
+       |   },
+       |   "description": "testDescription"
+       | }
+       |}""".stripMargin
   )
 
   val minimalSubscriptionBlockJson: JsValue = Json.parse(
-    """
-      |{
-      | "overThresholdIn12MonthPeriod": false,
-      | "overThresholdInPreviousMonth": false,
-      | "overThresholdInNextMonth": false,
-      | "reasonForSubscription": {
-      |   "voluntaryOrEarlierDate": "2020-02-02",
-      |   "exemptionOrException": "1"
-      | },
-      | "yourTurnover": {
-      |   "vatRepaymentExpected": false,
-      |   "turnoverNext12Months": 123456,
-      |   "zeroRatedSupplies": 12.99
-      | },
-      | "businessActivities": {
-      |   "sicCodes": {
-      |     "primaryMainCode": "12345"
-      |   },
-      |   "description": "testDescription"
-      | }
-      |}""".stripMargin
+    s"""
+       |{
+       | "overThresholdIn12MonthPeriod": false,
+       | "overThresholdInPreviousMonth": false,
+       | "overThresholdInNextMonth": false,
+       | "reasonForSubscription": {
+       |   "voluntaryOrEarlierDate": "2020-02-02",
+       |   "exemptionOrException": "1"
+       | },
+       | "yourTurnover": {
+       |   "vatRepaymentExpected": false,
+       |   "turnoverNext12Months": $testTurnover,
+       |   "zeroRatedSupplies": 12.99
+       | },
+       | "businessActivities": {
+       |   "sicCodes": {
+       |     "primaryMainCode": "12345"
+       |   },
+       |   "description": "testDescription"
+       | }
+       |}""".stripMargin
   )
 
   "buildSubscriptionBlock" should {
     val testDate = LocalDate.of(2020, 2, 2)
-    val testReturns = Returns(None, None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
+    val testReturns = Returns(testTurnover, None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
     val otherActivities = List(
       SicCode("00002", "testBusiness 2", "testDetails"),
       SicCode("00003", "testBusiness 3", "testDetails"),

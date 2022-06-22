@@ -27,17 +27,17 @@ class AnnualAccountingBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
   }
 
   val annualAccountingBlockJson: JsObject = Json.parse(
-    """
+    s"""
       {"submissionType":"1",
-      |"customerRequest":{
-      |   "paymentMethod":"01",
-      |   "annualStagger":"YA",
-      |   "paymentFrequency":"M",
-      |   "estimatedTurnover":123456,
-      |   "reqStartDate":"2020-10-07"
-      |   }
-      |}
-      |""".stripMargin).as[JsObject]
+       |"customerRequest":{
+       |   "paymentMethod":"01",
+       |   "annualStagger":"YA",
+       |   "paymentFrequency":"M",
+       |   "estimatedTurnover":$testTurnover,
+       |   "reqStartDate":"2020-10-07"
+       |   }
+       |}
+       |""".stripMargin).as[JsObject]
 
   "buildAnnualAccountingBlock" should {
     "return the correct json" when {

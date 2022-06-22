@@ -20,14 +20,11 @@ import models._
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
 case class EligibilitySubmissionData(threshold: Threshold,
-                                     exceptionOrExemption: String,
                                      appliedForException: Option[Boolean],
-                                     estimates: Option[TurnoverEstimates],
                                      partyType: PartyType,
                                      registrationReason: RegistrationReason,
                                      togcCole: Option[TogcCole] = None,
@@ -35,10 +32,6 @@ case class EligibilitySubmissionData(threshold: Threshold,
                                      calculatedDate: Option[LocalDate] = None)
 
 object EligibilitySubmissionData {
-  val exceptionKey = "2"
-  val exemptionKey = "1"
-  val nonExceptionOrExemptionKey = "0"
-
   val sellingGoodsAndServices = "selling-goods-and-services"
   val takingOverBusiness = "taking-over-business"
   val changingLegalEntityOfBusiness = "changing-legal-entity"
@@ -51,31 +44,16 @@ object EligibilitySubmissionData {
   val eligibilityReads: Reads[EligibilitySubmissionData] = Reads { json =>
     (
       json.validate[Threshold](Threshold.eligibilityDataJsonReads) and
-        (
-          (json \ "vatRegistrationException").validateOpt[Boolean] and
-            (json \ "vatExemption").validateOpt[Boolean]
-          ) ((exception, exemption) =>
-          (exception.contains(true), exemption.contains(true)) match {
-            case (excepted, exempt) if !excepted && !exempt => nonExceptionOrExemptionKey
-            case (excepted, _) if excepted => exceptionKey
-            case (_, exempt) if exempt => exemptionKey
-            case (_, _) =>
-              throw new InternalServerException("[EligibilitySubmissionData][eligibilityReads] eligibility returned invalid exception/exemption data")
-          }
-        ) and
         (json \ "vatRegistrationException").validateOpt[Boolean] and
-        json.validateOpt[TurnoverEstimates](TurnoverEstimates.eligibilityDataJsonReads).orElse(JsSuccess(None)) and
         (json \ "businessEntity").validate[PartyType] and
         (json \ "registrationReason").validateOpt[String] and
         (json \ "registeringBusiness").validate[String] and
         json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None)) and
         (json \ "currentlyTrading").validateOpt[Boolean]
-      ) ((threshold, exceptionOrException, exception, turnoverEstimates, businessEntity, registrationReason, registeringBusiness, optTogcCole, optCurrentlyTrading) =>
+      ) ((threshold, exception, businessEntity, registrationReason, registeringBusiness, optTogcCole, optCurrentlyTrading) =>
       EligibilitySubmissionData(
         threshold,
-        exceptionOrException,
         exception,
-        turnoverEstimates,
         businessEntity,
         registrationReason match {
           case Some(`sellingGoodsAndServices`) | None => threshold match {
@@ -117,9 +95,7 @@ object EligibilitySubmissionData {
 
   implicit val format: Format[EligibilitySubmissionData] = (
     (__ \ "threshold").format[Threshold] and
-      (__ \ "exceptionOrExemption").format[String] and
       (__ \ "appliedForException").formatNullable[Boolean] and
-      (__ \ "estimates").formatNullable[TurnoverEstimates] and
       (__ \ "partyType").format[PartyType] and
       (__ \ "registrationReason").format[RegistrationReason] and
       (__ \ "togcBlock").formatNullable[TogcCole] and

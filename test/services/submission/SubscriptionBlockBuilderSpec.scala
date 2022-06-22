@@ -33,7 +33,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
   object TestService extends SubscriptionBlockBuilder
 
   override lazy val testDate = LocalDate.of(2020, 2, 2)
-  override lazy val testReturns = Returns(None, None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
+  override lazy val testReturns = Returns(testTurnover, None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None)
   lazy val otherActivities = List(
     SicCode("00002", "testBusiness 2", "testDetails"),
     SicCode("00003", "testBusiness 3", "testDetails"),
@@ -62,7 +62,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
        | },
        | "yourTurnover": {
        |   "VATRepaymentExpected": false,
-       |   "turnoverNext12Months": 123456,
+       |   "turnoverNext12Months": $testTurnover,
        |   "zeroRatedSupplies": 12.99
        | },
        | "schemes": {
@@ -84,31 +84,31 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
   )
 
   val minimalSubscriptionBlockJson: JsValue = Json.parse(
-    """
-      |{
-      | "corporateBodyRegistered": {
-      |   "dateOfIncorporation": "2020-01-02",
-      |   "companyRegistrationNumber": "testCrn",
-      |   "countryOfIncorporation": "GB"
-      | },
-      | "reasonForSubscription": {
-      |   "voluntaryOrEarlierDate": "2020-02-02",
-      |   "relevantDate": "2020-02-02",
-      |   "registrationReason": "0018",
-      |   "exemptionOrException": "1"
-      | },
-      | "yourTurnover": {
-      |   "VATRepaymentExpected": false,
-      |   "turnoverNext12Months": 123456,
-      |   "zeroRatedSupplies": 12.99
-      | },
-      | "businessActivities": {
-      |   "SICCodes": {
-      |     "primaryMainCode": "12345"
-      |   },
-      |   "description": "testDescription"
-      | }
-      |}""".stripMargin
+    s"""
+       |{
+       | "corporateBodyRegistered": {
+       |   "dateOfIncorporation": "2020-01-02",
+       |   "companyRegistrationNumber": "testCrn",
+       |   "countryOfIncorporation": "GB"
+       | },
+       | "reasonForSubscription": {
+       |   "voluntaryOrEarlierDate": "2020-02-02",
+       |   "relevantDate": "2020-02-02",
+       |   "registrationReason": "0018",
+       |   "exemptionOrException": "1"
+       | },
+       | "yourTurnover": {
+       |   "VATRepaymentExpected": false,
+       |   "turnoverNext12Months": $testTurnover,
+       |   "zeroRatedSupplies": 12.99
+       | },
+       | "businessActivities": {
+       |   "SICCodes": {
+       |     "primaryMainCode": "12345"
+       |   },
+       |   "description": "testDescription"
+       | }
+       |}""".stripMargin
   )
 
   def fullNetpSubscriptionBlockJson: JsValue = Json.obj(
@@ -119,7 +119,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     ),
     "yourTurnover" -> Json.obj(
       "VATRepaymentExpected" -> false,
-      "turnoverNext12Months" -> 123456,
+      "turnoverNext12Months" -> testTurnover,
       "zeroRatedSupplies" -> 12.99
     ),
     "schemes" -> Json.obj(
@@ -155,11 +155,11 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       "voluntaryOrEarlierDate" -> testDate,
       "relevantDate" -> testDate,
       "registrationReason" -> Voluntary.key,
-      "exemptionOrException" -> EligibilitySubmissionData.exemptionKey
+      "exemptionOrException" -> VatScheme.exemptionKey
     ),
     "yourTurnover" -> Json.obj(
       "VATRepaymentExpected" -> false,
-      "turnoverNext12Months" -> 123456,
+      "turnoverNext12Months" -> testTurnover,
       "zeroRatedSupplies" -> 12.99
     ),
     "businessActivities" -> Json.obj(

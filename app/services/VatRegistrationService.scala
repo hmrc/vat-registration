@@ -22,7 +22,7 @@ import cats.syntax.ApplicativeSyntax
 import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
-import models.api.{TurnoverEstimates, VatScheme}
+import models.api.VatScheme
 import models.submission.PartyType
 import org.slf4j.LoggerFactory
 import repositories.VatSchemeRepository
@@ -83,10 +83,6 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
 
   def getPartyType(regId: String): Future[Option[PartyType]] = {
     registrationRepository.retrieveVatScheme(regId).map(_.flatMap(_.partyType))
-  }
-
-  def getTurnoverEstimates(regId: String): Future[Option[TurnoverEstimates]] = {
-    registrationRepository.fetchEligibilitySubmissionData(regId).map(_.flatMap(_.estimates))
   }
 
   def storeHonestyDeclaration(regId: String, honestyDeclarationStatus: Boolean): Future[Boolean] = {

@@ -62,7 +62,7 @@ trait ITFixtures {
   val testVrn = "testVrn"
 
   val testReturns: Returns = Returns(
-    turnoverEstimate = None,
+    turnoverEstimate = testTurnover,
     appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
@@ -88,7 +88,7 @@ trait ITFixtures {
   )
 
   val testAASReturns: Returns = Returns(
-    turnoverEstimate = None,
+    turnoverEstimate = testTurnover,
     appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
@@ -244,8 +244,6 @@ trait ITFixtures {
     )
   )
 
-  val testTurnoverEstimates = TurnoverEstimates(12345678L)
-
   val testBankDetails = BankAccountDetails(
     name = "testBankName",
     sortCode = "11-11-11",
@@ -258,9 +256,7 @@ trait ITFixtures {
 
   val testEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = testThreshold,
-    exceptionOrExemption = "0",
     appliedForException = None,
-    estimates = Some(TurnoverEstimates(123456)),
     partyType = UkCompany,
     registrationReason = ForwardLook,
     isTransactor = false
@@ -268,9 +264,7 @@ trait ITFixtures {
 
   val testEligibilitySubmissionDataSoleTrader: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = testThreshold,
-    exceptionOrExemption = "0",
     appliedForException = None,
-    estimates = Some(TurnoverEstimates(123456)),
     partyType = Individual,
     registrationReason = ForwardLook,
     isTransactor = false
@@ -534,7 +528,7 @@ trait ITFixtures {
   }
 
   val testNetpReturns: Returns = Returns(
-    turnoverEstimate = None,
+    turnoverEstimate = testTurnover,
     appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
@@ -587,9 +581,7 @@ trait ITFixtures {
 
   val testNetpEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = Threshold(mandatoryRegistration = true, None, None, None, Some(testDate)),
-    exceptionOrExemption = "0",
     appliedForException = None,
-    estimates = Some(TurnoverEstimates(123456)),
     partyType = NETP,
     registrationReason = NonUk,
     isTransactor = false

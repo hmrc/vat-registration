@@ -16,7 +16,6 @@
 
 package controllers
 
-import common.exceptions.MissingRegDocument
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
@@ -289,38 +288,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
         Json.obj("userHeaders" -> testUserHeaders)
       ))
       status(response) mustBe Status.OK
-    }
-  }
-
-  "call to getTurnoverEstimates" should {
-    "return a 200 and TurnoverEstimates json when it is returned from the repository" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      when(mockVatRegistrationService.getTurnoverEstimates(any()))
-        .thenReturn(Future.successful(Some(TurnoverEstimates(2024))))
-
-      val result: Future[Result] = controller.getTurnoverEstimates(testRegId)(FakeRequest())
-      val expectedJson: JsValue = Json.obj("turnoverEstimate" -> 2024)
-
-      status(result) mustBe 200
-      contentAsJson(result) mustBe expectedJson
-    }
-
-    "return a 204 and no json when a None is returned from the repository" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      when(mockVatRegistrationService.getTurnoverEstimates(any()))
-        .thenReturn(Future.successful(None))
-
-      val result: Future[Result] = controller.getTurnoverEstimates(testRegId)(FakeRequest())
-      status(result) mustBe 204
-    }
-
-    "return a 404 when a MissingRegDocument exception is thrown" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      when(mockVatRegistrationService.getTurnoverEstimates(any()))
-        .thenReturn(Future.failed(MissingRegDocument(testRegId)))
-
-      val result: Future[Result] = controller.getTurnoverEstimates(testRegId)(FakeRequest())
-      status(result) mustBe 404
     }
   }
 

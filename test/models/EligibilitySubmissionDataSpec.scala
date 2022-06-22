@@ -16,7 +16,7 @@
 
 package models
 
-import models.api.{EligibilitySubmissionData, Threshold, TurnoverEstimates}
+import models.api.{EligibilitySubmissionData, Threshold}
 import models.submission.UkCompany
 import play.api.libs.json.{JsArray, JsObject, JsSuccess, Json}
 import utils.EligibilityDataJsonUtils
@@ -31,8 +31,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
   "eligibilityReads" when {
     "return EligibilitySubmissionData from a valid eligibility json" in {
       val questions = Seq(
-        Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
-          "answerValue" -> true),
         Json.obj("questionId" -> "voluntaryRegistration", "question" -> "testQuestion", "answer" -> "testAnswer",
           "answerValue" -> false),
         Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
@@ -41,10 +39,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           "answerValue" -> LocalDate.now().toString),
         Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> LocalDate.now().toString),
-        Json.obj("questionId" -> "turnoverEstimate", "question" -> "testQuestion", "answer" -> "testQuestion",
-          "answerValue" -> 123456),
-        Json.obj("questionId" -> "customerStatus", "question" -> "testQuestion", "answer" -> "testQuestion",
-          "answerValue" -> "2"),
         Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> "own"),
         Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
@@ -76,9 +70,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           thresholdNextThirtyDays = Some(LocalDate.now()),
           thresholdPreviousThirtyDays = Some(LocalDate.now())
         ),
-        exceptionOrExemption = "0",
         appliedForException = None,
-        estimates = Some(TurnoverEstimates(123456)),
         partyType = UkCompany,
         registrationReason = ForwardLook,
         togcCole = Some(TogcCole(
@@ -97,12 +89,6 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     "registration reason is TogcCole" must {
       "set calculatedDate as dateOfTransfer in EligibilitySubmissionData" in {
         val togcColeBlock = Seq(
-          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
-            "answerValue" -> true),
-          Json.obj("questionId" -> "turnoverEstimate", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> 1234),
-          Json.obj("questionId" -> "customerStatus", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "2"),
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
@@ -133,9 +119,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           threshold = Threshold(
             mandatoryRegistration = false
           ),
-          exceptionOrExemption = "0",
           appliedForException = None,
-          estimates = Some(TurnoverEstimates(1234)),
           partyType = UkCompany,
           registrationReason = TransferOfAGoingConcern,
           togcCole = Some(TogcCole(
@@ -155,14 +139,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     "registration reason is sellingGoodsAndServices with threshold overseas" must {
       "set calculatedDate as thresholdOverseas in EligibilitySubmissionData" in {
         val thresholdOverseasBlock = Seq(
-          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
-            "answerValue" -> true),
           Json.obj("questionId" -> "thresholdTaxableSupplies", "question" -> "testQuestion", "answer" -> "testAnswer",
             "answerValue" -> LocalDate.now().toString),
-          Json.obj("questionId" -> "turnoverEstimate", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> 123456),
-          Json.obj("questionId" -> "customerStatus", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "2"),
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
@@ -182,9 +160,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             mandatoryRegistration = true,
             thresholdOverseas = Some(LocalDate.now)
           ),
-          exceptionOrExemption = "0",
           appliedForException = None,
-          estimates = Some(TurnoverEstimates(123456)),
           partyType = UkCompany,
           registrationReason = NonUk,
           isTransactor = false,
@@ -197,14 +173,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     "registration reason is sellingGoodsAndServices with thresholdPreviousThirtyDays" must {
       "set calculatedDate as thresholdPreviousThirtyDays in EligibilitySubmissionData" in {
         val thresholdPrevThirtyDaysBlock = Seq(
-          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
-            "answerValue" -> true),
           Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
             "answerValue" -> LocalDate.now().toString),
-          Json.obj("questionId" -> "turnoverEstimate", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> 123456),
-          Json.obj("questionId" -> "customerStatus", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "2"),
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
@@ -224,9 +194,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             mandatoryRegistration = true,
             thresholdPreviousThirtyDays = Some(LocalDate.now)
           ),
-          exceptionOrExemption = "0",
           appliedForException = None,
-          estimates = Some(TurnoverEstimates(123456)),
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
@@ -239,14 +207,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     "registration reason is sellingGoodsAndServices with thresholdNextThirtyDays" must {
       "set calculatedDate as thresholdNextThirtyDays in EligibilitySubmissionData" in {
         val thresholdNextThirtyDaysBlock = Seq(
-          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
-            "answerValue" -> true),
           Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
             "answerValue" -> LocalDate.now().toString),
-          Json.obj("questionId" -> "turnoverEstimate", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> 123456),
-          Json.obj("questionId" -> "customerStatus", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "2"),
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
@@ -266,9 +228,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             mandatoryRegistration = true,
             thresholdNextThirtyDays = Some(LocalDate.now)
           ),
-          exceptionOrExemption = "0",
           appliedForException = None,
-          estimates = Some(TurnoverEstimates(123456)),
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
@@ -281,14 +241,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     "registration reason is sellingGoodsAndServices with thresholdNextTwelveMonths" must {
       "set calculatedDate as thresholdNextTwelveMonths in EligibilitySubmissionData" in {
         val thresholdNextTwelveMonthsBlock = Seq(
-          Json.obj("questionId" -> "voluntaryInformation", "question" -> "testQuestion", "answer" -> "testAnswer",
-            "answerValue" -> true),
           Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
             "answerValue" -> LocalDate.now().toString),
-          Json.obj("questionId" -> "turnoverEstimate", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> 123456),
-          Json.obj("questionId" -> "customerStatus", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "2"),
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
@@ -308,9 +262,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             mandatoryRegistration = true,
             thresholdInTwelveMonths = Some(LocalDate.now)
           ),
-          exceptionOrExemption = "0",
           appliedForException = None,
-          estimates = Some(TurnoverEstimates(123456)),
           partyType = UkCompany,
           registrationReason = BackwardLook,
           isTransactor = false,
@@ -332,11 +284,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           "thresholdNextThirtyDays" -> LocalDate.now().toString,
           "thresholdPreviousThirtyDays" -> LocalDate.now().toString
         ),
-        "exceptionOrExemption" -> "0",
-        "estimates" -> Json.obj(
-          "turnoverEstimate" -> 123456
-        ),
-        "customerStatus" -> "2",
+        "appliedForException" -> false,
         "partyType" -> "50",
         "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook),
         "calculatedDate" -> LocalDate.now()
@@ -349,9 +297,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           thresholdNextThirtyDays = Some(LocalDate.now()),
           thresholdPreviousThirtyDays = Some(LocalDate.now())
         ),
-        exceptionOrExemption = "0",
-        appliedForException = None,
-        estimates = Some(TurnoverEstimates(123456)),
+        appliedForException = Some(false),
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false,
@@ -371,9 +317,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           thresholdNextThirtyDays = Some(LocalDate.now()),
           thresholdPreviousThirtyDays = Some(LocalDate.now())
         ),
-        exceptionOrExemption = "0",
-        appliedForException = None,
-        estimates = Some(TurnoverEstimates(123456)),
+        appliedForException = Some(false),
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false,
@@ -387,10 +331,7 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           "thresholdNextThirtyDays" -> LocalDate.now().toString,
           "thresholdPreviousThirtyDays" -> LocalDate.now().toString
         ),
-        "exceptionOrExemption" -> "0",
-        "estimates" -> Json.obj(
-          "turnoverEstimate" -> 123456
-        ),
+        "appliedForException" -> false,
         "partyType" -> "50",
         "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook),
         "isTransactor" -> false,
