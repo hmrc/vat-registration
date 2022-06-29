@@ -39,8 +39,6 @@ PATCH       /:regId/sicAndComp                      controllers.SicAndCompliance
 GET         /:regId/eligibility-data                controllers.EligibilityController.getEligibilityData(regId: String)
 PATCH       /:regId/eligibility-data                controllers.EligibilityController.updateEligibilityData(regId: String)
 
-GET         /:regId/turnover-estimates-data         controllers.VatRegistrationController.getTurnoverEstimates(regId: String)
-
 PATCH       /:regId/honesty-declaration             controllers.VatRegistrationController.storeHonestyDeclaration(regId: String)
 
 PATCH       /:regId/nrs-payload                     controllers.NrsSubmissionPayloadController.storeNrsSubmissionPayload(regId: String)

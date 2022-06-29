@@ -109,15 +109,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
       }
   }
 
-  def getTurnoverEstimates(regId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "getTurnoverEstimates") {
-          registrationService.getTurnoverEstimates(regId) sendResult("getTurnoverEstimates", regId)
-        }
-      }
-  }
-
   def fetchBankAccountDetails(regId: String): Action[AnyContent] = Action.async {
     implicit request =>
       isAuthorised(regId) { authResult =>

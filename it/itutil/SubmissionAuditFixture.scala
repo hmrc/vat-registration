@@ -102,7 +102,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
         "exemptionOrException" -> "0"
       ),
       "yourTurnover" -> Json.obj(
-        "turnoverNext12Months" -> 123456,
+        "turnoverNext12Months" -> testTurnover,
         "zeroRatedSupplies" -> 12.99,
         "vatRepaymentExpected" -> true,
         "goodsFromOtherEU" -> testTurnover,
@@ -149,7 +149,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
         "paymentMethod" -> "01",
         "annualStagger" -> "YA",
         "paymentFrequency" -> "M",
-        "estimatedTurnover" -> 123456,
+        "estimatedTurnover" -> testTurnover,
         "reqStartDate" -> "2017-01-01"
       )
     )

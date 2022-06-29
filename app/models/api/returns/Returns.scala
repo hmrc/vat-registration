@@ -21,7 +21,7 @@ import utils.JsonUtilities
 
 import java.time.LocalDate
 
-case class Returns(turnoverEstimate: Option[BigDecimal],
+case class Returns(turnoverEstimate: BigDecimal,
                    appliedForExemption: Option[Boolean],
                    zeroRatedSupplies: Option[BigDecimal],
                    reclaimVatOnMostReturns: Boolean,
@@ -55,7 +55,9 @@ object OverseasCompliance {
 }
 
 sealed trait StoringGoodsForDispatch
+
 case object StoringWithinUk extends StoringGoodsForDispatch
+
 case object StoringOverseas extends StoringGoodsForDispatch
 
 object StoringGoodsForDispatch {
@@ -66,6 +68,7 @@ object StoringGoodsForDispatch {
   val inverseMap: Map[String, StoringGoodsForDispatch] = statusMap.map(_.swap)
 
   def fromString(value: String): StoringGoodsForDispatch = inverseMap(value)
+
   def toJsString(value: StoringGoodsForDispatch): JsString = JsString(statusMap(value))
 
   val writes: Writes[StoringGoodsForDispatch] = Writes[StoringGoodsForDispatch] { storingGoods =>

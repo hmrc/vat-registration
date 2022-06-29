@@ -59,14 +59,7 @@ class SubscriptionAuditBlockBuilder {
           optional("nameOfWarehouse" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
         ),
         "yourTurnover" -> (jsonObject(
-          "turnoverNext12Months" ->
-            returns.turnoverEstimate.getOrElse(
-              BigDecimal(
-                eligibilityData.estimates.map(_.turnoverEstimate).getOrElse(
-                    throw new InternalServerException("[SubscriptionAuditBlockBuilder] turnoverEstimate is missing")
-                )
-              )
-            ),
+          "turnoverNext12Months" -> returns.turnoverEstimate,
           "zeroRatedSupplies" -> returns.zeroRatedSupplies,
           "vatRepaymentExpected" -> returns.reclaimVatOnMostReturns
         ) ++ {

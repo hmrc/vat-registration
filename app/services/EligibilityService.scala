@@ -73,7 +73,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
     registrationRepository.retrieveVatScheme(regId).flatMap {
       case Some(vatScheme) =>
         oldEligibilityData match {
-          case EligibilitySubmissionData(_, _, _, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
+          case EligibilitySubmissionData(_, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
             registrationRepository.insertVatScheme(vatScheme.copy(
               tradingDetails = None,
               returns = None,
@@ -91,17 +91,11 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               otherBusinessInvolvements = None
             ))
 
-          case EligibilitySubmissionData(_, _, _, Some(oldTurnoverEstimates), _, _, _, oldTransactorFlag, _)
-            if !eligibilityData.estimates.map(_.turnoverEstimate).exists(oldTurnoverEstimates.turnoverEstimate.equals) || !oldTransactorFlag.equals(eligibilityData.isTransactor) =>
-            val clearedFRS = if (oldTurnoverEstimates.turnoverEstimate > 150000L) {
-              None
-            } else {
-              vatScheme.flatRateScheme
-            }
+          case EligibilitySubmissionData(_, _, _, _, _, oldTransactorFlag, _)
+            if !oldTransactorFlag.equals(eligibilityData.isTransactor) || eligibilityData.appliedForException.contains(true) =>
 
-            val clearedReturns = if (oldTurnoverEstimates.turnoverEstimate > 1350000L &&
-              vatScheme.returns.map(_.annualAccountingDetails).isDefined) {
-              None
+            val returnsWithClearedExemption = if (eligibilityData.appliedForException.contains(true)) {
+              vatScheme.returns.map(_.copy(appliedForExemption = None))
             } else {
               vatScheme.returns
             }
@@ -113,9 +107,8 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
             }
 
             registrationRepository.insertVatScheme(vatScheme.copy(
-              flatRateScheme = clearedFRS,
-              returns = clearedReturns,
-              transactorDetails = clearedTransactor
+              transactorDetails = clearedTransactor,
+              returns = returnsWithClearedExemption
             ))
 
           case _ =>

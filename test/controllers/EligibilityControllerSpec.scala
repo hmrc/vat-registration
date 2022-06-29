@@ -40,29 +40,6 @@ class EligibilityControllerSpec extends VatRegSpec with VatRegistrationFixture {
     }
   }
 
-  val validEligibilityJson: JsObject = Json.parse(
-    """
-      |{
-      | "version": 1,
-      | "result": "thisIsAValidReason"
-      |}
-    """.stripMargin).as[JsObject]
-
-  val upsertEligibilityJson: JsObject = Json.parse(
-    """
-      |{
-      | "version": 1,
-      | "result": "thisIsAnUpsert"
-      |}
-    """.stripMargin).as[JsObject]
-
-  val invalidUpsertJson: JsObject = Json.parse(
-    """
-      |{
-      | "result": "thisIsAnUpsert"
-      |}
-    """.stripMargin).as[JsObject]
-
   "getEligibilityData" should {
     val json = Json.obj("foo" -> "bar")
     "return 200 and a JsObject" in new Setup {
@@ -91,30 +68,15 @@ class EligibilityControllerSpec extends VatRegSpec with VatRegistrationFixture {
   "updateEligibilityData" should {
     val thresholdPreviousThirtyDays = LocalDate.of(2017, 5, 23)
     val thresholdInTwelveMonths = LocalDate.of(2017, 7, 16)
-    val applicantDetails = Json.obj("role" -> "director", "name" -> Json.obj(
-      "forename" -> "First Name Test",
-      "other_forenames" -> "Middle Name Test",
-      "surname" -> "Last Name Test"
-    ))
     val json = Json.parse(
       s"""{
          |"sections": [
          |   {
          |     "title": "VAT details",
          |     "data": [
-         |       {"questionId": "mandatoryRegistration", "question": "Some Question 11", "answer": "Some Answer 11", "answerValue": true},
          |       {"questionId": "voluntaryRegistration", "question": "Some Question 12", "answer": "Some Answer 12", "answerValue": false},
          |       {"questionId": "thresholdPreviousThirtyDays", "question": "Some Question 12", "answer": "Some Answer 12", "answerValue": "$thresholdPreviousThirtyDays"},
          |       {"questionId": "thresholdInTwelveMonths", "question": "Some Question 12", "answer": "Some Answer 12", "answerValue": "$thresholdInTwelveMonths"}
-         |     ]
-         |   },
-         |   {
-         |     "title": "Director details",
-         |     "data": [
-         |       {"questionId": "applicantUKNino", "question": "Some Question 11", "answer": "Some Answer 11", "answerValue": "SR123456C"},
-         |       {"questionId": "turnoverEstimate", "question": "Some Question 11", "answer": "Some Answer 11", "answerValue": 2024},
-         |       {"questionId": "completionCapacity", "question": "Some Question 11", "answer": "Some Answer 11", "answerValue": $applicantDetails},
-         |       {"questionId":"fooDirectorDetails3","question": "Date of birth", "answer": "1 January 2000", "answerValue": true}
          |     ]
          |   }
          | ]
@@ -141,15 +103,7 @@ class EligibilityControllerSpec extends VatRegSpec with VatRegistrationFixture {
            |   {
            |     "title": "VAT details",
            |     "data": [
-           |       {"questionId": "mandatoryRegistration", "question": "Some Question 11", "answer": "Some Answer 11", "answerValue": true},
            |       {"questionId": "voluntaryRegistration", "question": "Some Question 12", "answer": "Some Answer 12", "answerValue": false}
-           |     ]
-           |   },
-           |   {
-           |     "title": "Director details",
-           |     "data": [
-           |       {"questionId": "turnoverEstimate", "question": "Some Question 11", "answer": "Some Answer 11", "answerValue": 2024},
-           |       {"questionId":"fooDirectorDetails3","question": "Date of birth", "answer": "1 January 2000", "answerValue": true}
            |     ]
            |   }
            |]

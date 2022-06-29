@@ -73,26 +73,18 @@ class SubscriptionBlockBuilder @Inject()() {
         ),
         "yourTurnover" -> (
           jsonObject(
-            "turnoverNext12Months" ->
-              returns.turnoverEstimate.getOrElse(
-                BigDecimal(
-                  eligibilityData.estimates.map(_.turnoverEstimate)
-                    .getOrElse(
-                      throw new InternalServerException("[SubscriptionBlockBuilder] turnoverEstimate is missing")
-                    )
-                )
-              ),
+            "turnoverNext12Months" -> returns.turnoverEstimate,
             "zeroRatedSupplies" -> returns.zeroRatedSupplies,
             "VATRepaymentExpected" -> returns.reclaimVatOnMostReturns
           ) ++ {
-          returns.northernIrelandProtocol match {
-            case Some(NIPCompliance(goodsToEU, goodsFromEU)) => jsonObject(
-              conditional(goodsFromEU.answer)("goodsFromOtherEU" -> goodsFromEU.value),
-              conditional(goodsToEU.answer)("goodsSoldToOtherEU" -> goodsToEU.value)
-            )
-            case None => jsonObject()
-          }
-        }),
+            returns.northernIrelandProtocol match {
+              case Some(NIPCompliance(goodsToEU, goodsFromEU)) => jsonObject(
+                conditional(goodsFromEU.answer)("goodsFromOtherEU" -> goodsFromEU.value),
+                conditional(goodsToEU.answer)("goodsSoldToOtherEU" -> goodsToEU.value)
+              )
+              case None => jsonObject()
+            }
+          }),
         optional("schemes" -> vatScheme.flatRateScheme.flatMap { flatRateScheme =>
           (flatRateScheme.joinFrs, flatRateScheme.frsDetails) match {
             case (true, Some(details)) =>

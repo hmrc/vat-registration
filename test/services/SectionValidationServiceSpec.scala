@@ -85,7 +85,7 @@ class SectionValidationServiceSpec extends VatRegSpec
       "return InvalidSection when required fields is missing" in {
         val res = await(Service.validate(testInternalId, testRegId, EligibilitySectionId, Json.obj()))
 
-        res mustBe Left(InvalidSection(Seq("/threshold", "/partyType", "/registrationReason", "/exceptionOrExemption")))
+        res mustBe Left(InvalidSection(Seq("/threshold", "/partyType", "/registrationReason")))
       }
     }
     "the section is FlatRateScheme (legacy)" must {

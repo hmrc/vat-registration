@@ -94,10 +94,11 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
        |}
       """.stripMargin).as[JsObject]
 
-  val vatSchemeWithEligibilityDataWithReturns: JsObject = Json.obj(
+  val vatSchemeWithReturns: JsObject = Json.obj(
     "registrationId" -> registrationId,
     "status" -> "draft",
     "returns" -> Json.obj(
+      "turnoverEstimate" -> testTurnover,
       "zeroRatedSupplies" -> 12.99,
       "reclaimVatOnMostReturns" -> true,
       "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
@@ -115,19 +116,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       )
     )
   )
-
-
-  val vatTaxable = 1000L
-  val turnoverEstimates: TurnoverEstimates = TurnoverEstimates(vatTaxable)
-
-  def vatSchemeWithEligibilityDataWithTurnoverEstimates(regId: String = registrationId): JsObject = vatSchemeWithEligibilityDataJson(regId) ++ Json.parse(
-    """
-      |{
-      | "turnoverEstimates":{
-      |   "vatTaxable":1000
-      | }
-      |}
-    """.stripMargin).as[JsObject]
 
   "Calling createNewVatScheme" should {
     "create a new, blank VatScheme with the correct ID" in new Setup {
@@ -305,7 +293,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   }
   "fetchReturns" should {
     "return a Returns case class if one is found in mongo with the supplied regId" in new Setup {
-      insert(vatSchemeWithEligibilityDataWithReturns)
+      insert(vatSchemeWithReturns)
 
       val fetchedReturns: Option[Returns] = await(repository.fetchReturns(registrationId))
 
@@ -325,13 +313,14 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     val otherUsersVatScheme = vatSchemeWithEligibilityDataJson(otherRegId)
     val dateValue = LocalDate of(1990, 10, 10)
     val startDate = dateValue
-    val returns: Returns = Returns(None, None, Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None, None, None)
-    val vatSchemeWithEligibilityDataWithReturns = Json.parse(
+    val returns: Returns = Returns(testTurnover, None, Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None, None, None)
+    val vatSchemeWithReturns = Json.parse(
       s"""
          |{
          | "registrationId":"$registrationId",
          | "status":"draft",
          | "returns":{
+         |   "turnoverEstimate": $testTurnover,
          |   "reclaimVatOnMostReturns":true,
          |   "returnsFrequency": ${Json.toJson[ReturnsFrequency](Quarterly)},
          |   "staggerStart": ${Json.toJson[Stagger](JanuaryStagger)},
@@ -346,14 +335,14 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
 
       await(repository.updateReturns(registrationId, returns))
 
-      fetchAll without _id mustBe Some(vatSchemeWithEligibilityDataWithReturns)
+      fetchAll without _id mustBe Some(vatSchemeWithReturns)
     }
     "not update or insert new data into the registration doc if the supplied returns already exist on the doc" in new Setup {
-      insert(vatSchemeWithEligibilityDataWithReturns)
+      insert(vatSchemeWithReturns)
 
       await(repository.updateReturns(registrationId, returns))
 
-      fetchAll without _id mustBe Some(vatSchemeWithEligibilityDataWithReturns)
+      fetchAll without _id mustBe Some(vatSchemeWithReturns)
     }
     "not update or insert returns if a registration doc doesn't already exist" in new Setup {
       count mustBe 0

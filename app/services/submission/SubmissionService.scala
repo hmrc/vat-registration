@@ -21,7 +21,6 @@ import connectors.VatSubmissionConnector
 import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
-import models.api.EligibilitySubmissionData.{exceptionKey, exemptionKey}
 import models.api.returns.Annual
 import models.api.{Attached, PersonalDetails, Submitted, VatScheme}
 import play.api.Logging
@@ -30,9 +29,9 @@ import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import repositories._
 import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
-import services.{AttachmentsService, EmailService, NonRepudiationService, SdesService, TrafficManagementService}
+import services._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
+import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{BadRequestException, ConflictException, HeaderCarrier, InternalServerException}
 import utils.JsonUtils.{conditional, jsonObject, optional}
@@ -155,17 +154,17 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                         optAgentCode: Option[String])
                                        (implicit hc: HeaderCarrier,
                                         request: Request[_]): Future[Unit] = {
-      auditService.audit(
-        submissionAuditBlockBuilder.buildAuditJson(
-          vatScheme = vatScheme,
-          authProviderId = providerId,
-          affinityGroup = affinityGroup,
-          optAgentReferenceNumber = optAgentCode,
-          formBundleId = formBundleId
-        )
+    auditService.audit(
+      submissionAuditBlockBuilder.buildAuditJson(
+        vatScheme = vatScheme,
+        authProviderId = providerId,
+        affinityGroup = affinityGroup,
+        optAgentReferenceNumber = optAgentCode,
+        formBundleId = formBundleId
       )
+    )
 
-      Future.successful()
+    Future.successful()
   }
 
   private[services] def logSubmission(vatScheme: VatScheme,

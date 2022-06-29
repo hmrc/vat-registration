@@ -20,10 +20,7 @@ import common.exceptions._
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.Voluntary
 import models.api._
-import models.submission.UkCompany
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -124,34 +121,6 @@ class VatRegistrationCreatedServiceSpec extends VatRegSpec with VatRegistrationF
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(testVatScheme)))
 
       await(service.getStatus(testRegId)) mustBe VatRegStatus.draft
-    }
-  }
-
-  "call to getTurnoverEstimates" should {
-    "return nothing if nothing in EligibilityData" in new Setup {
-      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any())).thenReturn(Future.successful(None))
-
-      await(service.getTurnoverEstimates("regId")) mustBe None
-    }
-
-    "return correct TurnoverEstimates model when turnover estimate is provided with a number" in new Setup {
-      val eligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
-        threshold = Threshold(
-          mandatoryRegistration = false
-        ),
-        exceptionOrExemption = "0",
-        appliedForException = None,
-        estimates = Some(TurnoverEstimates(10001)),
-        partyType = UkCompany,
-        registrationReason = Voluntary,
-        isTransactor = false
-      )
-
-      val expected: TurnoverEstimates = TurnoverEstimates(turnoverEstimate = 10001)
-
-      when(mockRegistrationMongoRepository.fetchEligibilitySubmissionData(any())).thenReturn(Future.successful(Some(eligibilitySubmissionData)))
-
-      await(service.getTurnoverEstimates("regId")) mustBe Some(expected)
     }
   }
 

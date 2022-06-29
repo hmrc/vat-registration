@@ -24,7 +24,7 @@ class ReturnsControllerISpec extends IntegrationStubbing {
   val testZeroRatedSupplies = 10000.5
 
   val testAnnualReturns: Returns = Returns(
-    turnoverEstimate = None,
+    turnoverEstimate = testTurnover,
     appliedForExemption = None,
     Some(testZeroRatedSupplies),
     reclaimVatOnMostReturns = false,
@@ -37,6 +37,7 @@ class ReturnsControllerISpec extends IntegrationStubbing {
   )
 
   val validAnnualReturnsJson: JsObject = Json.obj(
+    "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testZeroRatedSupplies,
     "reclaimVatOnMostReturns" -> false,
     "returnsFrequency" -> Json.toJson[ReturnsFrequency](Annual),
