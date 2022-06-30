@@ -22,6 +22,7 @@ import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
 import models.api.returns.Returns
+import models.registration.BusinessSectionId
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.Cursor.FailOnError
@@ -208,13 +209,24 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
   }
 
   def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] = {
-    val projection = Some(Json.obj(section -> 1, "_id" -> 0))
-    collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
-      case Some(json) =>
-        (json \ section).validate[T].asOpt
-      case _ =>
-        logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
-        None
+    if (section.equals(BusinessSectionId.repoKey)) { //TODO Remove if block entirely when removing temp reads
+      val projection = Some(omitIdProjection)
+      collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
+        case Some(json) =>
+          (json \ BusinessSectionId.repoKey).validate[Business].orElse(json.validate[Business](Business.tempReads)).asOpt.map(_.asInstanceOf[T])
+        case _ =>
+          logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+          None
+      }
+    } else {
+      val projection = Some(Json.obj(section -> 1, "_id" -> 0))
+      collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
+        case Some(json) =>
+          (json \ section).validate[T].asOpt
+        case _ =>
+          logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+          None
+      }
     }
   }
 

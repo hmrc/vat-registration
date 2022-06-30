@@ -88,7 +88,8 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               nrsSubmissionPayload = None,
               partners = None,
               attachments = None,
-              otherBusinessInvolvements = None
+              otherBusinessInvolvements = None,
+              business = None
             ))
 
           case EligibilitySubmissionData(_, _, _, _, _, oldTransactorFlag, _)

@@ -24,7 +24,6 @@ case class SicAndCompliance(businessDescription: String,
                             businessActivities: List[SicCode],
                             hasLandAndProperty: Option[Boolean] = None,
                             otherBusinessInvolvement: Option[Boolean] = None) {
-  //TODO remove option from L&P and OBI when related feature switches are removed
 
   lazy val otherBusinessActivities: List[SicCode] =
     businessActivities.filterNot(_ == mainBusinessActivity)

@@ -34,6 +34,7 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       |      "line2": "line2"
       |    },
       |    "businessCommunicationDetails": {
+      |      "telephone": "12345",
       |      "emailAddress": "email@email.com",
       |      "emailVerified": false,
       |      "preference": "ZEL"
@@ -67,13 +68,12 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
   "buildContactBlock" should {
     "build a minimal contact json when all mandatory data is provided" in {
       val vatScheme = testVatScheme.copy(
-        businessContact = Some(BusinessContact(
+        business = Some(testBusiness.copy(
           email = Some("email@email.com"),
-          telephoneNumber = None,
-          mobile = None,
+          telephoneNumber = Some("12345"),
           website = None,
-          ppob = Address("line1", Some("line2"), None, None, None, None, None),
-          commsPreference = Email,
+          ppobAddress = Some(Address("line1", Some("line2"), None, None, None, None, None)),
+          contactPreference = Some(Email),
           hasWebsite = Some(false)
         )),
         applicantDetails = Some(validApplicantDetails))
@@ -85,13 +85,12 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
     "build a full contact json when all data is provided" in {
       val vatScheme = testVatScheme.copy(
-        businessContact = Some(BusinessContact(
+        business = Some(testBusiness.copy(
           email = Some("email@email.com"),
           telephoneNumber = Some("12345"),
-          mobile = None,
           website = Some("www.foo.com"),
-          ppob = Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some(testPostcode), Some(Country(Some("GB"), None))),
-          commsPreference = Email,
+          ppobAddress = Some(Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some(testPostcode), Some(Country(Some("GB"), None)))),
+          contactPreference = Some(Email),
           hasWebsite = Some(true)
         )),
         applicantDetails = Some(validApplicantDetails.copy(contact = DigitalContactOptional(

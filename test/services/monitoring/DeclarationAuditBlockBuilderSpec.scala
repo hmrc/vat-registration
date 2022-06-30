@@ -54,7 +54,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |    "currentAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postcode": "XX XX",
+            |      "postcode": "ZZ1 1ZZ",
             |      "countryCode": "GB"
             |    },
             |    "dateOfBirth": "2018-01-01",
@@ -102,7 +102,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |    "currentAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postcode": "XX XX",
+            |      "postcode": "ZZ1 1ZZ",
             |      "countryCode": "GB"
             |    },
             |    "dateOfBirth": "2018-01-01",
@@ -154,13 +154,13 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |    "currentAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postcode": "XX XX",
+            |      "postcode": "ZZ1 1ZZ",
             |      "countryCode": "GB"
             |    },
             |    "previousAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postcode": "XX XX",
+            |      "postcode": "ZZ1 1ZZ",
             |      "countryCode": "GB"
             |    },
             |    "dateOfBirth": "2018-01-01",
@@ -199,7 +199,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |    "currentAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postcode": "XX XX",
+            |      "postcode": "ZZ1 1ZZ",
             |      "countryCode": "GB"
             |    },
             |    "dateOfBirth": "2018-01-01",
@@ -239,7 +239,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |    "currentAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postcode": "XX XX",
+            |      "postcode": "ZZ1 1ZZ",
             |      "countryCode": "GB"
             |    },
             |    "dateOfBirth": "2018-01-01",

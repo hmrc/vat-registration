@@ -27,24 +27,14 @@ import play.api.libs.json.Json
 class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   object Builder extends EntitiesBlockBuilder
-
-  val testPhone = "01234 567890"
-  val businessContact = BusinessContact(
-    email = Some(testEmail),
-    telephoneNumber = Some(testPhone),
-    mobile = Some(testPhone),
-    website = None,
-    ppob = testAddress,
-    commsPreference = Email,
-    hasWebsite = Some(false)
-  )
+  
   val testEntity = testSoleTraderEntity.copy(bpSafeId = Some(testBpSafeId))
   val testEntityNoSafeId = testSoleTraderEntity.copy(bpSafeId = None)
   val testPartner = Partner(details = testEntity, partyType = Individual, isLeadPartner = true)
   val testApplicantContact = DigitalContactOptional(
     email = Some(testEmail),
-    tel = Some(testPhone),
-    mobile = Some(testPhone)
+    tel = Some(testTelephone),
+    mobile = Some(testTelephone)
   )
 
   "buildEntitiesBlock" when {
@@ -52,7 +42,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       "return a JSON array containing a single partner with a business partner safe ID" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-          businessContact = Some(businessContact),
+          business = Some(testBusiness),
           partners = Some(PartnersSection(List(testPartner))),
           applicantDetails = Some(validApplicantDetails)
         )
@@ -68,12 +58,11 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
             "address" -> Json.obj(
               "line1" -> "line1",
               "line2" -> "line2",
-              "postCode" -> "XX XX",
+              "postCode" -> "ZZ1 1ZZ",
               "countryCode" -> "GB"
             ),
             "commDetails" -> Json.obj(
-              "mobileNumber" -> testPhone,
-              "telephone" -> testPhone,
+              "telephone" -> testTelephone,
               "email" -> testEmail
             )
           )
@@ -85,7 +74,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
         "return a JSON array containing a single partner with a list of identifiers" in {
           val vatScheme = testVatScheme.copy(
             eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-            businessContact = Some(businessContact),
+            business = Some(testBusiness),
             partners = Some(PartnersSection(List(testPartner.copy(details = testEntityNoSafeId)))),
             applicantDetails = Some(validApplicantDetails)
           )
@@ -107,12 +96,11 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
                 "address" -> Json.obj(
                   "line1" -> "line1",
                   "line2" -> "line2",
-                  "postCode" -> "XX XX",
+                  "postCode" -> "ZZ1 1ZZ",
                   "countryCode" -> "GB"
                 ),
                 "commDetails" -> Json.obj(
-                  "mobileNumber" -> testPhone,
-                  "telephone" -> testPhone,
+                  "telephone" -> testTelephone,
                   "email" -> testEmail
                 )
               )
@@ -126,7 +114,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           val testPartner = Partner(details = testEntity, partyType = Individual, isLeadPartner = true)
           val vatScheme = testVatScheme.copy(
             eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-            businessContact = Some(businessContact),
+            business = Some(testBusiness),
             partners = Some(PartnersSection(List(testPartner))),
             applicantDetails = Some(validApplicantDetails)
           )
@@ -148,12 +136,11 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
                 "address" -> Json.obj(
                   "line1" -> "line1",
                   "line2" -> "line2",
-                  "postCode" -> "XX XX",
+                  "postCode" -> "ZZ1 1ZZ",
                   "countryCode" -> "GB"
                 ),
                 "commDetails" -> Json.obj(
-                  "mobileNumber" -> testPhone,
-                  "telephone" -> testPhone,
+                  "telephone" -> testTelephone,
                   "email" -> testEmail
                 )
               )
@@ -166,7 +153,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       "return None" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-          businessContact = Some(businessContact),
+          business = Some(testBusiness),
           partners = None,
           applicantDetails = Some(validApplicantDetails)
         )
@@ -174,45 +161,11 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
         Builder.buildEntitiesBlock(vatScheme) mustBe None
       }
     }
-    "there is no telephone number" should {
-      "return the correct JSON without the phone number" in {
-        val vatScheme = testVatScheme.copy(
-          eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-          businessContact = Some(businessContact.copy(telephoneNumber = None)),
-          partners = Some(PartnersSection(List(testPartner))),
-          applicantDetails = Some(validApplicantDetails)
-        )
-
-        Builder.buildEntitiesBlock(vatScheme) mustBe Some(Json.arr(
-          Json.obj(
-            "action" -> "1",
-            "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-            "tradersPartyType" -> Json.toJson[PartyType](Individual),
-            "customerIdentification" -> Json.obj(
-              "primeBPSafeID" -> testBpSafeId
-            ),
-            "businessContactDetails" -> Json.obj(
-              "address" -> Json.obj(
-                "line1" -> "line1",
-                "line2" -> "line2",
-                "postCode" -> "XX XX",
-                "countryCode" -> "GB"
-              ),
-              "commDetails" -> Json.obj(
-                "mobileNumber" -> testPhone,
-                "email" -> testEmail
-              )
-            )
-          )
-        ))
-      }
-    }
-
     "there is no partner list but the user is registering a vat group" should {
       "return a JSON array containing a single entity based on the applicants business entity without safeId" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
-          businessContact = Some(businessContact),
+          business = Some(testBusiness),
           partners = None,
           applicantDetails = Some(validApplicantDetails.copy(contact = testApplicantContact))
         )
@@ -230,12 +183,12 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
             "address" -> Json.obj(
               "line1" -> "line1",
               "line2" -> "line2",
-              "postCode" -> "XX XX",
+              "postCode" -> "ZZ1 1ZZ",
               "countryCode" -> "GB"
             ),
             "commDetails" -> Json.obj(
-              "mobileNumber" -> testPhone,
-              "telephone" -> testPhone,
+              "mobileNumber" -> testTelephone,
+              "telephone" -> testTelephone,
               "email" -> testEmail
             )
           )
@@ -245,7 +198,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       "return a JSON array containing a single entity based on the applicants business entity with safeId" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
-          businessContact = Some(businessContact),
+          business = Some(testBusiness),
           partners = None,
           applicantDetails = Some(validApplicantDetails.copy(
             entity = testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId)),
@@ -264,12 +217,12 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
             "address" -> Json.obj(
               "line1" -> "line1",
               "line2" -> "line2",
-              "postCode" -> "XX XX",
+              "postCode" -> "ZZ1 1ZZ",
               "countryCode" -> "GB"
             ),
             "commDetails" -> Json.obj(
-              "mobileNumber" -> testPhone,
-              "telephone" -> testPhone,
+              "mobileNumber" -> testTelephone,
+              "telephone" -> testTelephone,
               "email" -> testEmail
             )
           )

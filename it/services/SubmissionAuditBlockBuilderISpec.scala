@@ -38,7 +38,8 @@ class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with Submissi
         utr = None,
         stillTrading = false
       )
-    ))
+    )),
+    business = Some(testBusiness.copy(otherBusinessInvolvement = Some(true)))
   )
 
   "buildAuditJson" must {

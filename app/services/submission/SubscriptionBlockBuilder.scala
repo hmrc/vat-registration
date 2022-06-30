@@ -30,8 +30,8 @@ import javax.inject.{Inject, Singleton}
 class SubscriptionBlockBuilder @Inject()() {
 
   def buildSubscriptionBlock(vatScheme: VatScheme): JsObject =
-    (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.applicantDetails, vatScheme.sicAndCompliance, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
-      case (Some(eligibilityData), Some(returns), Some(applicantDetails), Some(sicAndCompliance), otherBusinessInvolvements) => jsonObject(
+    (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.applicantDetails, vatScheme.business, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
+      case (Some(eligibilityData), Some(returns), Some(applicantDetails), Some(business), otherBusinessInvolvements) => jsonObject(
         "reasonForSubscription" -> jsonObject(
           "registrationReason" -> eligibilityData.registrationReason.key,
           "relevantDate" -> {
@@ -57,12 +57,12 @@ class SubscriptionBlockBuilder @Inject()() {
             ))
         }),
         "businessActivities" -> jsonObject(
-          "description" -> sicAndCompliance.businessDescription,
+          required("description" -> business.businessDescription),
           "SICCodes" -> jsonObject(
-            "primaryMainCode" -> sicAndCompliance.mainBusinessActivity.id,
-            optional("mainCode2" -> sicAndCompliance.otherBusinessActivities.headOption.map(_.id)),
-            optional("mainCode3" -> sicAndCompliance.otherBusinessActivities.lift(1).map(_.id)),
-            optional("mainCode4" -> sicAndCompliance.otherBusinessActivities.lift(2).map(_.id))
+            required("primaryMainCode" -> business.mainBusinessActivity.map(_.id)),
+            optional("mainCode2" -> business.otherBusinessActivities.headOption.map(_.id)),
+            optional("mainCode3" -> business.otherBusinessActivities.lift(1).map(_.id)),
+            optional("mainCode4" -> business.otherBusinessActivities.lift(2).map(_.id))
           ),
           optional("goodsToOverseas" -> returns.overseasCompliance.map(_.goodsToOverseas)),
           optional("goodsToCustomerEU" -> returns.overseasCompliance.flatMap(_.goodsToEu)),
@@ -110,7 +110,7 @@ class SubscriptionBlockBuilder @Inject()() {
             })
           )
         }),
-        conditional(sicAndCompliance.otherBusinessInvolvement.contains(true) && otherBusinessInvolvements.nonEmpty)(
+        conditional(business.otherBusinessInvolvement.contains(true) && otherBusinessInvolvements.nonEmpty)(
           "otherBusinessActivities" -> otherBusinessInvolvements.map { involvement =>
             jsonObject(
               "businessName" -> involvement.businessName,
@@ -127,7 +127,7 @@ class SubscriptionBlockBuilder @Inject()() {
             s"ApplicantDetails found - ${vatScheme.applicantDetails.isDefined}, " +
             s"EligibilitySubmissionData found - ${vatScheme.eligibilitySubmissionData.isDefined}, " +
             s"Returns found - ${vatScheme.returns.isDefined}, " +
-            s"SicAndCompliance found - ${vatScheme.sicAndCompliance.isDefined}."
+            s"Business found - ${vatScheme.business.isDefined}."
         )
     }
 }

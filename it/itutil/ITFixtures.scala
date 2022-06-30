@@ -246,6 +246,36 @@ trait ITFixtures {
     )
   )
 
+  lazy val testBusinessDescription = "testBusinessDescription"
+  lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = true)
+  lazy val testSicCode1 = "12345"
+  lazy val testSicDesc1 = "testMainSicDesc"
+  lazy val testSicDisplay1 = "testMainSicDisplay"
+  lazy val testSic1 = SicCode(testSicCode1, testSicDesc1, testSicDisplay1)
+  lazy val testSicCode2 = "23456"
+  lazy val testSicDesc2 = "testSicDesc2"
+  lazy val testSicDisplay2 = "testSicDisplay2"
+  lazy val testSic2 = SicCode(testSicCode2, testSicDesc2, testSicDisplay2)
+  lazy val testSicCode3 = "34567"
+  lazy val testSicDesc3 = "testSicDesc3"
+  lazy val testSicDisplay3 = "testSicDisplay3"
+  lazy val testSic3 = SicCode(testSicCode3, testSicDesc3, testSicDisplay3)
+  lazy val testBusinessActivities: List[SicCode] = List(testSic1, testSic2, testSic3)
+  lazy val testBusiness: Business = Business(
+    ppobAddress = Some(testFullAddress),
+    email = Some(testEmail),
+    telephoneNumber = Some(testTelephone),
+    hasWebsite = Some(true),
+    website = Some(testWebsite),
+    contactPreference = Some(Email),
+    hasLandAndProperty = Some(false),
+    businessDescription = Some(testBusinessDescription),
+    businessActivities = Some(testBusinessActivities),
+    mainBusinessActivity = Some(testSic1),
+    labourCompliance = Some(testLabourCompliance),
+    otherBusinessInvolvement = Some(false)
+  )
+
   val testBankDetails = BankAccountDetails(
     name = "testBankName",
     sortCode = "11-11-11",
@@ -287,7 +317,8 @@ trait ITFixtures {
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     confirmInformationDeclaration = Some(true),
     returns = Some(testReturns),
-    nrsSubmissionPayload = Some(testEncodedPayload)
+    nrsSubmissionPayload = Some(testEncodedPayload),
+    business = Some(testBusiness)
   )
 
   lazy val testFullVatSchemeWithUnregisteredBusinessPartner: VatScheme =
@@ -305,7 +336,8 @@ trait ITFixtures {
       applicantDetails = Some(testUnregisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),
       confirmInformationDeclaration = Some(true),
-      nrsSubmissionPayload = Some(testEncodedPayload)
+      nrsSubmissionPayload = Some(testEncodedPayload),
+      business = Some(testBusiness)
     )
 
   val testAgentTransactorDetails = TransactorDetails(
@@ -341,7 +373,8 @@ trait ITFixtures {
       applicantDetails = Some(testUnregisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),
       confirmInformationDeclaration = Some(true),
-      nrsSubmissionPayload = Some(testEncodedPayload)
+      nrsSubmissionPayload = Some(testEncodedPayload),
+      business = Some(testBusiness)
     )
 
   lazy val testMinimalVatSchemeWithRegisteredBusinessPartner: VatScheme =
@@ -359,7 +392,8 @@ trait ITFixtures {
       applicantDetails = Some(testRegisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),
       confirmInformationDeclaration = Some(true),
-      nrsSubmissionPayload = Some(testEncodedPayload)
+      nrsSubmissionPayload = Some(testEncodedPayload),
+      business = Some(testBusiness)
     )
 
   lazy val testMinimalVatSchemeWithVerifiedSoleTrader: VatScheme =
@@ -620,7 +654,8 @@ trait ITFixtures {
       tradingDetails = Some(testNetpTradingDetails),
       flatRateScheme = None,
       businessContact = Some(testNetpBusinessContact),
-      attachments = Some(Attachments(Post))
+      attachments = Some(Attachments(Post)),
+      business = Some(testBusiness.copy(ppobAddress = Some(testOverseasAddress)))
     )
 
   lazy val testNonUkCompanyEligibilitySubmissionData: EligibilitySubmissionData =

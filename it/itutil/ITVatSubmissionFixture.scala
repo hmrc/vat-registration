@@ -9,8 +9,6 @@ import play.api.libs.json.{JsArray, JsObject, Json}
 
 trait ITVatSubmissionFixture extends ITFixtures {
 
-  val testBusinessDescription = "testBusinessDescription"
-
   val testSubmissionJson: JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> Json.obj(
@@ -36,10 +34,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "IDsVerificationStatus" -> "3"
         )
       ),
-      //No prime BP safe ID included as not registered on ETMP
       "shortOrgName" -> testCompanyName,
       "organisationName" -> testCompanyName,
-      //name, dateOfBirth not included as company
       "tradingName" -> testTradingDetails.tradingName.get
     ),
     "contact" -> Json.obj(
@@ -51,14 +47,14 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
-        "addressValidated" -> true //false if manually entered by user
+        "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL" //electronic
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -76,9 +72,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "countryOfIncorporation" -> "GB"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         )
       ),
       "yourTurnover" -> Json.obj(
@@ -103,7 +101,6 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "accountName" -> testBankDetails.name,
         "accountNumber" -> testBankDetails.number,
         "sortCode" -> testSubmittedSortCode
-        // Missing bank account reason is being developed
       )
     ),
     "joinAA" -> Json.obj(
@@ -117,9 +114,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -213,14 +209,14 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
-        "addressValidated" -> true //false if manually entered by user
+        "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL" //electronic
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -228,8 +224,6 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "registrationReason" -> "0016",
         "relevantDate" -> testDate,
         "voluntaryOrEarlierDate" -> testDate,
-        //For mandatory users - voluntary is optionally provided by the user
-        //For voluntary users - relevant date = voluntaryOrEarlierDate
         "exemptionOrException" -> "0"
       ),
       "corporateBodyRegistered" -> Json.obj(
@@ -238,9 +232,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "countryOfIncorporation" -> "GB"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         )
       ),
       "yourTurnover" -> Json.obj(
@@ -279,9 +275,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -332,7 +327,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> "03" //currently defaulted company director
+        "declarationCapacity" -> "03"
       )
     )
   )
@@ -378,11 +373,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL" //electronic
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -398,9 +393,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "countryOfIncorporation" -> "GB"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         )
       ),
       "yourTurnover" -> Json.obj(
@@ -425,7 +422,6 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "accountName" -> testBankDetails.name,
         "accountNumber" -> testBankDetails.number,
         "sortCode" -> testSubmittedSortCode
-        // Missing bank account reason is being developed
       )
     ),
     "joinAA" -> Json.obj(
@@ -439,9 +435,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "agentOrCapacitor" -> Json.obj(
@@ -550,14 +545,14 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "line5" -> testFullAddress.line5,
         "postCode" -> testFullAddress.postcode,
         "countryCode" -> "GB",
-        "addressValidated" -> true //false if manually entered by user
+        "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL" //electronic
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -565,8 +560,6 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "registrationReason" -> "0016",
         "relevantDate" -> testDate,
         "voluntaryOrEarlierDate" -> testDate,
-        //For mandatory users - voluntary is optionally provided by the user
-        //For voluntary users - relevant date = voluntaryOrEarlierDate
         "exemptionOrException" -> "0"
       ),
       "corporateBodyRegistered" -> Json.obj(
@@ -575,9 +568,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "countryOfIncorporation" -> "GB"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         )
       ),
       "yourTurnover" -> Json.obj(
@@ -597,9 +592,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -632,7 +626,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> "03" //currently defaulted company director
+        "declarationCapacity" -> "03"
       )
     )
   )
@@ -664,11 +658,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL"
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -679,9 +673,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "exemptionOrException" -> "0"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         )
       ),
       "yourTurnover" -> Json.obj(
@@ -701,9 +697,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -785,11 +780,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> false
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL"
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -799,12 +794,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "exemptionOrException" -> "0"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
-          "mainCode2" -> "00002",
-          "mainCode3" -> "00003",
-          "mainCode4" -> "00004"
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         ),
         "goodsToOverseas" -> true,
         "goodsToCustomerEU" -> true,
@@ -828,9 +822,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -905,11 +898,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> false
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL"
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -919,12 +912,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "exemptionOrException" -> "0"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
-          "mainCode2" -> "00002",
-          "mainCode3" -> "00003",
-          "mainCode4" -> "00004"
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         ),
         "goodsToOverseas" -> true,
         "goodsToCustomerEU" -> true,
@@ -948,9 +940,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -1033,11 +1024,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> false
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL"
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -1047,12 +1038,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "exemptionOrException" -> "0"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
-          "mainCode2" -> "00002",
-          "mainCode3" -> "00003",
-          "mainCode4" -> "00004"
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         ),
         "goodsToOverseas" -> true,
         "goodsToCustomerEU" -> true,
@@ -1076,9 +1066,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -1154,11 +1143,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL"
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -1169,12 +1158,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "exemptionOrException" -> "0"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
-          "mainCode2" -> "00002",
-          "mainCode3" -> "00003",
-          "mainCode4" -> "00004"
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         )
       ),
       "schemes" -> Json.obj(
@@ -1202,9 +1190,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -1269,11 +1256,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL"
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> Json.obj(
@@ -1284,9 +1271,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "exemptionOrException" -> "0"
       ),
       "businessActivities" -> Json.obj(
-        "description" -> testSicAndCompliance.businessDescription,
+        "description" -> testBusiness.businessDescription,
         "SICCodes" -> Json.obj(
-          "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id
+          "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+          "mainCode2" -> testSicCode2,
+          "mainCode3" -> testSicCode3
         )
       ),
       "yourTurnover" -> Json.obj(
@@ -1306,9 +1295,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied.get,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement.get
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied.get
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -1369,11 +1357,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "addressValidated" -> true
       ),
       "commDetails" -> Json.obj(
-        "telephone" -> testBusinessContactDetails.telephoneNumber,
-        "mobileNumber" -> testBusinessContactDetails.mobile,
-        "email" -> testBusinessContactDetails.email,
+        "telephone" -> testBusiness.telephoneNumber,
+        "email" -> testBusiness.email,
         "emailVerified" -> false,
-        "commsPreference" -> "ZEL"
+        "commsPreference" -> "ZEL",
+        "webAddress" -> testBusiness.website
       )
     ),
     "subscription" -> {
@@ -1385,12 +1373,11 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "exemptionOrException" -> "0"
         ),
         "businessActivities" -> Json.obj(
-          "description" -> testSicAndCompliance.businessDescription,
+          "description" -> testBusiness.businessDescription,
           "SICCodes" -> Json.obj(
-            "primaryMainCode" -> testSicAndCompliance.mainBusinessActivity.id,
-            "mainCode2" -> "00002",
-            "mainCode3" -> "00003",
-            "mainCode4" -> "00004"
+            "primaryMainCode" -> testBusiness.mainBusinessActivity.map(_.id),
+            "mainCode2" -> testSicCode2,
+            "mainCode3" -> testSicCode3
           )
         ),
         "yourTurnover" -> Json.obj(
@@ -1424,9 +1411,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
       )
     ),
     "compliance" -> Json.obj(
-      "supplyWorkers" -> testSicAndCompliance.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testSicAndCompliance.labourCompliance.get.numOfWorkersSupplied,
-      "intermediaryArrangement" -> testSicAndCompliance.labourCompliance.get.intermediaryArrangement
+      "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied,
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(
@@ -1581,9 +1567,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "countryCode" -> "GB"
         ),
         "commDetails" -> Json.obj(
-          "email" -> testBusinessContactDetails.email,
-          "telephone" -> testBusinessContactDetails.telephoneNumber,
-          "mobileNumber" -> testBusinessContactDetails.mobile
+          "email" -> testBusiness.email,
+          "telephone" -> testBusiness.telephoneNumber
         )
       )
     )
@@ -1665,9 +1650,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "countryCode" -> "GB"
         ),
         "commDetails" -> Json.obj(
-          "email" -> testBusinessContactDetails.email,
-          "telephone" -> testBusinessContactDetails.telephoneNumber,
-          "mobileNumber" -> testBusinessContactDetails.mobile
+          "email" -> testBusiness.email,
+          "telephone" -> testBusiness.telephoneNumber
         )
       )
     )
@@ -1700,9 +1684,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "countryCode" -> "GB"
         ),
         "commDetails" -> Json.obj(
-          "email" -> testBusinessContactDetails.email,
-          "telephone" -> testBusinessContactDetails.telephoneNumber,
-          "mobileNumber" -> testBusinessContactDetails.mobile
+          "email" -> testBusiness.email,
+          "telephone" -> testBusiness.telephoneNumber
         )
       )
     )

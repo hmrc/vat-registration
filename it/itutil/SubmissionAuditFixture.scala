@@ -25,8 +25,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
   )
 
   val complianceAuditBlockJson = Json.obj(
-    "numOfWorkersSupplied" -> 1,
-    "intermediaryArrangement" -> true,
+    "numOfWorkersSupplied" -> 1000,
     "supplyWorkers" -> true
   )
 
@@ -34,7 +33,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
     Json.obj(
       "address" -> testFullAddressJson,
       "businessCommunicationDetails" -> Json.obj(
-        "telephone" -> "12345678910",
+        "telephone" -> "1234567890",
         "emailAddress" -> "test@test.com",
         "emailVerified" -> false,
         "webAddress" -> "www.foo.com",
@@ -117,11 +116,10 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
       "businessActivities" -> Json.obj(
         "sicCodes" -> Json.obj(
           "primaryMainCode" -> "12345",
-          "mainCode2" -> "00002",
-          "mainCode3" -> "00003",
-          "mainCode4" -> "00004"
+          "mainCode2" -> "23456",
+          "mainCode3" -> "34567"
         ),
-        "description" -> "businessDesc"
+        "description" -> testBusinessDescription
       ),
       "otherBusinessActivities" -> Json.arr(
         Json.obj(
