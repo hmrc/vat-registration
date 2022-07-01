@@ -37,7 +37,8 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
     startDate = Some(testDate),
     annualAccountingDetails = None,
     overseasCompliance = None,
-    northernIrelandProtocol = None
+    northernIrelandProtocol = None,
+    hasTaxRepresentative = None
   )
 
   "the periods block builder" should {

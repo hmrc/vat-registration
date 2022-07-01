@@ -51,6 +51,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   val vatGroupEligibilityData = testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)
   val testVatGroupVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(vatGroupEligibilityData))
   val testLnpVatScheme = testVatScheme.copy(sicAndCompliance = Some(testSicAndCompliance.copy(hasLandAndProperty = Some(true))))
+  val testSchemeWithTaxRepresentative = testVatScheme.copy(returns = Some(testReturns.copy(hasTaxRepresentative = Some(true))))
 
   "getAttachmentsList" when {
     "attachments are required" must {
@@ -93,6 +94,12 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
         val res = await(Service.getAttachmentList(testRegId))
 
         res mustBe Set(VAT5L)
+      }
+
+      "return VAT1TR in the attachment list if user has opted for tax representative" in {
+        mockGetVatScheme(testRegId)(Some(testSchemeWithTaxRepresentative))
+        val res = await(Service.getAttachmentList(testRegId))
+        res mustBe Set(TaxRepresentativeAuthorisation)
       }
     }
     "attachments are not required" must {

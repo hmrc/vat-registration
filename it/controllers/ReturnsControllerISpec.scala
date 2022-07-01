@@ -33,7 +33,8 @@ class ReturnsControllerISpec extends IntegrationStubbing {
     Some(testDate),
     Some(AASDetails(BankGIRO, MonthlyPayment)),
     None,
-    None
+    None,
+    hasTaxRepresentative = Some(true)
   )
 
   val validAnnualReturnsJson: JsObject = Json.obj(
@@ -46,7 +47,8 @@ class ReturnsControllerISpec extends IntegrationStubbing {
     "annualAccountingDetails" -> Json.obj(
       "paymentMethod" -> Json.toJson[PaymentMethod](BankGIRO),
       "paymentFrequency" -> Json.toJson[PaymentFrequency](MonthlyPayment)
-    )
+    ),
+    "hasTaxRepresentative" -> true
   )
 
   val invalidReturnsJson: JsObject = Json.obj()

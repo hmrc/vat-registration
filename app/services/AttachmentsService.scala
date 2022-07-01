@@ -59,7 +59,8 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
       getIdentityEvidenceAttachment(vatScheme),
       getVat2Attachment(vatScheme),
       getVat51Attachment(vatScheme),
-      getVat5LAttachment(vatScheme)
+      getVat5LAttachment(vatScheme),
+      getTaxRepresentativeAttachment(vatScheme)
     ).flatten
   }
 
@@ -88,6 +89,13 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   private def getVat51Attachment(vatScheme: VatScheme): Option[VAT51.type] = {
     vatScheme.eligibilitySubmissionData.map(_.registrationReason) match {
       case Some(GroupRegistration) => Some(VAT51)
+      case _ => None
+    }
+  }
+
+  private def getTaxRepresentativeAttachment(vatScheme: VatScheme): Option[TaxRepresentativeAuthorisation.type] = {
+    vatScheme.returns.flatMap(_.hasTaxRepresentative) match {
+      case Some(hasTaxRepresentative) if hasTaxRepresentative => Some(TaxRepresentativeAuthorisation)
       case _ => None
     }
   }

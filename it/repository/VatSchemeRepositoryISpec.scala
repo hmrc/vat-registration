@@ -113,7 +113,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
           "answer" -> true,
           "value" -> testTurnover
         )
-      )
+      ),
+      "hasTaxRepresentative" -> false
     )
   )
 
@@ -313,7 +314,10 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     val otherUsersVatScheme = vatSchemeWithEligibilityDataJson(otherRegId)
     val dateValue = LocalDate of(1990, 10, 10)
     val startDate = dateValue
-    val returns: Returns = Returns(testTurnover, None, Some(12.99), reclaimVatOnMostReturns = true, Quarterly, JanuaryStagger, Some(startDate), None, None, None)
+    val returns: Returns = Returns(
+      testTurnover, None, Some(12.99), reclaimVatOnMostReturns = true, Quarterly,
+      JanuaryStagger, Some(startDate), None, None, None, hasTaxRepresentative = Some(false)
+    )
     val vatSchemeWithReturns = Json.parse(
       s"""
          |{
@@ -325,7 +329,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
          |   "returnsFrequency": ${Json.toJson[ReturnsFrequency](Quarterly)},
          |   "staggerStart": ${Json.toJson[Stagger](JanuaryStagger)},
          |   "startDate": "$dateValue",
-         |   "zeroRatedSupplies": 12.99
+         |   "zeroRatedSupplies": 12.99,
+         |   "hasTaxRepresentative": false
          | }
          |}
       """.stripMargin).as[JsObject]

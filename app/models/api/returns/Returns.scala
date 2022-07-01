@@ -30,7 +30,8 @@ case class Returns(turnoverEstimate: BigDecimal,
                    startDate: Option[LocalDate],
                    annualAccountingDetails: Option[AASDetails],
                    overseasCompliance: Option[OverseasCompliance],
-                   northernIrelandProtocol: Option[NIPCompliance])
+                   northernIrelandProtocol: Option[NIPCompliance],
+                   hasTaxRepresentative: Option[Boolean])
 
 object Returns extends JsonUtilities {
   implicit val format: Format[Returns] = Json.format[Returns]

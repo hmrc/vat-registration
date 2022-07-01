@@ -18,7 +18,7 @@ package models
 
 import helpers.BaseSpec
 import models.api.returns._
-import play.api.libs.json._
+import play.api.libs.json.{__, _}
 
 import java.time.LocalDate
 
@@ -43,7 +43,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     Some(testDate),
     None,
     None,
-    Some(testNorthernIrelandProtocol)
+    Some(testNorthernIrelandProtocol),
+    Some(false)
   )
 
   val testQuarterlyReturns: Returns = Returns(
@@ -56,7 +57,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     Some(testDate),
     None,
     None,
-    Some(testNorthernIrelandProtocol)
+    Some(testNorthernIrelandProtocol),
+    None
   )
 
   val testAnnualReturns: Returns = Returns(
@@ -69,7 +71,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     Some(testDate),
     Some(AASDetails(BankGIRO, MonthlyPayment)),
     None,
-    Some(testNorthernIrelandProtocol)
+    Some(testNorthernIrelandProtocol),
+    None
   )
 
   val testOverseasReturns: Returns = testQuarterlyReturns.copy(overseasCompliance = Some(OverseasCompliance(
@@ -96,7 +99,8 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
       "goodsFromEU" -> Json.obj(
         "answer" -> false
       )
-    )
+    ),
+    "hasTaxRepresentative" -> false
   )
 
   val validQuarterlyReturnsJson: JsObject = Json.obj(
