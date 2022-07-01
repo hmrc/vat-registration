@@ -34,18 +34,17 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   override lazy val testDate = LocalDate.of(2020, 2, 2)
   override lazy val testReturns = Returns(
-    testTurnover, None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None, None
-  )
-  lazy val otherActivities = List(
-    SicCode("00002", "testBusiness 2", "testDetails"),
-    SicCode("00003", "testBusiness 3", "testDetails"),
-    SicCode("00004", "testBusiness 4", "testDetails")
-  )
-  override lazy val testSicAndCompliance = SicAndCompliance(
-    "testDescription",
+    testTurnover,
     None,
-    SicCode("12345", "testMainBusiness", "testDetails"),
-    otherActivities
+    Some(12.99),
+    reclaimVatOnMostReturns = false,
+    Quarterly,
+    JanuaryStagger,
+    Some(testDate),
+    None,
+    None,
+    None,
+    None
   )
 
   def fullSubscriptionBlockJson(reason: String = "0016"): JsValue = Json.parse(
@@ -76,11 +75,10 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
        | "businessActivities": {
        |   "SICCodes": {
        |     "primaryMainCode": "12345",
-       |     "mainCode2": "00002",
-       |     "mainCode3": "00003",
-       |     "mainCode4": "00004"
+       |     "mainCode2": "23456",
+       |     "mainCode3": "34567"
        |   },
-       |   "description": "testDescription"
+       |   "description": "testBusinessDescription"
        | }
        |}""".stripMargin
   )
@@ -108,7 +106,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
        |   "SICCodes": {
        |     "primaryMainCode": "12345"
        |   },
-       |   "description": "testDescription"
+       |   "description": "testBusinessDescription"
        | }
        |}""".stripMargin
   )
@@ -133,11 +131,10 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "businessActivities" -> Json.obj(
       "SICCodes" -> Json.obj(
         "primaryMainCode" -> "12345",
-        "mainCode2" -> "00002",
-        "mainCode3" -> "00003",
-        "mainCode4" -> "00004"
+        "mainCode2" -> "23456",
+        "mainCode3" -> "34567"
       ),
-      "description" -> "testDescription",
+      "description" -> "testBusinessDescription",
       "goodsToOverseas" -> true,
       "goodsToCustomerEU" -> true,
       "storingGoodsForDispatch" -> Json.toJson[StoringGoodsForDispatch](StoringWithinUk),
@@ -168,7 +165,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       "SICCodes" -> Json.obj(
         "primaryMainCode" -> "12345"
       ),
-      "description" -> "testDescription"
+      "description" -> "testBusinessDescription"
     ),
     "otherBusinessActivities" -> Json.arr(
       Json.obj(
@@ -202,7 +199,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           registrationReason = ForwardLook
         )),
         flatRateScheme = Some(validFullFlatRateScheme),
-        sicAndCompliance = Some(testSicAndCompliance)
+        business = Some(testBusiness)
       )
 
       val result = TestService.buildSubscriptionBlock(vatScheme)
@@ -221,7 +218,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           registrationReason = BackwardLook
         )),
         flatRateScheme = Some(validFullFlatRateScheme),
-        sicAndCompliance = Some(testSicAndCompliance)
+        business = Some(testBusiness)
       )
 
       val result = TestService.buildSubscriptionBlock(vatScheme)
@@ -246,7 +243,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           registrationReason = NonUk
         )),
         flatRateScheme = Some(validFullFlatRateScheme),
-        sicAndCompliance = Some(testSicAndCompliance)
+        business = Some(testBusiness)
       )
 
       val result = TestService.buildSubscriptionBlock(vatScheme)
@@ -263,7 +260,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           registrationReason = Voluntary
         )),
         flatRateScheme = Some(validEmptyFlatRateScheme),
-        sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty))
+        business = Some(testBusiness.copy(businessActivities = Some(Nil)))
       )
 
       val result = TestService.buildSubscriptionBlock(vatScheme)
@@ -279,7 +276,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           registrationReason = Voluntary
         )),
-        sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty))
+        business = Some(testBusiness.copy(businessActivities = Some(Nil)))
       )
 
       val result = TestService.buildSubscriptionBlock(vatScheme)
@@ -295,7 +292,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           registrationReason = Voluntary
         )),
-        sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty, otherBusinessInvolvement = Some(true))),
+        business = Some(testBusiness.copy(businessActivities = Some(Nil), otherBusinessInvolvement = Some(true))),
         otherBusinessInvolvements = Some(
           List(
             OtherBusinessInvolvement(
@@ -337,7 +334,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
         returns = Some(testReturns),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData),
         flatRateScheme = Some(invalidEmptyFlatRateScheme),
-        sicAndCompliance = Some(testSicAndCompliance)
+        business = Some(testBusiness)
       )
 
       intercept[InternalServerException](
@@ -356,7 +353,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
         TestService.buildSubscriptionBlock(vatScheme)
       ).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: ApplicantDetails found - true, EligibilitySubmissionData found - true, " +
-        "Returns found - false, SicAndCompliance found - false."
+        "Returns found - false, Business found - false."
     }
   }
 }

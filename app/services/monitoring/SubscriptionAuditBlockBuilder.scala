@@ -29,8 +29,8 @@ import javax.inject.Singleton
 class SubscriptionAuditBlockBuilder {
 
   def buildSubscriptionBlock(vatScheme: VatScheme): JsObject =
-    (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.sicAndCompliance, vatScheme.flatRateScheme, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
-      case (Some(eligibilityData), Some(returns), Some(sicAndCompliance), optFlatRateScheme, otherBusinessInvolvements) => jsonObject(
+    (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.business, vatScheme.flatRateScheme, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
+      case (Some(eligibilityData), Some(returns), Some(business), optFlatRateScheme, otherBusinessInvolvements) => jsonObject(
         "overThresholdIn12MonthPeriod" -> eligibilityData.threshold.thresholdInTwelveMonths.isDefined,
         optional("overThresholdIn12MonthDate" -> eligibilityData.threshold.thresholdInTwelveMonths),
         "overThresholdInPreviousMonth" -> eligibilityData.threshold.thresholdPreviousThirtyDays.isDefined,
@@ -44,12 +44,12 @@ class SubscriptionAuditBlockBuilder {
           "exemptionOrException" -> VatScheme.exceptionOrExemption(eligibilityData, returns)
         ),
         "businessActivities" -> jsonObject(
-          "description" -> sicAndCompliance.businessDescription,
+          "description" -> business.businessDescription,
           "sicCodes" -> jsonObject(
-            "primaryMainCode" -> sicAndCompliance.mainBusinessActivity.id,
-            optional("mainCode2" -> sicAndCompliance.otherBusinessActivities.headOption.map(_.id)),
-            optional("mainCode3" -> sicAndCompliance.otherBusinessActivities.lift(1).map(_.id)),
-            optional("mainCode4" -> sicAndCompliance.otherBusinessActivities.lift(2).map(_.id))
+            required("primaryMainCode" -> business.mainBusinessActivity.map(_.id)),
+            optional("mainCode2" -> business.otherBusinessActivities.headOption.map(_.id)),
+            optional("mainCode3" -> business.otherBusinessActivities.lift(1).map(_.id)),
+            optional("mainCode4" -> business.otherBusinessActivities.lift(2).map(_.id))
           ),
           optional("goodsToOverseas" -> returns.overseasCompliance.map(_.goodsToOverseas)),
           optional("goodsToCustomerEU" -> returns.overseasCompliance.flatMap(_.goodsToEu)),
@@ -96,7 +96,7 @@ class SubscriptionAuditBlockBuilder {
             })
           )
         }),
-        conditional(sicAndCompliance.otherBusinessInvolvement.contains(true) && otherBusinessInvolvements.nonEmpty)(
+        conditional(business.otherBusinessInvolvement.contains(true) && otherBusinessInvolvements.nonEmpty)(
           "otherBusinessActivities" -> otherBusinessInvolvements.map { involvement =>
             jsonObject(
               "businessName" -> involvement.businessName,
@@ -112,7 +112,7 @@ class SubscriptionAuditBlockBuilder {
           "[SubscriptionBlockBuilder] Could not build subscription block for submission because some of the data is missing: " +
             s"EligibilitySubmissionData found - ${vatScheme.eligibilitySubmissionData.isDefined}, " +
             s"Returns found - ${vatScheme.returns.isDefined}, " +
-            s"SicAndCompliance found - ${vatScheme.sicAndCompliance.isDefined}."
+            s"Business found - ${vatScheme.business.isDefined}."
         )
     }
 }

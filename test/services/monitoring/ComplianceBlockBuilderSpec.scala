@@ -34,7 +34,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
         intermediaryArrangement = None,
         supplyWorkers = true
       )
-      val testScheme = testVatScheme.copy(sicAndCompliance = Some(testSicAndCompliance.copy(labourCompliance = Some(testLabourCompliance))))
+      val testScheme = testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = Some(testLabourCompliance))))
 
       val res = TestBuilder.buildComplianceBlock(testScheme)
 
@@ -49,7 +49,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
         intermediaryArrangement = Some(true),
         supplyWorkers = true
       )
-      val testScheme = testVatScheme.copy(sicAndCompliance = Some(testSicAndCompliance.copy(labourCompliance = Some(testLabourCompliance))))
+      val testScheme = testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = Some(testLabourCompliance))))
 
       val res = TestBuilder.buildComplianceBlock(testScheme)
 
@@ -61,7 +61,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
     }
 
     "return None when the labourCompliance section is not defined" in {
-      val testScheme = testVatScheme.copy(sicAndCompliance = Some(testSicAndCompliance.copy(labourCompliance = None)))
+      val testScheme = testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = None)))
 
       val res = TestBuilder.buildComplianceBlock(testScheme)
 

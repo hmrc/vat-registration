@@ -51,7 +51,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             |    "currAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postCode": "XX XX",
+            |      "postCode": "ZZ1 1ZZ",
             |      "countryCode": "GB",
             |      "addressValidated": true
             |    },
@@ -93,14 +93,14 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             |    "currAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postCode": "XX XX",
+            |      "postCode": "ZZ1 1ZZ",
             |      "countryCode": "GB",
             |      "addressValidated": true
             |    },
             |    "prevAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postCode": "XX XX",
+            |      "postCode": "ZZ1 1ZZ",
             |      "countryCode": "GB",
             |      "addressValidated": true
             |    },
@@ -146,7 +146,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             |    "currAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postCode": "XX XX",
+            |      "postCode": "ZZ1 1ZZ",
             |      "countryCode": "GB",
             |      "addressValidated": true
             |    },
@@ -193,7 +193,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             |    "currAddress": {
             |      "line1": "line1",
             |      "line2": "line2",
-            |      "postCode": "XX XX",
+            |      "postCode": "ZZ1 1ZZ",
             |      "countryCode": "GB",
             |      "addressValidated": true
             |    },

@@ -32,29 +32,30 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
     """
       |{
       |    "commDetails": {
-      |      "mobileNumber": "54321",
-      |      "telephone": "12345",
-      |      "email": "email@email.com",
+      |      "telephone": "1234567890",
+      |      "email": "test@test.com",
       |      "emailVerified": true,
+      |      "webAddress": "www.foo.com",
       |      "commsPreference": "ZEL"
       |    },
       |    "address": {
       |      "line1": "line1",
       |      "line2": "line2",
       |      "postCode": "ZZ1 1ZZ",
-      |      "countryCode": "GB"
+      |      "countryCode": "GB",
+      |      "addressValidated": true
       |    }
       |}
       |""".stripMargin).as[JsObject]
 
   "ContactBlockBuilder" should {
     "return the built contact block" when {
-      "business contact details are available" in new Setup {
+      "business details are available" in new Setup {
         val vatScheme = testVatScheme.copy(
-          businessContact = Some(validFullBusinessContact),
+          business = Some(testBusiness),
           applicantDetails = Some(validApplicantDetails.copy(
             contact = DigitalContactOptional(
-              email = validFullBusinessContact.email,
+              email = testBusiness.email,
               emailVerified = Some(true)
             )
           ))
@@ -66,7 +67,7 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
     }
 
     "throw an Interval Server Exception" when {
-      "contact details do not exist" in new Setup {
+      "business details do not exist" in new Setup {
         intercept[InternalServerException](service.buildContactBlock(testVatScheme))
       }
     }

@@ -101,6 +101,6 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   }
 
   private def getVat5LAttachment(vatScheme: VatScheme): Option[VAT5L.type] = {
-    if (vatScheme.sicAndCompliance.exists(_.hasLandAndProperty.contains(true))) Some(VAT5L) else None
+    if (vatScheme.business.exists(_.hasLandAndProperty.contains(true))) Some(VAT5L) else None
   }
 }

@@ -21,7 +21,7 @@ import models.api.{Address, Partner, VatScheme}
 import models.submission._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.http.InternalServerException
-import utils.JsonUtils.{jsonObject, optional}
+import utils.JsonUtils.{jsonObject, optional, required}
 import utils.StringNormaliser
 
 import javax.inject.{Inject, Singleton}
@@ -34,8 +34,8 @@ class EntitiesAuditBlockBuilder @Inject()(implicit ec: ExecutionContext) {
 
   // scalastyle:off
   def buildEntitiesAuditBlock(vatScheme: VatScheme): Option[JsValue] = {
-    val businessContact = vatScheme.businessContact
-      .getOrElse(throw new InternalServerException("Attempted to build entities block without business contact"))
+    val business = vatScheme.business
+      .getOrElse(throw new InternalServerException("Attempted to build entities block without business"))
     val applicantDetails = vatScheme.applicantDetails
       .getOrElse(throw new InternalServerException("Attempted to build entities block without applicant details"))
     val regReason = vatScheme.eligibilitySubmissionData.map(_.registrationReason)
@@ -90,7 +90,7 @@ class EntitiesAuditBlockBuilder @Inject()(implicit ec: ExecutionContext) {
               }
             },
             "businessContactDetails" -> jsonObject(
-              "address" -> formatAddress(businessContact.ppob),
+              "address" -> business.ppobAddress.map(formatAddress),
               "commDetails" -> {
                 regReason match {
                   case GroupRegistration => jsonObject(
@@ -99,9 +99,8 @@ class EntitiesAuditBlockBuilder @Inject()(implicit ec: ExecutionContext) {
                     optional("email" -> applicantDetails.contact.email)
                   )
                   case _ => jsonObject(
-                    optional("telephone" -> businessContact.telephoneNumber),
-                    optional("mobileNumber" -> businessContact.mobile),
-                    "email" -> businessContact.email
+                    required("telephone" -> business.telephoneNumber),
+                    required("email" -> business.email)
                   )
                 }
               }

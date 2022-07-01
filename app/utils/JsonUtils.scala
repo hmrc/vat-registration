@@ -36,6 +36,14 @@ object JsonUtils {
         JsonField(None)
     }
 
+  def required[T](field: (String, Option[T]))(implicit writer: Writes[T]): JsonField =
+    field match {
+      case (_, Some(value)) =>
+        JsonField(Some(field._1 -> writer.writes(value)))
+      case (_, None) =>
+        throw new IllegalStateException(s"Field '${field._1}' was missing but is required")
+    }
+
   def optionalRequiredIf[T](condition: => Boolean)(field: (String, Option[T]))(implicit writer: Writes[T]): JsonField = {
     if (condition) JsonField(Some(field._1 -> writer.writes(field._2.getOrElse(throw new IllegalStateException(s"Field '${field._1}' was missing but is required")))))
     else JsonField(None)

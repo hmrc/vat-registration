@@ -19,6 +19,7 @@ package models.api
 import auth.CryptoSCRS
 import enums.VatRegStatus
 import models.api.returns.Returns
+import models.registration.BusinessSectionId
 import models.registration.sections.PartnersSection
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
@@ -47,7 +48,8 @@ case class VatScheme(id: String,
                      attachments: Option[Attachments] = None,
                      createdDate: Option[LocalDate] = None,
                      applicationReference: Option[String] = None,
-                     otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None) {
+                     otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None,
+                     business: Option[Business] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -68,6 +70,7 @@ object VatScheme {
     }
   }
 
+  // scalastyle:off
   def reads(crypto: Option[CryptoSCRS] = None): Reads[VatScheme] =
     (__ \ "eligibilitySubmissionData" \ "partyType").readNullable[PartyType] flatMap {
       case Some(partyType) => (
@@ -91,7 +94,11 @@ object VatScheme {
         (__ \ "attachments").readNullable[Attachments] and
         (__ \ "createdDate").readNullable[LocalDate] and
         (__ \ "applicationReference").readNullable[String] and
-        (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]]
+        (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
+        (__ \ BusinessSectionId.repoKey).read[Business].fmap(Option[Business]).orElse(__.readNullable[Business](Business.tempReads).fmap {
+          case Some(Business(None, None, None, None, None, None, None, None, None, None, None, None)) => None
+          case optBusiness => optBusiness
+        }) //TODO Replace with (__ \ BusinessSectionId.repoKey).readNullable[Business] when removing temp reads
         ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
@@ -114,7 +121,11 @@ object VatScheme {
         (__ \ "attachments").readNullable[Attachments] and
         (__ \ "createdDate").readNullable[LocalDate] and
         (__ \ "applicationReference").readNullable[String] and
-        (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]]
+        (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
+        (__ \ BusinessSectionId.repoKey).read[Business].fmap(Option[Business]).orElse(__.readNullable[Business](Business.tempReads).fmap {
+          case Some(Business(None, None, None, None, None, None, None, None, None, None, None, None)) => None
+          case optBusiness => optBusiness
+        }) //TODO Replace with (__ \ BusinessSectionId.repoKey).readNullable[Business] when removing temp reads
         ) (VatScheme.apply _)
     }
 
@@ -139,7 +150,8 @@ object VatScheme {
     (__ \ "attachments").writeNullable[Attachments] and
     (__ \ "createdDate").writeNullable[LocalDate] and
     (__ \ "applicationReference").writeNullable[String] and
-    (__ \ "otherBusinessInvolvements").writeNullable[List[OtherBusinessInvolvement]]
+    (__ \ "otherBusinessInvolvements").writeNullable[List[OtherBusinessInvolvement]] and
+    (__ \ BusinessSectionId.repoKey).writeNullable[Business]
     ) (unlift(VatScheme.unapply))
 
   def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =

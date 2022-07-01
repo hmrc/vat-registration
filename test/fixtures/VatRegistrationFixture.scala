@@ -47,7 +47,7 @@ trait VatRegistrationFixture {
   lazy val testCasc = "testCasc"
   lazy val testTrn = "testTrn"
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
-  lazy val testAddress = Address("line1", Some("line2"), None, None, None, Some("XX XX"), Some(Country(Some("GB"), None)), addressValidated = Some(true))
+  lazy val testAddress = Address("line1", Some("line2"), None, None, None, Some("ZZ1 1ZZ"), Some(Country(Some("GB"), Some("UK"))), addressValidated = Some(true))
   lazy val testPostcode = "ZZ1 1ZZ"
   lazy val testSicCode = SicCode("88888", "description", "displayDetails")
   lazy val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
@@ -80,7 +80,7 @@ trait VatRegistrationFixture {
   lazy val testBpSafeId = "testBpSafeId"
   lazy val testFirstName = "testFirstName"
   lazy val testLastName = "testLastName"
-
+  lazy val testWebsite = "www.foo.com"
   lazy val testProviderId: String = "testProviderID"
   lazy val testProviderType: String = "GovernmentGateway"
   lazy val testCredentials: Credentials = Credentials(testProviderId, testProviderType)
@@ -213,16 +213,6 @@ trait VatRegistrationFixture {
     otherBusinessActivitiesSicAndCompiliance
   )
 
-  lazy val testBusinessContact = Some(BusinessContact(
-    email = Some("email@email.com"),
-    telephoneNumber = Some("12345"),
-    mobile = Some("54321"),
-    website = Some("www.foo.com"),
-    ppob = Address("line1", Some("line2"), None, None, None, Some(testPostcode), Some(Country(Some("GB"), None))),
-    commsPreference = Email,
-    hasWebsite = Some(true)
-  ))
-
   lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None, None)
   lazy val testBankAccountOverseas = BankAccount(isProvided = true, None, overseasDetails = Some(testBankDetailsOverseas), None)
   lazy val testBankAccountNotProvided = BankAccount(isProvided = false, details = None, overseasDetails = None, reason = Some(BeingSetup))
@@ -273,7 +263,7 @@ trait VatRegistrationFixture {
   lazy val validEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = false, None)
   lazy val invalidEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = true, None)
 
-  lazy val validFullBusinessContact: BusinessContact = BusinessContact(
+  lazy val testBusinessContact: BusinessContact = BusinessContact(
     email = Some("email@email.com"),
     telephoneNumber = Some("12345"),
     mobile = Some("54321"),
@@ -284,7 +274,38 @@ trait VatRegistrationFixture {
       postcode = Some(testPostcode),
       country = Some(Country(code = Some("GB"), name = Some("UK")))),
     commsPreference = Email,
-    hasWebsite = Some(true))
+    hasWebsite = Some(true)
+  )
+
+  lazy val testBusinessDescription = "testBusinessDescription"
+  lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = true)
+  lazy val testSicCode1 = "12345"
+  lazy val testSicDesc1 = "testMainSicDesc"
+  lazy val testSicDisplay1 = "testMainSicDisplay"
+  lazy val testSic1 = SicCode(testSicCode1, testSicDesc1, testSicDisplay1)
+  lazy val testSicCode2 = "23456"
+  lazy val testSicDesc2 = "testSicDesc2"
+  lazy val testSicDisplay2 = "testSicDisplay2"
+  lazy val testSic2 = SicCode(testSicCode2, testSicDesc2, testSicDisplay2)
+  lazy val testSicCode3 = "34567"
+  lazy val testSicDesc3 = "testSicDesc3"
+  lazy val testSicDisplay3 = "testSicDisplay3"
+  lazy val testSic3 = SicCode(testSicCode3, testSicDesc3, testSicDisplay3)
+  lazy val testBusinessActivities: List[SicCode] = List(testSic1, testSic2, testSic3)
+  lazy val testBusiness: Business = Business(
+    ppobAddress = Some(testAddress),
+    email = Some(testEmail),
+    telephoneNumber = Some(testTelephone),
+    hasWebsite = Some(true),
+    website = Some(testWebsite),
+    contactPreference = Some(Email),
+    hasLandAndProperty = Some(false),
+    businessDescription = Some(testBusinessDescription),
+    businessActivities = Some(testBusinessActivities),
+    mainBusinessActivity = Some(testSic1),
+    labourCompliance = Some(testLabourCompliance),
+    otherBusinessInvolvement = Some(false)
+  )
 
   val testSubmissionPayload = "testSubmissionPayload"
   val testEncodedPayload: String = Base64.getEncoder.encodeToString(testSubmissionPayload.getBytes(StandardCharsets.UTF_8))
@@ -292,36 +313,16 @@ trait VatRegistrationFixture {
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     tradingDetails = Some(validFullTradingDetails),
     sicAndCompliance = Some(testSicAndCompliance),
-    businessContact = testBusinessContact,
+    businessContact = Some(testBusinessContact),
     bankAccount = Some(testBankAccount),
     flatRateScheme = Some(validFullFlatRateScheme),
     applicantDetails = Some(validApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     confirmInformationDeclaration = Some(true),
     returns = Some(testReturns),
-    nrsSubmissionPayload = Some(testEncodedPayload)
+    nrsSubmissionPayload = Some(testEncodedPayload),
+    business = Some(testBusiness)
   )
-
-  lazy val validBusinessContactJson: JsObject = Json.parse(
-    s"""{
-       |"email": "email@email.com",
-       |"telephoneNumber": "12345",
-       |"mobile": "54321",
-       |"hasWebsite": true,
-       |"website": "www.foo.com",
-       |"ppob": {
-       |  "line1": "line1",
-       |  "line2": "line2",
-       |  "postcode": "ZZ1 1ZZ",
-       |  "country": {
-       |    "code": "GB"
-       |  }
-       | },
-       | "contactPreference": "Email"
-       |}
-       |
-     """.stripMargin
-  ).as[JsObject]
 
   lazy val validSicAndComplianceJson: JsObject = Json.parse(
     s"""

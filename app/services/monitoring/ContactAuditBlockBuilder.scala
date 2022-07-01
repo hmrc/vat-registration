@@ -27,31 +27,31 @@ import javax.inject.Singleton
 class ContactAuditBlockBuilder {
 
   def buildContactBlock(vatScheme: VatScheme): JsObject =
-    (vatScheme.businessContact, vatScheme.applicantDetails) match {
-      case (Some(businessContact), Some(applicantDetails)) =>
+    (vatScheme.business, vatScheme.applicantDetails) match {
+      case (Some(business), Some(applicantDetails)) =>
         jsonObject(
           "address" -> jsonObject(
-            "line1" -> businessContact.ppob.line1,
-            optional("line2" -> businessContact.ppob.line2),
-            optional("line3" -> businessContact.ppob.line3),
-            optional("line4" -> businessContact.ppob.line4),
-            optional("line5" -> businessContact.ppob.line5),
-            optional("postcode" -> businessContact.ppob.postcode),
-            optional("countryCode" -> businessContact.ppob.country.flatMap(_.code))
+            required("line1" -> business.ppobAddress.map(_.line1)),
+            optional("line2" -> business.ppobAddress.flatMap(_.line2)),
+            optional("line3" -> business.ppobAddress.flatMap(_.line3)),
+            optional("line4" -> business.ppobAddress.flatMap(_.line4)),
+            optional("line5" -> business.ppobAddress.flatMap(_.line5)),
+            optional("postcode" -> business.ppobAddress.flatMap(_.postcode)),
+            optional("countryCode" -> business.ppobAddress.flatMap(_.country.flatMap(_.code)))
           ),
           "businessCommunicationDetails" -> jsonObject(
-            optional("telephone" -> businessContact.telephoneNumber),
-            "emailAddress" -> businessContact.email,
+            required("telephone" -> business.telephoneNumber),
+            required("emailAddress" -> business.email),
             "emailVerified" -> (
-              if (applicantDetails.contact.email.exists(businessContact.email.contains(_)) && applicantDetails.contact.emailVerified.contains(true)) {
+              if (applicantDetails.contact.email.exists(business.email.contains(_)) && applicantDetails.contact.emailVerified.contains(true)) {
                 true
               } else {
                 false
               }),
-            optional("webAddress" -> businessContact.website),
-            "preference" -> (businessContact.commsPreference match {
-              case Email => ContactPreference.electronic
-              case Letter => ContactPreference.paper
+            conditional(business.hasWebsite.contains(true))("webAddress" -> business.website),
+            "preference" -> (business.contactPreference match {
+              case Some(Email) => ContactPreference.electronic
+              case Some(Letter) => ContactPreference.paper
             })
           ))
       case _ =>

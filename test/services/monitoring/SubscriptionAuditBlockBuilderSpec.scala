@@ -56,11 +56,10 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
        | "businessActivities": {
        |   "sicCodes": {
        |     "primaryMainCode": "12345",
-       |     "mainCode2": "00002",
-       |     "mainCode3": "00003",
-       |     "mainCode4": "00004"
+       |     "mainCode2": "23456",
+       |     "mainCode3": "34567"
        |   },
-       |   "description": "testDescription"
+       |   "description": "testBusinessDescription"
        | }
        |}""".stripMargin
   )
@@ -84,7 +83,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
        |   "sicCodes": {
        |     "primaryMainCode": "12345"
        |   },
-       |   "description": "testDescription"
+       |   "description": "testBusinessDescription"
        | }
        |}""".stripMargin
   )
@@ -92,24 +91,23 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
   "buildSubscriptionBlock" should {
     val testDate = LocalDate.of(2020, 2, 2)
     val testReturns = Returns(
-      testTurnover, None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None, None
-    )
-    val otherActivities = List(
-      SicCode("00002", "testBusiness 2", "testDetails"),
-      SicCode("00003", "testBusiness 3", "testDetails"),
-      SicCode("00004", "testBusiness 4", "testDetails")
-    )
-    val testSicAndCompliance = SicAndCompliance(
-      "testDescription",
+      testTurnover,
       None,
-      SicCode("12345", "testMainBusiness", "testDetails"),
-      otherActivities
+      Some(12.99),
+      reclaimVatOnMostReturns = false,
+      Quarterly,
+      JanuaryStagger,
+      Some(testDate),
+      None,
+      None,
+      None,
+      None
     )
 
     "build a full subscription json when all data is provided" in {
       val vatScheme = testVatScheme.copy(
         eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-        sicAndCompliance = Some(testSicAndCompliance),
+        business = Some(testBusiness),
         returns = Some(testReturns),
         flatRateScheme = Some(validFullFlatRateScheme)
       )
@@ -124,7 +122,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None)
         )),
-        sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty)),
+        business = Some(testBusiness.copy(businessActivities = Some(Nil))),
         returns = Some(testReturns.copy(appliedForExemption = Some(true))),
         flatRateScheme = Some(validEmptyFlatRateScheme)
       )
@@ -139,7 +137,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None)
         )),
-        sicAndCompliance = Some(testSicAndCompliance.copy(businessActivities = List.empty)),
+        business = Some(testBusiness.copy(businessActivities = Some(Nil))),
         returns = Some(testReturns.copy(appliedForExemption = Some(true))),
         flatRateScheme = None
       )
@@ -152,7 +150,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
     "fail if the Flat Rate Scheme is invalid" in {
       val vatScheme = testVatScheme.copy(
         eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-        sicAndCompliance = Some(testSicAndCompliance),
+        business = Some(testBusiness),
         returns = Some(testReturns),
         flatRateScheme = Some(invalidEmptyFlatRateScheme)
       )
@@ -165,7 +163,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
       intercept[InternalServerException](TestService.buildSubscriptionBlock(testVatScheme))
         .message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: EligibilitySubmissionData found - false, " +
-        "Returns found - false, SicAndCompliance found - false."
+        "Returns found - false, Business found - false."
     }
 
     "fail if any of the repository requests return nothing" in {
@@ -176,7 +174,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
       intercept[InternalServerException](TestService.buildSubscriptionBlock(vatScheme))
         .message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: EligibilitySubmissionData found - true, " +
-        "Returns found - false, SicAndCompliance found - false."
+        "Returns found - false, Business found - false."
     }
   }
 }

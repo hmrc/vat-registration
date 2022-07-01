@@ -50,7 +50,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   val testLlpVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(llpEligibilityData))
   val vatGroupEligibilityData = testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)
   val testVatGroupVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(vatGroupEligibilityData))
-  val testLnpVatScheme = testVatScheme.copy(sicAndCompliance = Some(testSicAndCompliance.copy(hasLandAndProperty = Some(true))))
+  val testLnpVatScheme = testVatScheme.copy(business = Some(testBusiness.copy(hasLandAndProperty = Some(true))))
   val testSchemeWithTaxRepresentative = testVatScheme.copy(returns = Some(testReturns.copy(hasTaxRepresentative = Some(true))))
 
   "getAttachmentsList" when {

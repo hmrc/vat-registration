@@ -27,15 +27,15 @@ import javax.inject.{Inject, Singleton}
 class ComplianceBlockBuilder @Inject()() {
 
   def buildComplianceBlock(vatScheme: VatScheme): Option[JsObject] =
-    vatScheme.sicAndCompliance match {
-      case Some(sicAndCompliance) => sicAndCompliance.labourCompliance map (labourCompliance =>
+    vatScheme.business match {
+      case Some(business) => business.labourCompliance map (labourCompliance =>
         jsonObject(
           optional("numOfWorkersSupplied" -> labourCompliance.numOfWorkersSupplied),
           optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
           "supplyWorkers" -> labourCompliance.supplyWorkers
         ))
       case _ =>
-        throw new InternalServerException("Couldn't build compliance block due to missing sicAndCompliance data")
+        throw new InternalServerException("Couldn't build compliance block due to missing business data")
     }
 
 }
