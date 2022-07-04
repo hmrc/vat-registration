@@ -34,7 +34,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   override lazy val testDate = LocalDate.of(2020, 2, 2)
   override lazy val testReturns = Returns(
-    testTurnover,
+    Some(testTurnover),
     None,
     Some(12.99),
     reclaimVatOnMostReturns = false,

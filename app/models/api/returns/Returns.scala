@@ -21,7 +21,7 @@ import utils.JsonUtilities
 
 import java.time.LocalDate
 
-case class Returns(turnoverEstimate: BigDecimal,
+case class Returns(turnoverEstimate: Option[BigDecimal],
                    appliedForExemption: Option[Boolean],
                    zeroRatedSupplies: Option[BigDecimal],
                    reclaimVatOnMostReturns: Boolean,

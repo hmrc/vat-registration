@@ -315,7 +315,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     val dateValue = LocalDate of(1990, 10, 10)
     val startDate = dateValue
     val returns: Returns = Returns(
-      testTurnover, None, Some(12.99), reclaimVatOnMostReturns = true, Quarterly,
+      Some(testTurnover), None, Some(12.99), reclaimVatOnMostReturns = true, Quarterly,
       JanuaryStagger, Some(startDate), None, None, None, hasTaxRepresentative = Some(false)
     )
     val vatSchemeWithReturns = Json.parse(
