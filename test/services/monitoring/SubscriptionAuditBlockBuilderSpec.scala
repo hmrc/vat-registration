@@ -91,7 +91,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
   "buildSubscriptionBlock" should {
     val testDate = LocalDate.of(2020, 2, 2)
     val testReturns = Returns(
-      testTurnover,
+      Some(testTurnover),
       None,
       Some(12.99),
       reclaimVatOnMostReturns = false,

@@ -73,7 +73,7 @@ class SubscriptionBlockBuilder @Inject()() {
         ),
         "yourTurnover" -> (
           jsonObject(
-            "turnoverNext12Months" -> returns.turnoverEstimate,
+            required("turnoverNext12Months" -> returns.turnoverEstimate),
             "zeroRatedSupplies" -> returns.zeroRatedSupplies,
             "VATRepaymentExpected" -> returns.reclaimVatOnMostReturns
           ) ++ {

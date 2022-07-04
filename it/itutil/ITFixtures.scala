@@ -62,7 +62,7 @@ trait ITFixtures {
   val testVrn = "testVrn"
 
   val testReturns: Returns = Returns(
-    turnoverEstimate = testTurnover,
+    turnoverEstimate = Some(testTurnover),
     appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
@@ -89,7 +89,7 @@ trait ITFixtures {
   )
 
   val testAASReturns: Returns = Returns(
-    turnoverEstimate = testTurnover,
+    turnoverEstimate = Some(testTurnover),
     appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,
@@ -564,7 +564,7 @@ trait ITFixtures {
   }
 
   val testNetpReturns: Returns = Returns(
-    turnoverEstimate = testTurnover,
+    turnoverEstimate = Some(testTurnover),
     appliedForExemption = None,
     zeroRatedSupplies = Some(12.99),
     reclaimVatOnMostReturns = true,

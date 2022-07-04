@@ -24,7 +24,7 @@ class ReturnsControllerISpec extends IntegrationStubbing {
   val testZeroRatedSupplies = 10000.5
 
   val testAnnualReturns: Returns = Returns(
-    turnoverEstimate = testTurnover,
+    turnoverEstimate = Some(testTurnover),
     appliedForExemption = None,
     Some(testZeroRatedSupplies),
     reclaimVatOnMostReturns = false,

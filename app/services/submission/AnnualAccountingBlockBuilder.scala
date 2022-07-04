@@ -20,7 +20,7 @@ import models._
 import models.api.VatScheme
 import models.api.returns.Annual
 import play.api.libs.json.JsObject
-import utils.JsonUtils.jsonObject
+import utils.JsonUtils.{jsonObject, required}
 
 import javax.inject.{Inject, Singleton}
 
@@ -37,7 +37,7 @@ class AnnualAccountingBlockBuilder @Inject()() {
               "paymentMethod" -> details.paymentMethod,
               "annualStagger" -> returns.staggerStart,
               "paymentFrequency" -> details.paymentFrequency,
-              "estimatedTurnover" -> returns.turnoverEstimate,
+              required("estimatedTurnover" -> returns.turnoverEstimate),
               "reqStartDate" -> {
                 eligibilitySubmissionData.registrationReason match {
                   case Voluntary | SuppliesOutsideUk | IntendingTrader => returns.startDate
