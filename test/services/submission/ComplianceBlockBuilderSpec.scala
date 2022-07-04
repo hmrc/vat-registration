@@ -66,7 +66,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
 
       res mustBe None
     }
-    "throw an exception when the sicAndCompliance section is not defined" in {
+    "throw an exception when the business section is not defined" in {
       intercept[InternalServerException] {
         TestBuilder.buildComplianceBlock(testVatScheme)
       }

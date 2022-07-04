@@ -76,23 +76,4 @@ class BusinessSpec extends BaseSpec with VatRegistrationFixture {
       Business.format.writes(testBusiness) mustBe businessJson
     }
   }
-
-  "tempReads" must {
-    "read the VatScheme json into a model" in {
-      Business.tempReads.reads(Json.toJson(testFullVatScheme.copy(business = None))(VatScheme.writes())) mustBe JsSuccess(Business(
-        email = testBusinessContact.email,
-        telephoneNumber = testBusinessContact.telephoneNumber,
-        website = testBusinessContact.website,
-        ppobAddress = Some(testBusinessContact.ppob),
-        contactPreference = Some(testBusinessContact.commsPreference),
-        hasWebsite = testBusinessContact.hasWebsite,
-        businessDescription = Some(testSicAndCompliance.businessDescription),
-        labourCompliance = testSicAndCompliance.labourCompliance,
-        mainBusinessActivity = Some(testSicAndCompliance.mainBusinessActivity),
-        businessActivities = Some(testSicAndCompliance.businessActivities),
-        otherBusinessInvolvement = None,
-        hasLandAndProperty = None
-      ))
-    }
-  }
 }

@@ -59,22 +59,6 @@ class SectionValidationServiceSpec extends VatRegSpec
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is BusinessContact (legacy)" must {
-      "return ValidSection when the data is valid" in {
-        val data = Json.toJson(testBusinessContact)
-        val res = await(Service.validate(testInternalId, testRegId, BusinessContactSectionId, data))
-
-        res mustBe Right(ValidSection(data))
-      }
-    }
-    "the section is Compliance" must {
-      "return ValidSection when the data is valid" in {
-        val data = Json.toJson(testSicAndCompliance)
-        val res = await(Service.validate(testInternalId, testRegId, ComplianceSectionId, data))
-
-        res mustBe Right(ValidSection(data))
-      }
-    }
     "the section is Business" must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(testBusiness)

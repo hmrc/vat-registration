@@ -77,8 +77,6 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
             registrationRepository.insertVatScheme(vatScheme.copy(
               tradingDetails = None,
               returns = None,
-              sicAndCompliance = None,
-              businessContact = None,
               bankAccount = None,
               flatRateScheme = None,
               eligibilityData = None,

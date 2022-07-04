@@ -22,13 +22,12 @@ import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
 import models.api.returns.Returns
-import models.registration.{BusinessContactSectionId, BusinessSectionId, ComplianceSectionId}
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.Cursor.FailOnError
 import reactivemongo.api.commands.WriteResult.Message
 import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.api.{Cursor, ReadPreference, WriteConcern}
+import reactivemongo.api.{ReadPreference, WriteConcern}
 import reactivemongo.bson.{BSONDocument, BSONInteger, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
@@ -92,61 +91,6 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
       options = BSONDocument("expireAfterSeconds" -> BSONInteger(backendConfig.expiryInSeconds))
     )
   )
-
-  def runOnce: Any = {
-    collection.find(selector = Json.obj(), projection = Some(Json.obj()))
-      .cursor[JsValue](ReadPreference.primaryPreferred)
-      .foldWhileM(1, maxDocs = -1)(
-        { (count, schemeJson) =>
-          try {
-            val optBusiness = (schemeJson \ BusinessSectionId.repoKey).validate[Business].asOpt
-            val optBusinessContact = (schemeJson \ BusinessContactSectionId.repoKey).validate[BusinessContact].asOpt
-            val optSicAndCompliance = (schemeJson \ ComplianceSectionId.repoKey).validate[SicAndCompliance].asOpt
-
-            if (optBusiness.isEmpty && (optBusinessContact.isDefined || optSicAndCompliance.isDefined)) {
-              val mergedModel: Business = Business(
-                ppobAddress = optBusinessContact.map(_.ppob),
-                email = optBusinessContact.flatMap(_.email),
-                telephoneNumber = optBusinessContact.flatMap(_.telephoneNumber),
-                hasWebsite = optBusinessContact.flatMap(_.hasWebsite),
-                website = optBusinessContact.flatMap(_.website),
-                contactPreference = optBusinessContact.map(_.commsPreference),
-                hasLandAndProperty = optSicAndCompliance.flatMap(_.hasLandAndProperty),
-                businessDescription = optSicAndCompliance.map(_.businessDescription),
-                businessActivities = optSicAndCompliance.map(_.businessActivities),
-                mainBusinessActivity = optSicAndCompliance.map(_.mainBusinessActivity),
-                labourCompliance = optSicAndCompliance.flatMap(_.labourCompliance),
-                otherBusinessInvolvement = optSicAndCompliance.flatMap(_.otherBusinessInvolvement)
-              )
-
-              val scheme = Json.fromJson[VatScheme](schemeJson).getOrElse(throw new InternalServerException(s"[VatSchemeRepository][runOnce][$count] unparsable scheme"))
-
-              upsertSection(scheme.internalId, scheme.id, BusinessSectionId.repoKey, mergedModel)
-                .map { _ =>
-                  logger.info(s"[VatSchemeRepository][runOnce][$count] successfully updated ${scheme.id} to generate business block")
-                  Cursor.Cont(count + 1)
-                }
-            } else {
-              logger.info(s"[VatSchemeRepository][runOnce][$count] skipping update as business block exists or the scheme doesn't have BusinessContact/SicAndCompliance")
-              Future.successful(Cursor.Cont(count + 1))
-            }
-          } catch {
-            case _ =>
-              logger.warn(s"[VatSchemeRepository][runOnce][$count] unexpected error occurred when updating VatScheme")
-              Future.successful(Cursor.Cont(count + 1))
-          }
-        },
-        { (count, error) =>
-          error match {
-            case _ =>
-              logger.warn(s"[VatSchemeRepository][runOnce][$count] unexpected error occurred when getting VatScheme")
-              Cursor.Cont(count + 1)
-          }
-        }
-      )
-  }
-
-  runOnce
 
   def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
     val projection = Some(Json.obj("internalId" -> 1, "_id" -> 0))
@@ -264,26 +208,13 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
   }
 
   def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] = {
-    if (section.equals(BusinessSectionId.repoKey)) { //TODO Remove if block entirely when removing temp reads
-      val projection = Some(omitIdProjection)
-      collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
-        case Some(json) =>
-          (json \ BusinessSectionId.repoKey).validate[Business].orElse(json.validate[Business](Business.tempReads))
-            .asOpt.map(Json.toJson[Business])
-            .flatMap(_.as[JsObject].validate[T].asOpt)
-        case _ =>
-          logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
-          None
-      }
-    } else {
-      val projection = Some(Json.obj(section -> 1, "_id" -> 0))
-      collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
-        case Some(json) =>
-          (json \ section).validate[T].asOpt
-        case _ =>
-          logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
-          None
-      }
+    val projection = Some(Json.obj(section -> 1, "_id" -> 0))
+    collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
+      case Some(json) =>
+        (json \ section).validate[T].asOpt
+      case _ =>
+        logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+        None
     }
   }
 
@@ -433,14 +364,6 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
 
   def updateNrsSubmissionPayload(regId: String, encodedHTML: String): Future[String] =
     updateBlock[String](regId, encodedHTML, "nrsSubmissionPayload")
-
-  @deprecated("migrate to the new /registrations API")
-  def fetchSicAndCompliance(regId: String): Future[Option[SicAndCompliance]] =
-    fetchBlock[SicAndCompliance](regId, "sicAndCompliance")
-
-  @deprecated("migrate to the new /registrations API")
-  def updateSicAndCompliance(regId: String, sicAndCompliance: SicAndCompliance): Future[SicAndCompliance] =
-    updateBlock(regId, sicAndCompliance, "sicAndCompliance")
 
   @deprecated("migrate to the new /registrations API")
   def fetchFlatRateScheme(regId: String): Future[Option[FlatRateScheme]] =

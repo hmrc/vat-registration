@@ -33,9 +33,6 @@ GET          /:regId/status                         controllers.VatRegistrationC
 GET          /:regId/bank-account                   controllers.VatRegistrationController.fetchBankAccountDetails(regId)
 PATCH        /:regId/bank-account                   controllers.VatRegistrationController.updateBankAccountDetails(regId)
 
-GET         /:regId/sicAndComp                      controllers.SicAndComplianceController.getSicAndCompliance(regId: String)
-PATCH       /:regId/sicAndComp                      controllers.SicAndComplianceController.updateSicAndCompliance(regId: String)
-
 GET         /:regId/eligibility-data                controllers.EligibilityController.getEligibilityData(regId: String)
 PATCH       /:regId/eligibility-data                controllers.EligibilityController.updateEligibilityData(regId: String)
 
