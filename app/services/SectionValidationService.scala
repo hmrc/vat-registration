@@ -54,6 +54,7 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
       case TransactorSectionId => Future(validate[TransactorDetails](json))
       case TradingDetailsSectionId => Future(validate[TradingDetails](json))
       case OtherBusinessInvolvementsSectionId => Future(validate[List[OtherBusinessInvolvement]](json))
+      case BusinessSectionId => Future(validate[Business](json))
       case unknown => throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported section: ${unknown.toString}")
     }
 
