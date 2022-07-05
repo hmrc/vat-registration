@@ -213,7 +213,9 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
       val projection = Some(omitIdProjection)
       collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
         case Some(json) =>
-          (json \ BusinessSectionId.repoKey).validate[Business].orElse(json.validate[Business](Business.tempReads)).asOpt.map(_.asInstanceOf[T])
+          (json \ BusinessSectionId.repoKey).validate[Business].orElse(json.validate[Business](Business.tempReads))
+            .asOpt.map(Json.toJson[Business])
+            .flatMap(_.as[JsObject].validate[T].asOpt)
         case _ =>
           logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
           None
