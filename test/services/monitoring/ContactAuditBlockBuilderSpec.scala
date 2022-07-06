@@ -105,10 +105,10 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     }
   }
 
-  "the business contact data block is missing in the vat scheme" should {
+  "the business data block is missing in the vat scheme" should {
     "throw an exception" in {
       intercept[InternalServerException] {
-        TestService.buildContactBlock(testVatScheme.copy(businessContact = None))
+        TestService.buildContactBlock(testVatScheme.copy(business = None))
       }
     }
   }

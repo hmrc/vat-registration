@@ -32,8 +32,6 @@ case class VatScheme(id: String,
                      internalId: String,
                      tradingDetails: Option[TradingDetails] = None,
                      returns: Option[Returns] = None,
-                     sicAndCompliance: Option[SicAndCompliance] = None,
-                     businessContact: Option[BusinessContact] = None,
                      bankAccount: Option[BankAccount] = None,
                      acknowledgementReference: Option[String] = None,
                      flatRateScheme: Option[FlatRateScheme] = None,
@@ -78,8 +76,6 @@ object VatScheme {
         (__ \ "internalId").read[String] and
         (__ \ "tradingDetails").readNullable[TradingDetails] and
         (__ \ "returns").readNullable[Returns] and
-        (__ \ "sicAndCompliance").readNullable[SicAndCompliance] and
-        (__ \ "businessContact").readNullable[BusinessContact] and
         (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
         (__ \ "acknowledgementReference").readNullable[String] and
         (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
@@ -95,18 +91,13 @@ object VatScheme {
         (__ \ "createdDate").readNullable[LocalDate] and
         (__ \ "applicationReference").readNullable[String] and
         (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
-        (__ \ BusinessSectionId.repoKey).read[Business].fmap(Option[Business]).orElse(__.readNullable[Business](Business.tempReads).fmap {
-          case Some(Business(None, None, None, None, None, None, None, None, None, None, None, None)) => None
-          case optBusiness => optBusiness
-        }) //TODO Replace with (__ \ BusinessSectionId.repoKey).readNullable[Business] when removing temp reads
+        (__ \ BusinessSectionId.repoKey).readNullable[Business]
         ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
         (__ \ "tradingDetails").readNullable[TradingDetails] and
         (__ \ "returns").readNullable[Returns] and
-        (__ \ "sicAndCompliance").readNullable[SicAndCompliance] and
-        (__ \ "businessContact").readNullable[BusinessContact] and
         (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
         (__ \ "acknowledgementReference").readNullable[String] and
         (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
@@ -122,10 +113,7 @@ object VatScheme {
         (__ \ "createdDate").readNullable[LocalDate] and
         (__ \ "applicationReference").readNullable[String] and
         (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
-        (__ \ BusinessSectionId.repoKey).read[Business].fmap(Option[Business]).orElse(__.readNullable[Business](Business.tempReads).fmap {
-          case Some(Business(None, None, None, None, None, None, None, None, None, None, None, None)) => None
-          case optBusiness => optBusiness
-        }) //TODO Replace with (__ \ BusinessSectionId.repoKey).readNullable[Business] when removing temp reads
+        (__ \ BusinessSectionId.repoKey).readNullable[Business]
         ) (VatScheme.apply _)
     }
 
@@ -134,8 +122,6 @@ object VatScheme {
     (__ \ "internalId").write[String] and
     (__ \ "tradingDetails").writeNullable[TradingDetails] and
     (__ \ "returns").writeNullable[Returns] and
-    (__ \ "sicAndCompliance").writeNullable[SicAndCompliance] and
-    (__ \ "businessContact").writeNullable[BusinessContact] and
     (__ \ "bankAccount").writeNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
     (__ \ "acknowledgementReference").writeNullable[String] and
     (__ \ "flatRateScheme").writeNullable[FlatRateScheme] and

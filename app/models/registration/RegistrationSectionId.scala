@@ -38,16 +38,6 @@ case object BankAccountSectionId extends RegistrationSectionId {
   val repoKey = "bankAccount"
 }
 
-case object BusinessContactSectionId extends RegistrationSectionId {
-  val key = "business-contact"
-  val repoKey = "businessContact"
-}
-
-case object ComplianceSectionId extends RegistrationSectionId {
-  val key = "compliance"
-  val repoKey = "sicAndCompliance"
-}
-
 case object EligibilitySectionId extends RegistrationSectionId {
   val key = "eligibility"
   val repoKey = "eligibilitySubmissionData"
@@ -95,8 +85,6 @@ object RegistrationSectionId {
             case ("section", ApplicantSectionId.key) => Right(ApplicantSectionId)
             case ("section", AttachmentsSectionId.key) => Right(AttachmentsSectionId)
             case ("section", BankAccountSectionId.key) => Right(BankAccountSectionId)
-            case ("section", BusinessContactSectionId.key) => Right(BusinessContactSectionId)
-            case ("section", ComplianceSectionId.key) => Right(ComplianceSectionId)
             case ("section", EligibilitySectionId.key) => Right(EligibilitySectionId)
             case ("section", FlatRateSchemeSectionId.key) => Right(FlatRateSchemeSectionId)
             case ("section", PartnersSectionId.key) => Right(PartnersSectionId)

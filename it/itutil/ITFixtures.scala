@@ -218,34 +218,6 @@ trait ITFixtures {
       roleInBusiness = OwnerProprietor
     )
 
-  val testBusinessContactDetails = BusinessContact(email = Some("test@test.com"), telephoneNumber = Some("12345678910"), mobile = Some("12345678910"), website = None, ppob = testFullAddress, commsPreference = Email, hasWebsite = Some(false))
-  val testFullBusinessContactDetails = BusinessContact(email = Some("test@test.com"), telephoneNumber = Some("12345678910"), mobile = Some("12345678910"), website = Some(testWebsite), ppob = testFullAddress, commsPreference = Email, hasWebsite = Some(true))
-
-  val testSicAndCompliance = SicAndCompliance(
-    businessDescription = "businessDesc",
-    labourCompliance = Some(ComplianceLabour(
-      numOfWorkersSupplied = Some(1),
-      intermediaryArrangement = Some(true),
-      supplyWorkers = true)
-    ),
-    mainBusinessActivity = SicCode("12345", "sicDesc", "sicDetail"),
-    businessActivities = List(SicCode("12345", "sicDesc", "sicDetail")))
-
-  val testFullSicAndCompliance = SicAndCompliance(
-    businessDescription = "businessDesc",
-    labourCompliance = Some(ComplianceLabour(
-      numOfWorkersSupplied = Some(1),
-      intermediaryArrangement = Some(true),
-      supplyWorkers = true)
-    ),
-    mainBusinessActivity = SicCode("12345", "sicDesc", "sicDetail"),
-    businessActivities = List(
-      SicCode("00002", "sicDesc", "sicDetail"),
-      SicCode("00003", "sicDesc", "sicDetail"),
-      SicCode("00004", "sicDesc", "sicDetail")
-    )
-  )
-
   lazy val testBusinessDescription = "testBusinessDescription"
   lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = true)
   lazy val testSicCode1 = "12345"
@@ -309,8 +281,6 @@ trait ITFixtures {
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     tradingDetails = Some(testTradingDetails),
-    sicAndCompliance = Some(testFullSicAndCompliance),
-    businessContact = Some(testFullBusinessContactDetails),
     bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
@@ -327,8 +297,6 @@ trait ITFixtures {
       internalId = testInternalid,
       tradingDetails = Some(testTradingDetails),
       returns = Some(testAASReturns),
-      sicAndCompliance = Some(testSicAndCompliance),
-      businessContact = Some(testBusinessContactDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
@@ -364,8 +332,6 @@ trait ITFixtures {
       tradingDetails = Some(testTradingDetails),
       transactorDetails = Some(testAgentTransactorDetails),
       returns = Some(testAASReturns),
-      sicAndCompliance = Some(testSicAndCompliance),
-      businessContact = Some(testBusinessContactDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
@@ -383,8 +349,6 @@ trait ITFixtures {
       internalId = testInternalid,
       tradingDetails = Some(testTradingDetails),
       returns = Some(testReturns),
-      sicAndCompliance = Some(testSicAndCompliance),
-      businessContact = Some(testBusinessContactDetails),
       bankAccount = Some(BankAccount(isProvided = false, None, None, Some(BeingSetup))),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(FlatRateScheme(joinFrs = false, None)),
@@ -641,10 +605,6 @@ trait ITFixtures {
       roleInBusiness = OwnerProprietor
     )
 
-  val testNetpBusinessContact: BusinessContact = testFullBusinessContactDetails.copy(
-    ppob = testOverseasAddress
-  )
-
   lazy val testNetpVatScheme: VatScheme =
     testFullVatScheme.copy(
       applicantDetails = Some(testNetpApplicantDetails),
@@ -653,7 +613,6 @@ trait ITFixtures {
       returns = Some(testNetpReturns),
       tradingDetails = Some(testNetpTradingDetails),
       flatRateScheme = None,
-      businessContact = Some(testNetpBusinessContact),
       attachments = Some(Attachments(Post)),
       business = Some(testBusiness.copy(ppobAddress = Some(testOverseasAddress)))
     )

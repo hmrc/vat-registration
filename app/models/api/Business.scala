@@ -16,8 +16,7 @@
 
 package models.api
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Json, OFormat, Reads, __}
+import play.api.libs.json.{Json, OFormat}
 
 case class Business(ppobAddress: Option[Address],
                     email: Option[String],
@@ -38,21 +37,6 @@ case class Business(ppobAddress: Option[Address],
 
 
 object Business {
-
-  val tempReads: Reads[Business] = (
-    (__ \ "businessContact" \ "ppob").readNullable[Address] and
-      (__ \ "businessContact" \ "email").readNullable[String] and
-      (__ \ "businessContact" \ "telephoneNumber").readNullable[String] and
-      (__ \ "businessContact" \ "hasWebsite").readNullable[Boolean] and
-      (__ \ "businessContact" \ "website").readNullable[String] and
-      (__ \ "businessContact" \ "contactPreference").readNullable[ContactPreference] and
-      (__ \ "sicAndCompliance" \ "hasLandAndProperty").readNullable[Boolean] and
-      (__ \ "sicAndCompliance" \ "businessDescription").readNullable[String] and
-      (__ \ "sicAndCompliance" \ "businessActivities").readNullable[List[SicCode]] and
-      (__ \ "sicAndCompliance" \ "mainBusinessActivity").readNullable[SicCode] and
-      (__ \ "sicAndCompliance" \ "labourCompliance").readNullable[ComplianceLabour] and
-      (__ \ "sicAndCompliance" \ "otherBusinessInvolvement").readNullable[Boolean]
-    ) (Business.apply _)
 
   implicit val format: OFormat[Business] = Json.format[Business]
 

@@ -644,7 +644,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .user.isAuthorised
           .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader.copy(
           attachments = Some(Attachments(method = Attached)),
-          sicAndCompliance = Some(testSicAndCompliance.copy(hasLandAndProperty = Some(true))),
           business = Some(testBusiness.copy(hasLandAndProperty = Some(true)))
         ), repo.insert)
           .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference), upscanMongoRepository.insert)

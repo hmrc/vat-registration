@@ -20,13 +20,14 @@ import auth.CryptoSCRS
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api.BankAccountMongoFormat
-import models.registration.{BankAccountSectionId, BusinessContactSectionId}
+import models.registration.{BankAccountSectionId, BusinessSectionId}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.InternalServerException
 
 class CipherServiceSpec extends VatRegSpec with VatRegistrationFixture {
 
   val crypto = app.injector.instanceOf[CryptoSCRS]
+
   object Service extends CipherService(crypto)
 
   "conditionallyEncrypt" must {
@@ -40,11 +41,11 @@ class CipherServiceSpec extends VatRegSpec with VatRegistrationFixture {
     }
 
     "return section without encryption if the section is not BankAccount" in {
-      val nonEncryptedBusinessContact = Json.toJson(testBusinessContact)
+      val nonEncryptedBusiness = Json.toJson(testBusiness)
 
-      val result = Service.conditionallyEncrypt(BusinessContactSectionId, nonEncryptedBusinessContact)
+      val result = Service.conditionallyEncrypt(BusinessSectionId, nonEncryptedBusiness)
 
-      result mustBe nonEncryptedBusinessContact
+      result mustBe nonEncryptedBusiness
     }
 
     "throw an exception when BankAccount format is not valid" in {
@@ -67,11 +68,11 @@ class CipherServiceSpec extends VatRegSpec with VatRegistrationFixture {
     }
 
     "return section without decryption if the section is not BankAccount" in {
-      val nonEncryptedBusinessContact = Json.toJson(testBusinessContact)
+      val nonEncryptedBusiness = Json.toJson(testBusiness)
 
-      val result = Service.conditionallyDecrypt(BusinessContactSectionId, nonEncryptedBusinessContact)
+      val result = Service.conditionallyDecrypt(BusinessSectionId, nonEncryptedBusiness)
 
-      result mustBe nonEncryptedBusinessContact
+      result mustBe nonEncryptedBusiness
     }
 
     "throw an exception when BankAccount format is not valid" in {

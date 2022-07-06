@@ -13,8 +13,6 @@ class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with Submissi
 
   override lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     tradingDetails = Some(testTradingDetails),
-    sicAndCompliance = Some(testFullSicAndCompliance.copy(otherBusinessInvolvement = Some(true))),
-    businessContact = Some(testFullBusinessContactDetails),
     bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
