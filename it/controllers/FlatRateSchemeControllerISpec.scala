@@ -121,8 +121,7 @@ class FlatRateSchemeControllerISpec extends IntegrationStubbing {
 
     "return OK if no data updated because data to be updated already exists" in new Setup {
       given.user.isAuthorised
-
-      await(repo.insert(vatScheme))
+      insertIntoDb(vatScheme)
 
       val response: WSResponse = await(client(FlatRateSchemeController.updateFlatRateScheme("regId").url)
         .patch(validFullFlatRateSchemeJson))

@@ -49,8 +49,9 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
     "return OK with upscan details if data exists" in new SetupHelper {
       given
         .user.isAuthorised
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
         .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.getUpscanDetails(testRegId, testReference).url).get)
 
@@ -58,9 +59,8 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
     }
 
     "return NOT_FOUND if data does not exist" in new SetupHelper {
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+      given.user.isAuthorised
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.getUpscanDetails(testRegId, testReference).url).get)
 
@@ -72,8 +72,9 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
     "return OK with all upscan details if data exists" in new SetupHelper {
       given
         .user.isAuthorised
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
         .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.getAllUpscanDetails(testRegId).url).get)
 
@@ -85,9 +86,8 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
     }
 
     "return OK with empty list of upscan details if not data available" in new SetupHelper {
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+      given.user.isAuthorised
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.getAllUpscanDetails(testRegId).url).get)
 
@@ -100,9 +100,8 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
 
   "POST /:regId/upscan-reference" must {
     "return OK after successfully creating upscan details" in new SetupHelper {
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+      given.user.isAuthorised
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.createUpscanDetails(testRegId).url)
         .post(testReferenceJson))
@@ -140,7 +139,8 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
       given
         .user.isAuthorised
         .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       stubAudit(OK)
       stubMergedAudit(OK)
@@ -160,7 +160,8 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
         .user.isAuthorised
         .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
         .upscanDetailsRepo.insertIntoDb(testUpscanDetails.copy(reference = testReference2), upscanMongoRepository.insert)
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       stubAudit(OK)
       stubMergedAudit(OK)
