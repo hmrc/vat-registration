@@ -24,6 +24,7 @@ object CompileDependencies {
   val domainVersion = "6.2.0-play-28"
   val bootstrapVersion = "5.16.0"
   val simpleReactiveMongoVersion = "8.0.0-play-28"
+  val hmrcMongoVersion = "0.66.0"
   val catsVersion = "1.0.0"
 
   private val playJsonVersion = "2.9.2"
@@ -31,6 +32,7 @@ object CompileDependencies {
 
   val compile = Seq(
     "uk.gov.hmrc" %% "simple-reactivemongo" % simpleReactiveMongoVersion,
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % hmrcMongoVersion,
     "uk.gov.hmrc" %% "bootstrap-backend-play-28" % bootstrapVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
     "org.typelevel" %% "cats-core" % catsVersion,

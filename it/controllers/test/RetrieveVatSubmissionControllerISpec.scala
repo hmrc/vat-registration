@@ -15,7 +15,7 @@ class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with Inte
   "/test-only/submissions/:regId/submission-payload" must {
     "return OK with the submission Json" in new SetupHelper {
       given.user.isAuthorised
-        .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
+      insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner)
 
       val expectedJson = builder.buildSubmissionPayload(testFullVatSchemeWithUnregisteredBusinessPartner)
       val res = client(url).get

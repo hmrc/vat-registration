@@ -26,7 +26,7 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime}
 
 case class VatScheme(id: String,
                      internalId: String,

@@ -5,16 +5,15 @@ import auth.CryptoSCRS
 import itutil._
 import models.api.VatScheme
 import models.registration.{ApplicantSectionId, TransactorSectionId}
+import org.mongodb.scala.Document
+import org.mongodb.scala.model.Filters.{and, equal => mongoEqual}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers.{await, _}
-import reactivemongo.api.commands.WriteResult
 import repositories.VatSchemeRepository
 import services.RegistrationIdService
 import utils.TimeMachine
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class RegistrationRepositoryISpec extends MongoBaseSpec
   with FutureAssertions
@@ -34,15 +33,9 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
     val repo: VatSchemeRepository = app.injector.instanceOf[VatSchemeRepository]
     val crypto = app.injector.instanceOf[CryptoSCRS]
 
-    def regAsJson(registration: VatScheme): JsValue = VatScheme.writes(Some(crypto)).writes(registration).as[JsObject] + ("timestamp" -> Json.obj("$date" -> 1483228800000L))
+    def regAsJson(registration: VatScheme): JsValue = VatScheme.writes(Some(crypto)).writes(registration).as[JsObject]
 
-    def insert(json: JsObject): WriteResult = await(repo.collection.insert(json))
-
-    def count: Int = await(repo.count)
-
-    def fetchAll: Option[JsObject] = await(repo.collection.find(Json.obj()).one[JsObject])
-
-    await(repo.drop)
+    await(repo.collection.drop().toFuture())
     await(repo.ensureIndexes)
   }
 
@@ -51,7 +44,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
       FakeRegistrationIdService.id = testRegId
       await(repo.createNewVatScheme(testRegId, testInternalid))
 
-      val res = await(repo.find("internalId" -> testInternalid))
+      val res = await(repo.collection.find(mongoEqual("internalId", testInternalid)).toFuture())
 
       res mustBe List(testEmptyVatScheme(testRegId))
     }
@@ -170,7 +163,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
       await(repo.createNewVatScheme(testRegId, testInternalid))
 
       val res = await(repo.upsertSection[JsValue](testInternalid, testRegId, TransactorSectionId.repoKey, Json.toJson(testTransactorDetails)))
-      val regs = await(repo.find("internalId" -> testInternalid, "registrationId" -> testRegId))
+      val regs = await(repo.collection.find(and(mongoEqual("internalId", testInternalid), mongoEqual("registrationId", testRegId))).toFuture())
 
       res mustBe Some(Json.toJson(testTransactorDetails))
       regs.headOption mustBe Some(testEmptyVatScheme(testRegId).copy(transactorDetails = Some(testTransactorDetails)))
@@ -179,7 +172,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
       await(repo.createNewVatScheme(testRegId, testInternalid))
 
       val res = await(repo.upsertSection[JsValue](testInternalid, testRegId, TransactorSectionId.repoKey, Json.toJson(testTransactorDetails)))
-      val regs = await(repo.find("internalId" -> testInternalid, "registrationId" -> testRegId))
+      val regs = await(repo.collection.find(and(mongoEqual("internalId", testInternalid), mongoEqual("registrationId", testRegId))).toFuture())
 
       res mustBe Some(Json.toJson(testTransactorDetails))
       regs.headOption mustBe Some(testEmptyVatScheme(testRegId).copy(transactorDetails = Some(testTransactorDetails)))
@@ -192,14 +185,14 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
       await(repo.upsertSection(testRegId, testInternalid, TransactorSectionId.repoKey, Json.toJson(testTransactorDetails)))
 
       val res = await(repo.deleteSection(testInternalid, testRegId, TransactorSectionId.repoKey))
-      val regs = await(repo.find("internalId" -> testInternalid, "registrationId" -> testRegId))
+      val regs = await(repo.collection.find(and(mongoEqual("internalId", testInternalid), mongoEqual("registrationId", testRegId))).toFuture())
 
       res mustBe true
       regs.headOption mustBe Some(testEmptyVatScheme(testRegId))
     }
     "pass after doing nothing if the registration doesn't exist" in new Setup {
       val res = await(repo.deleteSection(testInternalid, testRegId, TransactorSectionId.repoKey))
-      val regs = await(repo.find("internalId" -> testInternalid, "registrationId" -> testRegId))
+      val regs = await(repo.collection.find(and(mongoEqual("internalId", testInternalid), mongoEqual("registrationId", testRegId))).toFuture())
 
       res mustBe true
       regs.headOption mustBe None

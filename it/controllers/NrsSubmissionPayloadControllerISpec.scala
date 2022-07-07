@@ -21,7 +21,7 @@ class NrsSubmissionPayloadControllerISpec extends IntegrationStubbing {
   "storeNrsSubmissionPayload" should {
     "return OK" in new Setup {
       given.user.isAuthorised
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId), repo.insert)
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       val response: WSResponse = await(client(routes.NrsSubmissionPayloadController.storeNrsSubmissionPayload(testRegId).url)
         .patch(testPayload)
@@ -34,7 +34,7 @@ class NrsSubmissionPayloadControllerISpec extends IntegrationStubbing {
     "return OK if there is already a payload stored" in new Setup {
       val testOldPayload = "testOldPayload"
       given.user.isAuthorised
-        .regRepo.insertIntoDb(testEmptyVatScheme(testRegId).copy(nrsSubmissionPayload = Some(testOldPayload)), repo.insert)
+      insertIntoDb(testEmptyVatScheme(testRegId).copy(nrsSubmissionPayload = Some(testOldPayload)))
 
       val response: WSResponse = await(client(routes.NrsSubmissionPayloadController.storeNrsSubmissionPayload(testRegId).url)
         .patch(testPayload)

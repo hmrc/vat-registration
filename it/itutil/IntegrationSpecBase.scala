@@ -26,7 +26,6 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSRequest}
 import play.api.test.DefaultAwaitTimeout
 import play.api.test.Helpers._
-import reactivemongo.api.commands.WriteResult
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import repositories.{UpscanMongoRepository, VatSchemeRepository}
 import utils.{IdGenerator, TimeMachine}
@@ -90,7 +89,7 @@ trait IntegrationSpecBase extends PlaySpec
   lazy val upscanMongoRepository: UpscanMongoRepository = app.injector.instanceOf[UpscanMongoRepository]
 
   trait SetupHelper {
-    await(repo.drop)
+    await(repo.collection.drop.toFuture())
     await(repo.ensureIndexes)
     await(dailyQuotaRepo.drop)
     await(dailyQuotaRepo.ensureIndexes)
@@ -99,11 +98,11 @@ trait IntegrationSpecBase extends PlaySpec
     await(upscanMongoRepository.drop)
     await(upscanMongoRepository.ensureIndexes)
 
-    def insertIntoDb(vatScheme: VatScheme): WriteResult = {
+    def insertIntoDb(vatScheme: VatScheme) = {
       implicit val format = VatScheme.format()
-      val count = await(repo.count)
-      val res = await(repo.insert(vatScheme))
-      await(repo.count) mustBe count + 1
+      val count = await(repo.collection.countDocuments().toFuture())
+      val res = await(repo.collection.insertOne(vatScheme).toFuture())
+      await(repo.collection.countDocuments().toFuture()) mustBe count + 1
       res
     }
 

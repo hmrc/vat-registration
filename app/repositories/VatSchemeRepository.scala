@@ -17,284 +17,259 @@
 package repositories
 
 import auth.{AuthorisationResource, CryptoSCRS}
+import com.mongodb.client.model.ReturnDocument
 import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
 import models.api.returns.Returns
+import org.mongodb.scala.Document
+import org.mongodb.scala.model.Filters.{and, equal}
+import org.mongodb.scala.model.Indexes.{ascending, descending}
+import org.mongodb.scala.model.Projections.include
+import org.mongodb.scala.model.Updates.{combine, set, unset}
+import org.mongodb.scala.model.{FindOneAndReplaceOptions, IndexModel, IndexOptions, UpdateOptions}
+import play.api.Logging
 import play.api.libs.json._
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.Cursor.FailOnError
-import reactivemongo.api.commands.WriteResult.Message
-import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.api.{ReadPreference, WriteConcern}
-import reactivemongo.bson.{BSONDocument, BSONInteger, BSONObjectID}
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import utils.{JsonErrorUtil, TimeMachine}
 
-import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 // scalastyle:off
 @Singleton
-class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
+class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
                                     crypto: CryptoSCRS,
                                     timeMachine: TimeMachine,
                                     backendConfig: BackendConfig
                                    )(implicit executionContext: ExecutionContext)
-  extends ReactiveRepository[VatScheme, BSONObjectID](
+  extends PlayMongoRepository[VatScheme](
     collectionName = "registration-information",
-    mongo = mongo.mongoConnector.db,
-    domainFormat = VatScheme.format(Some(crypto))
-  ) with ReactiveMongoFormats with AuthorisationResource with JsonErrorUtil {
-
-  startUp
+    mongoComponent = mongoComponent,
+    domainFormat = VatScheme.format(Some(crypto)),
+    indexes = Seq(
+      IndexModel(
+        keys = ascending("registrationId"),
+        indexOptions = IndexOptions()
+          .name("RegIdA")
+          .unique(true)
+      ),
+      IndexModel(
+        keys = ascending("registrationId", "internalId"),
+        indexOptions = IndexOptions()
+          .name("RegIdAndInternalId")
+          .unique(true)
+      ),
+      IndexModel(
+        keys = ascending("timestamp"),
+        indexOptions = IndexOptions()
+          .name("TTL")
+          .unique(false)
+          .expireAfter(backendConfig.expiryInSeconds, TimeUnit.SECONDS)
+      )
+    )
+  ) with AuthorisationResource with JsonErrorUtil with Logging {
 
   private val bankAccountCryptoFormatter = BankAccountMongoFormat.encryptedFormat(crypto)
   private val acknowledgementRefPrefix = "VRS"
-  private val omitIdProjection = Json.obj("_id" -> 0)
+  private val rootKey = ""
+  private val timestampKey = "timestamp"
+  private val internalIdKey = "internalId"
 
-  def startUp: Future[Unit] = collection.indexesManager.list() map { indexes =>
-    logger.info("[Startup] Outputting current indexes")
-    indexes foreach { index =>
-      val name = index.name.getOrElse("<no-name>")
-      val keys = (index.key map { case (k, a) => s"$k -> ${a.value}" }) mkString (",")
-      logger.info(s"[Index] name: $name keys: $keys unique: ${index.unique} sparse: ${index.sparse}")
-    }
-    logger.info("[Startup] Finished outputting current indexes")
-  }
-
-  override def indexes: Seq[Index] = Seq(
-    Index(
-      name = Some("RegId"),
-      key = Seq("registrationId" -> IndexType.Ascending),
-      unique = true
-    ),
-    Index(
-      name = Some("RegIdAndInternalId"),
-      key = Seq(
-        "registrationId" -> IndexType.Ascending,
-        "internalId" -> IndexType.Ascending
-      ),
-      unique = true
-    ),
-    Index(
-      name = Some("TTL"),
-      key = Seq(
-        "timestamp" -> IndexType.Ascending
-      ),
-      unique = false,
-      options = BSONDocument("expireAfterSeconds" -> BSONInteger(backendConfig.expiryInSeconds))
-    )
-  )
-
-  def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
-    val projection = Some(Json.obj("internalId" -> 1, "_id" -> 0))
-    collection.find(registrationSelector(id), projection).one[JsObject].map {
-      _.map(js => (js \ "internalId").as[String])
-    }
-  }
+  def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
+    collection
+      .find(registrationSelector(id))
+      .first()
+      .map(_.internalId)
+      .headOption()
 
   @deprecated("migrate to the new /registrations API")
-  def fetchBlock[T](regId: String, key: String)(implicit rds: Reads[T]): Future[Option[T]] = {
-    val projection = Some(Json.obj(key -> 1))
-    collection.find(registrationSelector(regId), projection).one[JsObject].map { doc =>
-      doc.fold(throw MissingRegDocument(regId)) { js =>
-        (js \ key).validateOpt[T].get
+  def fetchBlock[T](regId: String, key: String)(implicit rds: Reads[T]): Future[Option[T]] =
+    collection
+      .find[Document](registrationSelector(regId))
+      .projection(include(key))
+      .headOption()
+      .map {
+        case Some(doc) => (Json.parse(doc.toJson()) \ key).validateOpt[T].get
+        case _ => throw MissingRegDocument(regId)
       }
-    }
-  }
 
   @deprecated("migrate to the new /registrations API")
-  def updateBlock[T](regId: String, data: T, key: String = "")(implicit writes: Writes[T]): Future[T] = {
-    def toCamelCase(str: String): String = str.head.toLower + str.tail
-
-    val selectorKey = if (key == "") toCamelCase(data.getClass.getSimpleName) else key
-
-    val setDoc = Json.obj("$set" -> Json.obj(selectorKey -> Json.toJson(data)))
-    collection.update.one(registrationSelector(regId), setDoc) map { updateResult =>
-      if (updateResult.n == 0) {
-        logger.warn(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
-        throw MissingRegDocument(regId)
-      } else {
-        logger.info(s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${updateResult.nModified}")
-        data
+  def updateBlock[T](regId: String, data: T, key: String)(implicit writes: Writes[T]): Future[T] = {
+    collection
+      .updateOne(
+        filter = registrationSelector(regId),
+        update = combine(set(key, Codecs.toBson(data)), set(timestampKey, timeMachine.timestamp)),
+        options = UpdateOptions().upsert(false)
+      )
+      .toFuture()
+      .map { result =>
+        if (result.getModifiedCount > 0) {
+          data
+        } else {
+          throw MissingRegDocument(regId)
+        }
       }
-    } recover {
-      case e =>
-        logger.warn(s"Unable to update ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId, Error: ${e.getMessage}")
-        throw e
-    }
   }
 
   def createNewVatScheme(regId: String, intId: String): Future[VatScheme] = {
-    val set = Json.obj(
-      "registrationId" -> Json.toJson[String](regId),
-      "status" -> Json.toJson(VatRegStatus.draft),
-      "internalId" -> Json.toJson[String](intId),
-      "createdDate" -> Json.toJson(timeMachine.today),
-      "timestamp" -> Json.obj("$date" -> timeMachine.timestamp.toInstant(ZoneOffset.UTC).toEpochMilli)
+    val doc = VatScheme(
+      id = regId,
+      internalId = intId,
+      status = VatRegStatus.draft,
+      createdDate = Some(timeMachine.today)
     )
-    collection.insert.one(set).map { _ =>
-      VatScheme(regId, internalId = intId, status = VatRegStatus.draft, createdDate = Some(timeMachine.today))
-    }.recover {
-      case e: Exception =>
-        logger.error(s"[RegistrationMongoRepository] [createNewVatScheme] threw an exception when attempting to create a new record with exception: ${e.getMessage} for regId: $regId and internalid: $intId")
-        throw InsertFailed(regId, "VatScheme")
-    }
+    collection
+      .insertOne(doc)
+      .toFuture()
+      .flatMap { _ =>
+        collection.updateOne(registrationSelector(regId, Some(intId)), set(timestampKey, timeMachine.timestamp))
+          .toFuture()
+          .map(_ => doc)
+      }
   }
 
   def insertVatScheme(vatScheme: VatScheme): Future[VatScheme] = {
-    implicit val vatSchemeWrites: OWrites[VatScheme] = VatScheme.format(Some(crypto))
-
-    collection.update.one(registrationSelector(vatScheme.id), vatScheme, upsert = true).map { writeResult =>
-      logger.info(s"[RegistrationMongoRepository] [insertVatScheme] successfully stored a preexisting VatScheme")
-      vatScheme
-    }.recover {
-      case e: Exception =>
-        logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: ${vatScheme.id}")
-        throw e
+    collection
+      .findOneAndReplace(
+        filter = registrationSelector(vatScheme.id, Some(vatScheme.internalId)),
+        replacement = vatScheme,
+        options = FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true)
+      )
+      .toFuture()
+      .recover {
+        case e: Exception =>
+          logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: ${vatScheme.id}")
+          throw e
+      }
     }
-  }
 
   def getAllRegistrations(internalId: String): Future[List[JsValue]] =
     collection
-      .find(
-        selector = Json.obj("internalId" -> internalId),
-        projection = Some(omitIdProjection)
-      )
-      .cursor[JsValue](ReadPreference.primaryPreferred)
-      .collect(maxDocs = -1, FailOnError[List[JsValue]]())
+      .find(equal(internalIdKey, internalId))
+      .collect()
+      .toFuture()
+      .map(_.toList.map(scheme => Json.toJson(scheme)(VatScheme.format())))
 
-  def getRegistration(internalId: String, regId: String): Future[Option[JsValue]] = {
-    collection.find(
-      selector = Json.obj("registrationId" -> regId, "internalId" -> internalId),
-      projection = Some(omitIdProjection)
-    ).one[JsValue]
-  }
+  def getRegistration(internalId: String, regId: String): Future[Option[JsValue]] =
+    collection
+      .find(registrationSelector(regId, Some(internalId)))
+      .first()
+      .toFutureOption()
+      .map(_.map(scheme => Json.toJson(scheme)(VatScheme.format())))
 
   def upsertRegistration(internalId: String, regId: String, data: JsValue): Future[Option[JsValue]] = {
-    collection.findAndUpdate(
-      selector = BSONDocument("registrationId" -> regId, "internalId" -> internalId),
-      update = Json.obj("$set" -> data.as[JsObject]),
-      fetchNewObject = true,
-      upsert = true,
-      sort = None,
-      fields = Some(Json.obj("_id" -> 0)),
-      bypassDocumentValidation = false,
-      writeConcern = WriteConcern.Default,
-      maxTime = None,
-      collation = None,
-      arrayFilters = Nil
-    ).map { writeResult =>
-      logger.info(s"[RegistrationMongoRepository] [insertVatScheme] successfully stored a preexisting VatScheme")
-      writeResult.result[JsValue]
-    }.recoverWith {
-      case e: Exception =>
-        logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: $regId")
-        throw new InternalServerException(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: $regId, error: ${e.getMessage}")
-    }
-  }
-
-  def deleteRegistration(internalId: String, regId: String): Future[Boolean] = {
-    collection.delete.one(registrationSelector(regId, Some(internalId))) map { wr =>
-      if (!wr.ok) logger.error(s"[deleteVatScheme] - Error deleting vat reg doc for regId $regId - Error: ${Message.unapply(wr)}")
-      wr.ok
-    }
-  }
-
-  def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] = {
-    val projection = Some(Json.obj(section -> 1, "_id" -> 0))
-    collection.find(registrationSelector(regId, Some(internalId)), projection).one[JsObject].map {
-      case Some(json) =>
-        (json \ section).validate[T].asOpt
-      case _ =>
-        logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
-        None
-    }
-  }
-
-  def upsertSection[T](internalId: String, regId: String, section: String = "", data: T)(implicit writes: Writes[T]): Future[Option[T]] = {
-    def toCamelCase(str: String): String = str.head.toLower + str.tail
-
-    val selectorKey = if (section == "") toCamelCase(data.getClass.getSimpleName) else section
-
-    val setDoc = Json.obj("$set" -> Json.obj(selectorKey -> Json.toJson(data)))
-    collection.update.one(registrationSelector(regId, Some(internalId)), setDoc, upsert = true) map { updateResult =>
-      if (updateResult.n == 0) {
-        logger.warn(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
-        None
-      } else {
-        logger.info(s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${updateResult.nModified}")
-        Some(data)
+    val json = data.as[JsObject] ++ Json.obj("internalId" -> internalId)
+    val scheme = json.validate[VatScheme](VatScheme.format(Some(crypto))).getOrElse(throw new InternalServerException("[upsertRegistration] Couldn't validate given JSON as a VatScheme"))
+    collection
+      .findOneAndReplace(
+        filter = registrationSelector(regId, Some(internalId)),
+        replacement = scheme,
+        options = FindOneAndReplaceOptions().upsert(true))
+      .toFutureOption()
+      .flatMap { _ =>
+        collection.updateOne(registrationSelector(regId, Some(internalId)), set(timestampKey, timeMachine.timestamp))
+          .toFutureOption()
+          .map(_.map(_ => data))
       }
-    } recover {
-      case e =>
-        logger.warn(s"Unable to update ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId")
-        throw new InternalServerException(s"Unable to update section ${toCamelCase(data.getClass.getSimpleName)} for regId: $regId, error: ${e.getMessage}")
-    }
   }
 
-  def deleteSection(internalId: String, regId: String, section: String): Future[Boolean] = {
-    val update = Json.obj("$unset" -> Json.obj(section -> ""))
-    collection.update.one(registrationSelector(regId, Some(internalId)), update) map { updateResult =>
-      if (updateResult.n == 0) {
-        logger.warn(s"[RegistrationRepository] removing for regId : $regId - No document found")
-        true
-      } else {
-        logger.info(s"[RegistrationRepository] removing for regId : $regId - documents modified : ${updateResult.nModified}")
-        true
+  def deleteRegistration(internalId: String, regId: String): Future[Boolean] =
+    collection
+      .deleteOne(registrationSelector(regId, Some(internalId)))
+      .toFuture()
+      .map { deletion =>
+        if (deletion.getDeletedCount > 0) {
+          true
+        } else {
+          logger.error(s"[deleteVatScheme] - Error deleting vat reg doc for regId $regId")
+          deletion.wasAcknowledged()
+        }
       }
-    } recover {
-      case e =>
-        logger.warn(s"[RegistrationRepository] Unable to remove for regId: $regId, Error: ${e.getMessage}")
-        throw new InternalServerException(s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}")
-    }
-  }
+
+  def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] =
+    collection
+      .find[Document](registrationSelector(regId, Some(internalId)))
+      .projection(include(section))
+      .headOption()
+      .map {
+        case Some(doc) =>
+          (Json.parse(doc.toJson()) \ section).validate[T].asOpt
+        case _ =>
+          logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+          None
+      }
+
+  def upsertSection[T](internalId: String, regId: String, section: String = "", data: T)(implicit writes: Writes[T]): Future[Option[T]] =
+    collection
+      .updateOne(
+        filter = registrationSelector(regId, Some(internalId)),
+        update = combine(set(section, Codecs.toBson(data)), set(timestampKey, timeMachine.timestamp)),
+        options = UpdateOptions().upsert(true)
+      )
+      .toFuture()
+      .map { result =>
+        if (result.getModifiedCount > 0) {
+          logger.info(s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${result.getModifiedCount}")
+          Some(data)
+        } else {
+          logger.warn(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
+          None
+        }
+      }.recover {
+        case e =>
+          logger.warn(s"Unable to update $section for regId: $regId")
+          throw new InternalServerException(s"Unable to update section $section for regId: $regId, error: ${e.getMessage}")
+      }
+
+  def deleteSection(internalId: String, regId: String, section: String): Future[Boolean] =
+    collection
+      .updateOne(registrationSelector(regId, Some(internalId)), unset(section))
+      .toFuture()
+      .map { result =>
+        if (result.getModifiedCount > 0) {
+          logger.info(s"[RegistrationRepository] removing for regId : $regId - documents modified : ${result.getModifiedCount}")
+          true
+        } else {
+          logger.warn(s"[RegistrationRepository] removing for regId : $regId - No document found")
+          true
+        }
+      }.recover {
+        case e =>
+          logger.warn(s"[RegistrationRepository] Unable to remove for regId: $regId, Error: ${e.getMessage}")
+          throw new InternalServerException(s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}")
+      }
 
   def retrieveVatScheme(regId: String): Future[Option[VatScheme]] = {
     implicit val format = VatScheme.format(Some(crypto))
-    find("registrationId" -> regId).map(_.headOption)
+    collection.find(equal("registrationId", regId)).first().headOption()
   }
 
   // TODO: Remove deprecated methods once migration to new /registrations API is complete
 
   def retrieveVatSchemeByInternalId(id: String): Future[Option[VatScheme]] = {
     implicit val format = VatScheme.format(Some(crypto))
-    collection.find[JsObject, VatScheme](Json.obj("internalId" -> id), None).sort(Json.obj("_id" -> -1)).one[VatScheme]
+    collection
+      .find(equal("internalId", id))
+      .sort(descending("_id"))
+      .headOption()
   }
 
-  def updateSubmissionStatus(regId: String, status: VatRegStatus.Value): Future[Boolean] = {
-    val modifier = toBSON(Json.obj(
-      "status" -> status
-    )).get
+  def updateSubmissionStatus(regId: String, status: VatRegStatus.Value): Future[Boolean] =
+    collection
+      .updateOne(registrationSelector(regId),  set("status", status.toString))
+      .toFuture()
+      .map(_.getModifiedCount > 0)
 
-    collection.update.one(registrationSelector(regId), BSONDocument("$set" -> modifier)).map(_.ok)
-  }
-
-  def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value, formBundleId: String): Future[VatRegStatus.Value] = {
-    val modifier = toBSON(Json.obj(
-      "status" -> status,
-      "acknowledgementReference" -> s"$acknowledgementRefPrefix$formBundleId"
-    )).get
-
-    collection.update.one(registrationSelector(regId), BSONDocument("$set" -> modifier)).map(_ => status)
-  }
-
-  @deprecated("migrate to the new /registrations API")
-  def fetchReturns(regId: String): Future[Option[Returns]] = {
-    val selector = registrationSelector(regId)
-    val projection = Some(Json.obj("returns" -> 1))
-    collection.find(selector, projection).one[JsObject].map { doc =>
-      doc.flatMap { js =>
-        (js \ "returns").validateOpt[Returns].get
-      }
-    }
-  }
+  def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value, formBundleId: String): Future[VatRegStatus.Value] =
+    collection.updateOne(registrationSelector(regId), combine(set("status", status.toString), set("acknowledgementReference", s"$acknowledgementRefPrefix$formBundleId")))
+      .toFuture()
+      .map(_ => status)
 
   @deprecated("migrate to the new /registrations API")
   def retrieveTradingDetails(regId: String): Future[Option[TradingDetails]] = {
@@ -307,57 +282,53 @@ class VatSchemeRepository @Inject()(mongo: ReactiveMongoComponent,
   }
 
   @deprecated("migrate to the new /registrations API")
-  def updateReturns(regId: String, returns: Returns): Future[Returns] = {
-    val selector = registrationSelector(regId)
-    val update = BSONDocument("$set" -> BSONDocument("returns" -> Json.toJson(returns)))
-    collection.update.one(selector, update) map { updateResult =>
-      logger.info(s"[Returns] updating returns for regId : $regId - documents modified : ${updateResult.nModified}")
-      returns
-    }
-  }
+  def fetchReturns(regId: String): Future[Option[Returns]] =
+    fetchBlock[Returns](regId, "returns")
 
   @deprecated("migrate to the new /registrations API")
-  def fetchBankAccount(regId: String): Future[Option[BankAccount]] = {
-    val selector = registrationSelector(regId)
-    val projection = Some(Json.obj("bankAccount" -> 1))
-    collection.find(selector, projection).one[JsObject].map(
-      _.flatMap(js => (js \ "bankAccount").validateOpt(bankAccountCryptoFormatter).get)
-    )
-  }
+  def updateReturns(regId: String, returns: Returns): Future[Returns] =
+    updateBlock(regId, returns, "returns")
 
   @deprecated("migrate to the new /registrations API")
-  def updateBankAccount(regId: String, bankAccount: BankAccount): Future[BankAccount] = {
-    val selector = registrationSelector(regId)
-    val update = BSONDocument("$set" -> Json.obj("bankAccount" -> Json.toJson(bankAccount)(bankAccountCryptoFormatter)))
-    collection.update.one(selector, update) map { updateResult =>
-      logger.info(s"[Returns] updating bank account for regId : $regId - documents modified : ${updateResult.nModified}")
-      bankAccount
-    }
-  }
+  def fetchBankAccount(regId: String): Future[Option[BankAccount]] =
+    collection
+      .find[Document](registrationSelector(regId))
+      .headOption()
+      .map(_.flatMap(doc => (Json.parse(doc.toJson()) \ "bankAccount").validateOpt(bankAccountCryptoFormatter).get))
+
+  @deprecated("migrate to the new /registrations API")
+  def updateBankAccount(regId: String, bankAccount: BankAccount): Future[BankAccount] =
+    collection
+      .updateOne(registrationSelector(regId), set("bankAccount", Codecs.toBson(bankAccount)(bankAccountCryptoFormatter)))
+      .toFuture()
+      .map { result =>
+        logger.info(s"[Returns] updating bank account for regId : $regId - documents modified : ${result.getModifiedCount}")
+        bankAccount
+      }
 
   private[repositories] def registrationSelector(regId: String, internalId: Option[String] = None) =
-    BSONDocument("registrationId" -> regId) ++
-      internalId.map(id => BSONDocument("internalId" -> id))
-        .getOrElse(BSONDocument())
+    internalId
+      .map(intId => and(equal("registrationId", regId), equal("internalId", intId)))
+      .getOrElse(equal("registrationId", regId))
 
   @deprecated("migrate to the new /registrations API")
-  def removeFlatRateScheme(regId: String): Future[Boolean] = {
-    val selector = registrationSelector(regId)
-    val update = BSONDocument("$unset" -> BSONDocument("flatRateScheme" -> ""))
-    collection.update.one(selector, update) map { updateResult =>
-      if (updateResult.n == 0) {
-        logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] removing for regId : $regId - No document found")
-        throw MissingRegDocument(regId)
-      } else {
-        logger.info(s"[RegistrationMongoRepository][removeFlatRateScheme] removing for regId : $regId - documents modified : ${updateResult.nModified}")
-        true
-      }
-    } recover {
-      case e =>
-        logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] Unable to remove for regId: $regId, Error: ${e.getMessage}")
-        throw e
+  def removeFlatRateScheme(regId: String): Future[Boolean] =
+    collection
+      .updateOne(registrationSelector(regId), unset("flatRateScheme"))
+      .toFuture()
+      .map { result =>
+        if (result.getMatchedCount == 0) {
+          logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] removing for regId : $regId - No document found")
+          throw MissingRegDocument(regId)
+        } else {
+          logger.info(s"[RegistrationMongoRepository][removeFlatRateScheme] removing for regId : $regId - documents modified : ${result.getModifiedCount}")
+          true
+        }
+      } recover {
+        case e =>
+          logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] Unable to remove for regId: $regId, Error: ${e.getMessage}")
+          throw e
     }
-  }
 
   def fetchNrsSubmissionPayload(regId: String): Future[Option[String]] =
     fetchBlock[String](regId, "nrsSubmissionPayload")

@@ -17,6 +17,7 @@
 package controllers.test
 
 import auth.{Authorisation, AuthorisationResource}
+import org.mongodb.scala.model.Filters.equal
 import play.api.libs.json.JsString
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.VatSchemeRepository
@@ -34,8 +35,8 @@ class DeleteAllRegistrationsController @Inject()(val authConnector: AuthConnecto
 
   def deleteAllRegistrations: Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { intId =>
-      vatSchemeRepository.remove("internalId" -> JsString(intId)).map {
-        case wr if wr.ok => NoContent
+      vatSchemeRepository.collection.deleteMany(equal("internalId", intId)).toFuture().map {
+        case wr if wr.getDeletedCount > 0 => NoContent
         case _ => InternalServerError
       }
     }

@@ -148,9 +148,8 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
         eligibilitySubmissionData = Some(testEligibilitySubmissionData)
       )
       "no attachments have been uploaded yet" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testVatScheme, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testVatScheme)
 
         val res: WSResponse = await(client(url).get())
 
@@ -161,9 +160,10 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
       "some attachments have been uploaded" in new Setup {
         given
           .user.isAuthorised
-          .regRepo.insertIntoDb(testVatScheme, repo.insert)
           .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference), upscanMongoRepository.insert)
           .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference2).copy(attachmentType = Some(ExtraIdentityEvidence)), upscanMongoRepository.insert)
+
+        insertIntoDb(testVatScheme)
 
         val res: WSResponse = await(client(url).get())
 

@@ -164,8 +164,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   "POST /new" should {
     "return CREATED if the daily quota has not been met" in new Setup {
-      given
-        .user.isAuthorised
+      given.user.isAuthorised
 
       val res = await(client(controllers.routes.VatRegistrationController.newVatRegistration.url)
         .post(Json.obj())
@@ -177,8 +176,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   "POST /insert-s4l-scheme" should {
     "return CREATED if the vatScheme is stored successfully" in new Setup {
-      given
-        .user.isAuthorised
+      given.user.isAuthorised
 
       val testVatSchemeJson: JsValue = Json.toJson(testFullVatScheme)(VatScheme.format())
       val res: WSResponse = await(client(controllers.routes.VatRegistrationController.insertVatScheme.url)
@@ -194,9 +192,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     disable(StubSubmission)
     "the user is a Sole Trader" should {
       "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testSoleTraderVatScheme)
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -212,9 +209,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful with a bpSafeId" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader)
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -230,9 +226,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful without a bpSafeId" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testSoleTraderVatScheme, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testSoleTraderVatScheme)
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -250,9 +245,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a Limited Company" should {
       "return OK if the submission is successful with an unregistered business partner" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner)
 
         stubPost("/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -268,9 +262,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK for an Agent led journey" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testAgentVatScheme, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testAgentVatScheme)
 
         val agentTransactorJson = Json.obj(
           "declaration" -> Json.obj(
@@ -311,11 +304,10 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful with an unregistered business partner and a short org name different from companyName" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner.copy(
+        given.user.isAuthorised
+        insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner.copy(
           tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
-        ), repo.insert)
+        ))
 
         stubPost("/vat/subscription", testSubmissionJsonWithShortOrgName, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -331,14 +323,12 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful with an unregistered business partner and transactor details" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(
+        given.user.isAuthorised
+        insertIntoDb(
           testFullVatSchemeWithUnregisteredBusinessPartner.copy(
             eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(isTransactor = true)),
             transactorDetails = Some(testTransactorDetails)
-          ),
-          repo.insert
+          )
         )
 
         stubPost("/vat/subscription", testTransactorSubmissionJson, OK, Json.stringify(testSubmissionResponse))
@@ -355,9 +345,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful where the business partner is already registered" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner)
 
         stubPost("/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -373,9 +362,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful where the business partner is already registered when the frs data is completely missing" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner.copy(flatRateScheme = None), repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testMinimalVatSchemeWithRegisteredBusinessPartner.copy(flatRateScheme = None))
 
         stubPost("/vat/subscription", testRegisteredBusinessPartnerSubmissionJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -393,9 +381,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a NETP" should {
       "return OK if the submission is successful without a bpSafeId" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testNetpVatScheme, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testNetpVatScheme)
 
         stubPost("/vat/subscription", testNetpJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -411,11 +398,9 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful with overseas details" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(
-          testNetpVatScheme.copy(applicantDetails = Some(testNetpApplicantDetails.copy(entity = testNetpEntityOverseas))),
-          repo.insert
+        given.user.isAuthorised
+        insertIntoDb(
+          testNetpVatScheme.copy(applicantDetails = Some(testNetpApplicantDetails.copy(entity = testNetpEntityOverseas)))
         )
 
         stubPost("/vat/subscription", testNetpJsonOverseas, OK, Json.stringify(testSubmissionResponse))
@@ -434,9 +419,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a Non UK Company" should {
       "return OK if the submission is successful without a bpSafeId" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testNonUkCompanyVatScheme, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testNonUkCompanyVatScheme)
 
         stubPost("/vat/subscription", testNonUkCompanyJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -454,9 +438,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a Trust" should {
       "return OK if the submission is successful with a bpSafeId" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(testMinimalVatSchemeWithTrust, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(testMinimalVatSchemeWithTrust)
 
         stubPost("/vat/subscription", testVerifiedTrustJson, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -474,9 +457,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a General Partnership" should {
       "return OK if the submission is successful where the submission contains a Sole Trader partner" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(generalPartnershipWithSoleTraderPartner, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(generalPartnershipWithSoleTraderPartner)
 
         stubPost(
           "/vat/subscription",
@@ -497,9 +479,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
 
       "return OK if the submission is successful where the submission contains a UK Company partner" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(generalPartnershipWithUkCompanyPartner, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(generalPartnershipWithUkCompanyPartner)
 
         stubPost(
           "/vat/subscription",
@@ -522,9 +503,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a Limited Partnership" should {
       "return OK if the submission is successful where the submission contains a Scottish Partnership partner" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(limitedPartnershipWithScotPartnershipPartner, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(limitedPartnershipWithScotPartnershipPartner)
 
         stubPost(
           "/vat/subscription",
@@ -547,9 +527,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a Limited Liability Partnership" should {
       "return OK if the submission is successful" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(limitedLiabilityPartnership, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(limitedLiabilityPartnership)
 
         stubPost("/vat/subscription", testSubmissionJson(limitedLiabilityPartnershipCustomerId, None), OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -567,9 +546,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "the user is a UK Company registering a VAT Group" should {
       "return OK if the submission is successful" in new Setup {
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(vatGroupVatScheme, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(vatGroupVatScheme)
 
         stubPost(
           "/vat/subscription",
@@ -615,9 +593,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
         )
 
-        given
-          .user.isAuthorised
-          .regRepo.insertIntoDb(togcVatScheme, repo.insert)
+        given.user.isAuthorised
+        insertIntoDb(togcVatScheme)
 
         stubPost(
           "/vat/subscription",
@@ -642,12 +619,13 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       "return OK if the submission is successful and call SDES notify" in new Setup {
         given
           .user.isAuthorised
-          .regRepo.insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader.copy(
-          attachments = Some(Attachments(method = Attached)),
-          business = Some(testBusiness.copy(hasLandAndProperty = Some(true)))
-        ), repo.insert)
           .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference), upscanMongoRepository.insert)
           .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference2), upscanMongoRepository.insert)
+
+        insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader.copy(
+          attachments = Some(Attachments(method = Attached)),
+          business = Some(testBusiness.copy(hasLandAndProperty = Some(true)))
+        ))
 
         val attachmentNrsRequestJson: JsObject = Json.obj(
           "payload" -> testEncodedPayload(testNrsSubmissionPayload),
@@ -684,9 +662,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     }
 
     "return INTERNAL_SERVER_ERROR if the VAT scheme is missing data" in new Setup {
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft), repo.insert)
+      given.user.isAuthorised
+      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft))
 
       val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())
@@ -696,10 +673,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     }
 
     "return INTERNAL_SERVER_ERROR if the subscription API is unavailable" in new Setup {
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
-
+      given.user.isAuthorised
+      insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner)
       stubPost("/vat/subscription", testSubmissionJson, BAD_GATEWAY, Json.stringify(testSubmissionResponse))
 
       val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -710,10 +685,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     }
 
     "return BAD_REQUEST if the subscription API returns BAD_REQUEST" in new Setup {
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
-
+      given.user.isAuthorised
+      insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner)
       stubPost("/vat/subscription", testSubmissionJson, BAD_REQUEST, Json.stringify(testSubmissionResponse))
 
       val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -724,10 +697,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     }
 
     "return CONFLICT if the subscription API returns CONFLICT" in new Setup {
-      given
-        .user.isAuthorised
-        .regRepo.insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner, repo.insert)
-
+      given.user.isAuthorised
+      insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner)
       stubPost("/vat/subscription", testSubmissionJson, CONFLICT, Json.stringify(testSubmissionResponse))
 
       val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
@@ -740,8 +711,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   "PATCH  /:regId/honesty-declaration" should {
     "return Ok if the honesty declaration is successfully stored" in new Setup {
-      given
-        .user.isAuthorised
+      given.user.isAuthorised
 
       insertIntoDb(testEmptyVatScheme("regId"))
 
@@ -750,7 +720,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       )
 
       res.status mustBe OK
-      await(repo.findAll()).head.confirmInformationDeclaration mustBe Some(true)
+      await(repo.collection.find().headOption().map(_.exists(_.confirmInformationDeclaration.contains(true)))) mustBe true
     }
   }
 
