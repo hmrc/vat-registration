@@ -21,7 +21,7 @@ import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models._
 import models.api._
-import models.api.returns._
+import models.api.vatapplication._
 import models.submission.{IdType, NETP, UtrIdType, VrnIdType}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.InternalServerException
@@ -33,19 +33,6 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
   object TestService extends SubscriptionBlockBuilder
 
   override lazy val testDate = LocalDate.of(2020, 2, 2)
-  override lazy val testReturns = Returns(
-    Some(testTurnover),
-    None,
-    Some(12.99),
-    reclaimVatOnMostReturns = false,
-    Quarterly,
-    JanuaryStagger,
-    Some(testDate),
-    None,
-    None,
-    None,
-    None
-  )
 
   def fullSubscriptionBlockJson(reason: String = "0016"): JsValue = Json.parse(
     s"""
@@ -191,7 +178,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a full subscription json when all data is provided and user is mandatory on a forward look" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns),
+        vatApplication = Some(testVatApplicationDetails),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(
             mandatoryRegistration = true, Some(LocalDate.of(2020, 10, 1)), None, None
@@ -210,7 +197,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a full subscription json when all data is provided and user is mandatory on a backward look" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns),
+        vatApplication = Some(testVatApplicationDetails),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(
             mandatoryRegistration = true, None, Some(LocalDate.of(2020, 10, 1)), None
@@ -234,7 +221,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
             trn = Some(testTrn)
           )
         )),
-        returns = Some(testOverseasReturns),
+        vatApplication = Some(testOverseasVatApplicationDetails),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(
             mandatoryRegistration = true, None, None, None, Some(LocalDate.of(2020, 10, 1))
@@ -254,7 +241,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a minimal subscription json when minimum data is provided and user is voluntary" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
+        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           registrationReason = Voluntary
@@ -271,7 +258,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a minimal subscription json when no Flat Rate Scheme is provided" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
+        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           registrationReason = Voluntary
@@ -287,7 +274,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a minimal subscription json with other business involvements" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
+        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           registrationReason = Voluntary
@@ -331,7 +318,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "fail if the Flat Rate Scheme is invalid" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        returns = Some(testReturns),
+        vatApplication = Some(testVatApplicationDetails),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData),
         flatRateScheme = Some(invalidEmptyFlatRateScheme),
         business = Some(testBusiness)
@@ -353,7 +340,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
         TestService.buildSubscriptionBlock(vatScheme)
       ).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: ApplicantDetails found - true, EligibilitySubmissionData found - true, " +
-        "Returns found - false, Business found - false."
+        "VatApplication found - false, Business found - false."
     }
   }
 }

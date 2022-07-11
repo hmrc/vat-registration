@@ -32,8 +32,8 @@ class AdminBlockBuilder @Inject()(attachmentsService: AttachmentsService) {
 
   def buildAdminBlock(vatScheme: VatScheme): JsObject = {
     val attachmentList = attachmentsService.attachmentList(vatScheme)
-    (vatScheme.eligibilitySubmissionData, vatScheme.tradingDetails) match {
-      case (Some(eligibilityData), Some(tradingDetails)) =>
+    (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication) match {
+      case (Some(eligibilityData), Some(vatApplication)) =>
         jsonObject(
           "additionalInformation" -> jsonObject(
             "customerStatus" -> MTDfB,
@@ -42,7 +42,7 @@ class AdminBlockBuilder @Inject()(attachmentsService: AttachmentsService) {
             )
           ),
           "attachments" -> (jsonObject(
-            optional("EORIrequested" -> tradingDetails.eoriRequested)) ++ {
+            optional("EORIrequested" -> vatApplication.eoriRequested)) ++ {
             vatScheme.attachments.map(_.method) match {
               case Some(attachmentMethod) => AttachmentType.submissionWrites(attachmentMethod).writes(attachmentList).as[JsObject]
               case None => Json.obj()
@@ -52,7 +52,7 @@ class AdminBlockBuilder @Inject()(attachmentsService: AttachmentsService) {
       case (None, Some(_)) =>
         throw new InternalServerException("Could not build admin block for submission due to missing eligibility data")
       case (Some(_), None) =>
-        throw new InternalServerException("Could not build admin block for submission due to missing trading details data")
+        throw new InternalServerException("Could not build admin block for submission due to missing vat application data")
       case _ =>
         throw new InternalServerException("Could not build admin block for submission due to no available data")
     }

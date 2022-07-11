@@ -18,7 +18,7 @@ class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with Submissi
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     confirmInformationDeclaration = Some(true),
-    returns = Some(testAASReturns),
+    vatApplication = Some(testAASVatApplicationDetails),
     nrsSubmissionPayload = Some(testEncodedPayload),
     otherBusinessInvolvements = Some(List(
       testOtherBusinessInvolvement.copy(

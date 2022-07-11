@@ -61,13 +61,13 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
   "buildAdminBlock" should {
     "return an admin block json object" when {
-      "both eligibility and trading details data are in the database" in {
+      "both eligibility and vat application details data are in the database" in {
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Set[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-          tradingDetails = Some(validFullTradingDetails)
+          vatApplication = Some(testVatApplicationDetails)
         )
 
         val result = TestBuilder.buildAdminBlock(vatScheme)
@@ -75,10 +75,10 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         result mustBe expectedJson
       }
 
-      "both NETP eligibility and trading details data are in the database" in {
+      "both NETP eligibility and vat application details data are in the database" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP)),
-          tradingDetails = Some(validFullTradingDetails),
+          vatApplication = Some(testVatApplicationDetails),
           attachments = Some(Attachments(Post))
         )
 
@@ -93,7 +93,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       "NETP the attachment method is Email" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP)),
-          tradingDetails = Some(validFullTradingDetails),
+          vatApplication = Some(testVatApplicationDetails),
           attachments = Some(Attachments(EmailMethod))
         )
 
@@ -113,7 +113,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = None,
-          tradingDetails = Some(validFullTradingDetails),
+          vatApplication = Some(testVatApplicationDetails),
           attachments = Some(Attachments(Post))
         )
 
@@ -122,13 +122,13 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         }
       }
 
-      "the trading details data is missing from the database" in {
+      "the vat application details data is missing from the database" in {
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Set[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-          tradingDetails = None,
+          vatApplication = None,
           attachments = Some(Attachments(Post))
         )
 

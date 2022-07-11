@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package models.api.returns
+package models.api.vatapplication
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-case class NIPCompliance(goodsToEU: ConditionalValue,
-                         goodsFromEU: ConditionalValue)
+case class OverseasCompliance(goodsToOverseas: Boolean,
+                              goodsToEu: Option[Boolean],
+                              storingGoodsForDispatch: StoringGoodsForDispatch,
+                              usingWarehouse: Option[Boolean],
+                              fulfilmentWarehouseNumber: Option[String],
+                              fulfilmentWarehouseName: Option[String])
 
-object NIPCompliance {
-  implicit val format: OFormat[NIPCompliance] = Json.format[NIPCompliance]
-}
-
-case class ConditionalValue(answer: Boolean,
-                            value: Option[BigDecimal])
-
-object ConditionalValue {
-  implicit val format: OFormat[ConditionalValue] = Json.format[ConditionalValue]
+object OverseasCompliance {
+  implicit val format: Format[OverseasCompliance] = Json.format[OverseasCompliance]
 }

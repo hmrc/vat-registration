@@ -18,7 +18,7 @@ package controllers
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api.returns.{AASDetails, Annual, BankGIRO, JanDecStagger, MonthlyPayment, PaymentFrequency, PaymentMethod, Returns, ReturnsFrequency, Stagger}
+import models.api.vatapplication.{AASDetails, Annual, BankGIRO, JanDecStagger, MonthlyPayment, PaymentFrequency, PaymentMethod, Returns, ReturnsFrequency, Stagger}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.libs.json.{JsObject, Json}

@@ -43,7 +43,7 @@ class AnnualAccountingBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
     "return the correct json" when {
       "the applicant wants to join AAS and all data is provided" in new Setup {
         val vatScheme = testVatScheme.copy(
-          returns = Some(validAASReturns),
+          vatApplication = Some(validAASApplicationDeatils),
           eligibilitySubmissionData = Some(testEligibilitySubmissionData)
         )
 

@@ -1,7 +1,7 @@
 
 package itutil
 
-import models.api.returns.{StoringGoodsForDispatch, StoringWithinUk}
+import models.api.vatapplication.{StoringGoodsForDispatch, StoringWithinUk}
 import models.api.{AttachmentMethod, AttachmentType, Post}
 import models.submission._
 import models.{ForwardLook, RegistrationReason}

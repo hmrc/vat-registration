@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-package services
+package models.api.vatapplication
 
-import models.api.vatapplication.Returns
-import repositories.VatSchemeRepository
+import play.api.libs.json.{Json, OFormat}
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+case class NIPCompliance(goodsToEU: ConditionalValue,
+                         goodsFromEU: ConditionalValue)
 
-@Singleton
-class ReturnsService @Inject()(val registrationRepository: VatSchemeRepository) {
+object NIPCompliance {
+  implicit val format: OFormat[NIPCompliance] = Json.format[NIPCompliance]
+}
 
-  def retrieveReturns(regId: String): Future[Option[Returns]] = {
-    registrationRepository.fetchReturns(regId)
-  }
+case class ConditionalValue(answer: Boolean,
+                            value: Option[BigDecimal])
 
-  def updateReturns(regId: String, returns: Returns): Future[Returns] = {
-    registrationRepository.updateReturns(regId, returns)
-  }
+object ConditionalValue {
+  implicit val format: OFormat[ConditionalValue] = Json.format[ConditionalValue]
 }

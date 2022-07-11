@@ -17,7 +17,7 @@
 package services.monitoring
 
 import models.api.VatScheme
-import models.api.returns.NIPCompliance
+import models.api.vatapplication.NIPCompliance
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -29,8 +29,8 @@ import javax.inject.Singleton
 class SubscriptionAuditBlockBuilder {
 
   def buildSubscriptionBlock(vatScheme: VatScheme): JsObject =
-    (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.business, vatScheme.flatRateScheme, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
-      case (Some(eligibilityData), Some(returns), Some(business), optFlatRateScheme, otherBusinessInvolvements) => jsonObject(
+    (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication, vatScheme.business, vatScheme.flatRateScheme, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
+      case (Some(eligibilityData), Some(vatApplication), Some(business), optFlatRateScheme, otherBusinessInvolvements) => jsonObject(
         "overThresholdIn12MonthPeriod" -> eligibilityData.threshold.thresholdInTwelveMonths.isDefined,
         optional("overThresholdIn12MonthDate" -> eligibilityData.threshold.thresholdInTwelveMonths),
         "overThresholdInPreviousMonth" -> eligibilityData.threshold.thresholdPreviousThirtyDays.isDefined,
@@ -38,10 +38,10 @@ class SubscriptionAuditBlockBuilder {
         "overThresholdInNextMonth" -> eligibilityData.threshold.thresholdNextThirtyDays.isDefined,
         optional("overThresholdInNextMonthDate" -> eligibilityData.threshold.thresholdNextThirtyDays),
         "reasonForSubscription" -> jsonObject(
-          conditional(returns.startDate.exists(date => !eligibilityData.calculatedDate.contains(date)))(
-            "voluntaryOrEarlierDate" -> returns.startDate
+          conditional(vatApplication.startDate.exists(date => !eligibilityData.calculatedDate.contains(date)))(
+            "voluntaryOrEarlierDate" -> vatApplication.startDate
           ),
-          "exemptionOrException" -> VatScheme.exceptionOrExemption(eligibilityData, returns)
+          "exemptionOrException" -> VatScheme.exceptionOrExemption(eligibilityData, vatApplication)
         ),
         "businessActivities" -> jsonObject(
           "description" -> business.businessDescription,
@@ -51,19 +51,19 @@ class SubscriptionAuditBlockBuilder {
             optional("mainCode3" -> business.otherBusinessActivities.lift(1).map(_.id)),
             optional("mainCode4" -> business.otherBusinessActivities.lift(2).map(_.id))
           ),
-          optional("goodsToOverseas" -> returns.overseasCompliance.map(_.goodsToOverseas)),
-          optional("goodsToCustomerEU" -> returns.overseasCompliance.flatMap(_.goodsToEu)),
-          optional("storingGoodsForDispatch" -> returns.overseasCompliance.map(_.storingGoodsForDispatch)),
-          optional("fulfilmentWarehouse" -> returns.overseasCompliance.flatMap(_.usingWarehouse)),
-          optional("FHDDSWarehouseNumber" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseNumber)),
-          optional("nameOfWarehouse" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
+          optional("goodsToOverseas" -> vatApplication.overseasCompliance.map(_.goodsToOverseas)),
+          optional("goodsToCustomerEU" -> vatApplication.overseasCompliance.flatMap(_.goodsToEu)),
+          optional("storingGoodsForDispatch" -> vatApplication.overseasCompliance.map(_.storingGoodsForDispatch)),
+          optional("fulfilmentWarehouse" -> vatApplication.overseasCompliance.flatMap(_.usingWarehouse)),
+          optional("FHDDSWarehouseNumber" -> vatApplication.overseasCompliance.flatMap(_.fulfilmentWarehouseNumber)),
+          optional("nameOfWarehouse" -> vatApplication.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
         ),
         "yourTurnover" -> (jsonObject(
-          "turnoverNext12Months" -> returns.turnoverEstimate,
-          "zeroRatedSupplies" -> returns.zeroRatedSupplies,
-          "vatRepaymentExpected" -> returns.reclaimVatOnMostReturns
+          "turnoverNext12Months" -> vatApplication.turnoverEstimate,
+          "zeroRatedSupplies" -> vatApplication.zeroRatedSupplies,
+          "vatRepaymentExpected" -> vatApplication.claimVatRefunds
         ) ++ {
-          returns.northernIrelandProtocol match {
+          vatApplication.northernIrelandProtocol match {
             case Some(NIPCompliance(goodsToEU, goodsFromEU)) => jsonObject(
               conditional(goodsFromEU.answer)("goodsFromOtherEU" -> goodsFromEU.value),
               conditional(goodsToEU.answer)("goodsSoldToOtherEU" -> goodsToEU.value)
@@ -111,7 +111,7 @@ class SubscriptionAuditBlockBuilder {
         throw new InternalServerException(
           "[SubscriptionBlockBuilder] Could not build subscription block for submission because some of the data is missing: " +
             s"EligibilitySubmissionData found - ${vatScheme.eligibilitySubmissionData.isDefined}, " +
-            s"Returns found - ${vatScheme.returns.isDefined}, " +
+            s"VatApplication found - ${vatScheme.vatApplication.isDefined}, " +
             s"Business found - ${vatScheme.business.isDefined}."
         )
     }

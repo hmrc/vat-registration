@@ -17,7 +17,7 @@
 package services
 
 import models.api._
-import models.api.returns.Returns
+import models.api.vatapplication.{Returns, VatApplication}
 import models.registration._
 import models.registration.sections.PartnersSection
 import models.submission.PartyType
@@ -53,6 +53,7 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
       case TradingDetailsSectionId => Future(validate[TradingDetails](json))
       case OtherBusinessInvolvementsSectionId => Future(validate[List[OtherBusinessInvolvement]](json))
       case BusinessSectionId => Future(validate[Business](json))
+      case VatApplicationSectionId => Future(validate[VatApplication](json))
       case unknown => throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported section: ${unknown.toString}")
     }
 

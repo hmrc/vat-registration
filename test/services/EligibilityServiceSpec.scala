@@ -138,12 +138,12 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {
 
       val vatSchemeWithExemption: VatScheme = testFullVatScheme
         .copy(
-          returns = Some(testReturns.copy(appliedForExemption = Some(true))),
+          vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(appliedForException = Some(false)))
         )
       val vatSchemeWithoutExemption: VatScheme = vatSchemeWithExemption
         .copy(
-          returns = Some(testReturns.copy(appliedForExemption = None))
+          vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = None))
         )
       when(mockRegistrationMongoRepository.updateEligibilitySubmissionData(any(), any()))
         .thenReturn(Future.successful(testEligibilitySubmissionData.copy(appliedForException = Some(true))))

@@ -19,7 +19,7 @@ package fixtures
 import enums.VatRegStatus
 import models._
 import models.api._
-import models.api.returns._
+import models.api.vatapplication._
 import models.submission._
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -75,6 +75,10 @@ trait VatRegistrationFixture {
   lazy val testFormerName = FormerName(hasFormerName = Some(true), Some(testName), Some(testDate))
   lazy val testReturns = Returns(
     Some(testTurnover), None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None, None
+  )
+  lazy val testVatApplicationDetails = VatApplication(
+    Some(true), Some(true), Some(testTurnover), None, Some(12.99), Some(false), Some(Quarterly),
+    Some(JanuaryStagger), Some(testDate), None, None, None, None
   )
   lazy val zeroRatedSupplies: BigDecimal = 12.99
   lazy val testBpSafeId = "testBpSafeId"
@@ -230,9 +234,35 @@ trait VatRegistrationFixture {
     None
   )
 
+  lazy val validAASApplicationDeatils: VatApplication = VatApplication(
+    Some(true), Some(true),
+    Some(testTurnover),
+    None,
+    Some(12.99),
+    claimVatRefunds = Some(false),
+    Some(Annual),
+    Some(JanDecStagger),
+    Some(testDate),
+    Some(validAASDetails),
+    None,
+    None,
+    None
+  )
+
   val testWarehouseNumber = "test12345678"
   val testWarehouseName = "testWarehouseName"
   val testOverseasReturns: Returns = testReturns.copy(
+    startDate = None,
+    overseasCompliance = Some(OverseasCompliance(
+      goodsToOverseas = true,
+      goodsToEu = Some(true),
+      storingGoodsForDispatch = StoringWithinUk,
+      usingWarehouse = Some(true),
+      fulfilmentWarehouseNumber = Some(testWarehouseNumber),
+      fulfilmentWarehouseName = Some(testWarehouseName)
+    )))
+
+  val testOverseasVatApplicationDetails: VatApplication = testVatApplicationDetails.copy(
     startDate = None,
     overseasCompliance = Some(OverseasCompliance(
       goodsToOverseas = true,
@@ -298,7 +328,8 @@ trait VatRegistrationFixture {
     confirmInformationDeclaration = Some(true),
     returns = Some(testReturns),
     nrsSubmissionPayload = Some(testEncodedPayload),
-    business = Some(testBusiness)
+    business = Some(testBusiness),
+    vatApplication = Some(testVatApplicationDetails)
   )
 
   lazy val validFullTradingDetails: TradingDetails = TradingDetails(tradingName = Some(testTradingName), eoriRequested = Some(true), None, Some(true))

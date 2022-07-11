@@ -22,11 +22,12 @@ import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
-import models.api.returns.Returns
+import models.api.vatapplication.{Returns, VatApplication}
+import models.registration.VatApplicationSectionId
 import org.mongodb.scala.Document
 import org.mongodb.scala.model.Filters.{and, equal}
 import org.mongodb.scala.model.Indexes.{ascending, descending}
-import org.mongodb.scala.model.Projections.include
+import org.mongodb.scala.model.Projections.{exclude, include}
 import org.mongodb.scala.model.Updates.{combine, set, unset}
 import org.mongodb.scala.model.{FindOneAndReplaceOptions, IndexModel, IndexOptions, UpdateOptions}
 import play.api.Logging
@@ -191,18 +192,36 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
         }
       }
 
-  def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] =
-    collection
-      .find[Document](registrationSelector(regId, Some(internalId)))
-      .projection(include(section))
-      .headOption()
-      .map {
-        case Some(doc) =>
-          (Json.parse(doc.toJson()) \ section).validate[T].asOpt
-        case _ =>
-          logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
-          None
-      }
+  def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] = {
+    if (section.equals(VatApplicationSectionId.repoKey)) { //TODO Remove if block entirely when removing temp reads
+      collection
+        .find[Document](registrationSelector(regId, Some(internalId)))
+        .projection(exclude("_id"))
+        .headOption()
+        .map {
+          case Some(doc) =>
+            val json = Json.parse(doc.toJson())
+            (json \ section).validate[VatApplication].orElse(json.validate[VatApplication](VatApplication.tempReads))
+              .asOpt.map(Json.toJson[VatApplication])
+              .flatMap(_.validate[T].asOpt)
+          case None =>
+            logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+            None
+        }
+    } else {
+      collection
+        .find[Document](registrationSelector(regId, Some(internalId)))
+        .projection(include(section))
+        .headOption()
+        .map {
+          case Some(doc) =>
+            (Json.parse(doc.toJson()) \ section).validate[T].asOpt
+          case _ =>
+            logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+            None
+        }
+    }
+  }
 
   def upsertSection[T](internalId: String, regId: String, section: String = "", data: T)(implicit writes: Writes[T]): Future[Option[T]] =
     collection

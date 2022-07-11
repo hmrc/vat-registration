@@ -20,7 +20,7 @@ import common.exceptions._
 import enums.VatRegStatus
 import itutil._
 import models.api._
-import models.api.returns._
+import models.api.vatapplication._
 import org.mongodb.scala.MongoWriteException
 import org.mongodb.scala.model.Filters.{equal => mongoEqual}
 import org.mongodb.scala.result.InsertOneResult
@@ -84,6 +84,24 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     reclaimVatOnMostReturns = true,
     returnsFrequency = Quarterly,
     staggerStart = JanuaryStagger,
+    startDate = Some(testDate),
+    northernIrelandProtocol = Some(NIPCompliance(
+      goodsToEU = ConditionalValue(true, Some(testTurnover)),
+      goodsFromEU = ConditionalValue(true, Some(testTurnover))
+    )),
+    appliedForExemption = None,
+    annualAccountingDetails = None,
+    overseasCompliance = None,
+    hasTaxRepresentative = Some(false)
+  )
+
+  val vatApplication = VatApplication(
+    None, None,
+    turnoverEstimate = Some(testTurnover),
+    zeroRatedSupplies = Some(12.99),
+    claimVatRefunds = Some(true),
+    returnsFrequency = Some(Quarterly),
+    staggerStart = Some(JanuaryStagger),
     startDate = Some(testDate),
     northernIrelandProtocol = Some(NIPCompliance(
       goodsToEU = ConditionalValue(true, Some(testTurnover)),
@@ -307,14 +325,14 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
 
       await(repository.updateReturns(testRegId, returns))
 
-      getRegistration mustBe Some(testVatScheme.copy(returns = Some(returns)))
+      getRegistration mustBe Some(testVatScheme.copy(returns = Some(returns), vatApplication = Some(vatApplication)))
     }
     "not update or insert new data into the registration doc if the supplied returns already exist on the doc" in new Setup {
       await(insert(testVatScheme.copy(returns = Some(returns))))
 
       await(repository.updateReturns(testRegId, returns))
 
-      getRegistration mustBe Some(testVatScheme.copy(returns = Some(returns)))
+      getRegistration mustBe Some(testVatScheme.copy(returns = Some(returns), vatApplication = Some(vatApplication)))
     }
     "return MissingRegDocument when nothing is returned from mongo for the reg id" in new Setup {
       count mustBe 0

@@ -47,7 +47,7 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
     val attachmentList = attachmentsService.attachmentList(vatScheme)
     val details = jsonObject(
       "outsideEUSales" -> {
-        vatScheme.tradingDetails.map(_.eoriRequested) match {
+        vatScheme.vatApplication.map(_.eoriRequested) match {
           case Some(euGoods) => euGoods
           case _ => throw new InternalServerException("Could not construct submission audit JSON due to missing EU goods answer")
         }

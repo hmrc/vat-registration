@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.api.returns
+package models.api.vatapplication
 
 import play.api.libs.json._
 import utils.JsonUtilities
@@ -35,24 +35,6 @@ case class Returns(turnoverEstimate: Option[BigDecimal],
 
 object Returns extends JsonUtilities {
   implicit val format: Format[Returns] = Json.format[Returns]
-}
-
-case class AASDetails(paymentMethod: PaymentMethod,
-                      paymentFrequency: PaymentFrequency)
-
-object AASDetails {
-  implicit val format: Format[AASDetails] = Json.format[AASDetails]
-}
-
-case class OverseasCompliance(goodsToOverseas: Boolean,
-                              goodsToEu: Option[Boolean],
-                              storingGoodsForDispatch: StoringGoodsForDispatch,
-                              usingWarehouse: Option[Boolean],
-                              fulfilmentWarehouseNumber: Option[String],
-                              fulfilmentWarehouseName: Option[String])
-
-object OverseasCompliance {
-  implicit val format: Format[OverseasCompliance] = Json.format[OverseasCompliance]
 }
 
 sealed trait StoringGoodsForDispatch

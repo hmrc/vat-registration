@@ -14,22 +14,13 @@
  * limitations under the License.
  */
 
-package services
+package models.api.vatapplication
 
-import models.api.vatapplication.Returns
-import repositories.VatSchemeRepository
+import play.api.libs.json.{Format, Json}
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+case class AASDetails(paymentMethod: PaymentMethod,
+                      paymentFrequency: PaymentFrequency)
 
-@Singleton
-class ReturnsService @Inject()(val registrationRepository: VatSchemeRepository) {
-
-  def retrieveReturns(regId: String): Future[Option[Returns]] = {
-    registrationRepository.fetchReturns(regId)
-  }
-
-  def updateReturns(regId: String, returns: Returns): Future[Returns] = {
-    registrationRepository.updateReturns(regId, returns)
-  }
+object AASDetails {
+  implicit val format: Format[AASDetails] = Json.format[AASDetails]
 }

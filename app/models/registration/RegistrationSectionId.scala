@@ -74,6 +74,11 @@ case object BusinessSectionId extends RegistrationSectionId {
   val repoKey = "business"
 }
 
+case object VatApplicationSectionId extends RegistrationSectionId {
+  val key = "vatApplication"
+  val repoKey = key
+}
+
 object RegistrationSectionId {
   // scalastyle:off
   implicit def urlBinder(implicit stringBinder: PathBindable[String]): PathBindable[RegistrationSectionId] =
@@ -93,6 +98,7 @@ object RegistrationSectionId {
             case ("section", TradingDetailsSectionId.key) => Right(TradingDetailsSectionId)
             case ("section", OtherBusinessInvolvementsSectionId.key) => Right(OtherBusinessInvolvementsSectionId)
             case ("section", BusinessSectionId.key) => Right(BusinessSectionId)
+            case ("section", VatApplicationSectionId.key) => Right(VatApplicationSectionId)
             case _ => Left("Invalid registration section")
           }
         } yield section

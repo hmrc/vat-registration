@@ -41,8 +41,8 @@ case class SubmissionAuditModel(userAnswers: JsValue,
   override val transactionName: String = "subscription-submitted"
 
   override val detail: JsValue =
-    (vatScheme.eligibilitySubmissionData, vatScheme.tradingDetails, vatScheme.applicantDetails, vatScheme.returns) match {
-      case (Some(eligibilityData), Some(tradingDetails), Some(applicantDetails), Some(returns)) =>
+    (vatScheme.eligibilitySubmissionData, vatScheme.applicantDetails, vatScheme.vatApplication) match {
+      case (Some(eligibilityData), Some(applicantDetails), Some(vatApplication)) =>
         jsonObject(
           "authProviderId" -> authProviderId,
           "journeyId" -> vatScheme.id,
@@ -54,11 +54,11 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
             "overseasTrader" -> true
           ),
-          "eoriRequested" -> tradingDetails.eoriRequested,
+          "eoriRequested" -> vatApplication.eoriRequested,
           "registrationReason" -> eligibilityData.registrationReason.humanReadableKey,
           optional("registrationRelevantDate" -> {
             eligibilityData.registrationReason match {
-              case Voluntary | SuppliesOutsideUk | GroupRegistration | IntendingTrader => returns.startDate
+              case Voluntary | SuppliesOutsideUk | GroupRegistration | IntendingTrader => vatApplication.startDate
               case NonUk => eligibilityData.threshold.thresholdOverseas
               case TransferOfAGoingConcern => eligibilityData.togcCole.map(_.dateOfTransfer)
               case _ => Some(eligibilityData.threshold.earliestDate)
@@ -87,9 +87,8 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           [SubmissionAuditModel] Could not construct Audit JSON as required blocks are missing.
 
           eligibilitySubmissionData is present?   ${vatScheme.eligibilitySubmissionData.isDefined}
-          tradingDetails is present?              ${vatScheme.tradingDetails.isDefined}
           applicantDetails is present?            ${vatScheme.applicantDetails.isDefined}
-          returns is present?                     ${vatScheme.returns.isDefined}
+          vatApplication is present?              ${vatScheme.vatApplication.isDefined}
         """)
     }
 

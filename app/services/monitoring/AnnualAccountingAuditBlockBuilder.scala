@@ -18,7 +18,7 @@ package services.monitoring
 
 import models._
 import models.api.VatScheme
-import models.api.returns.Annual
+import models.api.vatapplication.Annual
 import play.api.libs.json.JsObject
 import utils.JsonUtils._
 
@@ -28,19 +28,19 @@ import javax.inject.{Inject, Singleton}
 class AnnualAccountingAuditBlockBuilder @Inject()() {
 
   def buildAnnualAccountingAuditBlock(vatScheme: VatScheme): Option[JsObject] = {
-    (vatScheme.returns, vatScheme.eligibilitySubmissionData) match {
-      case (Some(returns), Some(eligibilitySubmissionData)) if returns.returnsFrequency.equals(Annual) =>
+    (vatScheme.vatApplication, vatScheme.eligibilitySubmissionData) match {
+      case (Some(vatApplication), Some(eligibilitySubmissionData)) if vatApplication.returnsFrequency.contains(Annual) =>
         Some(jsonObject(
           "submissionType" -> "1",
-          "customerRequest" -> returns.annualAccountingDetails.map { details =>
+          "customerRequest" -> vatApplication.annualAccountingDetails.map { details =>
             jsonObject(
               "paymentMethod" -> details.paymentMethod,
-              "annualStagger" -> returns.staggerStart,
+              "annualStagger" -> vatApplication.staggerStart,
               "paymentFrequency" -> details.paymentFrequency,
-              "estimatedTurnover" -> returns.turnoverEstimate,
+              "estimatedTurnover" -> vatApplication.turnoverEstimate,
               "reqStartDate" -> {
                 eligibilitySubmissionData.registrationReason match {
-                  case Voluntary | SuppliesOutsideUk | IntendingTrader => returns.startDate
+                  case Voluntary | SuppliesOutsideUk | IntendingTrader => vatApplication.startDate
                   case BackwardLook => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
                   case ForwardLook => Some(eligibilitySubmissionData.threshold.earliestDate)
                   case NonUk => eligibilitySubmissionData.threshold.thresholdOverseas
