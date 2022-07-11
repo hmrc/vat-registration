@@ -19,8 +19,11 @@ package services
 import config.BackendConfig
 import models.api._
 import models.submission._
-import play.api.libs.json.Json
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.model._
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
+import uk.gov.hmrc.mongo.play.json.Codecs
 import utils.TimeMachine
 
 import java.time.LocalDate
@@ -99,14 +102,13 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       lastModified = timeMachine.today
     )
 
-  def updateStatus(regId: String, status: RegistrationStatus): Future[Option[RegistrationInformation]] =
-    trafficManagementRepository.findAndUpdate(
-      query = Json.obj("registrationId" -> regId),
-      update = Json.obj("$set" -> Json.obj(
-        "status" -> RegistrationStatus.toJsString(status))
-      ),
-      upsert = true
-    ) map (_.result[RegistrationInformation])
+  def updateStatus(regId: String, status: RegistrationStatus): Future[Option[RegistrationInformation]] = {
+    trafficManagementRepository.collection.findOneAndUpdate(
+      filter = equal("registrationId", regId),
+      update = set("status", Codecs.toBson(status)),
+      options = FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER).upsert(false)
+    ).toFutureOption()
+  }
 
   def deleteRegInfoById(internalId: String, registrationId: String): Future[Boolean] =
     trafficManagementRepository.deleteRegInfoById(internalId, registrationId)

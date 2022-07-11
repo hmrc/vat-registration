@@ -10,8 +10,6 @@ import play.api.test.Helpers._
 import controllers.routes.FlatRateSchemeController
 import play.api.libs.ws.WSResponse
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class FlatRateSchemeControllerISpec extends IntegrationStubbing {
 
   class Setup extends SetupHelper

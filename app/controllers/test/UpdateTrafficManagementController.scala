@@ -16,7 +16,10 @@
 
 package controllers.test
 
-import play.api.libs.json.{JsValue, Json}
+import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.model._
+import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -39,21 +42,21 @@ class UpdateTrafficManagementController @Inject()(cc: ControllerComponents,
 
     (optQuota, optPartyType, optIsEnrolled) match {
       case (Some(quota), Some(partyType), Some(isEnrolled)) =>
-        val query = Json.obj(
-          "date" -> timeMachine.today,
-          "partyType" -> partyType,
-          "isEnrolled" -> isEnrolled
-        )
-        val update = Json.obj("$set" -> Json.obj("currentTotal" -> quota))
-
-        dailyQuotaRepository.findAndUpdate(query, update, upsert = true) map (_ => Ok)
+        dailyQuotaRepository.collection.findOneAndUpdate(
+          filter = and (
+            equal("date", timeMachine.today.toString),
+            equal("partyType", partyType),
+            equal("isEnrolled", isEnrolled)),
+          update = set("currentTotal", quota),
+          options = FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER).upsert(true)
+        ).toFuture().map( _ => Ok)
       case _ =>
         Future.successful(BadRequest)
     }
   }
 
   val clear: Action[AnyContent] = Action.async { _ =>
-    trafficManagementRepository.removeAll().map (_ => NoContent)
+    trafficManagementRepository.collection.deleteMany(filter = empty()).toFuture().map(_ => NoContent)
   }
 
 }

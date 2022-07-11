@@ -16,58 +16,53 @@
 
 package repositories.trafficmanagement
 
-import java.time.LocalDate
 import auth.AuthorisationResource
+import com.mongodb.client.model.Indexes.ascending
 import config.BackendConfig
-
-import javax.inject.{Inject, Singleton}
 import models.api.{RegistrationChannel, RegistrationInformation, RegistrationStatus}
-import play.api.libs.json.{JsString, Json}
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.WriteResult.Message
-import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.bson.{BSONDocument, BSONInteger}
-import reactivemongo.play.json.ImplicitBSONHandlers._
+import org.mongodb.scala.model
+import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model._
+import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import java.time.LocalDate
+import java.util.concurrent.TimeUnit
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
+class TrafficManagementRepository @Inject()(mongo: MongoComponent,
                                             backendConfig: BackendConfig
                                            )(implicit ec: ExecutionContext)
-  extends ReactiveRepository(
+  extends PlayMongoRepository(
+    mongoComponent = mongo,
     collectionName = "traffic-management",
-    mongo = mongo.mongoConnector.db,
-    domainFormat = RegistrationInformation.format
-  ) with AuthorisationResource {
-
-  val lastModifiedIndex = Index(
-    name = Some("lastModified"),
-    key = Seq("lastModified" -> IndexType.Ascending),
-    options = BSONDocument("expireAfterSeconds" -> BSONInteger(backendConfig.expiryInSeconds))
-  )
-
-  override def indexes: Seq[Index] = {
-    Seq(
-      Index(
-        name = Some("intAndRegIdCompositeKey"),
-        key = Seq(
-          "registrationId" -> IndexType.Ascending,
-          "internalId" -> IndexType.Ascending
-        ),
-        unique = true
+    domainFormat = RegistrationInformation.format,
+    indexes = Seq(
+      model.IndexModel(
+        keys = ascending("registrationId", "internalId"),
+        indexOptions = IndexOptions()
+          .name("intAndRegIdCompositeKey")
+          .unique(true)
       ),
-      lastModifiedIndex
+      model.IndexModel(
+        keys = ascending("lastModified"),
+        indexOptions = IndexOptions()
+          .name("lastModified")
+          .expireAfter(backendConfig.expiryInSeconds, TimeUnit.SECONDS)
+      )
     )
-  }
+  ) with AuthorisationResource with Logging {
 
-  def getRegInfoById(internalId: String, registrationId: String): Future[Option[RegistrationInformation]] =
-    find(
-      "internalId" -> JsString(internalId),
-      "registrationId" -> JsString(registrationId)
-    ).map(_.headOption)
+  def getRegInfoById(internalId: String, registrationId: String): Future[Option[RegistrationInformation]] = {
+    collection.find(filter = and (
+      equal("internalId", internalId),
+      equal("registrationId", registrationId)
+    )).toFuture().map(_.headOption)
+  }
 
   def upsertRegInfoById(internalId: String,
                         regId: String,
@@ -85,27 +80,35 @@ class TrafficManagementRepository @Inject()(mongo: ReactiveMongoComponent,
       lastModified = lastModified
     )
 
-    val selector = Json.obj("internalId" -> internalId, "registrationId" -> regId)
-    val modifier = Json.obj("$set" -> Json.toJson(newRecord))
-
-    findAndUpdate(selector, modifier, fetchNewObject = true, upsert = true)
-      .map(_.result[RegistrationInformation] match {
-        case Some(regInfo) => regInfo
-        case _ => throw new Exception("Unexpected error when inserting registration information")
-      })
+    collection.replaceOne(
+      filter = and(
+        equal("internalId", internalId),
+        equal("registrationId", regId)),
+      replacement = newRecord,
+      options = ReplaceOptions().upsert(true)
+    ).toFuture().map { result =>
+      if(!result.wasAcknowledged()) {
+        throw new Exception("Unexpected error when inserting registration information")
+      } else {
+        newRecord
+      }
+    }
   }
 
-  override def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
-    find("internalId" -> JsString(id))
-      .map(_.headOption.map(_.internalId))
+  override def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] = {
+    collection.find(filter = equal("internalId", id))
+      .toFuture().map(_.headOption.map(_.internalId))
+  }
 
   def deleteRegInfoById(internalId: String, registrationId: String): Future[Boolean] = {
-    collection.delete.one(BSONDocument(
-      "internalId" -> internalId,
-      "registrationId" -> registrationId
-    )).map { res =>
-      if (!res.ok) logger.error(s"[clearDocument] - Error deleting traffic management doc for internalId $internalId - Error: ${Message.unapply(res)}")
-      res.ok
+    collection.deleteOne(filter = and(
+      equal("internalId", internalId),
+      equal("registrationId", registrationId)
+    )).toFuture().map { result =>
+      if (!result.wasAcknowledged()) {
+        logger.error(s"[clearDocument] - Error deleting traffic management doc for internalId $internalId")
+      }
+      result.wasAcknowledged()
     }
   }
 }

@@ -160,8 +160,8 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
       "some attachments have been uploaded" in new Setup {
         given
           .user.isAuthorised
-          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference), upscanMongoRepository.insert)
-          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference2).copy(attachmentType = Some(ExtraIdentityEvidence)), upscanMongoRepository.insert)
+          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference), upscanMongoRepository.collection.insertOne)
+          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference2).copy(attachmentType = Some(ExtraIdentityEvidence)), upscanMongoRepository.collection.insertOne)
 
         insertIntoDb(testVatScheme)
 

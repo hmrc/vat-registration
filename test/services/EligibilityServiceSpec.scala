@@ -26,7 +26,6 @@ import org.mockito.{ArgumentMatchers, Mockito}
 import play.api.libs.json.{JsArray, JsObject, JsResultException, Json}
 import play.api.test.Helpers._
 
-import java.time.LocalDate
 import scala.concurrent.Future
 
 class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture {

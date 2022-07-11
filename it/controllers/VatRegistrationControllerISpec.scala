@@ -44,6 +44,15 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   val testNonRepudiationApiKey = "testNonRepudiationApiKey"
   override lazy val additionalConfig = Map("microservice.services.non-repudiation.api-key" -> testNonRepudiationApiKey)
 
+  val testRegInfo = RegistrationInformation(
+    internalId = testInternalid,
+    registrationId = testRegId,
+    status = Draft,
+    regStartDate = testDate,
+    channel = VatReg,
+    lastModified = testDate
+  )
+
   class Setup extends SetupHelper
 
   def testEncodedPayload(payload: String): String = Base64.getEncoder.encodeToString(payload.getBytes(StandardCharsets.UTF_8))
@@ -194,6 +203,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
         given.user.isAuthorised
         insertIntoDb(testSoleTraderVatScheme)
+        await(trafficManagementRepo.collection.insertOne(testRegInfo).toFuture())
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -204,7 +214,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
-
         res.status mustBe OK
       }
 
@@ -619,8 +628,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       "return OK if the submission is successful and call SDES notify" in new Setup {
         given
           .user.isAuthorised
-          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference), upscanMongoRepository.insert)
-          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference2), upscanMongoRepository.insert)
+          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference), upscanMongoRepository.collection.insertOne)
+          .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference2), upscanMongoRepository.collection.insertOne)
 
         insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader.copy(
           attachments = Some(Attachments(method = Attached)),

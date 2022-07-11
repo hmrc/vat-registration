@@ -54,6 +54,7 @@ object UnitTestDependencies extends CommonTestDependencies {
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
     "org.scoverage" %% "scalac-scoverage-runtime" % scoverageVersion % scope,
     "uk.gov.hmrc" %% "reactivemongo-test" % reactiveMongoTestVersion % scope,
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % hmrcMongoVersion,
     "org.mockito" % "mockito-core" % mockitoVersion % scope
   )
 
@@ -69,6 +70,7 @@ object IntegrationTestDependencies extends CommonTestDependencies {
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
     "org.scoverage" %% "scalac-scoverage-runtime" % scoverageVersion % scope,
     "uk.gov.hmrc" %% "reactivemongo-test" % reactiveMongoTestVersion % scope,
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % hmrcMongoVersion,
     "com.github.tomakehurst" % "wiremock-jre8" % wireMockVersion % scope
   )
 
@@ -79,6 +81,7 @@ trait CommonTestDependencies {
   val scalaTestPlusVersion = "5.0.0"
   val scoverageVersion = "1.4.1"
   val reactiveMongoTestVersion = "5.0.0-play-28"
+  val hmrcMongoVersion = "0.64.0"
   val scope: Configuration
   val testDependencies: Seq[ModuleID]
 }

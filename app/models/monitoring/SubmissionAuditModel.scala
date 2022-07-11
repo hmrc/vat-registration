@@ -18,8 +18,8 @@ package models.monitoring
 
 import models.api.VatScheme
 import models.submission.{IdVerificationStatus, NETP, NonUkNonEstablished}
-import models.{GroupRegistration, IncorporatedEntity, IntendingTrader, NonUk, SuppliesOutsideUk, TransferOfAGoingConcern, Voluntary}
-import play.api.libs.json.{JsString, JsValue, Json}
+import models._
+import play.api.libs.json.{JsString, JsValue}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.InternalServerException

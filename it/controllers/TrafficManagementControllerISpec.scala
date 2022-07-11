@@ -6,8 +6,7 @@ import models.api._
 import models.submission.UkCompany
 import play.api.libs.json.Json
 import play.api.test.Helpers._
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import org.mongodb.scala.model._
 
 class TrafficManagementControllerISpec extends IntegrationStubbing {
 
@@ -26,7 +25,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     "return CREATED if the user can be allocated" in new Setup {
       given
         .user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true), dailyQuotaRepo.collection.insertOne)
 
       val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
         .post(Json.obj(
@@ -40,7 +39,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
       given
         .user.isAuthorised
 
-      dailyQuotaRepo.drop
+      dailyQuotaRepo.collection.drop
 
       val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
         .post(Json.obj(
@@ -53,7 +52,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     "return TOO_MANY_REQUESTS if the user cannot be allocated" in new Setup {
       given
         .user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true, currentTotal = 11), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true, currentTotal = 11), dailyQuotaRepo.collection.insertOne)
 
       val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url)
         .post(Json.obj(
@@ -78,7 +77,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     "return BAD_REQUEST if the request JSON is malformed" in new Setup {
       given
         .user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true, currentTotal = 1), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(DailyQuota(testDate, UkCompany, isEnrolled = true, currentTotal = 1), dailyQuotaRepo.collection.insertOne)
 
       val res = await(client(controllers.routes.TrafficManagementController.allocate(testRegId).url).post(Json.obj()))
 
@@ -90,7 +89,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     "return OK with reg info when a record exists for the internal ID" in new Setup {
       given
         .user.isAuthorised
-        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.collection.insertOne)
 
       val res = await(client(controllers.routes.TrafficManagementController.getRegInfoById(testRegId).url).get)
 
@@ -103,8 +102,8 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
       val testRegInfo2 = testRegInfo.copy(registrationId = testRegId2)
       given
         .user.isAuthorised
-        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
-        .regInfoRepo.insertIntoDb(testRegInfo2, trafficManagementRepo.insert)
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.collection.insertOne)
+        .regInfoRepo.insertIntoDb(testRegInfo2, trafficManagementRepo.collection.insertOne)
 
       val res = await(client(controllers.routes.TrafficManagementController.getRegInfoById(testRegId2).url).get)
 
@@ -133,7 +132,7 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     "return OK with reg info when all required information is present" in new Setup {
       given
         .user.isAuthorised
-        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.collection.insertOne)
 
       val json = Json.toJson(testRegInfo.copy(status = Submitted))
 
@@ -141,19 +140,23 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
 
       res.status mustBe OK
       res.json mustBe json
-      await(trafficManagementRepo.find("registrationId" -> testRegId)).map(_.status) must contain(Submitted)
+      await(
+        trafficManagementRepo.collection.find(Filters.equal("registrationId", testRegId)).toFuture()
+      ).map(_.status) must contain(Submitted)
     }
     "return bad request when required fields are missing" in new Setup {
       given
         .user.isAuthorised
-        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.collection.insertOne)
 
       val json = Json.obj()
 
       val res = await(client(controllers.routes.TrafficManagementController.upsertRegInfoById(testRegId).url).put(json))
 
       res.status mustBe BAD_REQUEST
-      await(trafficManagementRepo.find("registrationId" -> testRegId)).headOption.map(_.status) must contain(Draft)
+      await(
+        trafficManagementRepo.collection.find(Filters.equal("registrationId", testRegId)).toFuture()
+      ).headOption.map(_.status) must contain(Draft)
     }
     "perform an insert operation if the specified registration doesn't exist" in new Setup {
       given
@@ -166,7 +169,9 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
 
       res.status mustBe OK
       res.json mustBe json
-      await(trafficManagementRepo.find("registrationId" -> testRegId)).headOption must contain(testRegInfo)
+      await(
+        trafficManagementRepo.collection.find(Filters.equal("registrationId", testRegId)).toFuture()
+      ).headOption must contain(testRegInfo)
     }
   }
 
@@ -174,12 +179,14 @@ class TrafficManagementControllerISpec extends IntegrationStubbing {
     "return NO_CONTENT when successful" in new Setup {
       given
         .user.isAuthorised
-        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.insert)
+        .regInfoRepo.insertIntoDb(testRegInfo, trafficManagementRepo.collection.insertOne)
 
       val res = await(client(controllers.routes.TrafficManagementController.deleteRegInfoById(testRegId).url).delete())
 
       res.status mustBe NO_CONTENT
-      await(trafficManagementRepo.find("registrationId" -> testRegId)) mustBe Nil
+      await(
+        trafficManagementRepo.collection.find(Filters.equal("registrationId", testRegId)).toFuture()
+      ) mustBe Nil
     }
 
     "return NO_CONTENT even when the record doesn't exist" in new Setup {

@@ -45,7 +45,7 @@ class UpscanMongoRepositoryISpec extends IntegrationSpecBase {
 
   "getUpscanDetails" must {
     "return the correct UpscanDetails based on reference" in new SetupHelper {
-      await(upscanMongoRepository.bulkInsert(Seq(testUpscanDetails1, testUpscanDetails2)))
+      await(upscanMongoRepository.collection.insertMany(Seq(testUpscanDetails1, testUpscanDetails2)).toFuture())
 
       val res: Option[UpscanDetails] = await(upscanMongoRepository.getUpscanDetails(testReference2))
 
@@ -53,7 +53,7 @@ class UpscanMongoRepositoryISpec extends IntegrationSpecBase {
     }
 
     "return None if there is no UpscanDetails with matching reference" in new SetupHelper {
-      await(upscanMongoRepository.insert(testUpscanDetails1))
+      await(upscanMongoRepository.collection.insertOne(testUpscanDetails1).toFuture())
 
       val res: Option[UpscanDetails] = await(upscanMongoRepository.getUpscanDetails(testReference2))
 
@@ -63,7 +63,7 @@ class UpscanMongoRepositoryISpec extends IntegrationSpecBase {
 
   "getAllUpscanDetails" must {
     "return a sequence of UpscanDetails based on regId" in new SetupHelper {
-      await(upscanMongoRepository.bulkInsert(Seq(testUpscanDetails1, testUpscanDetails2, testUpscanDetails3)))
+      await(upscanMongoRepository.collection.insertMany(Seq(testUpscanDetails1, testUpscanDetails2, testUpscanDetails3)).toFuture())
 
       val res: Seq[UpscanDetails] = await(upscanMongoRepository.getAllUpscanDetails(testRegId))
 
@@ -71,7 +71,7 @@ class UpscanMongoRepositoryISpec extends IntegrationSpecBase {
     }
 
     "return empty list if there is no UpscanDetails with matching regId" in new SetupHelper {
-      await(upscanMongoRepository.insert(testUpscanDetails3))
+      await(upscanMongoRepository.collection.insertOne(testUpscanDetails3).toFuture())
 
       val res: Seq[UpscanDetails] = await(upscanMongoRepository.getAllUpscanDetails(testRegId))
 
@@ -81,20 +81,23 @@ class UpscanMongoRepositoryISpec extends IntegrationSpecBase {
 
   "upsertUpscanDetails" must {
     "update UpscanDetails based on reference" in new SetupHelper {
-      await(upscanMongoRepository.insert(testUpscanDetails1))
+      await(upscanMongoRepository.collection.insertOne(testUpscanDetails1).toFuture())
 
       val updatedUpscanDetails: UpscanDetails = testUpscanDetails1.copy(downloadUrl = Some("testUrl"))
 
-      val res: UpscanDetails = await(upscanMongoRepository.upsertUpscanDetails(updatedUpscanDetails))
+      await(upscanMongoRepository.upsertUpscanDetails(updatedUpscanDetails))
 
-      res mustBe updatedUpscanDetails
+      val res: Option[UpscanDetails] = await(upscanMongoRepository.getUpscanDetails(testReference1))
+
+      res mustBe Some(updatedUpscanDetails)
     }
 
     "create a new UpscanDetails record if one doesn't exist" in new SetupHelper {
-      val res: UpscanDetails = await(upscanMongoRepository.upsertUpscanDetails(testUpscanDetails1))
+      await(upscanMongoRepository.upsertUpscanDetails(testUpscanDetails1))
 
-      res mustBe testUpscanDetails1
+      val res: Option[UpscanDetails] = await(upscanMongoRepository.getUpscanDetails(testReference1))
+
+      res mustBe Some(testUpscanDetails1)
     }
   }
-
 }

@@ -49,7 +49,7 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
     "return OK with upscan details if data exists" in new SetupHelper {
       given
         .user.isAuthorised
-        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.collection.insertOne)
 
       insertIntoDb(testEmptyVatScheme(testRegId))
 
@@ -72,7 +72,7 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
     "return OK with all upscan details if data exists" in new SetupHelper {
       given
         .user.isAuthorised
-        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.collection.insertOne)
 
       insertIntoDb(testEmptyVatScheme(testRegId))
 
@@ -112,7 +112,7 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
 
   "POST /upscan-callback" must {
     "return OK after successfully storing callback" in new SetupHelper {
-      given.upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+      given.upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.collection.insertOne)
 
       stubAudit(OK)
       stubMergedAudit(OK)
@@ -138,7 +138,7 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
     "return NO_CONTENT after successfully deleting upscan details" in new SetupHelper {
       given
         .user.isAuthorised
-        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.collection.insertOne)
 
       insertIntoDb(testEmptyVatScheme(testRegId))
 
@@ -158,8 +158,8 @@ class UpscanControllerISpec extends IntegrationStubbing with MustMatchers {
     "return NO_CONTENT after successfully deleting upscan details" in new SetupHelper {
       given
         .user.isAuthorised
-        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.insert)
-        .upscanDetailsRepo.insertIntoDb(testUpscanDetails.copy(reference = testReference2), upscanMongoRepository.insert)
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails, upscanMongoRepository.collection.insertOne)
+        .upscanDetailsRepo.insertIntoDb(testUpscanDetails.copy(reference = testReference2), upscanMongoRepository.collection.insertOne)
 
       insertIntoDb(testEmptyVatScheme(testRegId))
 

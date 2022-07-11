@@ -16,6 +16,7 @@
 
 package mocks
 
+import fixtures.VatRegistrationFixture
 import models.api.UpscanDetails
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
@@ -26,7 +27,7 @@ import repositories.UpscanMongoRepository
 
 import scala.concurrent.Future
 
-trait MockUpscanMongoRepository extends MockitoSugar {
+trait MockUpscanMongoRepository extends MockitoSugar with VatRegistrationFixture {
   self: Suite =>
 
   val mockUpscanMongoRepository: UpscanMongoRepository = mock[UpscanMongoRepository]
@@ -42,9 +43,11 @@ trait MockUpscanMongoRepository extends MockitoSugar {
     )).thenReturn(response)
 
   def mockUpsertUpscanDetails(upscanDetails: UpscanDetails)(response: Future[UpscanDetails]): OngoingStubbing[Future[UpscanDetails]] =
-    when(mockUpscanMongoRepository.upsertUpscanDetails(
-      ArgumentMatchers.eq(upscanDetails)
-    )).thenReturn(response)
+    {
+      when(mockUpscanMongoRepository.upsertUpscanDetails(
+        ArgumentMatchers.eq(upscanDetails)
+      )).thenReturn(response)
+    }
 
   def mockDeleteUpscanDetails(reference: String)(response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
     when(mockUpscanMongoRepository.deleteUpscanDetails(
