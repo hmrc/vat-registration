@@ -16,9 +16,9 @@
 
 package models.api
 
-import models.{BusinessEntity, PartnershipIdEntity, IncorporatedEntity, SoleTraderIdEntity}
-import models.submission.{Individual, Partnership, PartyType, UkCompany}
-import play.api.libs.json.{JsError, JsPath, JsSuccess, JsValue, Json, JsonValidationError, Reads, Writes}
+import models.BusinessEntity
+import models.submission.PartyType
+import play.api.libs.json._
 
 case class Partner(details: BusinessEntity,
                    partyType: PartyType,

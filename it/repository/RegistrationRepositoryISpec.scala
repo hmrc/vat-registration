@@ -5,7 +5,6 @@ import auth.CryptoSCRS
 import itutil._
 import models.api.VatScheme
 import models.registration.{ApplicantSectionId, TransactorSectionId}
-import org.mongodb.scala.Document
 import org.mongodb.scala.model.Filters.{and, equal => mongoEqual}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder

@@ -30,8 +30,6 @@ import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRe
 import repositories.{UpscanMongoRepository, VatSchemeRepository}
 import utils.{IdGenerator, TimeMachine}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait IntegrationSpecBase extends PlaySpec
   with GuiceOneServerPerSuite with ScalaFutures with IntegrationPatience
   with WiremockHelper with BeforeAndAfterEach with BeforeAndAfterAll with DefaultAwaitTimeout {
@@ -91,11 +89,11 @@ trait IntegrationSpecBase extends PlaySpec
   trait SetupHelper {
     await(repo.collection.drop.toFuture())
     await(repo.ensureIndexes)
-    await(dailyQuotaRepo.drop)
+    await(dailyQuotaRepo.collection.drop().toFuture())
     await(dailyQuotaRepo.ensureIndexes)
-    await(trafficManagementRepo.drop)
+    await(trafficManagementRepo.collection.drop().toFuture())
     await(trafficManagementRepo.ensureIndexes)
-    await(upscanMongoRepository.drop)
+    await(upscanMongoRepository.collection.drop().toFuture())
     await(upscanMongoRepository.ensureIndexes)
 
     def insertIntoDb(vatScheme: VatScheme) = {

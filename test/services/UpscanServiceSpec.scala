@@ -25,9 +25,7 @@ import scala.concurrent.Future
 
 class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
 
-  val testRegId = "testRegId"
   val testReference = "testReference"
-  val testReference2 = "testReference2"
   val testUpscanDetails: UpscanDetails = UpscanDetails(
     Some(testRegId),
     testReference,

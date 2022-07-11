@@ -4,10 +4,8 @@ package repository
 import itutil.{FakeTimeMachine, IntegrationStubbing}
 import models.api.DailyQuota
 import models.submission.UkCompany
-import play.api.libs.json.JsString
+import org.mongodb.scala.model._
 import play.api.test.Helpers._
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class DailyQuotaRepositoryISpec extends IntegrationStubbing {
 
@@ -20,7 +18,7 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
   "currentTotal" must {
     "return the current total for a party type that we have a quota for" in new Setup {
       given.user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(testQuota.copy(currentTotal = 1), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(testQuota.copy(currentTotal = 1), dailyQuotaRepo.collection.insertOne)
 
       val res = await(dailyQuotaRepo.currentTotal(UkCompany, isEnrolled = true))
 
@@ -28,7 +26,7 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
     }
     "return the default quota for a party type that we don't have a quota for" in new Setup {
       given.user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(testQuota, dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(testQuota, dailyQuotaRepo.collection.insertOne)
 
       val res = await(dailyQuotaRepo.currentTotal(UkCompany, isEnrolled = false))
 
@@ -36,7 +34,7 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
     }
     "return the default quota if there is no record for the current day" in new Setup {
       given.user.isAuthorised
-        .dailyQuotaRepo.insertIntoDb(testQuota.copy(date = testDate.minusDays(1), currentTotal = 1), dailyQuotaRepo.insert)
+        .dailyQuotaRepo.insertIntoDb(testQuota.copy(date = testDate.minusDays(1), currentTotal = 1), dailyQuotaRepo.collection.insertOne)
 
       val res = await(dailyQuotaRepo.currentTotal(UkCompany, isEnrolled = false))
 
@@ -47,9 +45,9 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
   "incrementTotal" must {
     "increment the quota for the day" in new Setup {
       given.user.isAuthorised
-      await(dailyQuotaRepo.bulkInsert(Seq(
+      await(dailyQuotaRepo.collection.insertMany(Seq(
         DailyQuota(testDate.minusDays(1), UkCompany, true, 15),
-        DailyQuota(testDate, UkCompany, true, 9)))
+        DailyQuota(testDate, UkCompany, true, 9))).toFuture()
       )
 
       val res = await(dailyQuotaRepo.incrementTotal(UkCompany, true))
@@ -60,10 +58,10 @@ class DailyQuotaRepositoryISpec extends IntegrationStubbing {
       given.user.isAuthorised
 
       val res = await(dailyQuotaRepo.incrementTotal(UkCompany, true))
-      val data = await(dailyQuotaRepo.find("date" -> JsString(testDate.toString)).map(_.headOption))
+      val data = await(dailyQuotaRepo.collection.find(Filters.equal("date", testDate.toString)).head())
 
       res mustBe 1
-      data mustBe Some(DailyQuota(testDate, UkCompany, true, 1))
+      data mustBe DailyQuota(testDate, UkCompany, true, 1)
     }
   }
 

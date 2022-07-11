@@ -41,14 +41,14 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAs
 
   "getRegInfoById" must {
     "return the correct information for the internalID/regID when it exists" in new Setup {
-      await(trafficManagementRepo.bulkInsert(Seq(regInfo1, regInfo2)))
+      await(trafficManagementRepo.collection.insertMany(Seq(regInfo1, regInfo2)).toFuture())
 
       val res = await(trafficManagementRepo.getRegInfoById(internalId1, regId1))
 
       res mustBe Some(regInfo1)
     }
     "return None if a record doesn't exist" in new Setup {
-      await(trafficManagementRepo.insert(regInfo1))
+      await(trafficManagementRepo.collection.insertOne(regInfo1).toFuture())
 
       val res = await(trafficManagementRepo.getRegInfoById(internalId2, regId2))
 
@@ -58,14 +58,14 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAs
 
   "upsertRegInfoById" must {
     "Update an existing record" in new Setup {
-      await(trafficManagementRepo.bulkInsert(Seq(regInfo1, regInfo2)))
+      await(trafficManagementRepo.collection.insertMany(Seq(regInfo1, regInfo2)).toFuture())
 
       val res = await(trafficManagementRepo.upsertRegInfoById(internalId2, regId2, Submitted, testDate2, OTRS, testDate2))
 
       res mustBe regInfo2.copy(status = Submitted, channel = OTRS)
     }
     "create a new record where one doesn't exist" in new Setup {
-      await(trafficManagementRepo.insert(regInfo1))
+      await(trafficManagementRepo.collection.insertOne(regInfo1).toFuture())
 
       val res = await(trafficManagementRepo.upsertRegInfoById(internalId2, regId2, Draft, testDate2, VatReg, testDate2))
 
@@ -75,7 +75,7 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAs
 
   "Calling deleteRegInfoById(regId)" must {
     "delete the entry to the traffic management repo" in new Setup {
-      trafficManagementRepo.insert(regInfo1).flatMap(_ => trafficManagementRepo.deleteRegInfoById(internalId1, testRegId)) returns true
+      trafficManagementRepo.collection.insertOne(regInfo1).toFuture().flatMap(_ => trafficManagementRepo.deleteRegInfoById(internalId1, testRegId)) returns true
     }
   }
 

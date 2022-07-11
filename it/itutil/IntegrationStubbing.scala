@@ -17,6 +17,8 @@ package itutil
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlMatching}
 import models.api.{DailyQuota, RegistrationInformation, UpscanDetails, VatScheme}
+import org.mongodb.scala.SingleObservable
+import org.mongodb.scala.result.InsertOneResult
 import play.api.test.Helpers._
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.auth.core.AuthenticateHeaderParser
@@ -45,22 +47,22 @@ trait IntegrationStubbing extends IntegrationSpecBase with ITFixtures {
   }
 
   case class DailyQuotaRepo()(implicit builder: PreconditionBuilder) {
-    def insertIntoDb(v: DailyQuota, f: DailyQuota => Future[WriteResult]): PreconditionBuilder = {
-      await(f(v))
+    def insertIntoDb(v: DailyQuota, f: DailyQuota => SingleObservable[InsertOneResult]): PreconditionBuilder = {
+      await(f(v).toFuture())
       builder
     }
   }
 
   case class RegInfoRepo()(implicit builder: PreconditionBuilder) {
-    def insertIntoDb(v: RegistrationInformation, f: RegistrationInformation => Future[WriteResult]): PreconditionBuilder = {
-      await(f(v))
+    def insertIntoDb(v: RegistrationInformation, f: RegistrationInformation => SingleObservable[InsertOneResult]): PreconditionBuilder = {
+      await(f(v).toFuture())
       builder
     }
   }
 
   case class UpscanDetailsRepo()(implicit builder: PreconditionBuilder) {
-    def insertIntoDb(v: UpscanDetails, f: UpscanDetails => Future[WriteResult]): PreconditionBuilder = {
-      await(f(v))
+    def insertIntoDb(v: UpscanDetails, f: UpscanDetails => SingleObservable[InsertOneResult]): PreconditionBuilder = {
+      await(f(v).toFuture())
       builder
     }
   }
