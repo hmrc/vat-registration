@@ -5,8 +5,6 @@ import itutil.{IntegrationSpecBase, IntegrationStubbing}
 import play.api.test.Helpers._
 import services.submission.SubmissionPayloadBuilder
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with IntegrationStubbing {
 
   val url = s"/vatreg/test-only/submissions/$testRegId/submission-payload"

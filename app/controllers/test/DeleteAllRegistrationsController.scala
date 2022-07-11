@@ -18,7 +18,6 @@ package controllers.test
 
 import auth.{Authorisation, AuthorisationResource}
 import org.mongodb.scala.model.Filters.equal
-import play.api.libs.json.JsString
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.auth.core.AuthConnector

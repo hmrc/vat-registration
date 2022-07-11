@@ -23,7 +23,6 @@ import models.api._
 import models.api.returns._
 import org.mongodb.scala.MongoWriteException
 import org.mongodb.scala.model.Filters.{equal => mongoEqual}
-import org.mongodb.scala.model.Updates.unset
 import org.mongodb.scala.result.InsertOneResult
 import play.api.Application
 import play.api.inject.bind

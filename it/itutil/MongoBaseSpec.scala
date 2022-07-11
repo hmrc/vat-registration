@@ -22,15 +22,10 @@ import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.json._
-import play.api.{Configuration, Environment}
-import play.modules.reactivemongo.ReactiveMongoComponentImpl
-import uk.gov.hmrc.mongo.MongoSpecSupport
 
-trait MongoBaseSpec extends PlaySpec with MongoSpecSupport with BeforeAndAfterEach with ScalaFutures with Eventually with GuiceOneAppPerSuite {
+trait MongoBaseSpec extends PlaySpec with BeforeAndAfterEach with ScalaFutures with Eventually with GuiceOneAppPerSuite {
 
   lazy val applicationLifeCycle = new DefaultApplicationLifecycle
-  lazy val reactiveMongoComponent = new ReactiveMongoComponentImpl(fakeApplication.injector.instanceOf[Configuration],
-                                                                   fakeApplication.injector.instanceOf[Environment], applicationLifeCycle)
 
   implicit val jsObjWrites: OWrites[JsObject] = new OWrites[JsObject]{
     override def writes(o: JsObject): JsObject = o
