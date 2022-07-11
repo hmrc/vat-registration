@@ -16,14 +16,11 @@
 package itutil
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlMatching}
-import models.api.{DailyQuota, RegistrationInformation, UpscanDetails, VatScheme}
+import models.api.{DailyQuota, RegistrationInformation, UpscanDetails}
 import org.mongodb.scala.SingleObservable
 import org.mongodb.scala.result.InsertOneResult
 import play.api.test.Helpers._
-import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.auth.core.AuthenticateHeaderParser
-
-import scala.concurrent.Future
 
 trait IntegrationStubbing extends IntegrationSpecBase with ITFixtures {
 
@@ -31,20 +28,12 @@ trait IntegrationStubbing extends IntegrationSpecBase with ITFixtures {
     implicit val builder: PreconditionBuilder = this
 
     def user: User = User()
-    def regRepo: RegRepo = RegRepo()
     def dailyQuotaRepo: DailyQuotaRepo = DailyQuotaRepo()
     def regInfoRepo: RegInfoRepo = RegInfoRepo()
     def upscanDetailsRepo: UpscanDetailsRepo = UpscanDetailsRepo()
   }
 
   def given: PreconditionBuilder = new PreconditionBuilder
-
-  case class RegRepo()(implicit builder: PreconditionBuilder) {
-    def insertIntoDb(v: VatScheme, f: VatScheme => Future[WriteResult]): PreconditionBuilder = {
-     await(f(v))
-      builder
-    }
-  }
 
   case class DailyQuotaRepo()(implicit builder: PreconditionBuilder) {
     def insertIntoDb(v: DailyQuota, f: DailyQuota => SingleObservable[InsertOneResult]): PreconditionBuilder = {

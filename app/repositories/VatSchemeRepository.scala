@@ -31,7 +31,6 @@ import org.mongodb.scala.model.Updates.{combine, set, unset}
 import org.mongodb.scala.model.{FindOneAndReplaceOptions, IndexModel, IndexOptions, UpdateOptions}
 import play.api.Logging
 import play.api.libs.json._
-import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}

@@ -7,8 +7,6 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class NrsSubmissionPayloadControllerISpec extends IntegrationStubbing {
 
   class Setup extends SetupHelper

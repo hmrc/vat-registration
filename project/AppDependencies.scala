@@ -23,7 +23,6 @@ object AppDependencies {
 object CompileDependencies {
   val domainVersion = "6.2.0-play-28"
   val bootstrapVersion = "5.16.0"
-  val simpleReactiveMongoVersion = "8.0.0-play-28"
   val hmrcMongoVersion = "0.66.0"
   val catsVersion = "1.0.0"
 
@@ -31,7 +30,6 @@ object CompileDependencies {
   val pegdownVersion = "1.6.0"
 
   val compile = Seq(
-    "uk.gov.hmrc" %% "simple-reactivemongo" % simpleReactiveMongoVersion,
     "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % hmrcMongoVersion,
     "uk.gov.hmrc" %% "bootstrap-backend-play-28" % bootstrapVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
@@ -53,8 +51,6 @@ object UnitTestDependencies extends CommonTestDependencies {
   override val testDependencies: Seq[ModuleID] = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
     "org.scoverage" %% "scalac-scoverage-runtime" % scoverageVersion % scope,
-    "uk.gov.hmrc" %% "reactivemongo-test" % reactiveMongoTestVersion % scope,
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % hmrcMongoVersion,
     "org.mockito" % "mockito-core" % mockitoVersion % scope
   )
 
@@ -69,8 +65,6 @@ object IntegrationTestDependencies extends CommonTestDependencies {
   override val testDependencies: Seq[ModuleID] = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
     "org.scoverage" %% "scalac-scoverage-runtime" % scoverageVersion % scope,
-    "uk.gov.hmrc" %% "reactivemongo-test" % reactiveMongoTestVersion % scope,
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % hmrcMongoVersion,
     "com.github.tomakehurst" % "wiremock-jre8" % wireMockVersion % scope
   )
 
@@ -80,8 +74,6 @@ object IntegrationTestDependencies extends CommonTestDependencies {
 trait CommonTestDependencies {
   val scalaTestPlusVersion = "5.0.0"
   val scoverageVersion = "1.4.1"
-  val reactiveMongoTestVersion = "5.0.0-play-28"
-  val hmrcMongoVersion = "0.64.0"
   val scope: Configuration
   val testDependencies: Seq[ModuleID]
 }
