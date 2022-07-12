@@ -142,6 +142,16 @@ class RegistrationControllerISpec extends IntegrationStubbing {
         res.json mustBe Json.toJson(testVatScheme)
       }
     }
+    "the JSON is invalid" must {
+      "Return BAD_REQUEST" in new SetupHelper {
+        given.user.isAuthorised
+        insertIntoDb(testVatScheme)
+
+        val res = await(client(registrationUrl(testRegId)).put(Json.obj()))
+
+        res.status mustBe BAD_REQUEST
+      }
+    }
   }
 
   "DELETE /registrations/:regId" when {

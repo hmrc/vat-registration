@@ -50,10 +50,8 @@ class RegistrationService @Inject()(val vatSchemeRepository: VatSchemeRepository
   def getRegistration(internalId: String, regId: String): Future[Option[VatScheme]] =
     vatSchemeRepository.getRegistration(internalId, regId)
 
-  def upsertRegistration[T](internalId: String, regId: String, data: T)(implicit writes: Format[T]): Future[Option[T]] =
-    vatSchemeRepository.upsertRegistration(internalId, regId, Json.toJson(data)).collect {
-      case Some(updatedRegistration) => Json.fromJson[T](updatedRegistration).asOpt
-    }
+  def upsertRegistration(internalId: String, regId: String, scheme: VatScheme): Future[Option[VatScheme]] =
+    vatSchemeRepository.upsertRegistration(internalId, regId, scheme)
 
   def deleteRegistration(internalId: String, regId: String): Future[Boolean] =
     vatSchemeRepository.deleteRegistration(internalId, regId)
