@@ -77,7 +77,7 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
    * */
   def getRegistration(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
-      registrationService.getRegistration[VatScheme](internalId, regId)(VatScheme.format(Some(crypto))).map {
+      registrationService.getRegistration(internalId, regId).map {
         case Some(registration) =>
           Ok(Json.toJson(registration)(VatScheme.format()))
         case _ =>

@@ -81,7 +81,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
 
         res.status mustBe CREATED
         res.json mustBe Json.toJson(testVatScheme2)
-        await(repo.getRegistration(testInternalid, testRegId2)) mustBe Some(Json.toJson(testVatScheme2).as[JsObject])
+        await(repo.getRegistration(testInternalid, testRegId2)) mustBe Some(testVatScheme2)
       }
     }
   }
