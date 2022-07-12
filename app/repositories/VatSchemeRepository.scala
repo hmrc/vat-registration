@@ -55,7 +55,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       IndexModel(
         keys = ascending("registrationId"),
         indexOptions = IndexOptions()
-          .name("RegIdA")
+          .name("RegId")
           .unique(true)
       ),
       IndexModel(
