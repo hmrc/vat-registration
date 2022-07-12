@@ -54,11 +54,6 @@ case object PartnersSectionId extends RegistrationSectionId {
   val repoKey = key
 }
 
-case object ReturnsSectionId extends RegistrationSectionId {
-  val key = "returns"
-  val repoKey = key
-}
-
 case object TransactorSectionId extends RegistrationSectionId {
   val key = "transactor"
   val repoKey = "transactorDetails"
@@ -93,7 +88,6 @@ object RegistrationSectionId {
             case ("section", EligibilitySectionId.key) => Right(EligibilitySectionId)
             case ("section", FlatRateSchemeSectionId.key) => Right(FlatRateSchemeSectionId)
             case ("section", PartnersSectionId.key) => Right(PartnersSectionId)
-            case ("section", ReturnsSectionId.key) => Right(ReturnsSectionId)
             case ("section", TransactorSectionId.key) => Right(TransactorSectionId)
             case ("section", TradingDetailsSectionId.key) => Right(TradingDetailsSectionId)
             case ("section", OtherBusinessInvolvementsSectionId.key) => Right(OtherBusinessInvolvementsSectionId)

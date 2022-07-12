@@ -27,30 +27,16 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
 
   val fullJson: JsValue = Json.obj(
     "tradingName" -> s"$testTradingName",
-    "eoriRequested" -> true,
-    "shortOrgName" -> s"$testShortOrgName",
-    "tradeVatGoodsOutsideUk" -> true
+    "shortOrgName" -> s"$testShortOrgName"
   )
-  val fullModel: TradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName), Some(true))
-
-  val noNameJson: JsValue = Json.obj("eoriRequested" -> true)
-  val noNameModel: TradingDetails = TradingDetails(None, Some(true), None, None)
-
-  val noEoriJson: JsValue = Json.obj("tradingName" -> "test-name")
-  val noEoriModel: TradingDetails = TradingDetails(Some("test-name"), None, None, None)
+  val fullModel: TradingDetails = TradingDetails(Some(testTradingName), Some(testShortOrgName))
 
   val emptyJson: JsValue = Json.obj()
-  val emptyModel: TradingDetails = TradingDetails(None, None, None, None)
+  val emptyModel: TradingDetails = TradingDetails(None, None)
 
   "Creating a TradingDetails model from Json" should {
     "complete successfully from full Json" in {
       Json.fromJson[TradingDetails](fullJson) mustBe JsSuccess(fullModel)
-    }
-    "complete successfully without a trading name" in {
-      Json.fromJson[TradingDetails](noNameJson) mustBe JsSuccess(noNameModel)
-    }
-    "complete successfully without eori-requested" in {
-      Json.fromJson[TradingDetails](noEoriJson) mustBe JsSuccess(noEoriModel)
     }
     "complete successfully when json is without any details" in {
       Json.fromJson[TradingDetails](emptyJson) mustBe JsSuccess(emptyModel)
@@ -62,8 +48,7 @@ class TradingDetailsSpec extends BaseSpec with JsonFormatValidation {
       Json.toJson[TradingDetails](fullModel) mustBe fullJson
     }
     "complete successfully without a trading name" in {
-      Json.toJson[TradingDetails](noNameModel) mustBe noNameJson
+      Json.toJson[TradingDetails](emptyModel) mustBe emptyJson
     }
   }
-
 }

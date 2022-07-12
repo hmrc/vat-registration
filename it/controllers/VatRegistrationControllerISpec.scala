@@ -214,6 +214,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
+
         res.status mustBe OK
       }
 

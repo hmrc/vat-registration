@@ -76,23 +76,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   val bankAccountDetails: BankAccountDetails = BankAccountDetails("testAccountName", sortCode, testAccountNumber, ValidStatus)
   val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails), None, None)
 
-  val vatSchemeWithEligibilityData = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, eligibilitySubmissionData = Some(testEligibilitySubmissionData))
-
-  val returns = Returns(
-    turnoverEstimate = Some(testTurnover),
-    zeroRatedSupplies = Some(12.99),
-    reclaimVatOnMostReturns = true,
-    returnsFrequency = Quarterly,
-    staggerStart = JanuaryStagger,
-    startDate = Some(testDate),
-    northernIrelandProtocol = Some(NIPCompliance(
-      goodsToEU = ConditionalValue(true, Some(testTurnover)),
-      goodsFromEU = ConditionalValue(true, Some(testTurnover))
-    )),
-    appliedForExemption = None,
-    annualAccountingDetails = None,
-    overseasCompliance = None,
-    hasTaxRepresentative = Some(false)
+  val vatSchemeWithEligibilityData = VatScheme(
+    testRegId, internalId = testInternalid, status = VatRegStatus.draft, eligibilitySubmissionData = Some(testEligibilitySubmissionData)
   )
 
   val vatApplication = VatApplication(
@@ -117,7 +102,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     id = testRegId,
     internalId = testInternalid,
     status = VatRegStatus.draft,
-    returns = Some(returns)
+    vatApplication = Some(vatApplication)
   )
 
   "Calling createNewVatScheme" should {
@@ -180,7 +165,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
   }
   "updateTradingDetails" should {
-    val tradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName), Some(true))
+    val tradingDetails = TradingDetails(Some(testTradingName), Some(testShortOrgName))
 
     "update tradingDetails block in registration when there is no tradingDetails data" in new Setup {
       val result: Future[Option[TradingDetails]] = for {
@@ -210,7 +195,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
   }
   "Calling retrieveTradingDetails" should {
-    val tradingDetails = TradingDetails(Some(testTradingName), Some(true), Some(testShortOrgName), Some(true))
+    val tradingDetails = TradingDetails(Some(testTradingName), Some(testShortOrgName))
 
     "return trading details data from an existing registration containing data" in new Setup {
       val result: Future[Option[TradingDetails]] = for {
@@ -295,51 +280,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       await(repository.updateBankAccount(testRegId, bankAccount))
 
       getRegistration mustBe Some(testVatScheme.copy(bankAccount = Some(bankAccount)))
-    }
-  }
-  "fetchReturns" should {
-    "return a Returns case class if one is found in mongo with the supplied regId" in new Setup {
-      val res = for {
-        _ <- insert(vatSchemeWithReturns)
-        returns <- repository.fetchReturns(testRegId)
-      } yield returns
-
-      val fetchedReturns: Option[Returns] = await(res)
-
-      fetchedReturns mustBe Some(testReturns)
-    }
-    "return None if no Returns block is found in mongo for the supplied regId" in new Setup {
-      val res = for {
-        _ <- insert(testVatScheme)
-        returns <- repository.fetchReturns(testRegId)
-      } yield returns
-
-      val fetchedReturns: Option[Returns] = await(res)
-
-      fetchedReturns mustBe None
-    }
-  }
-  "updateReturns" should {
-    "update the registration doc with the provided returns" in new Setup {
-      await(insert(testVatScheme))
-
-      await(repository.updateReturns(testRegId, returns))
-
-      getRegistration mustBe Some(testVatScheme.copy(returns = Some(returns), vatApplication = Some(vatApplication)))
-    }
-    "not update or insert new data into the registration doc if the supplied returns already exist on the doc" in new Setup {
-      await(insert(testVatScheme.copy(returns = Some(returns))))
-
-      await(repository.updateReturns(testRegId, returns))
-
-      getRegistration mustBe Some(testVatScheme.copy(returns = Some(returns), vatApplication = Some(vatApplication)))
-    }
-    "return MissingRegDocument when nothing is returned from mongo for the reg id" in new Setup {
-      count mustBe 0
-
-      intercept[MissingRegDocument] {
-        await(repository.updateReturns(testRegId, returns))
-      }
     }
   }
 

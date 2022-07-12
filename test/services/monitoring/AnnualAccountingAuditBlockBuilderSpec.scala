@@ -49,20 +49,14 @@ class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrat
     }
 
     "return None" when {
-      "the returns block is quarterly" in {
-        val testScheme = testVatScheme.copy(returns = Some(testReturns))
-
-        val res = TestBuilder.buildAnnualAccountingAuditBlock(testScheme)
-
-        res mustBe None
+      "the vat application block is quarterly" in {
+        val testScheme = testVatScheme.copy(vatApplication = Some(testVatApplicationDetails))
+        TestBuilder.buildAnnualAccountingAuditBlock(testScheme) mustBe None
       }
 
-      "the returns block is missing" in {
-        val testScheme = testVatScheme.copy(returns = None)
-
-        val res = TestBuilder.buildAnnualAccountingAuditBlock(testScheme)
-
-        res mustBe None
+      "the vat application block is missing" in {
+        val testScheme = testVatScheme.copy(vatApplication = None)
+        TestBuilder.buildAnnualAccountingAuditBlock(testScheme) mustBe None
       }
     }
   }

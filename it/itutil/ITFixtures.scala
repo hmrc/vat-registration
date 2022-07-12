@@ -49,7 +49,7 @@ trait ITFixtures {
   val oldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   val testTradingName = "trading-name"
   val testShortOrgName = "testShortOrgName"
-  val testTradingDetails = TradingDetails(Some(testTradingName), Some(true), None, Some(true))
+  val testTradingDetails = TradingDetails(Some(testTradingName), None)
   val testAuthProviderId = "authProviderId"
   val testWarehouseNumber = "tst123456789012"
   val testWarehouseName = "testWarehouseName"
@@ -60,20 +60,6 @@ trait ITFixtures {
   )
   val testPreviousBusinessName = "testPreviousBusinessName"
   val testVrn = "testVrn"
-
-  val testReturns: Returns = Returns(
-    turnoverEstimate = Some(testTurnover),
-    appliedForExemption = None,
-    zeroRatedSupplies = Some(12.99),
-    reclaimVatOnMostReturns = true,
-    returnsFrequency = Quarterly,
-    staggerStart = JanuaryStagger,
-    startDate = Some(startDate),
-    annualAccountingDetails = None,
-    overseasCompliance = None,
-    northernIrelandProtocol = Some(testNorthernIrelandProtocol),
-    hasTaxRepresentative = Some(false)
-  )
 
   val testVatApplication: VatApplication = VatApplication(
     Some(true), Some(true),
@@ -101,20 +87,6 @@ trait ITFixtures {
   val aasDetails = vatapplication.AASDetails(
     paymentMethod = StandingOrder,
     paymentFrequency = MonthlyPayment
-  )
-
-  val testAASReturns: Returns = Returns(
-    turnoverEstimate = Some(testTurnover),
-    appliedForExemption = None,
-    zeroRatedSupplies = Some(12.99),
-    reclaimVatOnMostReturns = true,
-    returnsFrequency = Annual,
-    staggerStart = JanDecStagger,
-    startDate = Some(startDate),
-    annualAccountingDetails = Some(aasDetails),
-    overseasCompliance = None,
-    northernIrelandProtocol = Some(testNorthernIrelandProtocol),
-    hasTaxRepresentative = Some(false)
   )
 
   val testAASVatApplicationDetails: VatApplication = VatApplication(
@@ -558,27 +530,6 @@ trait ITFixtures {
         testLoginTimes
   }
 
-  val testNetpReturns: Returns = Returns(
-    turnoverEstimate = Some(testTurnover),
-    appliedForExemption = None,
-    zeroRatedSupplies = Some(12.99),
-    reclaimVatOnMostReturns = true,
-    returnsFrequency = Quarterly,
-    staggerStart = JanuaryStagger,
-    startDate = None,
-    annualAccountingDetails = None,
-    overseasCompliance = Some(OverseasCompliance(
-      true,
-      Some(true),
-      StoringWithinUk,
-      Some(true),
-      Some(testWarehouseNumber),
-      Some(testWarehouseName)
-    )),
-    None,
-    hasTaxRepresentative = Some(false)
-  )
-
   val testNetpVatApplication: VatApplication = VatApplication(
     None, None,
     turnoverEstimate = Some(testTurnover),
@@ -601,12 +552,7 @@ trait ITFixtures {
     hasTaxRepresentative = Some(false)
   )
 
-  val testNetpTradingDetails: TradingDetails = TradingDetails(
-    Some(testTradingName),
-    None,
-    None,
-    None
-  )
+  val testNetpTradingDetails: TradingDetails = TradingDetails(Some(testTradingName), None)
 
   val testNetpEntity = SoleTraderIdEntity(
     testFirstName,

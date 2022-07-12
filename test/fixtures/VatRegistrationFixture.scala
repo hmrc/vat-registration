@@ -73,9 +73,6 @@ trait VatRegistrationFixture {
   lazy val testIban = "01023456"
   lazy val testBankDetailsOverseas = BankAccountOverseasDetails(testOverseasBankName, testBic, testIban)
   lazy val testFormerName = FormerName(hasFormerName = Some(true), Some(testName), Some(testDate))
-  lazy val testReturns = Returns(
-    Some(testTurnover), None, Some(12.99), reclaimVatOnMostReturns = false, Quarterly, JanuaryStagger, Some(testDate), None, None, None, None
-  )
   lazy val testVatApplicationDetails = VatApplication(
     Some(true), Some(true), Some(testTurnover), None, Some(12.99), Some(false), Some(Quarterly),
     Some(JanuaryStagger), Some(testDate), None, None, None, None
@@ -220,19 +217,6 @@ trait VatRegistrationFixture {
   )
 
   lazy val testTurnover = 10000
-  lazy val validAASReturns: Returns = Returns(
-    Some(testTurnover),
-    None,
-    Some(12.99),
-    reclaimVatOnMostReturns = false,
-    Annual,
-    JanDecStagger,
-    Some(testDate),
-    Some(validAASDetails),
-    None,
-    None,
-    None
-  )
 
   lazy val validAASApplicationDeatils: VatApplication = VatApplication(
     Some(true), Some(true),
@@ -251,16 +235,6 @@ trait VatRegistrationFixture {
 
   val testWarehouseNumber = "test12345678"
   val testWarehouseName = "testWarehouseName"
-  val testOverseasReturns: Returns = testReturns.copy(
-    startDate = None,
-    overseasCompliance = Some(OverseasCompliance(
-      goodsToOverseas = true,
-      goodsToEu = Some(true),
-      storingGoodsForDispatch = StoringWithinUk,
-      usingWarehouse = Some(true),
-      fulfilmentWarehouseNumber = Some(testWarehouseNumber),
-      fulfilmentWarehouseName = Some(testWarehouseName)
-    )))
 
   val testOverseasVatApplicationDetails: VatApplication = testVatApplicationDetails.copy(
     startDate = None,
@@ -326,18 +300,13 @@ trait VatRegistrationFixture {
     applicantDetails = Some(validApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     confirmInformationDeclaration = Some(true),
-    returns = Some(testReturns),
     nrsSubmissionPayload = Some(testEncodedPayload),
     business = Some(testBusiness),
     vatApplication = Some(testVatApplicationDetails)
   )
 
-  lazy val validFullTradingDetails: TradingDetails = TradingDetails(tradingName = Some(testTradingName), eoriRequested = Some(true), None, Some(true))
-  lazy val validFullTradingDetailsJson: JsObject = Json.obj(
-    "tradingName" -> "trading-name",
-    "eoriRequested" -> true,
-    "tradeVatGoodsOutsideUk" -> true
-  )
+  lazy val validFullTradingDetails: TradingDetails = TradingDetails(tradingName = Some(testTradingName), None)
+  lazy val validFullTradingDetailsJson: JsObject = Json.obj("tradingName" -> "trading-name")
 
   lazy val validFullOtherBusinessInvolvement: OtherBusinessInvolvement = OtherBusinessInvolvement(businessName = testCompanyName, hasVrn = true, vrn = Some(testVrn), hasUtr = Some(true), utr = Some(testUtr), stillTrading = true)
   lazy val validFullObiJson: JsObject = Json.obj(

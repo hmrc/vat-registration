@@ -21,9 +21,6 @@ GET          /:regId/flat-rate-scheme               controllers.FlatRateSchemeCo
 PATCH        /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.updateFlatRateScheme(regId)
 DELETE       /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.removeFlatRateScheme(regId)
 
-GET          /:regId/returns                        controllers.ReturnsController.getReturns(regId)
-PATCH        /:regId/returns                        controllers.ReturnsController.updateReturns(regId)
-
 GET          /:regId/acknowledgement-reference      controllers.VatRegistrationController.getAcknowledgementReference(regId: String)
 
 PUT          /:regID/submit-registration            controllers.VatRegistrationController.submitVATRegistration(regID : String)

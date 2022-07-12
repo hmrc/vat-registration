@@ -18,8 +18,6 @@ package models.api.vatapplication
 
 import utils.JsonUtilities
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
-
 import java.time.LocalDate
 
 case class VatApplication(eoriRequested: Option[Boolean],
@@ -37,22 +35,5 @@ case class VatApplication(eoriRequested: Option[Boolean],
                           hasTaxRepresentative: Option[Boolean])
 
 object VatApplication extends JsonUtilities {
-
-  val tempReads: Reads[VatApplication] = (
-    (__ \ "tradingDetails" \ "eoriRequested").readNullable[Boolean] and
-      (__ \ "tradingDetails" \ "tradeVatGoodsOutsideUk").readNullable[Boolean] and
-      (__ \ "returns" \ "turnoverEstimate").readNullable[BigDecimal] and
-      (__ \ "returns" \ "appliedForExemption").readNullable[Boolean] and
-      (__ \ "returns" \ "zeroRatedSupplies").readNullable[BigDecimal] and
-      (__ \ "returns" \ "reclaimVatOnMostReturns").readNullable[Boolean] and
-      (__ \ "returns" \ "returnsFrequency").readNullable[ReturnsFrequency] and
-      (__ \ "returns" \ "staggerStart").readNullable[Stagger] and
-      (__ \ "returns" \ "startDate").readNullable[LocalDate] and
-      (__ \ "returns" \ "annualAccountingDetails").readNullable[AASDetails] and
-      (__ \ "returns" \ "overseasCompliance").readNullable[OverseasCompliance] and
-      (__ \ "returns" \ "northernIrelandProtocol").readNullable[NIPCompliance] and
-      (__ \ "returns" \ "hasTaxRepresentative").readNullable[Boolean]
-    ) (VatApplication.apply _)
-
   implicit val format: Format[VatApplication] = Json.format[VatApplication]
 }

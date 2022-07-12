@@ -16,26 +16,7 @@
 
 package models.api.vatapplication
 
-import play.api.libs.json._
-import utils.JsonUtilities
-
-import java.time.LocalDate
-
-case class Returns(turnoverEstimate: Option[BigDecimal],
-                   appliedForExemption: Option[Boolean],
-                   zeroRatedSupplies: Option[BigDecimal],
-                   reclaimVatOnMostReturns: Boolean,
-                   returnsFrequency: ReturnsFrequency,
-                   staggerStart: Stagger,
-                   startDate: Option[LocalDate],
-                   annualAccountingDetails: Option[AASDetails],
-                   overseasCompliance: Option[OverseasCompliance],
-                   northernIrelandProtocol: Option[NIPCompliance],
-                   hasTaxRepresentative: Option[Boolean])
-
-object Returns extends JsonUtilities {
-  implicit val format: Format[Returns] = Json.format[Returns]
-}
+import play.api.libs.json.{Format, JsString, Reads, Writes}
 
 sealed trait StoringGoodsForDispatch
 

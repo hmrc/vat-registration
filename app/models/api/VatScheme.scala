@@ -18,7 +18,7 @@ package models.api
 
 import auth.CryptoSCRS
 import enums.VatRegStatus
-import models.api.vatapplication.{Returns, VatApplication}
+import models.api.vatapplication.VatApplication
 import models.registration.{BusinessSectionId, VatApplicationSectionId}
 import models.registration.sections.PartnersSection
 import models.submission.PartyType
@@ -31,7 +31,6 @@ import java.time.LocalDate
 case class VatScheme(id: String,
                      internalId: String,
                      tradingDetails: Option[TradingDetails] = None,
-                     returns: Option[Returns] = None,
                      bankAccount: Option[BankAccount] = None,
                      acknowledgementReference: Option[String] = None,
                      flatRateScheme: Option[FlatRateScheme] = None,
@@ -76,7 +75,6 @@ object VatScheme {
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
         (__ \ "tradingDetails").readNullable[TradingDetails] and
-        (__ \ "returns").readNullable[Returns] and
         (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
         (__ \ "acknowledgementReference").readNullable[String] and
         (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
@@ -93,16 +91,12 @@ object VatScheme {
         (__ \ "applicationReference").readNullable[String] and
         (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
         (__ \ BusinessSectionId.repoKey).readNullable[Business] and
-        (__ \ VatApplicationSectionId.repoKey).read[VatApplication].fmap(Option[VatApplication]).orElse(__.readNullable[VatApplication](VatApplication.tempReads).fmap {
-          case Some(VatApplication(None, None, None, None, None, None, None, None, None, None, None, None, None)) => None
-          case optVatApplication => optVatApplication
-        })
+        (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication]
         ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
         (__ \ "tradingDetails").readNullable[TradingDetails] and
-        (__ \ "returns").readNullable[Returns] and
         (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
         (__ \ "acknowledgementReference").readNullable[String] and
         (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
@@ -119,10 +113,7 @@ object VatScheme {
         (__ \ "applicationReference").readNullable[String] and
         (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
         (__ \ BusinessSectionId.repoKey).readNullable[Business] and
-        (__ \ VatApplicationSectionId.repoKey).read[VatApplication].fmap(Option[VatApplication]).orElse(__.readNullable[VatApplication](VatApplication.tempReads).fmap {
-          case Some(VatApplication(None, None, None, None, None, None, None, None, None, None, None, None, None)) => None
-          case optVatApplication => optVatApplication
-        })
+        (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication]
         ) (VatScheme.apply _)
     }
 
@@ -130,7 +121,6 @@ object VatScheme {
     (__ \ "registrationId").write[String] and
     (__ \ "internalId").write[String] and
     (__ \ "tradingDetails").writeNullable[TradingDetails] and
-    (__ \ "returns").writeNullable[Returns] and
     (__ \ "bankAccount").writeNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
     (__ \ "acknowledgementReference").writeNullable[String] and
     (__ \ "flatRateScheme").writeNullable[FlatRateScheme] and
