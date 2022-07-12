@@ -16,21 +16,10 @@
 
 package models.api
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class TradingDetails(tradingName: Option[String],
-                          eoriRequested: Option[Boolean],
-                          shortOrgName: Option[String],
-                          tradeVatGoodsOutsideUk: Option[Boolean])
+case class TradingDetails(tradingName: Option[String], shortOrgName: Option[String])
 
 object TradingDetails {
-
-  implicit val format: OFormat[TradingDetails] = (
-    (__ \ "tradingName").formatNullable[String] and
-      (__ \ "eoriRequested").formatNullable[Boolean] and
-      (__ \ "shortOrgName").formatNullable[String] and
-      (__ \ "tradeVatGoodsOutsideUk").formatNullable[Boolean]
-    ) (TradingDetails.apply, unlift(TradingDetails.unapply))
-
+  implicit val format: Format[TradingDetails] = Json.format[TradingDetails]
 }

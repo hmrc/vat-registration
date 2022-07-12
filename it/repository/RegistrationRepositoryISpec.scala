@@ -105,7 +105,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
     "partially update an existing registration" in new Setup {
       val testReg = testEmptyVatScheme(testRegId).copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData))
       await(repo.insertVatScheme(testReg))
-      val updatedReg = testReg.copy(returns = Some(testReturns.copy(appliedForExemption = Some(true))))
+      val updatedReg = testReg.copy(vatApplication = Some(testVatApplication.copy(appliedForExemption = Some(true))))
 
       val res = await(repo.upsertRegistration(testInternalid, testRegId, regAsJson(updatedReg)))
 

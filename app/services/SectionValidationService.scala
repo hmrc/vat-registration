@@ -17,7 +17,7 @@
 package services
 
 import models.api._
-import models.api.vatapplication.{Returns, VatApplication}
+import models.api.vatapplication.VatApplication
 import models.registration._
 import models.registration.sections.PartnersSection
 import models.submission.PartyType
@@ -48,7 +48,6 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
       case EligibilitySectionId => Future(validate[EligibilitySubmissionData](json))
       case FlatRateSchemeSectionId => Future(validate[FlatRateScheme](json))
       case PartnersSectionId => Future(validate[PartnersSection](json))
-      case ReturnsSectionId => Future(validate[Returns](json))
       case TransactorSectionId => Future(validate[TransactorDetails](json))
       case TradingDetailsSectionId => Future(validate[TradingDetails](json))
       case OtherBusinessInvolvementsSectionId => Future(validate[List[OtherBusinessInvolvement]](json))
