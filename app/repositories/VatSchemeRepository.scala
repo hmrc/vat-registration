@@ -75,7 +75,6 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
 
   private val bankAccountCryptoFormatter = BankAccountMongoFormat.encryptedFormat(crypto)
   private val acknowledgementRefPrefix = "VRS"
-  private val rootKey = ""
   private val timestampKey = "timestamp"
   private val internalIdKey = "internalId"
 
@@ -154,12 +153,11 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .toFuture()
       .map(_.toList.map(scheme => Json.toJson(scheme)(VatScheme.format())))
 
-  def getRegistration(internalId: String, regId: String): Future[Option[JsValue]] =
+  def getRegistration(internalId: String, regId: String): Future[Option[VatScheme]] =
     collection
       .find(registrationSelector(regId, Some(internalId)))
       .first()
       .toFutureOption()
-      .map(_.map(scheme => Json.toJson(scheme)(VatScheme.format())))
 
   def upsertRegistration(internalId: String, regId: String, data: JsValue): Future[Option[JsValue]] = {
     val json = data.as[JsObject] ++ Json.obj("internalId" -> internalId)

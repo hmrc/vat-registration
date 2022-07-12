@@ -126,33 +126,20 @@ class RegistrationServiceSpec extends VatRegSpec
   }
 
   "getRegistration" when {
-    "the requested registration exists" when {
-      "requested as a VAT scheme" must {
-        "return the registration as a VAT scheme" in {
-          val registrationJson = Json.toJson(testVatScheme)(VatScheme.format())
-          mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(registrationJson)))
+    "the requested registration exists" must {
+      "return the registration as a VAT scheme" in {
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testVatScheme)))
 
-          val res = await(Service.getRegistration[VatScheme](testInternalId, testRegId)(VatScheme.format()))
+        val res = await(Service.getRegistration(testInternalId, testRegId))
 
-          res mustBe Some(testVatScheme)
-        }
-      }
-      "requested as JSON" must {
-        "return the registration in JSON format" in {
-          val registrationJson = Json.toJson(testVatScheme)(VatScheme.format())
-          mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(registrationJson)))
-
-          val res = await(Service.getRegistration[JsValue](testInternalId, testRegId))
-
-          res mustBe Some(registrationJson)
-        }
+        res mustBe Some(testVatScheme)
       }
     }
     "the requested registration doesn't exist" must {
       "return None" in {
         mockGetRegistration(testInternalId, testRegId)(Future.successful(None))
 
-        val res = await(Service.getRegistration[JsValue](testInternalId, testRegId))
+        val res = await(Service.getRegistration(testInternalId, testRegId))
 
         res mustBe None
       }

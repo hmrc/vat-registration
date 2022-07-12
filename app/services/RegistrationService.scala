@@ -47,11 +47,8 @@ class RegistrationService @Inject()(val vatSchemeRepository: VatSchemeRepository
       case registrations: List[JsValue] => registrations.flatMap(_.validate[T].asOpt)
     }
 
-  def getRegistration[T](internalId: String, regId: String)(implicit reads: Reads[T]): Future[Option[T]] =
-    vatSchemeRepository.getRegistration(internalId, regId).map {
-      case Some(registration) => registration.validate[T].asOpt
-      case None => None
-    }
+  def getRegistration(internalId: String, regId: String): Future[Option[VatScheme]] =
+    vatSchemeRepository.getRegistration(internalId, regId)
 
   def upsertRegistration[T](internalId: String, regId: String, data: T)(implicit writes: Format[T]): Future[Option[T]] =
     vatSchemeRepository.upsertRegistration(internalId, regId, Json.toJson(data)).collect {

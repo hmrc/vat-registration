@@ -82,7 +82,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
 
       val res = await(repo.getRegistration(testInternalid, testRegId))
 
-      res mustBe Some(regAsJson(testEmptyVatScheme(testRegId)))
+      res mustBe Some(testEmptyVatScheme(testRegId))
     }
     "return None if the registration doesn't exist" in new Setup {
       await(repo.createNewVatScheme(testRegId, testInternalid))
