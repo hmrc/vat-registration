@@ -3,7 +3,7 @@
 package controllers
 
 import itutil.{FakeTimeMachine, IntegrationStubbing}
-import models.api.returns._
+import models.api.vatapplication._
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder

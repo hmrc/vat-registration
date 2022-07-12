@@ -21,7 +21,7 @@ import connectors.VatSubmissionConnector
 import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
-import models.api.returns.Annual
+import models.api.vatapplication.Annual
 import models.api.{Attached, PersonalDetails, Submitted, VatScheme}
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
@@ -176,15 +176,15 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       case _ => None
     }
 
-    val exceptionOrExemption = (vatScheme.eligibilitySubmissionData, vatScheme.returns) match {
-      case (Some(eligibilityData), Some(returns)) => VatScheme.exceptionOrExemption(eligibilityData, returns) match {
+    val exceptionOrExemption = (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication) match {
+      case (Some(eligibilityData), Some(vatApplication)) => VatScheme.exceptionOrExemption(eligibilityData, vatApplication) match {
         case VatScheme.exceptionKey => Some("Exception")
         case VatScheme.exemptionKey => Some("Exemption")
         case _ => None
       }
       case _ => None
     }
-    val appliedForAas = if (vatScheme.returns.map(_.returnsFrequency).contains(Annual)) Some("AnnualAccountingScheme") else None
+    val appliedForAas = if (vatScheme.vatApplication.flatMap(_.returnsFrequency).contains(Annual)) Some("AnnualAccountingScheme") else None
     val appliedForFrs = if (vatScheme.flatRateScheme.exists(_.joinFrs)) Some("FlatRateScheme") else None
     val hasObi = if (vatScheme.otherBusinessInvolvements.exists(_.nonEmpty)) Some("OtherBusinessInvolvements") else None
     val specialSituations = List(exceptionOrExemption, appliedForAas, appliedForFrs, hasObi).flatten

@@ -18,8 +18,8 @@ package models.api
 
 import auth.CryptoSCRS
 import enums.VatRegStatus
-import models.api.returns.Returns
-import models.registration.BusinessSectionId
+import models.api.vatapplication.{Returns, VatApplication}
+import models.registration.{BusinessSectionId, VatApplicationSectionId}
 import models.registration.sections.PartnersSection
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
@@ -47,7 +47,8 @@ case class VatScheme(id: String,
                      createdDate: Option[LocalDate] = None,
                      applicationReference: Option[String] = None,
                      otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None,
-                     business: Option[Business] = None) {
+                     business: Option[Business] = None,
+                     vatApplication: Option[VatApplication] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -58,8 +59,8 @@ object VatScheme {
   val exceptionKey = "2"
   val exemptionKey = "1"
   val nonExceptionOrExemptionKey = "0"
-  def exceptionOrExemption(eligibilityData: EligibilitySubmissionData, returns: Returns): String = {
-    (eligibilityData.appliedForException, returns.appliedForExemption) match {
+  def exceptionOrExemption(eligibilityData: EligibilitySubmissionData, vatApplication: VatApplication): String = {
+    (eligibilityData.appliedForException, vatApplication.appliedForExemption) match {
       case (Some(true), Some(true)) =>
         throw new InternalServerException("User has applied for both exception and exemption")
       case (Some(true), _) => exceptionKey
@@ -91,7 +92,11 @@ object VatScheme {
         (__ \ "createdDate").readNullable[LocalDate] and
         (__ \ "applicationReference").readNullable[String] and
         (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
-        (__ \ BusinessSectionId.repoKey).readNullable[Business]
+        (__ \ BusinessSectionId.repoKey).readNullable[Business] and
+        (__ \ VatApplicationSectionId.repoKey).read[VatApplication].fmap(Option[VatApplication]).orElse(__.readNullable[VatApplication](VatApplication.tempReads).fmap {
+          case Some(VatApplication(None, None, None, None, None, None, None, None, None, None, None, None, None)) => None
+          case optVatApplication => optVatApplication
+        })
         ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
@@ -113,7 +118,11 @@ object VatScheme {
         (__ \ "createdDate").readNullable[LocalDate] and
         (__ \ "applicationReference").readNullable[String] and
         (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
-        (__ \ BusinessSectionId.repoKey).readNullable[Business]
+        (__ \ BusinessSectionId.repoKey).readNullable[Business] and
+        (__ \ VatApplicationSectionId.repoKey).read[VatApplication].fmap(Option[VatApplication]).orElse(__.readNullable[VatApplication](VatApplication.tempReads).fmap {
+          case Some(VatApplication(None, None, None, None, None, None, None, None, None, None, None, None, None)) => None
+          case optVatApplication => optVatApplication
+        })
         ) (VatScheme.apply _)
     }
 
@@ -137,7 +146,8 @@ object VatScheme {
     (__ \ "createdDate").writeNullable[LocalDate] and
     (__ \ "applicationReference").writeNullable[String] and
     (__ \ "otherBusinessInvolvements").writeNullable[List[OtherBusinessInvolvement]] and
-    (__ \ BusinessSectionId.repoKey).writeNullable[Business]
+    (__ \ BusinessSectionId.repoKey).writeNullable[Business] and
+    (__ \ VatApplicationSectionId.repoKey).writeNullable[VatApplication]
     ) (unlift(VatScheme.unapply))
 
   def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =

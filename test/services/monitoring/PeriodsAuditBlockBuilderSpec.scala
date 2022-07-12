@@ -18,7 +18,7 @@ package services.monitoring
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api.returns._
+import models.api.vatapplication._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
@@ -28,7 +28,8 @@ class PeriodsAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   "the periods block builder" should {
     "write the correct json for the monthly stagger" in {
-      val testScheme = testVatScheme.copy(returns = Some(testReturns).map(_.copy(returnsFrequency = Monthly, staggerStart = MonthlyStagger))
+      val testScheme = testVatScheme.copy(
+        vatApplication = Some(testVatApplicationDetails).map(_.copy(returnsFrequency = Some(Monthly), staggerStart = Some(MonthlyStagger)))
       )
 
       val res = TestBuilder.buildPeriodsBlock(testScheme)
@@ -38,7 +39,9 @@ class PeriodsAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       )
     }
     "write the correct json for stagger 1" in {
-      val testScheme = testVatScheme.copy(returns = Some(testReturns).map(_.copy(staggerStart = JanuaryStagger)))
+      val testScheme = testVatScheme.copy(
+        vatApplication = Some(testVatApplicationDetails).map(_.copy(staggerStart = Some(JanuaryStagger)))
+      )
 
       val res = TestBuilder.buildPeriodsBlock(testScheme)
 
@@ -47,7 +50,9 @@ class PeriodsAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       )
     }
     "write the correct json for stagger 2" in {
-      val testScheme = testVatScheme.copy(returns = Some(testReturns).map(_.copy(staggerStart = FebruaryStagger)))
+      val testScheme = testVatScheme.copy(
+        vatApplication = Some(testVatApplicationDetails).map(_.copy(staggerStart = Some(FebruaryStagger)))
+      )
 
       val res = TestBuilder.buildPeriodsBlock(testScheme)
 
@@ -56,7 +61,9 @@ class PeriodsAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       )
     }
     "write the correct json for stagger 3" in {
-      val testScheme = testVatScheme.copy(returns = Some(testReturns).map(_.copy(staggerStart = MarchStagger)))
+      val testScheme = testVatScheme.copy(
+        vatApplication = Some(testVatApplicationDetails).map(_.copy(staggerStart = Some(MarchStagger)))
+      )
 
       val res = TestBuilder.buildPeriodsBlock(testScheme)
 
@@ -65,7 +72,7 @@ class PeriodsAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       )
     }
     "throw an exception if the returns section is missing" in {
-      val testScheme = testVatScheme.copy(returns = None)
+      val testScheme = testVatScheme.copy(vatApplication = None)
 
       intercept[InternalServerException] {
         TestBuilder.buildPeriodsBlock(testScheme)

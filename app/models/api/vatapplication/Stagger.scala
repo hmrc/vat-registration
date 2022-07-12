@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.api.returns
+package models.api.vatapplication
 
 import play.api.libs.json._
 

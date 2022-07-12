@@ -19,7 +19,7 @@ package itutil
 import enums.VatRegStatus
 import models._
 import models.api._
-import models.api.returns._
+import models.api.vatapplication._
 import models.sdes.PropertyExtractor._
 import models.sdes._
 import models.submission._
@@ -75,6 +75,21 @@ trait ITFixtures {
     hasTaxRepresentative = Some(false)
   )
 
+  val testVatApplication: VatApplication = VatApplication(
+    Some(true), Some(true),
+    turnoverEstimate = Some(testTurnover),
+    appliedForExemption = None,
+    zeroRatedSupplies = Some(12.99),
+    claimVatRefunds = Some(true),
+    returnsFrequency = Some(Quarterly),
+    staggerStart = Some(JanuaryStagger),
+    startDate = Some(startDate),
+    annualAccountingDetails = None,
+    overseasCompliance = None,
+    northernIrelandProtocol = Some(testNorthernIrelandProtocol),
+    hasTaxRepresentative = Some(false)
+  )
+
   val frsDetails = FRSDetails(
     businessGoods = Some(BusinessGoods(12345678L, true)),
     startDate = Some(testDate),
@@ -83,7 +98,7 @@ trait ITFixtures {
     limitedCostTrader = Some(false)
   )
 
-  val aasDetails = returns.AASDetails(
+  val aasDetails = vatapplication.AASDetails(
     paymentMethod = StandingOrder,
     paymentFrequency = MonthlyPayment
   )
@@ -101,6 +116,22 @@ trait ITFixtures {
     northernIrelandProtocol = Some(testNorthernIrelandProtocol),
     hasTaxRepresentative = Some(false)
   )
+
+  val testAASVatApplicationDetails: VatApplication = VatApplication(
+    Some(true), Some(true),
+    turnoverEstimate = Some(testTurnover),
+    appliedForExemption = None,
+    zeroRatedSupplies = Some(12.99),
+    claimVatRefunds = Some(true),
+    returnsFrequency = Some(Annual),
+    staggerStart = Some(JanDecStagger),
+    startDate = Some(startDate),
+    annualAccountingDetails = Some(aasDetails),
+    overseasCompliance = None,
+    northernIrelandProtocol = Some(testNorthernIrelandProtocol),
+    hasTaxRepresentative = Some(false)
+  )
+
   lazy val testFirstName = "testFirstName"
   lazy val testLastName = "testLastName"
   val testFlatRateScheme = FlatRateScheme(joinFrs = true, Some(frsDetails))
@@ -286,7 +317,7 @@ trait ITFixtures {
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     confirmInformationDeclaration = Some(true),
-    returns = Some(testReturns),
+    vatApplication = Some(testVatApplication),
     nrsSubmissionPayload = Some(testEncodedPayload),
     business = Some(testBusiness)
   )
@@ -296,7 +327,7 @@ trait ITFixtures {
       id = testRegId,
       internalId = testInternalid,
       tradingDetails = Some(testTradingDetails),
-      returns = Some(testAASReturns),
+      vatApplication = Some(testAASVatApplicationDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
@@ -331,7 +362,7 @@ trait ITFixtures {
       internalId = testInternalid,
       tradingDetails = Some(testTradingDetails),
       transactorDetails = Some(testAgentTransactorDetails),
-      returns = Some(testAASReturns),
+      vatApplication = Some(testAASVatApplicationDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
@@ -348,7 +379,7 @@ trait ITFixtures {
       id = testRegId,
       internalId = testInternalid,
       tradingDetails = Some(testTradingDetails),
-      returns = Some(testReturns),
+      vatApplication = Some(testVatApplication),
       bankAccount = Some(BankAccount(isProvided = false, None, None, Some(BeingSetup))),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(FlatRateScheme(joinFrs = false, None)),
@@ -548,6 +579,28 @@ trait ITFixtures {
     hasTaxRepresentative = Some(false)
   )
 
+  val testNetpVatApplication: VatApplication = VatApplication(
+    None, None,
+    turnoverEstimate = Some(testTurnover),
+    appliedForExemption = None,
+    zeroRatedSupplies = Some(12.99),
+    claimVatRefunds = Some(true),
+    returnsFrequency = Some(Quarterly),
+    staggerStart = Some(JanuaryStagger),
+    startDate = None,
+    annualAccountingDetails = None,
+    overseasCompliance = Some(OverseasCompliance(
+      true,
+      Some(true),
+      StoringWithinUk,
+      Some(true),
+      Some(testWarehouseNumber),
+      Some(testWarehouseName)
+    )),
+    None,
+    hasTaxRepresentative = Some(false)
+  )
+
   val testNetpTradingDetails: TradingDetails = TradingDetails(
     Some(testTradingName),
     None,
@@ -610,7 +663,7 @@ trait ITFixtures {
       applicantDetails = Some(testNetpApplicantDetails),
       bankAccount = None,
       eligibilitySubmissionData = Some(testNetpEligibilitySubmissionData),
-      returns = Some(testNetpReturns),
+      vatApplication = Some(testNetpVatApplication),
       tradingDetails = Some(testNetpTradingDetails),
       flatRateScheme = None,
       attachments = Some(Attachments(Post)),

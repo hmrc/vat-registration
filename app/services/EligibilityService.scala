@@ -87,16 +87,17 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               partners = None,
               attachments = None,
               otherBusinessInvolvements = None,
-              business = None
+              business = None,
+              vatApplication = None
             ))
 
           case EligibilitySubmissionData(_, _, _, _, _, oldTransactorFlag, _)
             if !oldTransactorFlag.equals(eligibilityData.isTransactor) || eligibilityData.appliedForException.contains(true) =>
 
-            val returnsWithClearedExemption = if (eligibilityData.appliedForException.contains(true)) {
-              vatScheme.returns.map(_.copy(appliedForExemption = None))
+            val vatApplicationWithClearedExemption = if (eligibilityData.appliedForException.contains(true)) {
+              vatScheme.vatApplication.map(_.copy(appliedForExemption = None))
             } else {
-              vatScheme.returns
+              vatScheme.vatApplication
             }
 
             val clearedTransactor = if (oldTransactorFlag != eligibilityData.isTransactor) {
@@ -107,7 +108,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
 
             registrationRepository.insertVatScheme(vatScheme.copy(
               transactorDetails = clearedTransactor,
-              returns = returnsWithClearedExemption
+              vatApplication = vatApplicationWithClearedExemption
             ))
 
           case _ =>

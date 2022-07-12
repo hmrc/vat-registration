@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
-import models.api.returns._
+import models.api.vatapplication._
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
@@ -27,24 +27,10 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
 
   object TestBuilder extends PeriodsBlockBuilder
 
-  val emptyReturns: Returns = Returns(
-    turnoverEstimate = Some(testTurnover),
-    appliedForExemption = None,
-    zeroRatedSupplies = None,
-    reclaimVatOnMostReturns = false,
-    returnsFrequency = Quarterly,
-    staggerStart = JanuaryStagger,
-    startDate = Some(testDate),
-    annualAccountingDetails = None,
-    overseasCompliance = None,
-    northernIrelandProtocol = None,
-    hasTaxRepresentative = None
-  )
-
   "the periods block builder" should {
     "write the correct json for the monthly stagger" in {
-      val monthlyReturns = testReturns.copy(returnsFrequency = Monthly, staggerStart = MonthlyStagger)
-      val vatScheme = testVatScheme.copy(returns = Some(monthlyReturns))
+      val monthlyReturns = testVatApplicationDetails.copy(returnsFrequency = Some(Monthly), staggerStart = Some(MonthlyStagger))
+      val vatScheme = testVatScheme.copy(vatApplication = Some(monthlyReturns))
 
       val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
@@ -53,8 +39,8 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
       )
     }
     "write the correct json for stagger 1" in {
-      val stagger1Returns = testReturns.copy(staggerStart = JanuaryStagger)
-      val vatScheme = testVatScheme.copy(returns = Some(stagger1Returns))
+      val stagger1ApplicationDetails = testVatApplicationDetails.copy(staggerStart = Some(JanuaryStagger))
+      val vatScheme = testVatScheme.copy(vatApplication = Some(stagger1ApplicationDetails))
 
       val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
@@ -63,8 +49,8 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
       )
     }
     "write the correct json for stagger 2" in {
-      val stagger2Returns = testReturns.copy(staggerStart = FebruaryStagger)
-      val vatScheme = testVatScheme.copy(returns = Some(stagger2Returns))
+      val stagger2ApplicationDetails = testVatApplicationDetails.copy(staggerStart = Some(FebruaryStagger))
+      val vatScheme = testVatScheme.copy(vatApplication = Some(stagger2ApplicationDetails))
 
       val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
@@ -73,8 +59,8 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
       )
     }
     "write the correct json for stagger 3" in {
-      val stagger3Returns = testReturns.copy(staggerStart = MarchStagger)
-      val vatScheme = testVatScheme.copy(returns = Some(stagger3Returns))
+      val stagger3ApplicationDetails = testVatApplicationDetails.copy(staggerStart = Some(MarchStagger))
+      val vatScheme = testVatScheme.copy(vatApplication = Some(stagger3ApplicationDetails))
 
       val res = TestBuilder.buildPeriodsBlock(vatScheme)
 

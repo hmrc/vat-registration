@@ -94,7 +94,7 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   }
 
   private def getTaxRepresentativeAttachment(vatScheme: VatScheme): Option[TaxRepresentativeAuthorisation.type] = {
-    vatScheme.returns.flatMap(_.hasTaxRepresentative) match {
+    vatScheme.vatApplication.flatMap(_.hasTaxRepresentative) match {
       case Some(hasTaxRepresentative) if hasTaxRepresentative => Some(TaxRepresentativeAuthorisation)
       case _ => None
     }

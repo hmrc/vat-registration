@@ -17,12 +17,12 @@
 package models
 
 import helpers.BaseSpec
-import models.api.vatapplication._
-import play.api.libs.json.{__, _}
+import models.api.vatapplication.{AASDetails, Annual, BankGIRO, ConditionalValue, JanDecStagger, JanuaryStagger, Monthly, MonthlyPayment, MonthlyStagger, NIPCompliance, OverseasCompliance, PaymentFrequency, PaymentMethod, Quarterly, ReturnsFrequency, Stagger, StoringGoodsForDispatch, StoringWithinUk, VatApplication}
+import play.api.libs.json._
 
 import java.time.LocalDate
 
-class ReturnsSpec extends BaseSpec with JsonFormatValidation {
+class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
 
   val testTurnover = 10000.5
   val testDate: LocalDate = LocalDate.now()
@@ -33,13 +33,15 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     ConditionalValue(answer = false, None)
   )
 
-  val testMonthlyReturns: Returns = Returns(
+  val testMonthlyVatApplication: VatApplication = VatApplication(
+    Some(true),
+    Some(true),
     Some(testTurnover),
     None,
     Some(testTurnover),
-    reclaimVatOnMostReturns = true,
-    Monthly,
-    MonthlyStagger,
+    claimVatRefunds = Some(true),
+    Some(Monthly),
+    Some(MonthlyStagger),
     Some(testDate),
     None,
     None,
@@ -47,13 +49,15 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     Some(false)
   )
 
-  val testQuarterlyReturns: Returns = Returns(
+  val testQuarterlyVatApplication: VatApplication = VatApplication(
+    Some(true),
+    Some(true),
     Some(testTurnover),
     None,
     Some(testTurnover),
-    reclaimVatOnMostReturns = false,
-    Quarterly,
-    JanuaryStagger,
+    claimVatRefunds = Some(false),
+    Some(Quarterly),
+    Some(JanuaryStagger),
     Some(testDate),
     None,
     None,
@@ -61,13 +65,15 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     None
   )
 
-  val testAnnualReturns: Returns = Returns(
+  val testAnnualVatApplication: VatApplication = VatApplication(
+    Some(true),
+    Some(true),
     Some(testTurnover),
     None,
     Some(testTurnover),
-    reclaimVatOnMostReturns = false,
-    Annual,
-    JanDecStagger,
+    claimVatRefunds = Some(false),
+    Some(Annual),
+    Some(JanDecStagger),
     Some(testDate),
     Some(AASDetails(BankGIRO, MonthlyPayment)),
     None,
@@ -75,7 +81,7 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     None
   )
 
-  val testOverseasReturns: Returns = testQuarterlyReturns.copy(overseasCompliance = Some(OverseasCompliance(
+  val testOverseasVatApplication: VatApplication = testQuarterlyVatApplication.copy(overseasCompliance = Some(OverseasCompliance(
     goodsToOverseas = true,
     goodsToEu = Some(true),
     storingGoodsForDispatch = StoringWithinUk,
@@ -84,10 +90,12 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     fulfilmentWarehouseName = Some(testWarehouseName)
   )))
 
-  val validMonthlyReturnsJson: JsObject = Json.obj(
+  val validMonthlyVatApplicationJson: JsObject = Json.obj(
+    "eoriRequested" -> true,
+    "tradeVatGoodsOutsideUk" -> true,
     "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testTurnover,
-    "reclaimVatOnMostReturns" -> true,
+    "claimVatRefunds" -> true,
     "returnsFrequency" -> Json.toJson[ReturnsFrequency](Monthly),
     "staggerStart" -> Json.toJson[Stagger](MonthlyStagger),
     "startDate" -> testDate,
@@ -103,10 +111,12 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     "hasTaxRepresentative" -> false
   )
 
-  val validQuarterlyReturnsJson: JsObject = Json.obj(
+  val validQuarterlyVatApplicationJson: JsObject = Json.obj(
+    "eoriRequested" -> true,
+    "tradeVatGoodsOutsideUk" -> true,
     "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testTurnover,
-    "reclaimVatOnMostReturns" -> false,
+    "claimVatRefunds" -> false,
     "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
     "staggerStart" -> Json.toJson[Stagger](JanuaryStagger),
     "startDate" -> testDate,
@@ -121,11 +131,13 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     )
   )
 
-  def validAnnualReturnsJson(startDate: Option[LocalDate] = Some(testDate)): JsObject =
+  def validAnnualVatApplicationJson(startDate: Option[LocalDate] = Some(testDate)): JsObject =
     Json.obj(
+      "eoriRequested" -> true,
+      "tradeVatGoodsOutsideUk" -> true,
       "turnoverEstimate" -> testTurnover,
       "zeroRatedSupplies" -> testTurnover,
-      "reclaimVatOnMostReturns" -> false,
+      "claimVatRefunds" -> false,
       "returnsFrequency" -> Json.toJson[ReturnsFrequency](Annual),
       "staggerStart" -> Json.toJson[Stagger](JanDecStagger),
       "startDate" -> startDate,
@@ -144,7 +156,9 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
       )
     )
 
-  val invalidReturnsJson: JsObject = Json.obj(
+  val invalidVatApplicationJson: JsObject = Json.obj(
+    "eoriRequested" -> true,
+    "tradeVatGoodsOutsideUk" -> true,
     "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testTurnover,
     "returnsFrequency" -> "invalidFrequency",
@@ -166,9 +180,11 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val validOverseasJson: JsObject = Json.obj(
+    "eoriRequested" -> true,
+    "tradeVatGoodsOutsideUk" -> true,
     "turnoverEstimate" -> testTurnover,
     "zeroRatedSupplies" -> testTurnover,
-    "reclaimVatOnMostReturns" -> false,
+    "claimVatRefunds" -> false,
     "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
     "staggerStart" -> Json.toJson[Stagger](JanuaryStagger),
     "startDate" -> testDate,
@@ -191,34 +207,33 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     )
   )
 
-  "Parsing Returns" should {
+  "Parsing VatApplication" should {
     "succeed" when {
       "full monthly json is present" in {
-        Json.fromJson[Returns](validMonthlyReturnsJson) mustBe JsSuccess(testMonthlyReturns)
+        Json.fromJson[VatApplication](validMonthlyVatApplicationJson) mustBe JsSuccess(testMonthlyVatApplication)
       }
 
       "full quarterly json is present" in {
-        Json.fromJson[Returns](validQuarterlyReturnsJson) mustBe JsSuccess(testQuarterlyReturns)
+        Json.fromJson[VatApplication](validQuarterlyVatApplicationJson) mustBe JsSuccess(testQuarterlyVatApplication)
       }
 
       "full annual json is present" in {
-        Json.fromJson[Returns](validAnnualReturnsJson()) mustBe JsSuccess(testAnnualReturns)
+        Json.fromJson[VatApplication](validAnnualVatApplicationJson()) mustBe JsSuccess(testAnnualVatApplication)
       }
 
       "full annual json is present without startDate" in {
-        Json.fromJson[Returns](validAnnualReturnsJson(None)) mustBe JsSuccess(testAnnualReturns.copy(startDate = None))
+        Json.fromJson[VatApplication](validAnnualVatApplicationJson(None)) mustBe JsSuccess(testAnnualVatApplication.copy(startDate = None))
       }
 
       "full overseas json is present" in {
-        Json.fromJson[Returns](validOverseasJson) mustBe JsSuccess(testOverseasReturns)
+        Json.fromJson[VatApplication](validOverseasJson) mustBe JsSuccess(testOverseasVatApplication)
       }
     }
 
     "fails" when {
       "json is invalid" in {
-        val result = Json.fromJson[Returns](invalidReturnsJson)
+        val result = Json.fromJson[VatApplication](invalidVatApplicationJson)
         result shouldHaveErrors(
-          __ \ "reclaimVatOnMostReturns" -> JsonValidationError("error.path.missing"),
           __ \ "returnsFrequency" -> JsonValidationError("Could not parse payment frequency"),
           __ \ "staggerStart" -> JsonValidationError("Could not parse Stagger")
         )
@@ -226,10 +241,10 @@ class ReturnsSpec extends BaseSpec with JsonFormatValidation {
     }
   }
 
-  "Returns model to json" should {
+  "VatApplication model to json" should {
     "succeed" when {
       "everything is present" in {
-        Json.toJson[Returns](testAnnualReturns) mustBe validAnnualReturnsJson()
+        Json.toJson[VatApplication](testAnnualVatApplication) mustBe validAnnualVatApplicationJson()
       }
     }
   }

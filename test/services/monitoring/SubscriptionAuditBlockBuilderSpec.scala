@@ -19,7 +19,7 @@ package services.monitoring
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api._
-import models.api.returns.{JanuaryStagger, Quarterly, Returns}
+import models.api.vatapplication.{JanuaryStagger, Quarterly, VatApplication}
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.InternalServerException
 
@@ -90,13 +90,15 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
 
   "buildSubscriptionBlock" should {
     val testDate = LocalDate.of(2020, 2, 2)
-    val testReturns = Returns(
+    val testVatApplicationDetails = VatApplication(
+      None,
+      None,
       Some(testTurnover),
       None,
       Some(12.99),
-      reclaimVatOnMostReturns = false,
-      Quarterly,
-      JanuaryStagger,
+      claimVatRefunds = Some(false),
+      Some(Quarterly),
+      Some(JanuaryStagger),
       Some(testDate),
       None,
       None,
@@ -108,7 +110,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
       val vatScheme = testVatScheme.copy(
         eligibilitySubmissionData = Some(testEligibilitySubmissionData),
         business = Some(testBusiness),
-        returns = Some(testReturns),
+        vatApplication = Some(testVatApplicationDetails),
         flatRateScheme = Some(validFullFlatRateScheme)
       )
 
@@ -123,7 +125,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
           threshold = Threshold(mandatoryRegistration = false, None, None, None)
         )),
         business = Some(testBusiness.copy(businessActivities = Some(Nil))),
-        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
+        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
         flatRateScheme = Some(validEmptyFlatRateScheme)
       )
 
@@ -138,7 +140,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
           threshold = Threshold(mandatoryRegistration = false, None, None, None)
         )),
         business = Some(testBusiness.copy(businessActivities = Some(Nil))),
-        returns = Some(testReturns.copy(appliedForExemption = Some(true))),
+        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
         flatRateScheme = None
       )
 
@@ -151,7 +153,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
       val vatScheme = testVatScheme.copy(
         eligibilitySubmissionData = Some(testEligibilitySubmissionData),
         business = Some(testBusiness),
-        returns = Some(testReturns),
+        vatApplication = Some(testVatApplicationDetails),
         flatRateScheme = Some(invalidEmptyFlatRateScheme)
       )
 
@@ -163,7 +165,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
       intercept[InternalServerException](TestService.buildSubscriptionBlock(testVatScheme))
         .message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: EligibilitySubmissionData found - false, " +
-        "Returns found - false, Business found - false."
+        "VatApplication found - false, Business found - false."
     }
 
     "fail if any of the repository requests return nothing" in {
@@ -174,7 +176,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
       intercept[InternalServerException](TestService.buildSubscriptionBlock(vatScheme))
         .message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: EligibilitySubmissionData found - true, " +
-        "Returns found - false, Business found - false."
+        "VatApplication found - false, Business found - false."
     }
   }
 }

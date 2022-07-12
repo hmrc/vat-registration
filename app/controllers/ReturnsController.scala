@@ -17,7 +17,7 @@
 package controllers
 
 import auth.{Authorisation, AuthorisationResource}
-import models.api.returns.Returns
+import models.api.vatapplication.Returns
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.ReturnsService

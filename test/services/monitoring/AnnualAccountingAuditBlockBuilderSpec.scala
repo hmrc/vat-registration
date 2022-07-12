@@ -40,7 +40,7 @@ class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrat
   "buildAnnualAccountingBlock" should {
     "return the correct json" when {
       "the applicant wants to join AAS and all data is provided" in {
-        val testScheme = testVatScheme.copy(returns = Some(validAASReturns), eligibilitySubmissionData = Some(testEligibilitySubmissionData))
+        val testScheme = testVatScheme.copy(vatApplication = Some(validAASApplicationDeatils), eligibilitySubmissionData = Some(testEligibilitySubmissionData))
 
         val res = TestBuilder.buildAnnualAccountingAuditBlock(testScheme)
 

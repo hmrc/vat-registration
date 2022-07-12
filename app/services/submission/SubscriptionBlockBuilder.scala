@@ -18,7 +18,7 @@ package services.submission
 
 import models._
 import models.api.VatScheme
-import models.api.returns.NIPCompliance
+import models.api.vatapplication.NIPCompliance
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -30,23 +30,23 @@ import javax.inject.{Inject, Singleton}
 class SubscriptionBlockBuilder @Inject()() {
 
   def buildSubscriptionBlock(vatScheme: VatScheme): JsObject =
-    (vatScheme.eligibilitySubmissionData, vatScheme.returns, vatScheme.applicantDetails, vatScheme.business, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
-      case (Some(eligibilityData), Some(returns), Some(applicantDetails), Some(business), otherBusinessInvolvements) => jsonObject(
+    (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication, vatScheme.applicantDetails, vatScheme.business, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
+      case (Some(eligibilityData), Some(vatApplication), Some(applicantDetails), Some(business), otherBusinessInvolvements) => jsonObject(
         "reasonForSubscription" -> jsonObject(
           "registrationReason" -> eligibilityData.registrationReason.key,
           "relevantDate" -> {
             eligibilityData.registrationReason match {
-              case Voluntary | SuppliesOutsideUk | GroupRegistration | IntendingTrader => returns.startDate
+              case Voluntary | SuppliesOutsideUk | GroupRegistration | IntendingTrader => vatApplication.startDate
               case BackwardLook => eligibilityData.threshold.thresholdInTwelveMonths
               case ForwardLook => Some(eligibilityData.threshold.earliestDate)
               case NonUk => eligibilityData.threshold.thresholdOverseas
               case TransferOfAGoingConcern => eligibilityData.togcCole.map(_.dateOfTransfer)
             }
           },
-          conditional(returns.startDate.exists(date => !eligibilityData.calculatedDate.contains(date)))(
-            "voluntaryOrEarlierDate" -> returns.startDate
+          conditional(vatApplication.startDate.exists(date => !eligibilityData.calculatedDate.contains(date)))(
+            "voluntaryOrEarlierDate" -> vatApplication.startDate
           ),
-          "exemptionOrException" -> VatScheme.exceptionOrExemption(eligibilityData, returns)
+          "exemptionOrException" -> VatScheme.exceptionOrExemption(eligibilityData, vatApplication)
         ),
         optional("corporateBodyRegistered" -> Option(applicantDetails.entity).collect {
           case IncorporatedEntity(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
@@ -64,20 +64,20 @@ class SubscriptionBlockBuilder @Inject()() {
             optional("mainCode3" -> business.otherBusinessActivities.lift(1).map(_.id)),
             optional("mainCode4" -> business.otherBusinessActivities.lift(2).map(_.id))
           ),
-          optional("goodsToOverseas" -> returns.overseasCompliance.map(_.goodsToOverseas)),
-          optional("goodsToCustomerEU" -> returns.overseasCompliance.flatMap(_.goodsToEu)),
-          optional("storingGoodsForDispatch" -> returns.overseasCompliance.map(_.storingGoodsForDispatch)),
-          optional("fulfilmentWarehouse" -> returns.overseasCompliance.flatMap(_.usingWarehouse)),
-          optional("FHDDSWarehouseNumber" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseNumber)),
-          optional("nameOfWarehouse" -> returns.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
+          optional("goodsToOverseas" -> vatApplication.overseasCompliance.map(_.goodsToOverseas)),
+          optional("goodsToCustomerEU" -> vatApplication.overseasCompliance.flatMap(_.goodsToEu)),
+          optional("storingGoodsForDispatch" -> vatApplication.overseasCompliance.map(_.storingGoodsForDispatch)),
+          optional("fulfilmentWarehouse" -> vatApplication.overseasCompliance.flatMap(_.usingWarehouse)),
+          optional("FHDDSWarehouseNumber" -> vatApplication.overseasCompliance.flatMap(_.fulfilmentWarehouseNumber)),
+          optional("nameOfWarehouse" -> vatApplication.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
         ),
         "yourTurnover" -> (
           jsonObject(
-            required("turnoverNext12Months" -> returns.turnoverEstimate),
-            "zeroRatedSupplies" -> returns.zeroRatedSupplies,
-            "VATRepaymentExpected" -> returns.reclaimVatOnMostReturns
+            required("turnoverNext12Months" -> vatApplication.turnoverEstimate),
+            "zeroRatedSupplies" -> vatApplication.zeroRatedSupplies,
+            "VATRepaymentExpected" -> vatApplication.claimVatRefunds
           ) ++ {
-            returns.northernIrelandProtocol match {
+            vatApplication.northernIrelandProtocol match {
               case Some(NIPCompliance(goodsToEU, goodsFromEU)) => jsonObject(
                 conditional(goodsFromEU.answer)("goodsFromOtherEU" -> goodsFromEU.value),
                 conditional(goodsToEU.answer)("goodsSoldToOtherEU" -> goodsToEU.value)
@@ -126,7 +126,7 @@ class SubscriptionBlockBuilder @Inject()() {
           "[SubscriptionBlockBuilder] Could not build subscription block for submission because some of the data is missing: " +
             s"ApplicantDetails found - ${vatScheme.applicantDetails.isDefined}, " +
             s"EligibilitySubmissionData found - ${vatScheme.eligibilitySubmissionData.isDefined}, " +
-            s"Returns found - ${vatScheme.returns.isDefined}, " +
+            s"VatApplication found - ${vatScheme.vatApplication.isDefined}, " +
             s"Business found - ${vatScheme.business.isDefined}."
         )
     }

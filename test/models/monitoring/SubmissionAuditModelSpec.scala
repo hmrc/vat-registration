@@ -36,7 +36,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     tradingDetails = Some(validFullTradingDetails),
     applicantDetails = Some(validApplicantDetails),
-    returns = Some(testReturns)
+    vatApplication = Some(testVatApplicationDetails)
   )
 
   def model(vatScheme: VatScheme): SubmissionAuditModel = SubmissionAuditModel(
@@ -172,24 +172,10 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
         }
       }
     }
-    "the trading details block is missing in the vat scheme" should {
-      "throw an exception" in {
-        intercept[InternalServerException] {
-          model(rootBlockTestVatScheme.copy(tradingDetails = None))
-        }
-      }
-    }
     "the applicant details block is missing in the vat scheme" should {
       "throw an exception" in {
         intercept[InternalServerException] {
           model(rootBlockTestVatScheme.copy(applicantDetails = None))
-        }
-      }
-    }
-    "the returns block is missing in the vat scheme" should {
-      "throw an exception" in {
-        intercept[InternalServerException] {
-          model(rootBlockTestVatScheme.copy(returns = None))
         }
       }
     }

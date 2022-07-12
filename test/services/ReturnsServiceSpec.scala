@@ -18,7 +18,7 @@ package services
 
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api.returns.Returns
+import models.api.vatapplication.Returns
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.test.Helpers._
