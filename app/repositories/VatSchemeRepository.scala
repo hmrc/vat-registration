@@ -79,42 +79,6 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
   private val timestampKey = "timestamp"
   private val internalIdKey = "internalId"
 
-  def runOnce: Any = {
-    collection.find().subscribe { vatScheme =>
-        try {
-          if (vatScheme.vatApplication.isEmpty && (vatScheme.returns.isDefined || vatScheme.tradingDetails.isDefined)) {
-            val updatedVatApplication: VatApplication = VatApplication(
-              vatScheme.tradingDetails.flatMap(_.eoriRequested),
-              vatScheme.tradingDetails.flatMap(_.tradeVatGoodsOutsideUk),
-              vatScheme.returns.flatMap(_.turnoverEstimate),
-              vatScheme.returns.flatMap(_.appliedForExemption),
-              vatScheme.returns.flatMap(_.zeroRatedSupplies),
-              vatScheme.returns.map(_.reclaimVatOnMostReturns),
-              vatScheme.returns.map(_.returnsFrequency),
-              vatScheme.returns.map(_.staggerStart),
-              vatScheme.returns.flatMap(_.startDate),
-              vatScheme.returns.flatMap(_.annualAccountingDetails),
-              vatScheme.returns.flatMap(_.overseasCompliance),
-              vatScheme.returns.flatMap(_.northernIrelandProtocol),
-              vatScheme.returns.flatMap(_.hasTaxRepresentative)
-            )
-
-            upsertSection(vatScheme.internalId, vatScheme.id, VatApplicationSectionId.repoKey, updatedVatApplication)
-              .map { _ =>
-                logger.info(s"[VatSchemeRepository][runOnce] successfully updated ${vatScheme.id} to generate VatApplication block")
-              }
-          } else {
-            logger.info(s"[VatSchemeRepository][runOnce] skipping update as VatApplication block exists or the scheme doesn't have Returns/TradingDetails")
-            Future.successful()
-          }
-        } catch {
-          case _ => logger.warn(s"[VatSchemeRepository][runOnce] unexpected error occurred when updating VatScheme")
-        }
-      }
-  }
-
-  runOnce
-
   def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
     collection
       .find(registrationSelector(id))
