@@ -53,9 +53,9 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
       Future.sequence(upscanDetailsList.collect {
         case UpscanDetails(_, reference, _, Some(downloadUrl), Ready, Some(uploadDetails), _) =>
           val payload: SdesNotification = SdesNotification(
-            informationType = informationType, //TODO Update when clarified
+            informationType = informationType,
             file = FileDetails(
-              recipientOrSender = recipientOrSender, //TODO Update when clarified
+              recipientOrSender = recipientOrSender,
               name = uploadDetails.fileName,
               location = downloadUrl,
               checksum = Checksum(
