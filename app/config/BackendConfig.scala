@@ -78,6 +78,7 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
   }
 
   lazy val nonRepudiationUrl: String = servicesConfig.baseUrl("non-repudiation")
+
   def nonRepudiationSubmissionUrl: String = {
     val endpoint = "/submission"
 
@@ -88,6 +89,7 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
       nonRepudiationUrl + endpoint
     }
   }
+
   def attachmentNonRepudiationSubmissionUrl: String = {
     val endpoint = "/attachment"
 
@@ -98,12 +100,14 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
       nonRepudiationUrl + endpoint
     }
   }
+
   lazy val nonRepudiationApiKey: String = servicesConfig.getString("microservice.services.non-repudiation.api-key")
 
   lazy val expiryInSeconds: Int = servicesConfig.getInt("cache.expiryInSeconds")
   lazy val dailyQuotaExpiryInSeconds: Int = servicesConfig.getInt("traffic-management.quotas.time-to-live")
 
   lazy val sdesUrl: String = servicesConfig.baseUrl("sdes")
+
   def sdesNotificationUrl: String = {
     val endpoint = "/notification/fileready"
 
@@ -118,4 +122,6 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
   lazy val emailBaseUrl = servicesConfig.baseUrl("email")
 
   def sendEmailUrl: String = s"$emailBaseUrl/hmrc/email"
+
+  lazy val sdesAuthorizationToken = s"Bearer ${servicesConfig.getString("microservice.services.sdes.api-key")}"
 }

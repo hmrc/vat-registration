@@ -26,6 +26,7 @@ import models.sdes._
 import play.api.Logging
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
+import services.SdesService.{informationType, recipientOrSender}
 import services.monitoring.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -52,9 +53,9 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
       Future.sequence(upscanDetailsList.collect {
         case UpscanDetails(_, reference, _, Some(downloadUrl), Ready, Some(uploadDetails), _) =>
           val payload: SdesNotification = SdesNotification(
-            informationType = "S18", //TODO Update when clarified
+            informationType = informationType, //TODO Update when clarified
             file = FileDetails(
-              recipientOrSender = "123456789012", //TODO Update when clarified
+              recipientOrSender = recipientOrSender, //TODO Update when clarified
               name = uploadDetails.fileName,
               location = downloadUrl,
               checksum = Checksum(
@@ -145,4 +146,9 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
         Future.successful(logger.error("[SdesService] Could not send attachment NRS payload due to missing data in the callback"))
     }
   }
+}
+
+object SdesService {
+  val informationType = "1655996667080"
+  val recipientOrSender = "400063095160"
 }
