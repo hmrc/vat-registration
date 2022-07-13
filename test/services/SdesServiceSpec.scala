@@ -32,6 +32,7 @@ import org.scalatest.concurrent.Eventually.eventually
 import play.api.mvc.{AnyContent, Request}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import services.SdesService.{informationType, recipientOrSender}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.LocalDateTime
@@ -79,9 +80,9 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   )
 
   def testPayload(attachmentReference: String, nrsKey: Option[String]): SdesNotification = SdesNotification(
-    informationType = "S18",
+    informationType = informationType,
     file = FileDetails(
-      recipientOrSender = "123456789012",
+      recipientOrSender = recipientOrSender,
       name = testFileName,
       location = testDownloadUrl,
       checksum = Checksum(
