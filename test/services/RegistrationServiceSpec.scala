@@ -148,12 +148,12 @@ class RegistrationServiceSpec extends VatRegSpec
 
   "upsertRegistration" must {
     "return the updated registration in JSON format" in {
-      val updatedJson = Json.toJson(testVatScheme.copy(status = VatRegStatus.locked))(VatScheme.format())
-      mockUpsertRegistration(testInternalId, testRegId, updatedJson)(Future.successful(Some(updatedJson)))
+      val scheme = testVatScheme.copy(status = VatRegStatus.locked)
+      mockUpsertRegistration(testInternalId, testRegId, scheme)(Future.successful(Some(scheme)))
 
-      val res = await(Service.upsertRegistration[JsValue](testInternalId, testRegId, updatedJson))
+      val res = await(Service.upsertRegistration(testInternalId, testRegId, scheme))
 
-      res mustBe Some(updatedJson)
+      res mustBe Some(scheme)
     }
   }
 

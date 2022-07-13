@@ -159,9 +159,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .first()
       .toFutureOption()
 
-  def upsertRegistration(internalId: String, regId: String, data: JsValue): Future[Option[JsValue]] = {
-    val json = data.as[JsObject] ++ Json.obj("internalId" -> internalId)
-    val scheme = json.validate[VatScheme](VatScheme.format(Some(crypto))).getOrElse(throw new InternalServerException("[upsertRegistration] Couldn't validate given JSON as a VatScheme"))
+  def upsertRegistration(internalId: String, regId: String, scheme: VatScheme): Future[Option[VatScheme]] = {
     collection
       .findOneAndReplace(
         filter = registrationSelector(regId, Some(internalId)),
@@ -171,7 +169,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .flatMap { _ =>
         collection.updateOne(registrationSelector(regId, Some(internalId)), set(timestampKey, timeMachine.timestamp))
           .toFutureOption()
-          .map(_.map(_ => data))
+          .map(_.map(_ => scheme))
       }
   }
 

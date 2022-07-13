@@ -18,14 +18,14 @@ package controllers.registrations
 
 import auth.{Authorisation, AuthorisationResource, CryptoSCRS}
 import models.api.VatScheme
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{Format, JsError, JsObject, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.RegistrationService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RegistrationController @Inject()(val authConnector: AuthConnector,
@@ -95,8 +95,16 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
    */
   def upsertRegistration(regId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     isAuthenticated { internalId =>
-      registrationService.upsertRegistration[JsValue](internalId, regId, request.body).map { updatedRegistration =>
-        Ok(Json.toJson(updatedRegistration))
+      implicit val format: Format[VatScheme] = VatScheme.format(Some(crypto))
+      val json = request.body.as[JsObject] ++ Json.obj("internalId" -> internalId)
+
+      json.validate[VatScheme] match {
+        case JsSuccess(scheme, _) =>
+          registrationService.upsertRegistration(internalId, regId, scheme).map { updatedRegistration =>
+            Ok(Json.toJson(updatedRegistration))
+          }
+        case JsError(_) =>
+          Future.successful(BadRequest("[VatRegistrationController][upsertRegistration] Request JSON could not be parsed as a VAT scheme"))
       }
     }
   }

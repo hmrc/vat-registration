@@ -69,8 +69,8 @@ trait MockVatSchemeRepository extends MockitoSugar {
       ArgumentMatchers.eq(regId)
     )) thenReturn response
 
-  def mockUpsertRegistration(internalId: String, regId: String, data: JsValue)
-                            (response: Future[Option[JsValue]]): OngoingStubbing[Future[Option[JsValue]]] =
+  def mockUpsertRegistration(internalId: String, regId: String, data: VatScheme)
+                            (response: Future[Option[VatScheme]]): OngoingStubbing[Future[Option[VatScheme]]] =
     when(mockVatSchemeRepository.upsertRegistration(
       ArgumentMatchers.eq(internalId),
       ArgumentMatchers.eq(regId),

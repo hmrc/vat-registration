@@ -98,24 +98,24 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
       await(repo.createNewVatScheme(testRegId, testInternalid))
       val updatedRegistration = testEmptyVatScheme(testRegId).copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData))
 
-      val res = await(repo.upsertRegistration(testInternalid, testRegId, regAsJson(updatedRegistration)))
+      val res = await(repo.upsertRegistration(testInternalid, testRegId, updatedRegistration))
 
-      res mustBe Some(regAsJson(updatedRegistration))
+      res mustBe Some(updatedRegistration)
     }
     "partially update an existing registration" in new Setup {
       val testReg = testEmptyVatScheme(testRegId).copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData))
       await(repo.insertVatScheme(testReg))
       val updatedReg = testReg.copy(vatApplication = Some(testVatApplication.copy(appliedForExemption = Some(true))))
 
-      val res = await(repo.upsertRegistration(testInternalid, testRegId, regAsJson(updatedReg)))
+      val res = await(repo.upsertRegistration(testInternalid, testRegId, updatedReg))
 
-      res mustBe Some(regAsJson(updatedReg))
+      res mustBe Some(updatedReg)
     }
     "create a registration if it doesn't exist" in new Setup {
-      val json = regAsJson(testEmptyVatScheme(testRegId))
-      val res = await(repo.upsertRegistration(testInternalid, testRegId, json))
+      val scheme = testEmptyVatScheme(testRegId)
+      val res = await(repo.upsertRegistration(testInternalid, testRegId, scheme))
 
-      res mustBe Some(json)
+      res mustBe Some(scheme)
     }
   }
 
