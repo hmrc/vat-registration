@@ -95,7 +95,7 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
    */
   def upsertRegistration(regId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     isAuthenticated { internalId =>
-      implicit val format: Format[VatScheme] = VatScheme.format(Some(crypto))
+      implicit val format: Format[VatScheme] = VatScheme.format()
       val json = request.body.as[JsObject] ++ Json.obj("internalId" -> internalId)
 
       json.validate[VatScheme] match {
