@@ -20,15 +20,18 @@ import auth.AuthorisationResource
 import com.mongodb.client.model.Indexes.ascending
 import config.BackendConfig
 import models.api.{RegistrationChannel, RegistrationInformation, RegistrationStatus}
-import org.mongodb.scala.model
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model._
+import org.mongodb.scala.{Document, model}
 import play.api.Logging
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{Format, JsError, JsSuccess, Json, Reads, __}
+import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate, LocalDateTime, LocalTime, ZoneOffset}
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -58,7 +61,7 @@ class TrafficManagementRepository @Inject()(mongo: MongoComponent,
   ) with AuthorisationResource with Logging {
 
   def getRegInfoById(internalId: String, registrationId: String): Future[Option[RegistrationInformation]] = {
-    collection.find(filter = and (
+    collection.find(filter = and(
       equal("internalId", internalId),
       equal("registrationId", registrationId)
     )).toFuture().map(_.headOption)
@@ -69,7 +72,7 @@ class TrafficManagementRepository @Inject()(mongo: MongoComponent,
                         status: RegistrationStatus,
                         regStartDate: LocalDate,
                         channel: RegistrationChannel,
-                        lastModified: LocalDate): Future[RegistrationInformation] = {
+                        lastModified: LocalDateTime): Future[RegistrationInformation] = {
 
     val newRecord = RegistrationInformation(
       internalId = internalId,
@@ -87,7 +90,7 @@ class TrafficManagementRepository @Inject()(mongo: MongoComponent,
       replacement = newRecord,
       options = ReplaceOptions().upsert(true)
     ).toFuture().map { result =>
-      if(!result.wasAcknowledged()) {
+      if (!result.wasAcknowledged()) {
         throw new Exception("Unexpected error when inserting registration information")
       } else {
         newRecord
@@ -111,4 +114,55 @@ class TrafficManagementRepository @Inject()(mongo: MongoComponent,
       result.wasAcknowledged()
     }
   }
+
+  def runOnce: Unit = {
+    collection.find[Document]().subscribe { regInfo =>
+      val regInfoJson = Json.parse(regInfo.toJson())
+
+      try {
+        (regInfoJson \ "lastModified").validateOpt[LocalDate] match {
+          case JsSuccess(Some(localDate), _) => updateOldDate(LocalDateTime.of(localDate, LocalTime.now()))
+          case JsSuccess(None, _) => updateOldDate(LocalDateTime.now())
+          case JsError(_) =>
+            logger.info(s"[TrafficManagementRepository][runOnce] skipped updating Registration Information")
+        }
+
+        def updateOldDate(localDateTime: LocalDateTime) = {
+          val updatedRegInfo: RegistrationInformation = (
+            (regInfoJson \ "internalId").validate[String] and
+              (regInfoJson \ "registrationId").validate[String] and
+              (regInfoJson \ "status").validate[RegistrationStatus] and
+              (regInfoJson \ "regStartDate").validate[LocalDate] and
+              (regInfoJson \ "channel").validate[RegistrationChannel]
+            ) ((internalId, regId, status, startDate, channel) =>
+            RegistrationInformation(
+              internalId,
+              regId,
+              status,
+              startDate,
+              channel,
+              localDateTime
+            )
+          ).getOrElse(throw new InternalServerException(""))
+
+          collection.replaceOne(
+            filter = and(
+              equal("internalId", updatedRegInfo.internalId),
+              equal("registrationId", updatedRegInfo.registrationId)
+            ),
+            replacement = updatedRegInfo,
+            options = ReplaceOptions().upsert(true)
+          ).toFuture().map { _ =>
+            logger.info(s"[TrafficManagementRepository][runOnce] successfully updated Registration Information")
+          }
+        }
+      } catch {
+        case _ =>
+          logger.error(s"[TrafficManagementRepository][runOnce] unexpected error occurred while updating Registration Information")
+      }
+    }
+  }
+
+  runOnce
+
 }

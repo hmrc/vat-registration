@@ -41,7 +41,7 @@ trait ITFixtures {
   val testPostcode = "TF1 1NT"
   val testChrn = "testChrn"
   val testCasc = "testCasc"
-  val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.of(0, 0))
+  val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.of(9, 0))
   val startDate = testDate
   val testRegId = "regId"
   val testInternalid = "INT-123-456-789"

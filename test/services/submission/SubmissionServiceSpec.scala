@@ -89,7 +89,7 @@ class SubmissionServiceSpec extends VatRegSpec
     status = Submitted,
     regStartDate = testDate,
     channel = VatReg,
-    lastModified = testDate
+    lastModified = testDateTime
   )
 
   val testCorrelationId = "testCorrelationId"

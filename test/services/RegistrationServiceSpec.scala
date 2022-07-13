@@ -30,7 +30,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FakeRegistrationIdService
 
-import java.time.LocalDate
+import java.time.{LocalDate, LocalDateTime, LocalTime}
 import scala.concurrent.Future
 
 class RegistrationServiceSpec extends VatRegSpec
@@ -48,6 +48,7 @@ class RegistrationServiceSpec extends VatRegSpec
   override lazy val testRegId = "testRegId"
   override lazy val testInternalId = "testInternalId"
   override lazy val testDate = LocalDate.parse("2020-01-01")
+  override lazy val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.MIDNIGHT)
 
   override lazy val testVatScheme = VatScheme(
     id = testRegId,
@@ -61,7 +62,7 @@ class RegistrationServiceSpec extends VatRegSpec
     status = Draft,
     regStartDate = testDate,
     channel = VatReg,
-    lastModified = testDate
+    lastModified = testDateTime
   )
 
   val fakeRegIdService = new FakeRegistrationIdService

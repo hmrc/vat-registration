@@ -34,8 +34,10 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAs
   val regId2 = "regId2"
   val testDate1 = LocalDate.parse("2020-01-01")
   val testDate2 = LocalDate.parse("2020-01-02")
-  val regInfo1 = RegistrationInformation(internalId1, regId1, Draft, testDate1, VatReg, testDate1)
-  val regInfo2 = RegistrationInformation(internalId2, regId2, Draft, testDate2, VatReg, testDate2)
+  val testDateTime1: LocalDateTime = LocalDateTime.of(testDate1, LocalTime.MIDNIGHT)
+  val testDateTime2: LocalDateTime = LocalDateTime.of(testDate2, LocalTime.MIDNIGHT)
+  val regInfo1 = RegistrationInformation(internalId1, regId1, Draft, testDate1, VatReg, testDateTime1)
+  val regInfo2 = RegistrationInformation(internalId2, regId2, Draft, testDate2, VatReg, testDateTime2)
   implicit val hc = HeaderCarrier()
 
 
@@ -60,14 +62,14 @@ class TrafficManagementRepositoryISpec extends IntegrationSpecBase with FutureAs
     "Update an existing record" in new Setup {
       await(trafficManagementRepo.collection.insertMany(Seq(regInfo1, regInfo2)).toFuture())
 
-      val res = await(trafficManagementRepo.upsertRegInfoById(internalId2, regId2, Submitted, testDate2, OTRS, testDate2))
+      val res = await(trafficManagementRepo.upsertRegInfoById(internalId2, regId2, Submitted, testDate2, OTRS, testDateTime2))
 
       res mustBe regInfo2.copy(status = Submitted, channel = OTRS)
     }
     "create a new record where one doesn't exist" in new Setup {
       await(trafficManagementRepo.collection.insertOne(regInfo1).toFuture())
 
-      val res = await(trafficManagementRepo.upsertRegInfoById(internalId2, regId2, Draft, testDate2, VatReg, testDate2))
+      val res = await(trafficManagementRepo.upsertRegInfoById(internalId2, regId2, Draft, testDate2, VatReg, testDateTime2))
 
       res mustBe regInfo2
     }
