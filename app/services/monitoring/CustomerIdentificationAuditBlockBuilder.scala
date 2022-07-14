@@ -16,7 +16,6 @@
 
 package services.monitoring
 
-import featureswitch.core.config.FeatureSwitching
 import models.api.{ApplicantDetails, VatScheme}
 import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
 import play.api.libs.json.JsValue
@@ -30,8 +29,8 @@ import javax.inject.Singleton
 class CustomerIdentificationAuditBlockBuilder {
 
   def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsValue = {
-    (vatScheme.applicantDetails, vatScheme.tradingDetails) match {
-      case (Some(applicantDetails), Some(tradingDetails)) =>
+    (vatScheme.applicantDetails, vatScheme.business) match {
+      case (Some(applicantDetails), Some(business)) =>
         jsonObject(
           "tradersPartyType" -> vatScheme.partyType,
           optional("identifiers" -> {
@@ -57,9 +56,9 @@ class CustomerIdentificationAuditBlockBuilder {
             }
           }),
           optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
-          optional("tradingName" -> tradingDetails.tradingName)
+          optional("tradingName" -> business.tradingName)
         ) ++ {
-          (tradingDetails.shortOrgName, getCompanyName(applicantDetails)) match {
+          (business.shortOrgName, getCompanyName(applicantDetails)) match {
             case (Some(shortOrgName), Some(companyName)) => jsonObject(
               "shortOrgName" -> shortOrgName,
               "organisationName" -> companyName
@@ -73,7 +72,7 @@ class CustomerIdentificationAuditBlockBuilder {
       case (None, _) =>
         throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Applicant details data")
       case (_, None) =>
-        throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Trading details data")
+        throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Business details data")
     }
   }
 

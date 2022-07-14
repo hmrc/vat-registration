@@ -256,8 +256,8 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
         intercept[InternalServerException](service.buildCustomerIdentificationBlock(vatScheme))
       }
-      "trading details is missing" in new Setup {
-        val vatScheme = testFullVatScheme.copy(tradingDetails = None)
+      "business details is missing" in new Setup {
+        val vatScheme = testFullVatScheme.copy(business = None)
 
         intercept[InternalServerException](service.buildCustomerIdentificationBlock(vatScheme))
       }
