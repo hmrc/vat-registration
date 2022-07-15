@@ -111,7 +111,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       registration = NotCalledStatus
     ))),
     tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
-    attachments = Some(Attachments(Post))
+    attachments = Some(Attachments(Post)),
+    business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
 
   lazy val generalPartnershipWithUkCompanyPartner: VatScheme = testFullVatScheme.copy(
@@ -123,7 +124,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       registration = NotCalledStatus
     ))),
     tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
-    attachments = Some(Attachments(Post))
+    attachments = Some(Attachments(Post)),
+    business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
 
   lazy val limitedPartnershipWithScotPartnershipPartner: VatScheme = testFullVatScheme.copy(
@@ -137,7 +139,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       registration = NotCalledStatus
     ))),
     tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
-    attachments = Some(Attachments(Post))
+    attachments = Some(Attachments(Post)),
+    business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
 
   lazy val limitedLiabilityPartnership: VatScheme = limitedPartnershipWithScotPartnershipPartner.copy(
@@ -156,7 +159,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       registration = FailedStatus
     ))),
     tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
-    attachments = Some(Attachments(Post))
+    attachments = Some(Attachments(Post)),
+    business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
 
   lazy val corporateBodyRegisteredJson = Json.obj(
@@ -316,7 +320,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       "return OK if the submission is successful with an unregistered business partner and a short org name different from companyName" in new Setup {
         given.user.isAuthorised
         insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner.copy(
-          tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+          business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
         ))
 
         stubPost("/vat/subscription", testSubmissionJsonWithShortOrgName, OK, Json.stringify(testSubmissionResponse))
@@ -600,7 +604,8 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
             businessVerification = Some(BvPass),
             registration = FailedStatus
           ))),
-          tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName)))
+          tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
+          business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
         )
 
         given.user.isAuthorised

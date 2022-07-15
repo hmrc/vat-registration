@@ -18,7 +18,10 @@ package models.api
 
 import play.api.libs.json.{Json, OFormat}
 
-case class Business(ppobAddress: Option[Address],
+case class Business(hasTradingName: Option[Boolean],
+                    tradingName: Option[String],
+                    shortOrgName: Option[String],
+                    ppobAddress: Option[Address],
                     email: Option[String],
                     telephoneNumber: Option[String],
                     hasWebsite: Option[Boolean],

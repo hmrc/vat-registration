@@ -89,6 +89,7 @@ trait VatRegistrationFixture {
   lazy val testAuthToken = "testAuthToken"
 
   val testTradingName = "trading-name"
+  val testShortOrgName = "short-org-name"
   val testUserHeaders = Map("testKey" -> "testValue")
 
   lazy val testEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
@@ -276,6 +277,9 @@ trait VatRegistrationFixture {
   lazy val testSic3 = SicCode(testSicCode3, testSicDesc3, testSicDisplay3)
   lazy val testBusinessActivities: List[SicCode] = List(testSic1, testSic2, testSic3)
   lazy val testBusiness: Business = Business(
+    hasTradingName = Some(true),
+    tradingName = Some(testTradingName),
+    shortOrgName = None,
     ppobAddress = Some(testAddress),
     email = Some(testEmail),
     telephoneNumber = Some(testTelephone),

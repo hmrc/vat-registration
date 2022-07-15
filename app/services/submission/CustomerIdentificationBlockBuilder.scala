@@ -31,8 +31,8 @@ import javax.inject.{Inject, Singleton}
 class CustomerIdentificationBlockBuilder @Inject()() {
 
   def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsObject =
-    (vatScheme.eligibilitySubmissionData, vatScheme.applicantDetails, vatScheme.tradingDetails) match {
-      case (Some(eligibilityData), Some(applicantDetails), Some(tradingDetails)) =>
+    (vatScheme.eligibilitySubmissionData, vatScheme.applicantDetails, vatScheme.business) match {
+      case (Some(eligibilityData), Some(applicantDetails), Some(business)) =>
         jsonObject(
           "tradersPartyType" -> {
             eligibilityData match {
@@ -41,7 +41,7 @@ class CustomerIdentificationBlockBuilder @Inject()() {
               case EligibilitySubmissionData(_, _, partyType, _, _, _, _) => partyType
             }
           },
-          optional("tradingName" -> tradingDetails.tradingName.map(StringNormaliser.normaliseString))
+          optional("tradingName" -> business.tradingName.map(StringNormaliser.normaliseString))
         ) ++ {
           applicantDetails.entity.bpSafeId match {
             case _ if eligibilityData.registrationReason.equals(GroupRegistration) =>
@@ -54,7 +54,7 @@ class CustomerIdentificationBlockBuilder @Inject()() {
               jsonObject()
           }
         } ++ {
-          val shortOrgName = tradingDetails.shortOrgName.map(StringNormaliser.normaliseString)
+          val shortOrgName = business.shortOrgName.map(StringNormaliser.normaliseString)
           applicantDetails.entity match {
             case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, bpSafeId, _, _, _, _) if bpSafeId.isEmpty =>
               jsonObject(
@@ -78,7 +78,7 @@ class CustomerIdentificationBlockBuilder @Inject()() {
       case (_, None, _) =>
         throw new InternalServerException("Could not build customer identification block for submission due to missing applicant details data")
       case (_, _, None) =>
-        throw new InternalServerException("Could not build customer identification block for submission due to missing trading details data")
+        throw new InternalServerException("Could not build customer identification block for submission due to missing business details data")
       case _ =>
         throw new InternalServerException("Could not build customer identification block for submission due to missing data from applicant and trading details")
     }

@@ -237,6 +237,9 @@ trait ITFixtures {
   lazy val testSic3 = SicCode(testSicCode3, testSicDesc3, testSicDisplay3)
   lazy val testBusinessActivities: List[SicCode] = List(testSic1, testSic2, testSic3)
   lazy val testBusiness: Business = Business(
+    hasTradingName = Some(true),
+    tradingName = Some(testTradingName),
+    shortOrgName = None,
     ppobAddress = Some(testFullAddress),
     email = Some(testEmail),
     telephoneNumber = Some(testTelephone),

@@ -23,6 +23,8 @@ import play.api.libs.json.{JsObject, JsSuccess, Json}
 class BusinessSpec extends BaseSpec with VatRegistrationFixture {
 
   lazy val businessJson: JsObject = Json.obj(
+    "hasTradingName" -> true,
+    "tradingName" -> testTradingName,
     "ppobAddress" -> Json.obj(
       "line1" -> testAddress.line1,
       "line2" -> testAddress.line2,

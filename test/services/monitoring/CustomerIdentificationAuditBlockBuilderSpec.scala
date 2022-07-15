@@ -44,8 +44,8 @@ class CustomerIdentificationAuditBlockBuilderSpec extends VatRegSpec with VatReg
       }
       "a trading name is not present" must {
         "return the correct JSON" in new CustomerIdentificationAuditBlockBuilder {
-          val tradingDetails = validFullTradingDetails.copy(tradingName = None)
-          val res = buildCustomerIdentificationBlock(testFullVatScheme.copy(tradingDetails = Some(tradingDetails)))
+          val businessDetails = testBusiness.copy(tradingName = None)
+          val res = buildCustomerIdentificationBlock(testFullVatScheme.copy(business = Some(businessDetails)))
 
           res mustBe Json.obj(
             "tradersPartyType" -> "50",
