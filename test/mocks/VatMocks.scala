@@ -129,22 +129,6 @@ trait VatMocks extends HttpClientMock {
         .thenReturn(serviceResult(vatScheme))
     }
 
-    def mockSuccessfulCreateNewRegistration(registrationId: String, internalId: String): Unit = {
-      when(mockVatRegistrationService.createNewRegistration(Matchers.eq(internalId)))
-        .thenReturn(serviceResult(VatScheme(registrationId, internalId, None, None, None, status = VatRegStatus.draft)))
-    }
-
-    def mockFailedCreateNewRegistration(registrationId: String, internalId: String): Unit = {
-      when(mockVatRegistrationService.createNewRegistration(Matchers.eq(internalId)))
-        .thenReturn(serviceError[VatScheme](GenericError(new RuntimeException("something went wrong"))))
-    }
-
-    def mockFailedCreateNewRegistrationWithDbError(registrationId: String, internalId: String): Unit = {
-      val exception = new Exception("Exception")
-      when(mockVatRegistrationService.createNewRegistration(Matchers.eq(internalId)))
-        .thenReturn(serviceError[VatScheme](GenericDatabaseError(exception, Some("regId"))))
-    }
-
     def mockGetAcknowledgementReference(ackRef: String): Unit = {
       val idMatcher: String = anyString()
       when(mockVatRegistrationService.retrieveAcknowledgementReference(idMatcher))

@@ -32,9 +32,8 @@ case class ApplicantDetails(personalDetails: PersonalDetails,
 
 object ApplicantDetails extends JsonUtilities {
 
-  //TODO Remove transactor .orElse a few weeks after this commit goes live as it's there just to support old journeys
   def reads(partyType: PartyType): Reads[ApplicantDetails] = (
-    (__ \ "personalDetails").read[PersonalDetails].orElse((__ \ "transactor").read[PersonalDetails]) and
+    (__ \ "personalDetails").read[PersonalDetails] and
       (__ \ "entity").read[BusinessEntity](BusinessEntity.reads(partyType)) and
       (__ \ "currentAddress").read[Address] and
       (__ \ "previousAddress").readNullable[Address] and
