@@ -266,16 +266,6 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .map(_ => status)
 
   @deprecated("migrate to the new /registrations API")
-  def retrieveTradingDetails(regId: String): Future[Option[TradingDetails]] = {
-    fetchBlock[TradingDetails](regId, "tradingDetails")
-  }
-
-  @deprecated("migrate to the new /registrations API")
-  def updateTradingDetails(regId: String, tradingDetails: TradingDetails): Future[TradingDetails] = {
-    updateBlock(regId, tradingDetails, "tradingDetails")
-  }
-
-  @deprecated("migrate to the new /registrations API")
   def fetchBankAccount(regId: String): Future[Option[BankAccount]] =
     collection
       .find[Document](registrationSelector(regId))

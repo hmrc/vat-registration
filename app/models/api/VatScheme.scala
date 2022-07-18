@@ -30,7 +30,6 @@ import java.time.LocalDate
 
 case class VatScheme(id: String,
                      internalId: String,
-                     tradingDetails: Option[TradingDetails] = None,
                      bankAccount: Option[BankAccount] = None,
                      acknowledgementReference: Option[String] = None,
                      flatRateScheme: Option[FlatRateScheme] = None,
@@ -74,7 +73,6 @@ object VatScheme {
       case Some(partyType) => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
-        (__ \ "tradingDetails").readNullable[TradingDetails] and
         (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
         (__ \ "acknowledgementReference").readNullable[String] and
         (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
@@ -90,20 +88,12 @@ object VatScheme {
         (__ \ "createdDate").readNullable[LocalDate] and
         (__ \ "applicationReference").readNullable[String] and
         (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
-        (__ \ BusinessSectionId.repoKey).readNullable[Business].flatMap {
-          case Some(Business(None, None, None, _, _, _, _, _, _, _, _, _, _, _, _)) =>
-            ((__ \ BusinessSectionId.repoKey).readNullable[Business] and
-              (__ \ "tradingDetails").readNullable[TradingDetails]) { (optBusiness, optTradingDetails) =>
-              optBusiness.map(_.copy(tradingName = optTradingDetails.flatMap(_.tradingName), shortOrgName = optTradingDetails.flatMap(_.shortOrgName)))
-            }
-          case _ => (__ \ BusinessSectionId.repoKey).readNullable[Business]
-        } and
+        (__ \ BusinessSectionId.repoKey).readNullable[Business] and
         (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication]
         ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
-        (__ \ "tradingDetails").readNullable[TradingDetails] and
         (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
         (__ \ "acknowledgementReference").readNullable[String] and
         (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
@@ -119,14 +109,7 @@ object VatScheme {
         (__ \ "createdDate").readNullable[LocalDate] and
         (__ \ "applicationReference").readNullable[String] and
         (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
-        (__ \ BusinessSectionId.repoKey).readNullable[Business].flatMap {
-          case Some(Business(None, None, None, _, _, _, _, _, _, _, _, _, _, _, _)) =>
-            ((__ \ BusinessSectionId.repoKey).readNullable[Business] and
-            (__ \ "tradingDetails").readNullable[TradingDetails]) { (optBusiness, optTradingDetails) =>
-              optBusiness.map(_.copy(tradingName = optTradingDetails.flatMap(_.tradingName), shortOrgName = optTradingDetails.flatMap(_.shortOrgName)))
-            }
-          case _ => (__ \ BusinessSectionId.repoKey).readNullable[Business]
-        } and
+        (__ \ BusinessSectionId.repoKey).readNullable[Business] and
         (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication]
         ) (VatScheme.apply _)
     }
@@ -134,7 +117,6 @@ object VatScheme {
   def writes(crypto: Option[CryptoSCRS] = None): OWrites[VatScheme] = (
     (__ \ "registrationId").write[String] and
     (__ \ "internalId").write[String] and
-    (__ \ "tradingDetails").writeNullable[TradingDetails] and
     (__ \ "bankAccount").writeNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
     (__ \ "acknowledgementReference").writeNullable[String] and
     (__ \ "flatRateScheme").writeNullable[FlatRateScheme] and

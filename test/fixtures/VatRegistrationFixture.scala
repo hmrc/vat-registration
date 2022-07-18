@@ -298,7 +298,6 @@ trait VatRegistrationFixture {
   val testEncodedPayload: String = Base64.getEncoder.encodeToString(testSubmissionPayload.getBytes(StandardCharsets.UTF_8))
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
-    tradingDetails = Some(validFullTradingDetails),
     bankAccount = Some(testBankAccount),
     flatRateScheme = Some(validFullFlatRateScheme),
     applicantDetails = Some(validApplicantDetails),
@@ -309,8 +308,10 @@ trait VatRegistrationFixture {
     vatApplication = Some(testVatApplicationDetails)
   )
 
-  lazy val validFullTradingDetails: TradingDetails = TradingDetails(tradingName = Some(testTradingName), None)
-  lazy val validFullTradingDetailsJson: JsObject = Json.obj("tradingName" -> "trading-name")
+  lazy val validFullBusinessDetails: Business = Business(hasTradingName = Some(true), tradingName = Some(testTradingName),
+    shortOrgName = None, ppobAddress = None, email = None, telephoneNumber = None, hasWebsite = None, website = None,
+    contactPreference = None, hasLandAndProperty = None, businessDescription = None, businessActivities = None,
+    mainBusinessActivity = None, labourCompliance = None, otherBusinessInvolvement = None)
 
   lazy val validFullOtherBusinessInvolvement: OtherBusinessInvolvement = OtherBusinessInvolvement(businessName = testCompanyName, hasVrn = true, vrn = Some(testVrn), hasUtr = Some(true), utr = Some(testUtr), stillTrading = true)
   lazy val validFullObiJson: JsObject = Json.obj(
