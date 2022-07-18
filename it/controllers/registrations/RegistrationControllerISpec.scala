@@ -7,7 +7,7 @@ import models.api.VatScheme
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import services.RegistrationIdService
 import utils.TimeMachine

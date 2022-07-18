@@ -252,7 +252,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   }
   "updateBankAccount" should {
     "update the registration doc with the provided bank account details and encrypt the account number" in new Setup {
-      val testSchemeEnc = testVatScheme.copy(bankAccount = Some(bankAccount.copy(details = Some(bankAccountDetails.copy(number = encryptedAccountNumber)))))
       await(insert(testVatScheme))
 
       await(repository.updateBankAccount(testRegId, bankAccount))

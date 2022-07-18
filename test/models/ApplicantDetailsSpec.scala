@@ -57,23 +57,4 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
       writeAndRead(trustAppDetails) resultsIn trustAppDetails
     }
   }
-
-  "Creating a Json from an invalid VatApplicantDetails model" ignore {
-    "fail with a JsonValidationError" when {
-      "NINO is invalid" in {
-        implicit val fmt = format(UkCompany)
-        val applicantDetails = validApplicantDetails.copy(personalDetails = validApplicantDetails.personalDetails.copy(nino = Some("NB888")))
-        writeAndRead(applicantDetails) shouldHaveErrors (JsPath() \ "transactor" \ "nino" -> JsonValidationError("error.pattern"))
-      }
-
-      "Name is invalid" in {
-        implicit val fmt = format(UkCompany)
-        val name = Name(first = Some("$%@$%^@#%@$^@$^$%@#$%@#$"), middle = None, last = "valid name")
-        val applicantDetails = validApplicantDetails.copy(
-          personalDetails = validApplicantDetails.personalDetails.copy(name = name)
-        )
-        writeAndRead(applicantDetails) shouldHaveErrors (JsPath() \ "transactor" \ "firstName" -> JsonValidationError("error.pattern"))
-      }
-    }
-  }
 }

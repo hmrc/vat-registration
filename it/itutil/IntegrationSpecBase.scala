@@ -45,8 +45,6 @@ trait IntegrationSpecBase extends PlaySpec
     "auditing.consumer.baseUri.port" -> mockPort,
     "microservice.services.auth.host" -> mockHost,
     "microservice.services.auth.port" -> mockPort,
-    "microservice.services.business-registration.host" -> mockHost,
-    "microservice.services.business-registration.port" -> mockPort,
     "microservice.services.integration-framework.url" -> mockUrl,
     "microservice.services.integration-framework.environment" -> "local",
     "microservice.services.integration-framework.authorization-token" -> "Bearer FakeToken",
@@ -97,7 +95,6 @@ trait IntegrationSpecBase extends PlaySpec
     await(upscanMongoRepository.ensureIndexes)
 
     def insertIntoDb(vatScheme: VatScheme) = {
-      implicit val format = VatScheme.format()
       val count = await(repo.collection.countDocuments().toFuture())
       val res = await(repo.collection.insertOne(vatScheme).toFuture())
       await(repo.collection.countDocuments().toFuture()) mustBe count + 1

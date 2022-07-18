@@ -20,7 +20,7 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class FormerName(hasFormerName: Option[Boolean], //TODO: Remove optionality from boolean in 2 weeks (24/3/22)
+case class FormerName(hasFormerName: Option[Boolean],
                       name: Option[Name],
                       change: Option[LocalDate])
 

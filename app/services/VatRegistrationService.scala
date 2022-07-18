@@ -16,19 +16,17 @@
 
 package services
 
-import cats.data.{EitherT, OptionT}
+import cats.data.OptionT
 import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
 import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
 import models.api.VatScheme
-import models.submission.PartyType
-import org.slf4j.LoggerFactory
+import play.api.Logging
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.HttpClient
 
-import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -36,25 +34,7 @@ import scala.concurrent.Future
 @Singleton
 class VatRegistrationService @Inject()(registrationRepository: VatSchemeRepository,
                                        val backendConfig: BackendConfig,
-                                       val http: HttpClient) extends ApplicativeSyntax with FutureInstances {
-
-  lazy val vatRestartUrl: String = backendConfig.servicesConfig.getString("api.vatRestartURL")
-  lazy val vatCancelUrl: String = backendConfig.servicesConfig.getString("api.vatCancelURL")
-
-  private val logger = LoggerFactory.getLogger(getClass)
-
-  private def repositoryErrorHandler[T]: PartialFunction[Throwable, Either[LeftState, T]] = {
-    case e: MissingRegDocument => Left(ResourceNotFound(s"No registration found for registration ID: ${e.id}"))
-    case dbe: DBExceptions => Left(GenericDatabaseError(dbe, Some(dbe.id)))
-    case t: Throwable => Left(GenericError(t))
-  }
-
-  private def getOrCreateVatScheme(registrationId: String, internalId: String): Future[Either[LeftState, VatScheme]] =
-    registrationRepository.retrieveVatScheme(registrationId).flatMap {
-      case Some(vatScheme) => Future.successful(Right(vatScheme))
-      case None => registrationRepository.createNewVatScheme(registrationId, internalId)
-        .map(Right(_)).recover(repositoryErrorHandler)
-    }
+                                       val http: HttpClient) extends ApplicativeSyntax with FutureInstances with Logging {
 
   def getStatus(regId: String): Future[VatRegStatus.Value] = {
     registrationRepository.retrieveVatScheme(regId) map {
@@ -66,11 +46,6 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
     }
   }
 
-  def generateRegistrationId(): String = UUID.randomUUID().toString
-
-  def createNewRegistration(intId: String): ServiceResult[VatScheme] =
-    EitherT(getOrCreateVatScheme(generateRegistrationId(), intId))
-
   def retrieveVatScheme(regId: String): ServiceResult[VatScheme] =
     OptionT(registrationRepository.retrieveVatScheme(regId)).toRight(ResourceNotFound(regId))
 
@@ -79,10 +54,6 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
 
   def retrieveAcknowledgementReference(regId: String): ServiceResult[String] = {
     retrieveVatScheme(regId).subflatMap(_.acknowledgementReference.toRight(ResourceNotFound("AcknowledgementId")))
-  }
-
-  def getPartyType(regId: String): Future[Option[PartyType]] = {
-    registrationRepository.retrieveVatScheme(regId).map(_.flatMap(_.partyType))
   }
 
   def storeHonestyDeclaration(regId: String, honestyDeclarationStatus: Boolean): Future[Boolean] = {

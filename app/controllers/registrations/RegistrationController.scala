@@ -16,9 +16,9 @@
 
 package controllers.registrations
 
-import auth.{Authorisation, AuthorisationResource, CryptoSCRS}
+import auth.{Authorisation, AuthorisationResource}
 import models.api.VatScheme
-import play.api.libs.json.{Format, JsError, JsObject, JsSuccess, JsValue, Json}
+import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.RegistrationService
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -30,8 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RegistrationController @Inject()(val authConnector: AuthConnector,
                                        val registrationService: RegistrationService,
-                                       controllerComponents: ControllerComponents,
-                                       crypto: CryptoSCRS
+                                       controllerComponents: ControllerComponents
                                       )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
 
   override val resourceConn: AuthorisationResource = registrationService.vatSchemeRepository
