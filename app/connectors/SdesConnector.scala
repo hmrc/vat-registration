@@ -30,7 +30,7 @@ class SdesConnector @Inject()(httpClient: HttpClient,
                              (implicit executionContext: ExecutionContext) extends HttpReadsHttpResponse {
 
   val sdesHeaders = Seq(
-    "Authorization" -> config.sdesAuthorizationToken,
+    "x-client-id" -> config.sdesAuthorizationToken,
     "Content-Type" -> "application/json"
   )
 
