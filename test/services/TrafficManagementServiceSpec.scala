@@ -77,7 +77,7 @@ class TrafficManagementServiceSpec extends VatRegSpec
       status = Draft,
       regStartDate = timeMachine.today,
       channel = VatReg,
-      lastModified = timeMachine.today
+      lastModified = timeMachine.timestamp
     )
   }
 
@@ -89,8 +89,8 @@ class TrafficManagementServiceSpec extends VatRegSpec
   "allocate" must {
     "return QuotaReached when the quota is exceeded" in new Setup() {
       mockCurrentTotal(UkCompany, isEnrolled = true)(16)
-      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
-        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.timestamp)(
+        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.timestamp))
       )
 
       val res = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
@@ -100,8 +100,8 @@ class TrafficManagementServiceSpec extends VatRegSpec
     Seq(UkCompany, Individual, NETP, NonUkNonEstablished, RegSociety, CharitableOrg, Partnership, LtdPartnership, ScotPartnership, ScotLtdPartnership, LtdLiabilityPartnership).foreach { partyType =>
       s"return Allocated when the quota has not been exceeded for $partyType" in new Setup() {
         mockCurrentTotal(partyType, isEnrolled = true)(1)
-        mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
-          Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today))
+        mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.timestamp)(
+          Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.timestamp))
         )
         mockIncrement(partyType, isEnrolled = true)(1)
 
@@ -112,8 +112,8 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
     "return quota reached before opening hours" in new Setup(hour = 8) {
       mockCurrentTotal(UkCompany, isEnrolled = true)(1)
-      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
-        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.timestamp)(
+        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.timestamp))
       )
 
       val res = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
@@ -122,8 +122,8 @@ class TrafficManagementServiceSpec extends VatRegSpec
     }
     "return quota reached after opening hours" in new Setup(hour = 18) {
       mockCurrentTotal(UkCompany, isEnrolled = true)(1)
-      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(
-        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today))
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.timestamp)(
+        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.timestamp))
       )
 
       val res = await(Service.allocate(testInternalId, testRegId, UkCompany, isEnrolled = true))
@@ -133,8 +133,8 @@ class TrafficManagementServiceSpec extends VatRegSpec
     "apply different quotas for different entity types" in new Setup() {
       mockCurrentTotal(UkCompany, isEnrolled = true)(14)
       mockCurrentTotal(Individual, isEnrolled = false)(1)
-      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today)(
-        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.today))
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.timestamp)(
+        Future.successful(RegistrationInformation(testInternalId, testRegId, Draft, testDate, VatReg, timeMachine.timestamp))
       )
       mockIncrement(UkCompany, isEnrolled = true)(1)
 
@@ -164,8 +164,8 @@ class TrafficManagementServiceSpec extends VatRegSpec
 
   "upsertRegInfoById" must {
     "return registration information" in new Setup {
-      val regInfo = RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)
-      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.today)(Future.successful(regInfo))
+      val regInfo = RegistrationInformation(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.timestamp)
+      mockUpsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS, timeMachine.timestamp)(Future.successful(regInfo))
 
       val res = await(Service.upsertRegInfoById(testInternalId, testRegId, Draft, testDate, OTRS))
 

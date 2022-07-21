@@ -50,7 +50,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     status = Draft,
     regStartDate = testDate,
     channel = VatReg,
-    lastModified = testDate
+    lastModified = testDateTime
   )
 
   class Setup extends SetupHelper

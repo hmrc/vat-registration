@@ -16,8 +16,7 @@
 
 package mocks
 
-import java.time.LocalDate
-
+import java.time.{LocalDate, LocalDateTime}
 import models.api.{RegistrationChannel, RegistrationInformation, RegistrationStatus}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -44,7 +43,7 @@ trait MockTrafficManagementRepository extends MockitoSugar {
                             status: RegistrationStatus,
                             regStartDate: LocalDate,
                             channel: RegistrationChannel,
-                            lastModified: LocalDate)
+                            lastModified: LocalDateTime)
                            (response: Future[RegistrationInformation]): OngoingStubbing[Future[RegistrationInformation]] =
     when(mockTrafficManagementRepository.upsertRegInfoById(
       ArgumentMatchers.eq(internalId),

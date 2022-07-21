@@ -16,29 +16,22 @@
 
 package models.api
 
-import java.time.LocalDate
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import java.time.{LocalDate, LocalDateTime}
 
 case class RegistrationInformation(internalId: String,
                                    registrationId: String,
                                    status: RegistrationStatus,
                                    regStartDate: LocalDate,
                                    channel: RegistrationChannel,
-                                   lastModified: LocalDate)
+                                   lastModified: LocalDateTime)
 
 object RegistrationInformation {
-  val reads: Reads[RegistrationInformation] = (
-    (__ \ "internalId").read[String] and
-    (__ \ "registrationId").read[String] and
-    (__ \ "status").read[RegistrationStatus] and
-    (__ \ "regStartDate").read[LocalDate] and
-    (__ \ "channel").read[RegistrationChannel] and
-      // Default to regStartDate for records created before this field was added
-    (__ \ "lastModified").read[LocalDate].orElse((__ \ "regStartDate").read[LocalDate])
-  )(RegistrationInformation.apply _)
 
-  val writes: Writes[RegistrationInformation] = Json.writes[RegistrationInformation]
-
-  implicit val format: Format[RegistrationInformation] = Format(reads, writes)
+  implicit val format: Format[RegistrationInformation] = {
+    implicit val dateFormat: Format[LocalDateTime] = MongoJavatimeFormats.localDateTimeFormat
+    Json.format[RegistrationInformation]
+  }
 }

@@ -78,9 +78,9 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       canAllocate = currentTotal < dailyQuota(partyType, isEnrolled) && isWithinOpeningHours
       _ <- if (canAllocate) {
         dailyQuotaRepository.incrementTotal(partyType, isEnrolled).flatMap(_ =>
-          trafficManagementRepository.upsertRegInfoById(internalId, regId, Draft, timeMachine.today, VatReg, timeMachine.today))
+          trafficManagementRepository.upsertRegInfoById(internalId, regId, Draft, timeMachine.today, VatReg, timeMachine.timestamp))
         } else {
-          trafficManagementRepository.upsertRegInfoById(internalId, regId, Draft, timeMachine.today, OTRS, timeMachine.today)
+          trafficManagementRepository.upsertRegInfoById(internalId, regId, Draft, timeMachine.today, OTRS, timeMachine.timestamp)
         }
     } yield if (canAllocate) Allocated else QuotaReached
   }
@@ -99,7 +99,7 @@ class TrafficManagementService @Inject()(dailyQuotaRepository: DailyQuotaReposit
       status = status,
       regStartDate = regStartDate,
       channel = channel,
-      lastModified = timeMachine.today
+      lastModified = timeMachine.timestamp
     )
 
   def updateStatus(regId: String, status: RegistrationStatus): Future[Option[RegistrationInformation]] = {
