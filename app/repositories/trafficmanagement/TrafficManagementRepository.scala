@@ -20,18 +20,15 @@ import auth.AuthorisationResource
 import com.mongodb.client.model.Indexes.ascending
 import config.BackendConfig
 import models.api.{RegistrationChannel, RegistrationInformation, RegistrationStatus}
+import org.mongodb.scala.model
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model._
-import org.mongodb.scala.{Document, model}
 import play.api.Logging
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Format, JsError, JsSuccess, Json, Reads, __}
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.{Instant, LocalDate, LocalDateTime, LocalTime, ZoneOffset}
+import java.time.{LocalDate, LocalDateTime}
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -114,55 +111,5 @@ class TrafficManagementRepository @Inject()(mongo: MongoComponent,
       result.wasAcknowledged()
     }
   }
-
-  def runOnce: Unit = {
-    collection.find[Document]().subscribe { regInfo =>
-      val regInfoJson = Json.parse(regInfo.toJson())
-
-      try {
-        (regInfoJson \ "lastModified").validateOpt[LocalDate] match {
-          case JsSuccess(Some(localDate), _) => updateOldDate(LocalDateTime.of(localDate, LocalTime.now()))
-          case JsSuccess(None, _) => updateOldDate(LocalDateTime.now())
-          case JsError(_) =>
-            logger.info(s"[TrafficManagementRepository][runOnce] skipped updating Registration Information")
-        }
-
-        def updateOldDate(localDateTime: LocalDateTime) = {
-          val updatedRegInfo: RegistrationInformation = (
-            (regInfoJson \ "internalId").validate[String] and
-              (regInfoJson \ "registrationId").validate[String] and
-              (regInfoJson \ "status").validate[RegistrationStatus] and
-              (regInfoJson \ "regStartDate").validate[LocalDate] and
-              (regInfoJson \ "channel").validate[RegistrationChannel]
-            ) ((internalId, regId, status, startDate, channel) =>
-            RegistrationInformation(
-              internalId,
-              regId,
-              status,
-              startDate,
-              channel,
-              localDateTime
-            )
-          ).getOrElse(throw new InternalServerException(""))
-
-          collection.replaceOne(
-            filter = and(
-              equal("internalId", updatedRegInfo.internalId),
-              equal("registrationId", updatedRegInfo.registrationId)
-            ),
-            replacement = updatedRegInfo,
-            options = ReplaceOptions().upsert(true)
-          ).toFuture().map { _ =>
-            logger.info(s"[TrafficManagementRepository][runOnce] successfully updated Registration Information")
-          }
-        }
-      } catch {
-        case _ =>
-          logger.error(s"[TrafficManagementRepository][runOnce] unexpected error occurred while updating Registration Information")
-      }
-    }
-  }
-
-  runOnce
 
 }
