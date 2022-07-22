@@ -34,7 +34,6 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
     internalId = testInternalId,
     status = VatRegStatus.draft,
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
-    tradingDetails = Some(validFullTradingDetails),
     applicantDetails = Some(validApplicantDetails),
     vatApplication = Some(testVatApplicationDetails)
   )

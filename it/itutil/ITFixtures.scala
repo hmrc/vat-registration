@@ -49,7 +49,6 @@ trait ITFixtures {
   val oldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   val testTradingName = "trading-name"
   val testShortOrgName = "testShortOrgName"
-  val testTradingDetails = TradingDetails(Some(testTradingName), None)
   val testAuthProviderId = "authProviderId"
   val testWarehouseNumber = "tst123456789012"
   val testWarehouseName = "testWarehouseName"
@@ -286,7 +285,6 @@ trait ITFixtures {
   lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, createdDate = Some(testDate))
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
-    tradingDetails = Some(testTradingDetails),
     bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
@@ -301,7 +299,6 @@ trait ITFixtures {
     VatScheme(
       id = testRegId,
       internalId = testInternalid,
-      tradingDetails = Some(testTradingDetails),
       vatApplication = Some(testAASVatApplicationDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
@@ -335,7 +332,6 @@ trait ITFixtures {
     VatScheme(
       id = testRegId,
       internalId = testInternalid,
-      tradingDetails = Some(testTradingDetails),
       transactorDetails = Some(testAgentTransactorDetails),
       vatApplication = Some(testAASVatApplicationDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
@@ -353,7 +349,6 @@ trait ITFixtures {
     VatScheme(
       id = testRegId,
       internalId = testInternalid,
-      tradingDetails = Some(testTradingDetails),
       vatApplication = Some(testVatApplication),
       bankAccount = Some(BankAccount(isProvided = false, None, None, Some(BeingSetup))),
       acknowledgementReference = Some("ackRef"),
@@ -555,8 +550,6 @@ trait ITFixtures {
     hasTaxRepresentative = Some(false)
   )
 
-  val testNetpTradingDetails: TradingDetails = TradingDetails(Some(testTradingName), None)
-
   val testNetpEntity = SoleTraderIdEntity(
     testFirstName,
     testLastName,
@@ -613,7 +606,6 @@ trait ITFixtures {
       bankAccount = None,
       eligibilitySubmissionData = Some(testNetpEligibilitySubmissionData),
       vatApplication = Some(testNetpVatApplication),
-      tradingDetails = Some(testNetpTradingDetails),
       flatRateScheme = None,
       attachments = Some(Attachments(Post)),
       business = Some(testBusiness.copy(ppobAddress = Some(testOverseasAddress)))

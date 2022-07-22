@@ -110,7 +110,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
     attachments = Some(Attachments(Post)),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
@@ -123,7 +122,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
     attachments = Some(Attachments(Post)),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
@@ -138,7 +136,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
     attachments = Some(Attachments(Post)),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
@@ -158,7 +155,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvPass),
       registration = FailedStatus
     ))),
-    tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
     attachments = Some(Attachments(Post)),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
@@ -604,7 +600,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
             businessVerification = Some(BvPass),
             registration = FailedStatus
           ))),
-          tradingDetails = Some(testTradingDetails.copy(shortOrgName = Some(testShortOrgName))),
           business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
         )
 

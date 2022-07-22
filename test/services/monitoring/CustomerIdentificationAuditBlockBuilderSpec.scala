@@ -67,13 +67,6 @@ class CustomerIdentificationAuditBlockBuilderSpec extends VatRegSpec with VatReg
         }
       }
     }
-    "the TradingDetails section is missing from the VAT scheme" must {
-      "throw an InternalServerException" in new CustomerIdentificationAuditBlockBuilder {
-        intercept[InternalServerException] {
-          buildCustomerIdentificationBlock(testFullVatScheme.copy(applicantDetails = None))
-        }
-      }
-    }
   }
 
 }

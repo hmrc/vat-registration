@@ -104,14 +104,6 @@ class SectionValidationServiceSpec extends VatRegSpec
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is TradingDetails (legacy)" must {
-      "return ValidSection when the data is valid" in {
-        val data = Json.toJson(validFullTradingDetails)
-        val res = await(Service.validate(testInternalId, testRegId, TradingDetailsSectionId, data))
-
-        res mustBe Right(ValidSection(data))
-      }
-    }
   }
 
   "validateIndex" when {
@@ -124,7 +116,7 @@ class SectionValidationServiceSpec extends VatRegSpec
       }
 
       "throw InternalServerError when the data is invalid" in {
-        val data = Json.toJson(validFullTradingDetails)
+        val data = Json.toJson(validFullBusinessDetails)
         val res = await(Service.validateIndex(OtherBusinessInvolvementsSectionId, data))
 
         res mustBe Left(InvalidSection(Seq("/businessName", "/hasVrn", "/stillTrading")))

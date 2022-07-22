@@ -164,64 +164,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       res.acknowledgementReference must contain(s"VRS$testFormBundleId")
     }
   }
-  "updateTradingDetails" should {
-    val tradingDetails = TradingDetails(Some(testTradingName), Some(testShortOrgName))
 
-    "update tradingDetails block in registration when there is no tradingDetails data" in new Setup {
-      val result: Future[Option[TradingDetails]] = for {
-        _ <- insert(testVatScheme)
-        _ <- repository.updateTradingDetails(testVatScheme.id, tradingDetails)
-        Some(updatedScheme) <- repository.retrieveVatScheme(testVatScheme.id)
-      } yield updatedScheme.tradingDetails
-
-      await(result) mustBe Some(tradingDetails)
-    }
-    "update tradingDetails block in registration when there is already tradingDetails data" in new Setup {
-      val result: Future[Option[TradingDetails]] = for {
-        _ <- insert(testVatScheme.copy(tradingDetails = Some(tradingDetails)))
-        _ <- repository.updateTradingDetails(testVatScheme.id, tradingDetails)
-        Some(updatedScheme) <- repository.retrieveVatScheme(testVatScheme.id)
-      } yield updatedScheme.tradingDetails
-
-      await(result) mustBe Some(tradingDetails)
-    }
-    "not update or insert tradingDetails if registration does not exist" in new Setup {
-      await(insert(testVatScheme))
-
-      count mustBe 1
-      await(repository.collection.find().toFuture()).head mustBe testVatScheme
-
-      a[MissingRegDocument] mustBe thrownBy(await(repository.updateTradingDetails("wrongRegId", tradingDetails)))
-    }
-  }
-  "Calling retrieveTradingDetails" should {
-    val tradingDetails = TradingDetails(Some(testTradingName), Some(testShortOrgName))
-
-    "return trading details data from an existing registration containing data" in new Setup {
-      val result: Future[Option[TradingDetails]] = for {
-        _ <- insert(testVatScheme.copy(tradingDetails = Some(tradingDetails)))
-        res <- repository.retrieveTradingDetails(testVatScheme.id)
-      } yield res
-
-      await(result) mustBe Some(tradingDetails)
-    }
-    "return None from an existing registration containing no data" in new Setup {
-      val result: Future[Option[TradingDetails]] = for {
-        _ <- insert(testVatScheme)
-        res <- repository.retrieveTradingDetails(testVatScheme.id)
-      } yield res
-
-      await(result) mustBe None
-    }
-    "throw a MissingRegDocument for a none existing registration" in new Setup {
-      val result: Future[Option[TradingDetails]] = for {
-        _ <- insert(testVatScheme.copy(tradingDetails = Some(tradingDetails)))
-        res <- repository.retrieveTradingDetails("wrongRegId")
-      } yield res
-
-      a[MissingRegDocument] mustBe thrownBy(await(result))
-    }
-  }
   "fetchBankAccount" should {
     "return a BankAccount case class if one is found in mongo with the supplied regId" in new Setup {
       await(insert(testVatScheme.copy(bankAccount = Some(bankAccount))))

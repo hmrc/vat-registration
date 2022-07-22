@@ -49,7 +49,6 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
       case FlatRateSchemeSectionId => Future(validate[FlatRateScheme](json))
       case PartnersSectionId => Future(validate[PartnersSection](json))
       case TransactorSectionId => Future(validate[TransactorDetails](json))
-      case TradingDetailsSectionId => Future(validate[TradingDetails](json))
       case OtherBusinessInvolvementsSectionId => Future(validate[List[OtherBusinessInvolvement]](json))
       case BusinessSectionId => Future(validate[Business](json))
       case VatApplicationSectionId => Future(validate[VatApplication](json))

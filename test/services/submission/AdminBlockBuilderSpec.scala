@@ -143,8 +143,8 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = None,
-          tradingDetails = None,
-          attachments = Some(Attachments(Post))
+          attachments = Some(Attachments(Post)),
+          business = None
         )
 
         intercept[InternalServerException] {

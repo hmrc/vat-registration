@@ -36,7 +36,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "shortOrgName" -> testCompanyName,
       "organisationName" -> testCompanyName,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -198,7 +198,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "shortOrgName" -> testShortOrgName,
       "organisationName" -> testCompanyName,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -359,7 +359,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "shortOrgName" -> testCompanyName,
       "organisationName" -> testCompanyName,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -534,7 +534,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     "customerIdentification" -> Json.obj(
       "tradersPartyType" -> "50",
       "primeBPSafeID" -> testBpSafeId,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -644,7 +644,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     "customerIdentification" -> Json.obj(
       "tradersPartyType" -> "Z1",
       "primeBPSafeID" -> testBpSafeId,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -766,7 +766,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "lastName" -> testLastName
       ),
       "dateOfBirth" -> testDateOfBirth,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -882,7 +882,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "idValue" -> "1234"
         )
       ),
-      "tradingName" -> testTradingDetails.tradingName.get,
+      "tradingName" -> testBusiness.tradingName.get,
       "shortOrgName" -> testCompanyName,
       "organisationName" -> testCompanyName
     ),
@@ -1010,7 +1010,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "lastName" -> testLastName
       ),
       "dateOfBirth" -> testDateOfBirth,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -1129,7 +1129,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "dateOfBirth" -> testDateOfBirth,
       "tradersPartyType" -> "Z1",
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -1242,7 +1242,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     "customerIdentification" -> Json.obj(
       "tradersPartyType" -> "60",
       "primeBPSafeID" -> testBpSafeId,
-      "tradingName" -> testTradingDetails.tradingName.get
+      "tradingName" -> testBusiness.tradingName.get
     ),
     "contact" -> Json.obj(
       "address" -> Json.obj(
@@ -1482,7 +1482,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "IDsVerificationStatus" -> "3"
       )
     ),
-    "tradingName" -> testTradingDetails.tradingName.get,
+    "tradingName" -> testBusiness.tradingName.get,
     "shortOrgName" -> testShortOrgName,
     "organisationName" -> testCompanyName
   )
@@ -1502,7 +1502,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "IDsVerificationStatus" -> "3"
       )
     ),
-    "tradingName" -> testTradingDetails.tradingName.get,
+    "tradingName" -> testBusiness.tradingName.get,
     "shortOrgName" -> testShortOrgName,
     "organisationName" -> testCompanyName
   )
@@ -1522,14 +1522,14 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "IDsVerificationStatus" -> "3"
       )
     ),
-    "tradingName" -> testTradingDetails.tradingName.get,
+    "tradingName" -> testBusiness.tradingName.get,
     "shortOrgName" -> testShortOrgName,
     "organisationName" -> testCompanyName
   )
 
   val vatGroupCustomerId = Json.obj(
     "tradersPartyType" -> Json.toJson[PartyType](TaxGroups),
-    "tradingName" -> testTradingDetails.tradingName.get,
+    "tradingName" -> testBusiness.tradingName.get,
     "shortOrgName" -> testShortOrgName,
     "organisationName" -> testCompanyName
   )
@@ -1722,6 +1722,6 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "organisationName" -> testCompanyName,
     "shortOrgName" -> testShortOrgName,
-    "tradingName" -> testTradingDetails.tradingName.get
+    "tradingName" -> testBusiness.tradingName.get
   )
 }

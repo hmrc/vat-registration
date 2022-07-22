@@ -75,7 +75,6 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
         oldEligibilityData match {
           case EligibilitySubmissionData(_, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
             registrationRepository.insertVatScheme(vatScheme.copy(
-              tradingDetails = None,
               bankAccount = None,
               flatRateScheme = None,
               eligibilityData = None,

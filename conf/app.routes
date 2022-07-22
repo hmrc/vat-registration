@@ -14,9 +14,6 @@ GET          /threshold/:date                        controllers.VatThresholdCon
 
 GET          /:regId/get-scheme                     controllers.VatRegistrationController.retrieveVatScheme(regId: String)
 
-GET          /:regId/trading-details                controllers.TradingDetailsController.fetchTradingDetails(regId)
-PATCH        /:regId/trading-details                controllers.TradingDetailsController.updateTradingDetails(regId)
-
 GET          /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.fetchFlatRateScheme(regId)
 PATCH        /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.updateFlatRateScheme(regId)
 DELETE       /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.removeFlatRateScheme(regId)
