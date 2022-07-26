@@ -27,6 +27,7 @@ import repositories.VatSchemeRepository
 import services._
 import services.submission.SubmissionService
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.ConflictException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -90,11 +91,14 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
         val userHeaders = (request.body \ "userHeaders").asOpt[Map[String, String]].getOrElse(Map.empty)
 
         registrationService.getStatus(regId).flatMap {
-          case `locked` => Future.successful(TooManyRequests(Json.obj()))
-          case `submitted` => Future.successful(Ok(Json.obj()))
-          case `duplicateSubmission` => Future.successful(Conflict(Json.obj()))
+          case `locked` => Future.successful(TooManyRequests)
+          case `submitted` => Future.successful(Ok)
+          case `duplicateSubmission` => Future.successful(Conflict)
           case _ => submissionService.submitVatRegistration(regId, userHeaders).map { _ =>
-            Ok(Json.obj())
+            Ok
+          }.recover {
+            case ex: ConflictException => Conflict
+            case ex: Throwable => throw ex
           }
         }
       }
