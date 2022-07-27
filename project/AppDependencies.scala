@@ -23,7 +23,7 @@ object AppDependencies {
 object CompileDependencies {
   val domainVersion = "6.2.0-play-28"
   val bootstrapVersion = "5.16.0"
-  val hmrcMongoVersion = "0.66.0"
+  val hmrcMongoVersion = "0.68.0"
   val catsVersion = "1.0.0"
 
   private val playJsonVersion = "2.9.2"
