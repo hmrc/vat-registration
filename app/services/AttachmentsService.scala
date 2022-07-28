@@ -29,8 +29,6 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
                                    upscanMongoRepository: UpscanMongoRepository
                                   )(implicit executionContext: ExecutionContext) {
 
-  private val attachmentDetailsKey = "attachments"
-
   def getAttachmentList(regId: String): Future[Set[AttachmentType]] =
     registrationRepository.retrieveVatScheme(regId).map {
       case Some(vatScheme) => attachmentList(vatScheme)
@@ -63,12 +61,6 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
       getTaxRepresentativeAttachment(vatScheme)
     ).flatten
   }
-
-  def getAttachmentDetails(regId: String): Future[Option[Attachments]] =
-    registrationRepository.fetchBlock[Attachments](regId, attachmentDetailsKey)
-
-  def storeAttachmentDetails(regId: String, attachmentDetails: Attachments): Future[Attachments] =
-    registrationRepository.updateBlock[Attachments](regId, attachmentDetails, attachmentDetailsKey)
 
   private def getIdentityEvidenceAttachment(vatScheme: VatScheme): Option[IdentityEvidence.type] = {
     val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.identifiersMatch)

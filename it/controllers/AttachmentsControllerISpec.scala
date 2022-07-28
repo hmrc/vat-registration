@@ -43,7 +43,7 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
         )
       )
 
-      val testJson = Json.obj("attachments" -> Json.arr(Json.toJson[AttachmentType](IdentityEvidence)))
+      val testJson = Json.arr(Json.toJson[AttachmentType](IdentityEvidence))
 
       val response: WSResponse = await(client(attachmentsUrl).get())
 
@@ -55,7 +55,7 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
       given.user.isAuthorised
       insertIntoDb(testFullVatScheme)
 
-      val testJson = Json.parse(s"""{"attachments": []}""")
+      val testJson = Json.parse("[]")
 
       val response: WSResponse = await(client(attachmentsUrl).get())
 
@@ -77,66 +77,6 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
       val response: WSResponse = await(client(attachmentsUrl).get())
 
       response.status mustBe FORBIDDEN
-    }
-  }
-
-  "PUT /:regId/attachments" when {
-    "the request json is valid" when {
-      "mongo doesn't hold an attachment method" must {
-        "return OK with the new value" in new Setup {
-          given.user.isAuthorised
-          insertIntoDb(testSoleTraderVatScheme)
-
-          val response = await(client(attachmentsUrl).put(Json.obj(
-            "method" -> "1"
-          )))
-
-          response.status mustBe OK
-          response.json mustBe Json.obj(
-            "method" -> "1"
-          )
-        }
-        "return OK for the Email psuedo-type" in new Setup {
-          given.user.isAuthorised
-          insertIntoDb(testSoleTraderVatScheme)
-
-          val response = await(client(attachmentsUrl).put(Json.obj(
-            "method" -> "email"
-          )))
-
-          response.status mustBe OK
-          response.json mustBe Json.obj(
-            "method" -> "email"
-          )
-        }
-      }
-      "mongo holds an existing attachment method" must {
-        "return OK with the updated value" in new Setup {
-          given.user.isAuthorised
-          insertIntoDb(testSoleTraderVatScheme.copy(attachments = Some(Attachments(Post))))
-
-          val response = await(client(attachmentsUrl).put(Json.obj(
-            "method" -> "1"
-          )))
-
-          response.status mustBe OK
-          response.json mustBe Json.obj(
-            "method" -> "1"
-          )
-        }
-      }
-      "the request json is invalid" must {
-        "return BAD_REQUEST" in new Setup {
-          given.user.isAuthorised
-          insertIntoDb(testSoleTraderVatScheme.copy(attachments = Some(Attachments(Post))))
-
-          val response = await(client(attachmentsUrl).put(Json.obj(
-            "methd" -> "3"
-          )))
-
-          response.status mustBe BAD_REQUEST
-        }
-      }
     }
   }
 
