@@ -1,7 +1,7 @@
 ## REGISTRATIONS API
 
 # /vatreg/registrations
-GET             /                                               controllers.registrations.RegistrationController.getAllRegistrations
+GET             /                                               controllers.registrations.RegistrationController.getAllRegistrationHeaders
 POST            /                                               controllers.registrations.RegistrationController.newRegistration
 
 # /vatreg/registrations/:regId

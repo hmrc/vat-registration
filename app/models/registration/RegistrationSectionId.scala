@@ -69,6 +69,31 @@ case object VatApplicationSectionId extends RegistrationSectionId {
   val repoKey = key
 }
 
+case object StatusSectionId extends RegistrationSectionId {
+  val key = "status"
+  val repoKey = key
+}
+
+case object InformationDeclarationSectionId extends RegistrationSectionId {
+  val key = "confirm-information-declaration"
+  val repoKey = "confirmInformationDeclaration"
+}
+
+case object ApplicationReferenceSectionId extends RegistrationSectionId {
+  val key = "application-reference"
+  val repoKey = "applicationReference"
+}
+
+case object AcknowledgementReferenceSectionId extends RegistrationSectionId {
+  val key = "acknowledgement-reference"
+  val repoKey = "acknowledgementReference"
+}
+
+case object NrsSubmissionPayloadSectionId extends RegistrationSectionId {
+  val key = "nrs-submission-payload"
+  val repoKey = "nrsSubmissionPayload"
+}
+
 object RegistrationSectionId {
   // scalastyle:off
   implicit def urlBinder(implicit stringBinder: PathBindable[String]): PathBindable[RegistrationSectionId] =
@@ -87,6 +112,11 @@ object RegistrationSectionId {
             case ("section", OtherBusinessInvolvementsSectionId.key) => Right(OtherBusinessInvolvementsSectionId)
             case ("section", BusinessSectionId.key) => Right(BusinessSectionId)
             case ("section", VatApplicationSectionId.key) => Right(VatApplicationSectionId)
+            case ("section", StatusSectionId.key) => Right(StatusSectionId)
+            case ("section", InformationDeclarationSectionId.key) => Right(InformationDeclarationSectionId)
+            case ("section", ApplicationReferenceSectionId.key) => Right(ApplicationReferenceSectionId)
+            case ("section", AcknowledgementReferenceSectionId.key) => Right(AcknowledgementReferenceSectionId)
+            case ("section", NrsSubmissionPayloadSectionId.key) => Right(NrsSubmissionPayloadSectionId)
             case _ => Left("Invalid registration section")
           }
         } yield section

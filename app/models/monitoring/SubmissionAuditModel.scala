@@ -45,7 +45,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
       case (Some(eligibilityData), Some(applicantDetails), Some(vatApplication)) =>
         jsonObject(
           "authProviderId" -> authProviderId,
-          "journeyId" -> vatScheme.id,
+          "journeyId" -> vatScheme.registrationId,
           "userType" -> affinityGroup.toString,
           "formBundleId" -> formBundleId,
           optional("agentReferenceNumber" -> optAgentReferenceNumber.filterNot(_ == "")),

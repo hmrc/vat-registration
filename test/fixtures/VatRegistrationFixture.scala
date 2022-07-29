@@ -53,7 +53,7 @@ trait VatRegistrationFixture {
   lazy val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
   lazy val testOldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   lazy val testPreviousName = FormerName(hasFormerName = Some(true), name = Some(testOldName), change = Some(testDate))
-  lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalId, status = VatRegStatus.draft)
+  lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalId, status = VatRegStatus.draft, createdDate = testDate)
   lazy val exception = new Exception("Exception")
   lazy val testVoluntaryThreshold = Threshold(mandatoryRegistration = false, None, None, None)
   lazy val testMandatoryThreshold = Threshold(

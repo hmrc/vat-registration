@@ -17,6 +17,7 @@
 package controllers.registrations
 
 import auth.{Authorisation, AuthorisationResource}
+import models.VatSchemeHeader
 import models.api.VatScheme
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -37,13 +38,13 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
 
   /** GET /registrations
    * ===Purpose===
-   * Return a list of all registrations for the users's Internal ID
+   * Return a list of all registrations in a reduced header format for the users's Internal ID
    * ===Detail===
    * @return OK - A JSON array of all the data for each registration found for the user's internal ID
    */
-  def getAllRegistrations: Action[AnyContent] = Action.async { implicit request =>
+  def getAllRegistrationHeaders: Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
-      registrationService.getAllRegistrations[JsValue](internalId)
+      registrationService.getAllRegistrations[VatSchemeHeader](internalId)
         .map { registrations => Ok(Json.toJson(registrations)) }
     }
   }

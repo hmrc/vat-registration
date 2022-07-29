@@ -3,6 +3,7 @@ package controllers.registrations
 
 import enums.VatRegStatus
 import itutil.{FakeRegistrationIdService, FakeTimeMachine, IntegrationStubbing}
+import models.VatSchemeHeader
 import models.api.VatScheme
 import play.api.Application
 import play.api.inject.bind
@@ -32,7 +33,21 @@ class RegistrationControllerISpec extends IntegrationStubbing {
 
   val testRegId2 = testRegId + "2"
 
-  val testVatScheme2 = testVatScheme.copy(id = testRegId2)
+  val testVatScheme2: VatScheme = testVatScheme.copy(registrationId = testRegId2)
+  val testVatSchemeHeader: VatSchemeHeader = VatSchemeHeader(
+    registrationId = testVatScheme.registrationId,
+    status = testVatScheme.status,
+    applicationReference = testVatScheme.applicationReference,
+    createdDate = testVatScheme.createdDate,
+    requiresAttachments = false
+  )
+  val testVatSchemeHeader2: VatSchemeHeader = VatSchemeHeader(
+    registrationId = testVatScheme2.registrationId,
+    status = testVatScheme2.status,
+    applicationReference = testVatScheme2.applicationReference,
+    createdDate = testVatScheme2.createdDate,
+    requiresAttachments = false
+  )
 
   "GET /registrations" when {
     "registrations exist for the user" must {
@@ -44,7 +59,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
         val res = await(client(registrationsUrl).get)
 
         res.status mustBe OK
-        res.json mustBe Json.toJson(Seq(testVatScheme, testVatScheme2))
+        res.json mustBe Json.toJson(Seq(testVatSchemeHeader, testVatSchemeHeader2))
       }
     }
     "registrations do not exist for the user" must {

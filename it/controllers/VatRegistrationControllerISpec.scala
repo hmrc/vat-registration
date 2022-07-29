@@ -19,7 +19,6 @@ package controllers
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMatching, verify}
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import connectors.stubs.SdesNotifyStub.stubSdesNotification
-import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
 import models.api._
@@ -61,7 +60,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     .digest(payload.getBytes(StandardCharsets.UTF_8))
     .map("%02x".format(_)).mkString
 
-  FakeTimeMachine.hour = 0
+  FakeTimeMachine.hour = 9
 
   val formBundleId = "123412341234"
   val testSubmissionResponse = Json.obj("formBundle" -> formBundleId)
@@ -673,7 +672,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
     "return INTERNAL_SERVER_ERROR if the VAT scheme is missing data" in new Setup {
       given.user.isAuthorised
-      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft))
+      insertIntoDb(testEmptyVatScheme(testRegId))
 
       val res = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
         .put(Json.obj())

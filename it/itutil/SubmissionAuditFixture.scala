@@ -154,7 +154,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
 
   val auditModelJson = Json.obj(
     "authProviderId" -> testAuthProviderId,
-    "journeyId" -> vatScheme.id,
+    "journeyId" -> vatScheme.registrationId,
     "userType" -> Organisation.toString,
     "messageType" -> "SubscriptionCreate",
     "customerStatus" -> Submitted.toString,
