@@ -48,6 +48,5 @@ GET         /:regId/partners                        controllers.PartnersControll
 
 GET         /:regId/attachments                     controllers.AttachmentsController.getAttachmentList(regId: String)
 GET         /:regId/incomplete-attachments          controllers.AttachmentsController.getIncompleteAttachments(regId: String)
-PUT         /:regId/attachments                     controllers.AttachmentsController.storeAttachmentDetails(regId: String)
 
 POST        /sdes-notification-callback             controllers.SdesController.sdesCallback

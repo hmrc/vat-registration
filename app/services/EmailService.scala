@@ -26,7 +26,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class EmailService @Inject()(emailConnector: EmailConnector,
-                             attachmentsService: AttachmentsService,
                              registrationMongoRepository: VatSchemeRepository
                             )(implicit ex: ExecutionContext) {
 
@@ -59,8 +58,7 @@ class EmailService @Inject()(emailConnector: EmailConnector,
     (for {
       optVatScheme <- registrationMongoRepository.retrieveVatScheme(regId)
       vatScheme = optVatScheme.getOrElse(throw new InternalServerException(missingDataLog("VAT scheme", regId)))
-      attachmentMethod <- attachmentsService.getAttachmentDetails(regId)
-      template = attachmentMethod.map(_.method) match {
+      template = vatScheme.attachments.map(_.method) match {
         case Some(EmailMethod) => emailTemplate
         case Some(Post) => postalTemplate
         case _ => basicTemplate

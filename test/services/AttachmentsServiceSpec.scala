@@ -121,56 +121,6 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
     }
   }
 
-  "getAttachmentDetails" when {
-    "the VatScheme has no attachmentDetails" should {
-      "return None" in {
-        mockFetchBlock[Attachments](testRegId, attachmentsKey)(Future.successful(None))
-
-        val res = await(Service.getAttachmentDetails(testRegId))
-
-        res mustBe None
-      }
-    }
-    "the VatScheme contains the Post attachment method" should {
-      "return the correct attachment details" in {
-        mockFetchBlock[Attachments](testRegId, attachmentsKey)(Future.successful(Some(Attachments(Post))))
-
-        val res = await(Service.getAttachmentDetails(testRegId))
-
-        res mustBe Some(Attachments(Post))
-      }
-    }
-    "the VatScheme contains the Attached attachment method" should {
-      "return the correct attachment details" in {
-        mockFetchBlock[Attachments](testRegId, attachmentsKey)(Future.successful(Some(Attachments(Attached))))
-
-        val res = await(Service.getAttachmentDetails(testRegId))
-
-        res mustBe Some(Attachments(Attached))
-      }
-    }
-    "the VatScheme contains the Other attachment method" should {
-      "return the correct attachment details" in {
-        mockFetchBlock[Attachments](testRegId, attachmentsKey)(Future.successful(Some(Attachments(Other))))
-
-        val res = await(Service.getAttachmentDetails(testRegId))
-
-        res mustBe Some(Attachments(Other))
-      }
-    }
-  }
-
-  "storeAttachmentDetails" must {
-    "store the given attachment method" in {
-      val testAttachmentDetails = Attachments(Post)
-      mockUpdateBlock[Attachments](testRegId, testAttachmentDetails, attachmentsKey)
-
-      val res = await(Service.storeAttachmentDetails(testRegId, testAttachmentDetails))
-
-      res mustBe testAttachmentDetails
-    }
-  }
-
   "getIncompleteAttachments" must {
     val testReference = "testReference"
 

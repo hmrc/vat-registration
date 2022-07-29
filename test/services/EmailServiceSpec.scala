@@ -51,11 +51,7 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
     "ref" -> testAckReference
   )
 
-  object TestService extends EmailService(
-    mockEmailConnector,
-    mockAttachmentService,
-    mockVatSchemeRepository
-  )
+  object TestService extends EmailService(mockEmailConnector, mockVatSchemeRepository)
 
   "the email service" when {
     "the VAT scheme exists for the user" when {
@@ -64,7 +60,6 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
           "the email sends successfully" must {
             "send the Submission Received email to the transactor's email and use the transactor name as the salutation" in {
               mockGetVatScheme(testRegId)(Some(testEmailVatScheme))
-              mockGetAttachmentDetails(testRegId)(Future.successful(Some(Attachments(EmailMethod))))
               mockSendSubmissionReceivedEmail(testEmail, emailTemplate, testParams, force = true)(Future.successful(EmailSent))
 
               val res = await(TestService.sendRegistrationReceivedEmail(testRegId))
@@ -75,7 +70,6 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
           "the email fails to send" must {
             "return EmailFailedToSend" in {
               mockGetVatScheme(testRegId)(Some(testEmailVatScheme))
-              mockGetAttachmentDetails(testRegId)(Future.successful(Some(Attachments(EmailMethod))))
               mockSendSubmissionReceivedEmail(testEmail, emailTemplate, testParams, force = true)(Future.successful(EmailFailedToSend))
 
               val res = await(TestService.sendRegistrationReceivedEmail(testRegId))
@@ -86,7 +80,6 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
           "the connection to the email service times out" must {
             "return EmailFailedToSend" in {
               mockGetVatScheme(testRegId)(Some(testEmailVatScheme))
-              mockGetAttachmentDetails(testRegId)(Future.successful(Some(Attachments(EmailMethod))))
               mockSendSubmissionReceivedEmail(testEmail, emailTemplate, testParams, force = true)(Future.failed(new GatewayTimeoutException("")))
 
               val res = await(TestService.sendRegistrationReceivedEmail(testRegId))
@@ -100,7 +93,6 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
             "send the Submission Received email to the applicant's email and use the applicant name as the salutation" in {
               val vatScheme = testEmailVatScheme.copy(transactorDetails = None)
               mockGetVatScheme(testRegId)(Some(vatScheme))
-              mockGetAttachmentDetails(testRegId)(Future.successful(Some(Attachments(EmailMethod))))
               mockSendSubmissionReceivedEmail(testApplicantEmail, emailTemplate, testParams, force = true)(Future.successful(EmailSent))
 
               val res = await(TestService.sendRegistrationReceivedEmail(testRegId))
@@ -112,7 +104,6 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
             "return EmailFailedToSend" in {
               val vatScheme = testEmailVatScheme.copy(transactorDetails = None)
               mockGetVatScheme(testRegId)(Some(vatScheme))
-              mockGetAttachmentDetails(testRegId)(Future.successful(Some(Attachments(EmailMethod))))
               mockSendSubmissionReceivedEmail(testApplicantEmail, emailTemplate, testParams, force = true)(Future.successful(EmailFailedToSend))
 
               val res = await(TestService.sendRegistrationReceivedEmail(testRegId))
@@ -127,7 +118,6 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
           val vatScheme = testEmailVatScheme.copy(applicantDetails = None, transactorDetails = None)
 
           mockGetVatScheme(testRegId)(Some(vatScheme))
-          mockGetAttachmentDetails(testRegId)(Future.successful(Some(Attachments(EmailMethod))))
 
           val res = await(TestService.sendRegistrationReceivedEmail(testRegId))
 
@@ -138,7 +128,6 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
     "the VAT scheme doesn't exist (invalid state)" must {
       "return EmailFailedToSend" in {
         mockGetVatScheme(testRegId)(None)
-        mockGetAttachmentDetails(testRegId)(Future.successful(Some(Attachments(EmailMethod))))
 
         val res = await(TestService.sendRegistrationReceivedEmail(testRegId))
 
