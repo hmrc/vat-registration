@@ -45,7 +45,12 @@ trait ITFixtures {
   val startDate = testDate
   val testRegId = "regId"
   val testInternalid = "INT-123-456-789"
-  val vatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft)
+  val vatScheme = VatScheme(
+    registrationId = testRegId,
+    internalId = testInternalid,
+    status = VatRegStatus.draft,
+    createdDate = testDate
+  )
   val oldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   val testTradingName = "trading-name"
   val testShortOrgName = "testShortOrgName"
@@ -282,7 +287,7 @@ trait ITFixtures {
   val testNrsSubmissionPayload = "testNrsSubmissionPayload"
   val testEncodedPayload: String = Base64.getEncoder.encodeToString(testNrsSubmissionPayload.getBytes(StandardCharsets.UTF_8))
 
-  lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, createdDate = Some(testDate))
+  lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, createdDate = testDate)
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
@@ -297,8 +302,9 @@ trait ITFixtures {
 
   lazy val testFullVatSchemeWithUnregisteredBusinessPartner: VatScheme =
     VatScheme(
-      id = testRegId,
+      registrationId = testRegId,
       internalId = testInternalid,
+      createdDate = testDate,
       vatApplication = Some(testAASVatApplicationDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
@@ -330,8 +336,9 @@ trait ITFixtures {
 
   lazy val testAgentVatScheme: VatScheme =
     VatScheme(
-      id = testRegId,
+      registrationId = testRegId,
       internalId = testInternalid,
+      createdDate = testDate,
       transactorDetails = Some(testAgentTransactorDetails),
       vatApplication = Some(testAASVatApplicationDetails),
       bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
@@ -347,8 +354,9 @@ trait ITFixtures {
 
   lazy val testMinimalVatSchemeWithRegisteredBusinessPartner: VatScheme =
     VatScheme(
-      id = testRegId,
+      registrationId = testRegId,
       internalId = testInternalid,
+      createdDate = testDate,
       vatApplication = Some(testVatApplication),
       bankAccount = Some(BankAccount(isProvided = false, None, None, Some(BeingSetup))),
       acknowledgementReference = Some("ackRef"),
@@ -433,10 +441,10 @@ trait ITFixtures {
   )
 
   def testEmptyVatScheme(regId: String): VatScheme = VatScheme(
-    id = regId,
+    registrationId = regId,
     internalId = testInternalid,
     status = VatRegStatus.draft,
-    createdDate = Some(testDate)
+    createdDate = testDate
   )
 
   object AuthTestData {
@@ -679,9 +687,9 @@ trait ITFixtures {
   val testCorrelationid = "testCorrelationid"
 
   def testSdesPayload(attachmentReference: String): SdesNotification = SdesNotification(
-    informationType = "S18",
+    informationType = "1655996667080",
     file = FileDetails(
-      recipientOrSender = "123456789012",
+      recipientOrSender = "400063095160",
       name = testFileName,
       location = testDownloadUrl,
       checksum = Checksum(

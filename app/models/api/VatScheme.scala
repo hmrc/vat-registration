@@ -19,7 +19,7 @@ package models.api
 import auth.CryptoSCRS
 import enums.VatRegStatus
 import models.api.vatapplication.VatApplication
-import models.registration.{BusinessSectionId, VatApplicationSectionId}
+import models.registration._
 import models.registration.sections.PartnersSection
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
@@ -28,25 +28,25 @@ import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
-case class VatScheme(id: String,
+case class VatScheme(registrationId: String,
                      internalId: String,
-                     bankAccount: Option[BankAccount] = None,
-                     acknowledgementReference: Option[String] = None,
-                     flatRateScheme: Option[FlatRateScheme] = None,
+                     createdDate: LocalDate,
                      status: VatRegStatus.Value,
+                     confirmInformationDeclaration: Option[Boolean] = None,
+                     applicationReference: Option[String] = None,
+                     acknowledgementReference: Option[String] = None,
+                     nrsSubmissionPayload: Option[String] = None,
                      eligibilityData: Option[JsObject] = None,
                      eligibilitySubmissionData: Option[EligibilitySubmissionData] = None,
-                     applicantDetails: Option[ApplicantDetails] = None,
                      transactorDetails: Option[TransactorDetails] = None,
-                     confirmInformationDeclaration: Option[Boolean] = None,
-                     nrsSubmissionPayload: Option[String] = None,
+                     applicantDetails: Option[ApplicantDetails] = None,
                      partners: Option[PartnersSection] = None,
-                     attachments: Option[Attachments] = None,
-                     createdDate: Option[LocalDate] = None,
-                     applicationReference: Option[String] = None,
-                     otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None,
                      business: Option[Business] = None,
-                     vatApplication: Option[VatApplication] = None) {
+                     otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None,
+                     vatApplication: Option[VatApplication] = None,
+                     bankAccount: Option[BankAccount] = None,
+                     flatRateScheme: Option[FlatRateScheme] = None,
+                     attachments: Option[Attachments] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -57,6 +57,7 @@ object VatScheme {
   val exceptionKey = "2"
   val exemptionKey = "1"
   val nonExceptionOrExemptionKey = "0"
+
   def exceptionOrExemption(eligibilityData: EligibilitySubmissionData, vatApplication: VatApplication): String = {
     (eligibilityData.appliedForException, vatApplication.appliedForExemption) match {
       case (Some(true), Some(true)) =>
@@ -69,72 +70,72 @@ object VatScheme {
 
   // scalastyle:off
   def reads(crypto: Option[CryptoSCRS] = None): Reads[VatScheme] =
-    (__ \ "eligibilitySubmissionData" \ "partyType").readNullable[PartyType] flatMap {
+    (__ \ EligibilitySectionId.repoKey \ "partyType").readNullable[PartyType] flatMap {
       case Some(partyType) => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
-        (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
-        (__ \ "acknowledgementReference").readNullable[String] and
-        (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
+        (__ \ "createdDate").read[LocalDate] and
         (__ \ "status").read[VatRegStatus.Value] and
+        (__ \ InformationDeclarationSectionId.repoKey).readNullable[Boolean] and
+        (__ \ ApplicationReferenceSectionId.repoKey).readNullable[String] and
+        (__ \ "acknowledgementReference").readNullable[String] and
+        (__ \ NrsSubmissionPayloadSectionId.repoKey).readNullable[String] and
         (__ \ "eligibilityData").readNullable[JsObject] and
-        (__ \ "eligibilitySubmissionData").readNullable[EligibilitySubmissionData] and
-        (__ \ "applicantDetails").readNullable[ApplicantDetails](Format[ApplicantDetails](ApplicantDetails.reads(partyType), ApplicantDetails.writes)) and
-        (__ \ "transactorDetails").readNullable[TransactorDetails] and
-        (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
-        (__ \ "nrsSubmissionPayload").readNullable[String] and
-        (__ \ "partners").readNullable[PartnersSection] and
-        (__ \ "attachments").readNullable[Attachments] and
-        (__ \ "createdDate").readNullable[LocalDate] and
-        (__ \ "applicationReference").readNullable[String] and
-        (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
+        (__ \ EligibilitySectionId.repoKey).readNullable[EligibilitySubmissionData] and
+        (__ \ TransactorSectionId.repoKey).readNullable[TransactorDetails] and
+        (__ \ ApplicantSectionId.repoKey).readNullable[ApplicantDetails](ApplicantDetails.reads(partyType)) and
+        (__ \ PartnersSectionId.repoKey).readNullable[PartnersSection] and
         (__ \ BusinessSectionId.repoKey).readNullable[Business] and
-        (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication]
-        ) (VatScheme.apply _)
+        (__ \ OtherBusinessInvolvementsSectionId.repoKey).readNullable[List[OtherBusinessInvolvement]] and
+        (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication] and
+        (__ \ BankAccountSectionId.repoKey).readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
+        (__ \ FlatRateSchemeSectionId.repoKey).readNullable[FlatRateScheme] and
+        (__ \ AttachmentsSectionId.repoKey).readNullable[Attachments]
+      ) (VatScheme.apply _)
       case _ => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
-        (__ \ "bankAccount").readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
-        (__ \ "acknowledgementReference").readNullable[String] and
-        (__ \ "flatRateScheme").readNullable[FlatRateScheme] and
+        (__ \ "createdDate").read[LocalDate] and
         (__ \ "status").read[VatRegStatus.Value] and
+        (__ \ InformationDeclarationSectionId.repoKey).readNullable[Boolean] and
+        (__ \ ApplicationReferenceSectionId.repoKey).readNullable[String] and
+        (__ \ "acknowledgementReference").readNullable[String] and
+        (__ \ NrsSubmissionPayloadSectionId.repoKey).readNullable[String] and
         (__ \ "eligibilityData").readNullable[JsObject] and
-        (__ \ "eligibilitySubmissionData").readNullable[EligibilitySubmissionData] and
+        (__ \ EligibilitySectionId.repoKey).readNullable[EligibilitySubmissionData] and
+        (__ \ TransactorSectionId.repoKey).readNullable[TransactorDetails] and
         Reads.pure(None) and
-        (__ \ "transactorDetails").readNullable[TransactorDetails] and
-        (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
-        (__ \ "nrsSubmissionPayload").readNullable[String] and
-        (__ \ "partners").readNullable[PartnersSection] and
-        (__ \ "attachments").readNullable[Attachments] and
-        (__ \ "createdDate").readNullable[LocalDate] and
-        (__ \ "applicationReference").readNullable[String] and
-        (__ \ "otherBusinessInvolvements").readNullable[List[OtherBusinessInvolvement]] and
+        (__ \ PartnersSectionId.repoKey).readNullable[PartnersSection] and
         (__ \ BusinessSectionId.repoKey).readNullable[Business] and
-        (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication]
-        ) (VatScheme.apply _)
+        (__ \ OtherBusinessInvolvementsSectionId.repoKey).readNullable[List[OtherBusinessInvolvement]] and
+        (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication] and
+        (__ \ BankAccountSectionId.repoKey).readNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
+        (__ \ FlatRateSchemeSectionId.repoKey).readNullable[FlatRateScheme] and
+        (__ \ AttachmentsSectionId.repoKey).readNullable[Attachments]
+      ) (VatScheme.apply _)
     }
 
   def writes(crypto: Option[CryptoSCRS] = None): OWrites[VatScheme] = (
     (__ \ "registrationId").write[String] and
     (__ \ "internalId").write[String] and
-    (__ \ "bankAccount").writeNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
-    (__ \ "acknowledgementReference").writeNullable[String] and
-    (__ \ "flatRateScheme").writeNullable[FlatRateScheme] and
+    (__ \ "createdDate").write[LocalDate] and
     (__ \ "status").write[VatRegStatus.Value] and
+    (__ \ InformationDeclarationSectionId.repoKey).writeNullable[Boolean] and
+    (__ \ ApplicationReferenceSectionId.repoKey).writeNullable[String] and
+    (__ \ "acknowledgementReference").writeNullable[String] and
+    (__ \ NrsSubmissionPayloadSectionId.repoKey).writeNullable[String] and
     (__ \ "eligibilityData").writeNullable[JsObject] and
-    (__ \ "eligibilitySubmissionData").writeNullable[EligibilitySubmissionData] and
-    (__ \ "applicantDetails").writeNullable[ApplicantDetails] and
-    (__ \ "transactorDetails").writeNullable[TransactorDetails] and
-    (__ \ "confirmInformationDeclaration").writeNullable[Boolean] and
-    (__ \ "nrsSubmissionPayload").writeNullable[String] and
-    (__ \ "partners").writeNullable[PartnersSection] and
-    (__ \ "attachments").writeNullable[Attachments] and
-    (__ \ "createdDate").writeNullable[LocalDate] and
-    (__ \ "applicationReference").writeNullable[String] and
-    (__ \ "otherBusinessInvolvements").writeNullable[List[OtherBusinessInvolvement]] and
+    (__ \ EligibilitySectionId.repoKey).writeNullable[EligibilitySubmissionData] and
+    (__ \ TransactorSectionId.repoKey).writeNullable[TransactorDetails] and
+    (__ \ ApplicantSectionId.repoKey).writeNullable[ApplicantDetails] and
+    (__ \ PartnersSectionId.repoKey).writeNullable[PartnersSection] and
     (__ \ BusinessSectionId.repoKey).writeNullable[Business] and
-    (__ \ VatApplicationSectionId.repoKey).writeNullable[VatApplication]
-    ) (unlift(VatScheme.unapply))
+    (__ \ OtherBusinessInvolvementsSectionId.repoKey).writeNullable[List[OtherBusinessInvolvement]] and
+    (__ \ VatApplicationSectionId.repoKey).writeNullable[VatApplication] and
+    (__ \ BankAccountSectionId.repoKey).writeNullable[BankAccount](crypto.map(BankAccountMongoFormat.encryptedFormat).getOrElse(BankAccount.format)) and
+    (__ \ FlatRateSchemeSectionId.repoKey).writeNullable[FlatRateScheme] and
+    (__ \ AttachmentsSectionId.repoKey).writeNullable[Attachments]
+  ) (unlift(VatScheme.unapply))
 
   def format(crypto: Option[CryptoSCRS] = None): OFormat[VatScheme] =
     OFormat[VatScheme](reads(crypto), writes(crypto))

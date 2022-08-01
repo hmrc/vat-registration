@@ -116,10 +116,10 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
 
   def createNewVatScheme(regId: String, intId: String): Future[VatScheme] = {
     val doc = VatScheme(
-      id = regId,
+      registrationId = regId,
       internalId = intId,
       status = VatRegStatus.draft,
-      createdDate = Some(timeMachine.today)
+      createdDate = timeMachine.today
     )
     collection
       .insertOne(doc)
@@ -134,14 +134,14 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
   def insertVatScheme(vatScheme: VatScheme): Future[VatScheme] = {
     collection
       .findOneAndReplace(
-        filter = registrationSelector(vatScheme.id, Some(vatScheme.internalId)),
+        filter = registrationSelector(vatScheme.registrationId, Some(vatScheme.internalId)),
         replacement = vatScheme,
         options = FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true)
       )
       .toFuture()
       .recover {
         case e: Exception =>
-          logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: ${vatScheme.id}")
+          logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: ${vatScheme.registrationId}")
           throw e
       }
     }

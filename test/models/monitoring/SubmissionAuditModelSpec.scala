@@ -30,9 +30,10 @@ import java.time.LocalDate
 class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
 
   val rootBlockTestVatScheme = VatScheme(
-    id = testRegId,
+    registrationId = testRegId,
     internalId = testInternalId,
     status = VatRegStatus.draft,
+    createdDate = testDate,
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
     applicantDetails = Some(validApplicantDetails),
     vatApplication = Some(testVatApplicationDetails)

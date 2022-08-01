@@ -51,9 +51,10 @@ class RegistrationServiceSpec extends VatRegSpec
   override lazy val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.MIDNIGHT)
 
   override lazy val testVatScheme = VatScheme(
-    id = testRegId,
+    registrationId = testRegId,
     internalId = testInternalId,
-    status = VatRegStatus.draft
+    status = VatRegStatus.draft,
+    createdDate = testDate
   )
 
   val testRegInfo = RegistrationInformation(

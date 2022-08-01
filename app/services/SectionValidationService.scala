@@ -16,6 +16,7 @@
 
 package services
 
+import enums.VatRegStatus
 import models.api._
 import models.api.vatapplication.VatApplication
 import models.registration._
@@ -52,6 +53,11 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
       case OtherBusinessInvolvementsSectionId => Future(validate[List[OtherBusinessInvolvement]](json))
       case BusinessSectionId => Future(validate[Business](json))
       case VatApplicationSectionId => Future(validate[VatApplication](json))
+      case StatusSectionId => Future(validate[VatRegStatus.Value](json))
+      case InformationDeclarationSectionId => Future(validate[Boolean](json))
+      case ApplicationReferenceSectionId => Future(validate[String](json))
+      case AcknowledgementReferenceSectionId => Future(validate[String](json))
+      case NrsSubmissionPayloadSectionId => Future(validate[String](json))
       case unknown => throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported section: ${unknown.toString}")
     }
 

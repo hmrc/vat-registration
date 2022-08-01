@@ -77,7 +77,11 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails), None, None)
 
   val vatSchemeWithEligibilityData = VatScheme(
-    testRegId, internalId = testInternalid, status = VatRegStatus.draft, eligibilitySubmissionData = Some(testEligibilitySubmissionData)
+    registrationId = testRegId,
+    internalId = testInternalid,
+    status = VatRegStatus.draft,
+    createdDate = testDate,
+    eligibilitySubmissionData = Some(testEligibilitySubmissionData)
   )
 
   val vatApplication = VatApplication(
@@ -99,23 +103,24 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   )
 
   val vatSchemeWithReturns = VatScheme(
-    id = testRegId,
+    registrationId = testRegId,
     internalId = testInternalid,
     status = VatRegStatus.draft,
+    createdDate = testDate,
     vatApplication = Some(vatApplication)
   )
 
   "Calling createNewVatScheme" should {
     "create a new, blank VatScheme with the correct ID" in new Setup {
-      await(repository.createNewVatScheme(testRegId, testInternalid)) mustBe vatScheme.copy(createdDate = Some(testDate))
+      await(repository.createNewVatScheme(testRegId, testInternalid)) mustBe vatScheme.copy(createdDate = testDate)
     }
     "throw an MongoWriteException when creating a new VAT scheme when one already exists with the same int Id and reg id" in new Setup {
-      await(repository.createNewVatScheme(vatSchemeWithEligibilityData.id, testInternalid))
-      intercept[MongoWriteException](await(repository.createNewVatScheme(vatScheme.id, testInternalid)))
+      await(repository.createNewVatScheme(vatSchemeWithEligibilityData.registrationId, testInternalid))
+      intercept[MongoWriteException](await(repository.createNewVatScheme(vatScheme.registrationId, testInternalid)))
     }
     "throw an MongoWriteException when creating a new VAT scheme where one already exists with the same regId but different Internal id" in new Setup {
-      await(repository.createNewVatScheme(vatSchemeWithEligibilityData.id, testInternalid))
-      intercept[MongoWriteException](await(repository.createNewVatScheme(vatScheme.id, "fooBarWizz")))
+      await(repository.createNewVatScheme(vatSchemeWithEligibilityData.registrationId, testInternalid))
+      intercept[MongoWriteException](await(repository.createNewVatScheme(vatScheme.registrationId, "fooBarWizz")))
     }
   }
   "Calling insertVatScheme" should {
@@ -133,7 +138,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   }
   "Calling retrieveVatScheme" should {
     "retrieve a VatScheme object" in new Setup {
-      insert(testVatScheme).flatMap(_ => repository.retrieveVatScheme(testVatScheme.id)) returns Some(testVatScheme)
+      insert(testVatScheme).flatMap(_ => repository.retrieveVatScheme(testVatScheme.registrationId)) returns Some(testVatScheme)
     }
     "return a None when there is no corresponding VatScheme object" in new Setup {
       insert(testVatScheme).flatMap(_ => repository.retrieveVatScheme("fakeRegId")) returns None
@@ -143,8 +148,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "set the status" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
         _ <- insert(testVatScheme)
-        _ <- repository.updateSubmissionStatus(testVatScheme.id, VatRegStatus.locked)
-        Some(updatedScheme) <- repository.retrieveVatScheme(testVatScheme.id)
+        _ <- repository.updateSubmissionStatus(testVatScheme.registrationId, VatRegStatus.locked)
+        Some(updatedScheme) <- repository.retrieveVatScheme(testVatScheme.registrationId)
       } yield updatedScheme.status
 
       await(result) mustBe VatRegStatus.locked
@@ -154,8 +159,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "update the vat scheme to submitted with the provided ackref" in new Setup {
       val result: Future[VatScheme] = for {
         _ <- insert(testVatScheme)
-        _ <- repository.finishRegistrationSubmission(testVatScheme.id, VatRegStatus.submitted, testFormBundleId)
-        Some(updatedScheme) <- repository.retrieveVatScheme(testVatScheme.id)
+        _ <- repository.finishRegistrationSubmission(testVatScheme.registrationId, VatRegStatus.submitted, testFormBundleId)
+        Some(updatedScheme) <- repository.retrieveVatScheme(testVatScheme.registrationId)
       } yield updatedScheme
 
       val res = await(result)
@@ -186,7 +191,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       fetchedBankAccount mustBe None
     }
     "return None if other users' data exists but no BankAccount is found in mongo for the supplied regId" in new Setup {
-      await(insert(testVatScheme.copy(id = "otherUser")))
+      await(insert(testVatScheme.copy(registrationId = "otherUser")))
 
       val fetchedBankAccount: Option[BankAccount] = await(repository.fetchBankAccount(testRegId))
 
@@ -229,7 +234,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "return flat rate scheme data from an existing registration containing data" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
         _ <- insert(vatSchemeWithEligibilityData.copy(flatRateScheme = Some(testFlatRateScheme)))
-        res <- repository.fetchFlatRateScheme(vatSchemeWithEligibilityData.id)
+        res <- repository.fetchFlatRateScheme(vatSchemeWithEligibilityData.registrationId)
       } yield res
 
       await(result) mustBe Some(testFlatRateScheme)
@@ -237,7 +242,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "return None from an existing registration containing no data" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
         _ <- insert(vatSchemeWithEligibilityData)
-        res <- repository.fetchFlatRateScheme(vatSchemeWithEligibilityData.id)
+        res <- repository.fetchFlatRateScheme(vatSchemeWithEligibilityData.registrationId)
       } yield res
 
       await(result) mustBe None
@@ -255,8 +260,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "update flat rate scheme block in registration when there is no flat rate scheme data" in new Setup {
       val result: Future[Option[FlatRateScheme]] = for {
         _ <- insert(vatSchemeWithEligibilityData)
-        _ <- repository.updateFlatRateScheme(vatSchemeWithEligibilityData.id, testFlatRateScheme)
-        Some(updatedScheme) <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.id)
+        _ <- repository.updateFlatRateScheme(vatSchemeWithEligibilityData.registrationId, testFlatRateScheme)
+        Some(updatedScheme) <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.registrationId)
       } yield updatedScheme.flatRateScheme
 
       await(result) mustBe Some(testFlatRateScheme)
@@ -283,27 +288,27 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "remove a flatRateScheme block in the registration document if it exists in the registration doc" in new Setup {
       val result: Future[Option[VatScheme]] = for {
         _ <- insert(vatSchemeWithEligibilityData.copy(flatRateScheme = Some(testFlatRateScheme)))
-        _ <- repository.removeFlatRateScheme(vatSchemeWithEligibilityData.id)
-        updatedScheme <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.id)
+        _ <- repository.removeFlatRateScheme(vatSchemeWithEligibilityData.registrationId)
+        updatedScheme <- repository.retrieveVatScheme(vatSchemeWithEligibilityData.registrationId)
       } yield updatedScheme
 
       await(result) mustBe Some(vatSchemeWithEligibilityData)
     }
     "throw a MissingRegDocument if the vat scheme does not exist for the regId" in new Setup {
-      a[MissingRegDocument] mustBe thrownBy(await(repository.removeFlatRateScheme(vatSchemeWithEligibilityData.id)))
+      a[MissingRegDocument] mustBe thrownBy(await(repository.removeFlatRateScheme(vatSchemeWithEligibilityData.registrationId)))
     }
   }
   "getInternalId" should {
     "return a Future[Option[String]] containing Some(InternalId)" in new Setup {
       val result: Future[Option[String]] = for {
         _ <- insert(vatSchemeWithEligibilityData)
-        result <- repository.getInternalId(vatSchemeWithEligibilityData.id)
+        result <- repository.getInternalId(vatSchemeWithEligibilityData.registrationId)
 
       } yield result
       await(result) mustBe Some(testInternalid)
     }
     "return a None when no regId document is found" in new Setup {
-      await(repository.getInternalId(vatSchemeWithEligibilityData.id)) mustBe None
+      await(repository.getInternalId(vatSchemeWithEligibilityData.registrationId)) mustBe None
     }
   }
   "getEligibilityData" should {
@@ -311,13 +316,13 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       await(insert(vatSchemeWithEligibilityData.copy(eligibilityData = Some(jsonEligiblityData))))
       count mustBe 1
 
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.id)) mustBe Some(jsonEligiblityData)
+      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(jsonEligiblityData)
     }
     "return None of eligibilityData" in new Setup {
       await(insert(vatSchemeWithEligibilityData))
       count mustBe 1
 
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.id)) mustBe None
+      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe None
     }
   }
   "updateEligibilityData" should {
@@ -325,12 +330,12 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       await(insert(vatSchemeWithEligibilityData))
       count mustBe 1
 
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.id)) mustBe None
+      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe None
 
-      val res: JsObject = await(repository.updateEligibilityData(vatSchemeWithEligibilityData.id, jsonEligiblityData))
+      val res: JsObject = await(repository.updateEligibilityData(vatSchemeWithEligibilityData.registrationId, jsonEligiblityData))
       res mustBe jsonEligiblityData
 
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.id)) mustBe Some(jsonEligiblityData)
+      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(jsonEligiblityData)
     }
     "update eligibilityData successfully when eligibilityData block already exists" in new Setup {
       val newJsonEligiblityData = Json.obj("wizz" -> "new bar")
@@ -338,12 +343,12 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       await(insert(vatSchemeWithEligibilityData.copy(eligibilityData = Some(jsonEligiblityData))))
       count mustBe 1
 
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.id)) mustBe Some(jsonEligiblityData)
+      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(jsonEligiblityData)
 
-      val res: JsObject = await(repository.updateEligibilityData(vatSchemeWithEligibilityData.id, newJsonEligiblityData))
+      val res: JsObject = await(repository.updateEligibilityData(vatSchemeWithEligibilityData.registrationId, newJsonEligiblityData))
       res mustBe newJsonEligiblityData
 
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.id)) mustBe Some(newJsonEligiblityData)
+      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(newJsonEligiblityData)
     }
   }
   "calling fetchNrsSubmissionPayload" should {
@@ -352,9 +357,9 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "return an encoded payload string from existing data based on the reg Id" in new Setup {
       val result: Future[Option[String]] = for {
         _ <- insert(vatSchemeWithEligibilityData)
-        _ <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.id, testPayload)
+        _ <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId, testPayload)
         _ = count mustBe 1
-        res <- repository.fetchNrsSubmissionPayload(vatSchemeWithEligibilityData.id)
+        res <- repository.fetchNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId)
       } yield res
 
       await(result).get mustBe testPayload
@@ -362,7 +367,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "return None from an existing registration that exists but the payload does not exist" in new Setup {
       val result: Future[Option[String]] = for {
         _ <- insert(vatSchemeWithEligibilityData)
-        res <- repository.fetchNrsSubmissionPayload(vatSchemeWithEligibilityData.id)
+        res <- repository.fetchNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId)
       } yield res
 
       await(result) mustBe None
@@ -382,7 +387,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       val result: Future[String] = for {
         _ <- insert(vatSchemeWithEligibilityData.copy(nrsSubmissionPayload = Some(testOldPayload)))
         _ = count mustBe 1
-        res <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.id, testPayload)
+        res <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId, testPayload)
       } yield res
 
       await(result) mustBe testPayload
@@ -390,7 +395,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     "return the payload string after storing it" in new Setup {
       val result: Future[String] = for {
         _ <- insert(vatSchemeWithEligibilityData)
-        res <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.id, testPayload)
+        res <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId, testPayload)
       } yield res
       await(result) mustBe testPayload
     }

@@ -20,9 +20,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
       val partners = List(testPartnershipPartner, testSoleTraderPartner)
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(partners))
       ))
 
@@ -36,9 +37,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
     "return NOT_FOUND if the partner doesn't exist" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
-        status = VatRegStatus.draft
+        status = VatRegStatus.draft,
+        createdDate = testDate
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/1").get()
@@ -50,9 +52,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
     "return BAD_REQUEST if the user requests an index below 1" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
-        status = VatRegStatus.draft
+        status = VatRegStatus.draft,
+        createdDate = testDate
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/0").get()
@@ -65,9 +68,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
       val partners = List(testPartnershipPartner, testSoleTraderPartner)
       given.user.isNotAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(partners))
       ))
 
@@ -82,7 +86,8 @@ class PartnersControllerISpec extends IntegrationStubbing {
   "PUT /:regId/partners/:index" must {
     "return CREATED if the JSON contains valid sole trader details" in new SetupHelper {
       given.user.isAuthorised
-      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft))
+      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft,
+        createdDate = testDate))
 
       val result = client(s"/vatreg/$testRegId/partners/1").put(Json.toJson(testSoleTraderPartner))
 
@@ -94,7 +99,8 @@ class PartnersControllerISpec extends IntegrationStubbing {
     }
     "return CREATED if the JSON contains valid Limited Company details" in new SetupHelper {
       given.user.isAuthorised
-      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft))
+      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft,
+        createdDate = testDate))
 
       val result = client(s"/vatreg/$testRegId/partners/1").put(Json.toJson(testLtdCoPartner))
 
@@ -106,7 +112,8 @@ class PartnersControllerISpec extends IntegrationStubbing {
     }
     "return CREATED if the JSON contains valid General Partnership details" in new SetupHelper {
       given.user.isAuthorised
-      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft))
+      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft,
+        createdDate = testDate))
 
       val result = client(s"/vatreg/$testRegId/partners/1").put(Json.toJson(testPartnershipPartner))
 
@@ -119,9 +126,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
     "add a new partner and return CREATED" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(List(testPartnershipPartner)))
       ))
 
@@ -136,9 +144,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
     "Update an specific entry and not alter the rest" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(List(testPartnershipPartner, testSoleTraderPartner)))
       ))
 
@@ -152,7 +161,8 @@ class PartnersControllerISpec extends IntegrationStubbing {
     }
     "return BAD_REQUEST if the json isn't valid" in new SetupHelper {
       given.user.isAuthorised
-      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft))
+      insertIntoDb(VatScheme(testRegId, testInternalid, status = VatRegStatus.draft,
+        createdDate = testDate))
 
       val result = client(s"/vatreg/$testRegId/partners/1").put(Json.obj())
 
@@ -164,9 +174,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
     "return BAD_REQUEST if the user requests an index below 1" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
-        status = VatRegStatus.draft
+        status = VatRegStatus.draft,
+        createdDate = testDate
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/0").put(Json.toJson(testPartnershipPartner))
@@ -179,9 +190,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
       val partners = List(testPartnershipPartner, testSoleTraderPartner)
       given.user.isNotAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(partners))
       ))
 
@@ -198,9 +210,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
       val partners = List(testPartnershipPartner, testSoleTraderPartner)
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(partners))
       ))
 
@@ -214,9 +227,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
     "return NOT_FOUND when there are no partners" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
-        status = VatRegStatus.draft
+        status = VatRegStatus.draft,
+        createdDate = testDate
       ))
 
       val result = client(s"/vatreg/$testRegId/partners").get()
@@ -229,9 +243,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
       val partners = List(testPartnershipPartner, testSoleTraderPartner)
       given.user.isNotAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(partners))
       ))
 
@@ -248,9 +263,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
       val partners = List(testPartnershipPartner, testSoleTraderPartner, testLtdCoPartner)
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(partners))
       ))
 
@@ -265,9 +281,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
       val partners = List(testPartnershipPartner, testSoleTraderPartner, testLtdCoPartner)
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(partners))
       ))
 
@@ -281,9 +298,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
     "affect nothing and return NO_CONTENT if there are no partners" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
-        status = VatRegStatus.draft
+        status = VatRegStatus.draft,
+        createdDate = testDate
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/4").delete()
@@ -296,9 +314,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
     "return BAD_REQUEST if the user requests an index below 1" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
-        status = VatRegStatus.draft
+        status = VatRegStatus.draft,
+        createdDate = testDate
       ))
 
       val result = client(s"/vatreg/$testRegId/partners/0").delete()
@@ -311,9 +330,10 @@ class PartnersControllerISpec extends IntegrationStubbing {
       val partners = List(testPartnershipPartner, testSoleTraderPartner)
       given.user.isNotAuthorised
       insertIntoDb(VatScheme(
-        id = testRegId,
+        registrationId = testRegId,
         internalId = testInternalid,
         status = VatRegStatus.draft,
+        createdDate = testDate,
         partners = Some(PartnersSection(partners))
       ))
 

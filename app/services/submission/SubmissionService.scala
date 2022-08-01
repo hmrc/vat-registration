@@ -131,7 +131,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
     val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
 
-    nonRepudiationService.submitNonRepudiation(vatScheme.id, payloadString, timeMachine.timestamp, formBundleId, userHeaders, digitalAttachments).recover {
+    nonRepudiationService.submitNonRepudiation(vatScheme.registrationId, payloadString, timeMachine.timestamp, formBundleId, userHeaders, digitalAttachments).recover {
       case _ =>
         logger.error("[SubmissionService] NRS Returned an unexpected exception")
         None
@@ -194,7 +194,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     logger.info(jsonObject(
       "logInfo" -> "SubmissionLog",
       "status" -> vatSubmissionStatus.fold(_ => "Failed", _ => "Successful"),
-      "regId" -> vatScheme.id,
+      "regId" -> vatScheme.registrationId,
       "partyType" -> vatScheme.partyType.map(_.toString),
       "regReason" -> vatScheme.eligibilitySubmissionData.map(_.registrationReason.toString),
       optional("agentOrTransactor" -> agentOrTransactor),
