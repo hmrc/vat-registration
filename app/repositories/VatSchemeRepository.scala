@@ -144,7 +144,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
           logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: ${vatScheme.registrationId}")
           throw e
       }
-    }
+  }
 
   def getAllRegistrations(internalId: String): Future[List[JsValue]] =
     collection
@@ -216,10 +216,10 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
           None
         }
       }.recover {
-        case e =>
-          logger.warn(s"Unable to update $section for regId: $regId")
-          throw new InternalServerException(s"Unable to update section $section for regId: $regId, error: ${e.getMessage}")
-      }
+      case e =>
+        logger.warn(s"Unable to update $section for regId: $regId")
+        throw new InternalServerException(s"Unable to update section $section for regId: $regId, error: ${e.getMessage}")
+    }
 
   def deleteSection(internalId: String, regId: String, section: String): Future[Boolean] =
     collection
@@ -234,10 +234,10 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
           true
         }
       }.recover {
-        case e =>
-          logger.warn(s"[RegistrationRepository] Unable to remove for regId: $regId, Error: ${e.getMessage}")
-          throw new InternalServerException(s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}")
-      }
+      case e =>
+        logger.warn(s"[RegistrationRepository] Unable to remove for regId: $regId, Error: ${e.getMessage}")
+        throw new InternalServerException(s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}")
+    }
 
   def retrieveVatScheme(regId: String): Future[Option[VatScheme]] = {
     implicit val format = VatScheme.format(Some(crypto))
@@ -256,7 +256,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
 
   def updateSubmissionStatus(regId: String, status: VatRegStatus.Value): Future[Boolean] =
     collection
-      .updateOne(registrationSelector(regId),  set("status", status.toString))
+      .updateOne(registrationSelector(regId), set("status", status.toString))
       .toFuture()
       .map(_.getModifiedCount > 0)
 
@@ -301,16 +301,10 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
           true
         }
       } recover {
-        case e =>
-          logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] Unable to remove for regId: $regId, Error: ${e.getMessage}")
-          throw e
+      case e =>
+        logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] Unable to remove for regId: $regId, Error: ${e.getMessage}")
+        throw e
     }
-
-  def fetchNrsSubmissionPayload(regId: String): Future[Option[String]] =
-    fetchBlock[String](regId, "nrsSubmissionPayload")
-
-  def updateNrsSubmissionPayload(regId: String, encodedHTML: String): Future[String] =
-    updateBlock[String](regId, encodedHTML, "nrsSubmissionPayload")
 
   @deprecated("migrate to the new /registrations API")
   def fetchFlatRateScheme(regId: String): Future[Option[FlatRateScheme]] =
@@ -333,8 +327,5 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
   @deprecated("migrate to the new /registrations API")
   def updateEligibilitySubmissionData(regId: String, eligibilitySubmissionData: EligibilitySubmissionData): Future[EligibilitySubmissionData] =
     updateBlock(regId, eligibilitySubmissionData, "eligibilitySubmissionData")
-
-  def storeHonestyDeclaration(regId: String, honestyDeclarationData: Boolean): Future[Boolean] =
-    updateBlock(regId, honestyDeclarationData, "confirmInformationDeclaration")
 
 }

@@ -351,58 +351,5 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(newJsonEligiblityData)
     }
   }
-  "calling fetchNrsSubmissionPayload" should {
-    val testPayload = "testPayload"
-
-    "return an encoded payload string from existing data based on the reg Id" in new Setup {
-      val result: Future[Option[String]] = for {
-        _ <- insert(vatSchemeWithEligibilityData)
-        _ <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId, testPayload)
-        _ = count mustBe 1
-        res <- repository.fetchNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId)
-      } yield res
-
-      await(result).get mustBe testPayload
-    }
-    "return None from an existing registration that exists but the payload does not exist" in new Setup {
-      val result: Future[Option[String]] = for {
-        _ <- insert(vatSchemeWithEligibilityData)
-        res <- repository.fetchNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId)
-      } yield res
-
-      await(result) mustBe None
-    }
-    "return a MissingRegDocument when nothing is returned from mongo for the reg id" in new Setup {
-      val result: Future[Option[String]] = repository.fetchNrsSubmissionPayload("madeUpRegId")
-
-      a[MissingRegDocument] mustBe thrownBy(await(result))
-    }
-  }
-  "calling updateNrsSubmissionPayload" should {
-    val testPayload = "testPayload"
-
-    "return an updated payload string when an entry already exists in the repo" in new Setup {
-      val testOldPayload = "testOldPayload"
-
-      val result: Future[String] = for {
-        _ <- insert(vatSchemeWithEligibilityData.copy(nrsSubmissionPayload = Some(testOldPayload)))
-        _ = count mustBe 1
-        res <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId, testPayload)
-      } yield res
-
-      await(result) mustBe testPayload
-    }
-    "return the payload string after storing it" in new Setup {
-      val result: Future[String] = for {
-        _ <- insert(vatSchemeWithEligibilityData)
-        res <- repository.updateNrsSubmissionPayload(vatSchemeWithEligibilityData.registrationId, testPayload)
-      } yield res
-      await(result) mustBe testPayload
-    }
-    "return an MissingRegDocument if registration document does not exist for the registration id" in new Setup {
-      val result: Future[String] = repository.updateNrsSubmissionPayload("madeUpRegId", testPayload)
-      a[MissingRegDocument] mustBe thrownBy(await(result))
-    }
-  }
 }
 
