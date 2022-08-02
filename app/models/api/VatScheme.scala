@@ -74,7 +74,7 @@ object VatScheme {
       case Some(partyType) => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
-        (__ \ "createdDate").read[LocalDate] and
+        (__ \ "createdDate").readWithDefault[LocalDate](LocalDate.MIN) and
         (__ \ "status").read[VatRegStatus.Value] and
         (__ \ InformationDeclarationSectionId.repoKey).readNullable[Boolean] and
         (__ \ ApplicationReferenceSectionId.repoKey).readNullable[String] and
@@ -95,7 +95,7 @@ object VatScheme {
       case _ => (
         (__ \ "registrationId").read[String] and
         (__ \ "internalId").read[String] and
-        (__ \ "createdDate").read[LocalDate] and
+        (__ \ "createdDate").readWithDefault[LocalDate](LocalDate.MIN) and
         (__ \ "status").read[VatRegStatus.Value] and
         (__ \ InformationDeclarationSectionId.repoKey).readNullable[Boolean] and
         (__ \ ApplicationReferenceSectionId.repoKey).readNullable[String] and
