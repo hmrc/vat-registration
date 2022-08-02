@@ -718,19 +718,4 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     }
   }
 
-  "PATCH  /:regId/honesty-declaration" should {
-    "return Ok if the honesty declaration is successfully stored" in new Setup {
-      given.user.isAuthorised
-
-      insertIntoDb(testEmptyVatScheme("regId"))
-
-      val res = await(client(controllers.routes.VatRegistrationController.storeHonestyDeclaration(testRegId).url)
-        .patch(Json.obj("honestyDeclaration" -> true))
-      )
-
-      res.status mustBe OK
-      await(repo.collection.find().headOption().map(_.exists(_.confirmInformationDeclaration.contains(true)))) mustBe true
-    }
-  }
-
 }

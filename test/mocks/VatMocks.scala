@@ -128,28 +128,10 @@ trait VatMocks extends HttpClientMock {
         .thenReturn(serviceResult(vatScheme))
     }
 
-    def mockGetAcknowledgementReference(ackRef: String): Unit = {
-      val idMatcher: String = anyString()
-      when(mockVatRegistrationService.retrieveAcknowledgementReference(idMatcher))
-        .thenReturn(serviceResult(ackRef))
-    }
-
-    def mockGetAcknowledgementReferenceServiceUnavailable(exception: Exception): Unit = {
-      val idMatcher: String = anyString()
-      when(mockVatRegistrationService.retrieveAcknowledgementReference(idMatcher))
-        .thenReturn(serviceError[String](GenericDatabaseError(exception, Some("regId"))))
-    }
-
     def mockGetDocumentStatus(status: VatRegStatus.Value): Unit = {
       val idMatcher: String = anyString()
       when(mockVatRegistrationService.getStatus(idMatcher))
         .thenReturn(Future.successful(status))
-    }
-
-    def mockGetAcknowledgementReferenceExistsError(): Unit = {
-      val idMatcher: String = anyString()
-      when(mockVatRegistrationService.retrieveAcknowledgementReference(idMatcher))
-        .thenReturn(serviceError[String](AcknowledgementReferenceExists("regId")))
     }
   }
 

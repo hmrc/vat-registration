@@ -104,15 +104,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
       }
   }
 
-  def getAcknowledgementReference(regId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "getAcknowledgementReference") {
-          registrationService.retrieveAcknowledgementReference(regId).fold(errorHandler, ackRefNumber => Ok(Json.toJson(ackRefNumber)))
-        }
-      }
-  }
-
   def fetchBankAccountDetails(regId: String): Action[AnyContent] = Action.async {
     implicit request =>
       isAuthorised(regId) { authResult =>
@@ -136,24 +127,4 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
         }
       }
   }
-
-  def getDocumentStatus(regId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "getDocumentStatus") {
-          registrationService.getStatus(regId).sendResult("getDocumentStatus", regId)
-        }
-      }
-  }
-
-  def storeHonestyDeclaration(regId: String): Action[JsValue] = Action.async(parse.json) {
-    implicit request =>
-      withJsonBody[JsValue] { json =>
-        val honestyDeclarationStatus: Boolean = (json \ "honestyDeclaration").as[Boolean]
-        registrationService.storeHonestyDeclaration(regId, honestyDeclarationStatus).map {
-          _ => Ok
-        }
-      }
-  }
-
 }

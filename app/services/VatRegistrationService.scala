@@ -51,12 +51,4 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
 
   def retrieveVatSchemeByInternalId(internalId: String): ServiceResult[VatScheme] =
     OptionT(registrationRepository.retrieveVatSchemeByInternalId(internalId)).toRight(ResourceNotFound(internalId))
-
-  def retrieveAcknowledgementReference(regId: String): ServiceResult[String] = {
-    retrieveVatScheme(regId).subflatMap(_.acknowledgementReference.toRight(ResourceNotFound("AcknowledgementId")))
-  }
-
-  def storeHonestyDeclaration(regId: String, honestyDeclarationStatus: Boolean): Future[Boolean] = {
-    registrationRepository.storeHonestyDeclaration(regId, honestyDeclarationStatus)
-  }
 }

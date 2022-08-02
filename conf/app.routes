@@ -18,21 +18,13 @@ GET          /:regId/flat-rate-scheme               controllers.FlatRateSchemeCo
 PATCH        /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.updateFlatRateScheme(regId)
 DELETE       /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.removeFlatRateScheme(regId)
 
-GET          /:regId/acknowledgement-reference      controllers.VatRegistrationController.getAcknowledgementReference(regId: String)
-
 PUT          /:regID/submit-registration            controllers.VatRegistrationController.submitVATRegistration(regID : String)
-
-GET          /:regId/status                         controllers.VatRegistrationController.getDocumentStatus(regId: String)
 
 GET          /:regId/bank-account                   controllers.VatRegistrationController.fetchBankAccountDetails(regId)
 PATCH        /:regId/bank-account                   controllers.VatRegistrationController.updateBankAccountDetails(regId)
 
 GET         /:regId/eligibility-data                controllers.EligibilityController.getEligibilityData(regId: String)
 PATCH       /:regId/eligibility-data                controllers.EligibilityController.updateEligibilityData(regId: String)
-
-PATCH       /:regId/honesty-declaration             controllers.VatRegistrationController.storeHonestyDeclaration(regId: String)
-
-PATCH       /:regId/nrs-payload                     controllers.NrsSubmissionPayloadController.storeNrsSubmissionPayload(regId: String)
 
 POST        /:regId/upscan-reference                controllers.UpscanController.createUpscanDetails(regId: String)
 GET         /:regId/upscan-file-details/:reference  controllers.UpscanController.getUpscanDetails(regId: String, reference: String)

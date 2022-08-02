@@ -152,49 +152,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
 
       }
     }
-
-    "getAcknowledgementReference" should {
-
-      "call getAcknowledgementReference return Ok with Acknowledgement Reference" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        ServiceMocks.mockGetAcknowledgementReference(testAckReference)
-
-        controller.getAcknowledgementReference(testRegId)(FakeRequest()) returnsStatus OK
-      }
-
-      "call getAcknowledgementReference return ServiceUnavailable" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        ServiceMocks.mockGetAcknowledgementReferenceServiceUnavailable(exception)
-
-        controller.getAcknowledgementReference(testRegId)(FakeRequest()) returnsStatus SERVICE_UNAVAILABLE
-      }
-
-      "call getAcknowledgementReference return AcknowledgementReferenceExists Error" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        ServiceMocks.mockGetAcknowledgementReferenceExistsError()
-
-        controller.getAcknowledgementReference(testRegId)(FakeRequest()) returnsStatus CONFLICT
-      }
-    }
-
-    "Calling getDocumentStatus" should {
-
-      "return a Ok response when the user logged in" in new Setup {
-        val json: JsValue = Json.toJson(VatRegStatus.draft)
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
-
-        val result: Future[Result] = controller.getDocumentStatus(testRegId)(FakeRequest())
-        result returnsStatus OK
-        contentAsJson(result) mustBe json
-      }
-
-      "return a Not Found response if there is no VAT Registration for the user's ID" in new Setup {
-        AuthorisationMocks.mockAuthMongoResourceNotFound(testRegId, testInternalId)
-
-        status(controller.getDocumentStatus(testRegId)(FakeRequest())) mustBe NOT_FOUND
-      }
-    }
   }
 
   "Calling submitVATRegistration" should {
@@ -288,22 +245,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
         Json.obj("userHeaders" -> testUserHeaders)
       ))
       status(response) mustBe Status.OK
-    }
-  }
-
-  "call to storeHonestyDeclaration" should {
-    "return Ok and HonestyDeclaration json when it is returned from the repository" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      val testValue = true
-      when(mockVatRegistrationService.storeHonestyDeclaration(any(), any()))
-        .thenReturn(Future.successful(true))
-
-      lazy val fakeRequest: FakeRequest[JsValue] =
-        FakeRequest().withBody[JsValue](Json.parse(s"""{"honestyDeclaration":$testValue}"""))
-
-      val result: Future[Result] = controller.storeHonestyDeclaration(testRegId)(fakeRequest)
-
-      status(result) mustBe 200
     }
   }
 }

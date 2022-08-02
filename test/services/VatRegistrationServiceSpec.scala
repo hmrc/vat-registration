@@ -35,33 +35,11 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  "call to retrieveAcknowledgementReference" should {
-
-    "call to retrieveAcknowledgementReference return AcknowledgementReference from DB" in new Setup {
-      val vatSchemeWithAckRefNum: VatScheme = testVatScheme.copy(acknowledgementReference = Some(testAckReference))
-      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(vatSchemeWithAckRefNum)))
-      service.retrieveAcknowledgementReference(testRegId) returnsRight testAckReference
-    }
-
-    "call to retrieveAcknowledgementReference return None from DB" in new Setup {
-      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(testVatScheme)))
-      service.retrieveAcknowledgementReference(testRegId) returnsLeft ResourceNotFound("AcknowledgementId")
-    }
-  }
-
   "call to getStatus" should {
     "return a correct status" in new Setup {
       when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(testVatScheme)))
 
       await(service.getStatus(testRegId)) mustBe VatRegStatus.draft
-    }
-  }
-
-  "call to store Honesty Declaration status" should {
-    "return value being stored" in new Setup {
-      when(mockRegistrationMongoRepository.storeHonestyDeclaration("regId", honestyDeclarationData = true)).thenReturn(Future(true))
-
-      await(service.storeHonestyDeclaration("regId", honestyDeclarationStatus = true)) mustBe true
     }
   }
 }
