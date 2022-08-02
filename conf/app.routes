@@ -14,10 +14,6 @@ GET          /threshold/:date                        controllers.VatThresholdCon
 
 GET          /:regId/get-scheme                     controllers.VatRegistrationController.retrieveVatScheme(regId: String)
 
-GET          /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.fetchFlatRateScheme(regId)
-PATCH        /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.updateFlatRateScheme(regId)
-DELETE       /:regId/flat-rate-scheme               controllers.FlatRateSchemeController.removeFlatRateScheme(regId)
-
 PUT          /:regID/submit-registration            controllers.VatRegistrationController.submitVATRegistration(regID : String)
 
 GET          /:regId/bank-account                   controllers.VatRegistrationController.fetchBankAccountDetails(regId)

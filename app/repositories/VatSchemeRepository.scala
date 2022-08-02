@@ -287,33 +287,6 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .map(intId => and(equal("registrationId", regId), equal("internalId", intId)))
       .getOrElse(equal("registrationId", regId))
 
-  @deprecated("migrate to the new /registrations API")
-  def removeFlatRateScheme(regId: String): Future[Boolean] =
-    collection
-      .updateOne(registrationSelector(regId), unset("flatRateScheme"))
-      .toFuture()
-      .map { result =>
-        if (result.getMatchedCount == 0) {
-          logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] removing for regId : $regId - No document found")
-          throw MissingRegDocument(regId)
-        } else {
-          logger.info(s"[RegistrationMongoRepository][removeFlatRateScheme] removing for regId : $regId - documents modified : ${result.getModifiedCount}")
-          true
-        }
-      } recover {
-      case e =>
-        logger.warn(s"[RegistrationMongoRepository][removeFlatRateScheme] Unable to remove for regId: $regId, Error: ${e.getMessage}")
-        throw e
-    }
-
-  @deprecated("migrate to the new /registrations API")
-  def fetchFlatRateScheme(regId: String): Future[Option[FlatRateScheme]] =
-    fetchBlock[FlatRateScheme](regId, "flatRateScheme")
-
-  @deprecated("migrate to the new /registrations API")
-  def updateFlatRateScheme(regId: String, flatRateScheme: FlatRateScheme): Future[FlatRateScheme] =
-    updateBlock(regId, flatRateScheme, "flatRateScheme")
-
   def fetchEligibilityData(regId: String): Future[Option[JsObject]] =
     fetchBlock[JsObject](regId, "eligibilityData")
 
