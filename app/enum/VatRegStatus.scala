@@ -25,6 +25,7 @@ object VatRegStatus extends Enumeration {
   val failed = Value
   val failedRetryable = Value
   val duplicateSubmission = Value
+  val contact = Value
 
   implicit val format = Format(
     Reads[VatRegStatus.Value] { json => json.validate[String].map(VatRegStatus.withName) },

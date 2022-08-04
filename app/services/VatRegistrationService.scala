@@ -37,10 +37,18 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
   def getStatus(regId: String): Future[VatRegStatus.Value] = {
     registrationRepository.retrieveVatScheme(regId) map {
       case Some(registration) =>
-        registration.status
+        List(
+          registration.applicantDetails.flatMap(_.personalDetails.score),
+          registration.transactorDetails.flatMap(_.personalDetails.score)
+        ).flatten match {
+          case scores if scores.contains(100) =>
+            registrationRepository.updateSubmissionStatus(regId, VatRegStatus.contact)
+            VatRegStatus.contact
+          case _ => registration.status
+        }
       case None =>
         logger.warn(s"[getStatus] - No VAT registration document found for $regId")
-        throw new MissingRegDocument(regId)
+        throw MissingRegDocument(regId)
     }
   }
 }

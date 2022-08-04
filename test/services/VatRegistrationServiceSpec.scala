@@ -16,11 +16,9 @@
 
 package services
 
-import common.exceptions._
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api._
 import org.mockito.Mockito._
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -41,5 +39,36 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
 
       await(service.getStatus(testRegId)) mustBe VatRegStatus.draft
     }
+
+    "return correct status when if applicant details cannot be processed" in new Setup {
+      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(
+        testVatScheme.copy(applicantDetails = Some(validApplicantDetails.copy(personalDetails = testPersonalDetails)))
+      )))
+
+      await(service.getStatus(testRegId)) mustBe VatRegStatus.contact
+      verify(mockRegistrationMongoRepository).updateSubmissionStatus(testRegId, VatRegStatus.contact)
+    }
+
+    "return correct status when if transactor details cannot be processed" in new Setup {
+      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(
+        testVatScheme.copy(transactorDetails = Some(validTransactorDetails.copy(personalDetails = testPersonalDetails)))
+      )))
+
+      await(service.getStatus(testRegId)) mustBe VatRegStatus.contact
+      verify(mockRegistrationMongoRepository).updateSubmissionStatus(testRegId, VatRegStatus.contact)
+    }
+
+    "return correct status when if either transactor/applicant details cannot be processed" in new Setup {
+      when(mockRegistrationMongoRepository.retrieveVatScheme(testRegId)).thenReturn(Future.successful(Some(
+        testVatScheme.copy(
+          transactorDetails = Some(validTransactorDetails.copy(personalDetails = testPersonalDetails)),
+          applicantDetails = Some(validApplicantDetails.copy(personalDetails = testPersonalDetails.copy(score = Some(0))))
+        )
+      )))
+
+      await(service.getStatus(testRegId)) mustBe VatRegStatus.contact
+      verify(mockRegistrationMongoRepository).updateSubmissionStatus(testRegId, VatRegStatus.contact)
+    }
   }
+
 }

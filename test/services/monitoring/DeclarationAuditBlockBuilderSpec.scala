@@ -76,7 +76,8 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             trn = None,
             arn = Some(testArn),
             identifiersMatch = true,
-            dateOfBirth = None
+            dateOfBirth = None,
+            score = None
           ),
           telephone = testTelephone,
           email = testEmail,

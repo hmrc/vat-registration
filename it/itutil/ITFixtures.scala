@@ -36,6 +36,7 @@ trait ITFixtures {
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   lazy val testArn = "testArn"
+  val testScore = 100
   val testDate: LocalDate = LocalDate.of(2017, 1, 1)
   val testUtr = "testUtr"
   val testPostcode = "TF1 1NT"
@@ -144,7 +145,8 @@ trait ITFixtures {
       arn = None,
       trn = None,
       identifiersMatch = true,
-      dateOfBirth = Some(testDate)
+      dateOfBirth = Some(testDate),
+      score = None
     ),
     entity = IncorporatedEntity(
       companyName = Some(testCompanyName),
@@ -171,7 +173,8 @@ trait ITFixtures {
       trn = None,
       arn = None,
       identifiersMatch = true,
-      dateOfBirth = Some(testDate)
+      dateOfBirth = Some(testDate),
+      score = None
     ),
     entity = IncorporatedEntity(
       companyName = Some(testCompanyName),
@@ -324,7 +327,8 @@ trait ITFixtures {
       trn = None,
       arn = Some(testArn),
       identifiersMatch = true,
-      dateOfBirth = None
+      dateOfBirth = None,
+      score = None
     ),
     telephone = testTelephone,
     email = testEmail,
@@ -597,7 +601,8 @@ trait ITFixtures {
     arn = None,
     trn = Some(testTrn),
     identifiersMatch = false,
-    dateOfBirth = Some(testDate)
+    dateOfBirth = Some(testDate),
+    score = None
   )
 
   val testNetpApplicantDetails: ApplicantDetails =
@@ -651,7 +656,7 @@ trait ITFixtures {
       eligibilitySubmissionData = Some(testNonUkCompanyEligibilitySubmissionData)
     )
 
-  val testPersonalDetails = PersonalDetails(testProperName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate))
+  val testPersonalDetails = PersonalDetails(testProperName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate), None)
 
   lazy val testTransactorDetails = TransactorDetails(
     personalDetails = testPersonalDetails,
