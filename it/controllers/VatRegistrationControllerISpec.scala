@@ -29,14 +29,13 @@ import models.submission._
 import models.{GroupRegistration, TogcCole, TransferOfAGoingConcern}
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.time.{Millis, Seconds, Span}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Base64
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwitching with ITVatSubmissionFixture {
 
@@ -168,32 +167,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   override def afterEach(): Unit = {
     super.afterEach()
-  }
-
-  "POST /new" should {
-    "return CREATED if the daily quota has not been met" in new Setup {
-      given.user.isAuthorised
-
-      val res = await(client(controllers.routes.VatRegistrationController.newVatRegistration.url)
-        .post(Json.obj())
-      )
-
-      res.status mustBe CREATED
-    }
-  }
-
-  "POST /insert-s4l-scheme" should {
-    "return CREATED if the vatScheme is stored successfully" in new Setup {
-      given.user.isAuthorised
-
-      val testVatSchemeJson: JsValue = Json.toJson(testFullVatScheme)(VatScheme.format())
-      val res: WSResponse = await(client(controllers.routes.VatRegistrationController.insertVatScheme.url)
-        .post(testVatSchemeJson)
-      )
-
-      res.status mustBe CREATED
-      res.body mustBe testVatSchemeJson.toString
-    }
   }
 
   "PUT /:regID/submit-registration" when {

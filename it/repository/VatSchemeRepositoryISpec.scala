@@ -170,66 +170,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
   }
 
-  "fetchBankAccount" should {
-    "return a BankAccount case class if one is found in mongo with the supplied regId" in new Setup {
-      await(insert(testVatScheme.copy(bankAccount = Some(bankAccount))))
-
-      val fetchedBankAccount: Option[BankAccount] = await(repository.fetchBankAccount(testRegId))
-
-      fetchedBankAccount mustBe Some(bankAccount)
-    }
-    "return a None if a VatScheme already exists but a bank account block does not" in new Setup {
-      await(insert(testVatScheme))
-      val fetchedBankAccount: Option[BankAccount] = await(repository.fetchBankAccount(testRegId))
-      fetchedBankAccount mustBe None
-    }
-    "return None if no BankAccount is found in mongo for the supplied regId" in new Setup {
-      count mustBe 0
-
-      val fetchedBankAccount: Option[BankAccount] = await(repository.fetchBankAccount(testRegId))
-
-      fetchedBankAccount mustBe None
-    }
-    "return None if other users' data exists but no BankAccount is found in mongo for the supplied regId" in new Setup {
-      await(insert(testVatScheme.copy(registrationId = "otherUser")))
-
-      val fetchedBankAccount: Option[BankAccount] = await(repository.fetchBankAccount(testRegId))
-
-      fetchedBankAccount mustBe None
-    }
-  }
-  "updateBankAccount" should {
-    "update the registration doc with the provided bank account details and encrypt the account number" in new Setup {
-      await(insert(testVatScheme))
-
-      await(repository.updateBankAccount(testRegId, bankAccount))
-
-      getRegistration mustBe Some(testVatScheme.copy(bankAccount = Some(bankAccount)))
-    }
-    "not update or insert new data into the registration doc if the supplied bank account details already exist on the doc" in new Setup {
-      val testSchemeEnc = testVatScheme.copy(bankAccount = Some(bankAccount.copy(details = Some(bankAccountDetails.copy(number = encryptedAccountNumber)))))
-      await(insert(testSchemeEnc))
-
-      await(repository.updateBankAccount(testRegId, bankAccount))
-
-      getRegistration mustBe Some(testVatScheme.copy(bankAccount = Some(bankAccount)))
-    }
-    "not update or insert bank account if a registration doc doesn't already exist" in new Setup {
-      count mustBe 0
-
-      await(repository.updateBankAccount(testRegId, bankAccount))
-
-      getRegistration mustBe None
-    }
-    "not update or insert bank account if a registration doc associated with the given reg id doesn't already exist" in new Setup {
-      await(insert(testVatScheme))
-
-      await(repository.updateBankAccount(testRegId, bankAccount))
-
-      getRegistration mustBe Some(testVatScheme.copy(bankAccount = Some(bankAccount)))
-    }
-  }
-
   "getInternalId" should {
     "return a Future[Option[String]] containing Some(InternalId)" in new Setup {
       val result: Future[Option[String]] = for {
@@ -241,46 +181,6 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     }
     "return a None when no regId document is found" in new Setup {
       await(repository.getInternalId(vatSchemeWithEligibilityData.registrationId)) mustBe None
-    }
-  }
-  "getEligibilityData" should {
-    "return some of eligibilityData" in new Setup {
-      await(insert(vatSchemeWithEligibilityData.copy(eligibilityData = Some(jsonEligiblityData))))
-      count mustBe 1
-
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(jsonEligiblityData)
-    }
-    "return None of eligibilityData" in new Setup {
-      await(insert(vatSchemeWithEligibilityData))
-      count mustBe 1
-
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe None
-    }
-  }
-  "updateEligibilityData" should {
-    "update eligibilityData successfully when no eligibilityData block exists" in new Setup {
-      await(insert(vatSchemeWithEligibilityData))
-      count mustBe 1
-
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe None
-
-      val res: JsObject = await(repository.updateEligibilityData(vatSchemeWithEligibilityData.registrationId, jsonEligiblityData))
-      res mustBe jsonEligiblityData
-
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(jsonEligiblityData)
-    }
-    "update eligibilityData successfully when eligibilityData block already exists" in new Setup {
-      val newJsonEligiblityData = Json.obj("wizz" -> "new bar")
-
-      await(insert(vatSchemeWithEligibilityData.copy(eligibilityData = Some(jsonEligiblityData))))
-      count mustBe 1
-
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(jsonEligiblityData)
-
-      val res: JsObject = await(repository.updateEligibilityData(vatSchemeWithEligibilityData.registrationId, newJsonEligiblityData))
-      res mustBe newJsonEligiblityData
-
-      await(repository.fetchEligibilityData(vatSchemeWithEligibilityData.registrationId)) mustBe Some(newJsonEligiblityData)
     }
   }
 }

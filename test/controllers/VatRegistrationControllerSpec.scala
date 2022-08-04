@@ -21,13 +21,12 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockRegistrationService
 import models.api._
-import models.registration.sections.PartnersSection
 import models.submission.Individual
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.http.Status
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.Json
 import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
 import repositories.VatSchemeRepository
@@ -54,105 +53,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
   }
 
   val registrationId = "reg-12345"
-
-  "GET /" should {
-    "call to retrieveVatScheme return Ok with VatScheme" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme)
-
-      controller.retrieveVatScheme(testRegId)()(FakeRequest()) returnsStatus OK
-    }
-
-    "call to retrieveVatScheme return ServiceUnavailable" in new Setup {
-      AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      ServiceMocks.mockRetrieveVatSchemeThrowsException(testRegId)
-
-      controller.retrieveVatScheme(testRegId)()(FakeRequest()) returnsStatus SERVICE_UNAVAILABLE
-    }
-
-    "newVatRegistration" should {
-      "return CREATED if a new VAT scheme is successfully created" in new Setup {
-        AuthorisationMocks.mockAuthenticated(testInternalId)
-
-        mockNewRegistration(testInternalId)(Future.successful(testVatScheme))
-
-        controller.newVatRegistration()(FakeRequest()) returnsStatus CREATED
-      }
-
-      "return FORBIDDEN if user not authenticated for newVatRegistration" in new Setup {
-        AuthorisationMocks.mockAuthenticatedLoggedInNoCorrespondingData()
-
-        controller.newVatRegistration()(FakeRequest()) returnsStatus FORBIDDEN
-      }
-
-      "return INTERNAL_SERVER_ERROR if RegistrationService encounters any problems" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        mockNewRegistration(testInternalId)(Future.failed(new Exception("")))
-
-        controller.newVatRegistration()(FakeRequest()) returnsStatus INTERNAL_SERVER_ERROR
-      }
-    }
-
-    "updateBankAccountDetails" should {
-
-      val bankAccount = testBankAccount
-
-      "return a 200 if the update to mongo was successful" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        when(mockRegistrationMongoRepository.updateBankAccount(any(), any()))
-          .thenReturn(Future.successful(bankAccount))
-
-        val request: FakeRequest[JsObject] = FakeRequest().withBody(
-          Json.obj(
-            "isProvided" -> true,
-            "details" -> Json.obj(
-              "name" -> "testAccountName",
-              "sortCode" -> "010203",
-              "number" -> "01023456",
-              "status" -> Json.toJson[BankAccountDetailsStatus](ValidStatus)
-            )
-          )
-        )
-
-        val result: Future[Result] = controller.updateBankAccountDetails(testRegId)(request)
-        status(result) mustBe OK
-      }
-    }
-
-    "fetchBankAccountDetails" should {
-      val bankAccount = testBankAccount
-
-      "return a 200 if the fetch from mongo was successful" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        when(mockRegistrationMongoRepository.fetchBankAccount(any()))
-          .thenReturn(Future.successful(Some(bankAccount)))
-
-        val expected: JsObject = Json.obj(
-          "isProvided" -> true,
-          "details" -> Json.obj(
-            "name" -> "Test Bank Account",
-            "sortCode" -> "010203",
-            "number" -> "01023456",
-            "status" -> Json.toJson[BankAccountDetailsStatus](ValidStatus)
-          )
-        )
-
-        val result: Future[Result] = controller.fetchBankAccountDetails(testRegId)(FakeRequest())
-        status(result) mustBe OK
-        contentAsJson(result) mustBe expected
-      }
-
-      "return a 404 if the fetch from mongo returned nothing" in new Setup {
-        AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-        when(mockRegistrationMongoRepository.fetchBankAccount(any()))
-          .thenReturn(Future.successful(None))
-
-        val result: Future[Result] = controller.fetchBankAccountDetails(testRegId)(FakeRequest())
-        status(result) mustBe NOT_FOUND
-
-      }
-    }
-  }
 
   "Calling submitVATRegistration" should {
     "return a Forbidden response if the user is not logged in" in new Setup {
@@ -197,7 +97,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
 
     "return an exception if the Submission Service can't make a DES submission" in new Setup {
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
@@ -215,7 +114,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
 
     "return an Ok response for a valid submit" in new Setup {
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
@@ -232,7 +130,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
     "return an Ok response for a valid submission with partners" in new Setup {
       val testPartner = Partner(testSoleTraderEntity, Individual, isLeadPartner = true)
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
-      ServiceMocks.mockRetrieveVatScheme(testRegId, testVatScheme.copy(partners = Some(PartnersSection(List(testPartner)))))
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(

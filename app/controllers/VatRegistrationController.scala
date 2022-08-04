@@ -20,7 +20,6 @@ import auth.{Authorisation, AuthorisationResource}
 import cats.instances.FutureInstances
 import common.exceptions.LeftState
 import enums.VatRegStatus._
-import models.api._
 import play.api.libs.json._
 import play.api.mvc._
 import repositories.VatSchemeRepository
@@ -47,44 +46,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
   override val resourceConn: AuthorisationResource = registrationRepository
   val errorHandler: LeftState => Result = err => err.toResult
 
-  def newVatRegistration(implicit format: Format[VatScheme] = VatScheme.format()): Action[AnyContent] = Action.async { implicit request =>
-    isAuthenticated { internalId =>
-      newRegistrationService.newRegistration(internalId) map { scheme =>
-        Created(Json.toJson(scheme))
-      } recover {
-        case _ => InternalServerError(
-          "[VatRegistrationController][newVatRegistration] Unexpected error when creating new registration"
-        )
-      }
-    }
-  }
-
-  def insertVatScheme(implicit format: Format[VatScheme] = VatScheme.format()): Action[VatScheme] = Action.async(parse.json[VatScheme]) { implicit request =>
-    isAuthenticated { _ =>
-      newRegistrationService.insertVatScheme(request.body).map { vatScheme =>
-        Created(Json.toJson(vatScheme))
-      }
-    }
-  }
-
-  def retrieveVatScheme(id: String)(implicit format: Format[VatScheme] = VatScheme.format()): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(id) { authResult =>
-        authResult.ifAuthorised(id, "VatRegistrationController", "retrieveVatScheme") {
-          registrationService.retrieveVatScheme(id).fold(errorHandler, vatScheme => Ok(Json.toJson(vatScheme)))
-        }
-      }
-  }
-
-  def retrieveVatSchemeByInternalId(): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthenticated { internalId =>
-        implicit val writes: OWrites[VatScheme] = VatScheme.writes()
-
-        registrationService.retrieveVatSchemeByInternalId(internalId).fold(errorHandler, vatScheme => Ok(Json.toJson(vatScheme)))
-      }
-  }
-
   def submitVATRegistration(regId: String): Action[JsValue] = Action.async(parse.json) {
     implicit request =>
       isAuthenticated { internalId =>
@@ -99,30 +60,6 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
           }.recover {
             case ex: ConflictException => Conflict
             case ex: Throwable => throw ex
-          }
-        }
-      }
-  }
-
-  def fetchBankAccountDetails(regId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "fetchBankAccountDetails") {
-          registrationRepository.fetchBankAccount(regId) map {
-            case Some(bankAccount) => Ok(Json.toJson(bankAccount))
-            case None => NotFound
-          }
-        }
-      }
-  }
-
-  def updateBankAccountDetails(regId: String): Action[JsValue] = Action.async(parse.json) {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "VatRegistrationController", "updateBankAccountDetails") {
-          withJsonBody[BankAccount] { bankAccount =>
-            registrationRepository.updateBankAccount(regId, bankAccount)
-              .sendResult("updateBackAccountDetails", regId)
           }
         }
       }

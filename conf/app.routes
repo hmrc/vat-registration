@@ -1,25 +1,14 @@
 # microservice specific routes
 
-POST         /new                                   controllers.VatRegistrationController.newVatRegistration
-POST         /insert-s4l-scheme                         controllers.VatRegistrationController.insertVatScheme
-
-# Traffic Management API
 POST         /traffic-management/:regId/allocate    controllers.TrafficManagementController.allocate(regId)
 GET          /traffic-management/:regId/reg-info    controllers.TrafficManagementController.getRegInfoById(regId)
 PUT          /traffic-management/:regId/reg-info    controllers.TrafficManagementController.upsertRegInfoById(regId)
 DELETE       /traffic-management/:regId/reg-info    controllers.TrafficManagementController.deleteRegInfoById(regId)
 
-GET          /scheme                                controllers.VatRegistrationController.retrieveVatSchemeByInternalId()
-GET          /threshold/:date                        controllers.VatThresholdController.getThresholdForDate(date: String)
-
-GET          /:regId/get-scheme                     controllers.VatRegistrationController.retrieveVatScheme(regId: String)
+GET          /threshold/:date                       controllers.VatThresholdController.getThresholdForDate(date: String)
 
 PUT          /:regID/submit-registration            controllers.VatRegistrationController.submitVATRegistration(regID : String)
 
-GET          /:regId/bank-account                   controllers.VatRegistrationController.fetchBankAccountDetails(regId)
-PATCH        /:regId/bank-account                   controllers.VatRegistrationController.updateBankAccountDetails(regId)
-
-GET         /:regId/eligibility-data                controllers.EligibilityController.getEligibilityData(regId: String)
 PATCH       /:regId/eligibility-data                controllers.EligibilityController.updateEligibilityData(regId: String)
 
 POST        /:regId/upscan-reference                controllers.UpscanController.createUpscanDetails(regId: String)

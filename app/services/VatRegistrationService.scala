@@ -16,13 +16,11 @@
 
 package services
 
-import cats.data.OptionT
 import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
 import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
-import models.api.VatScheme
 import play.api.Logging
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.HttpClient
@@ -45,10 +43,4 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
         throw new MissingRegDocument(regId)
     }
   }
-
-  def retrieveVatScheme(regId: String): ServiceResult[VatScheme] =
-    OptionT(registrationRepository.retrieveVatScheme(regId)).toRight(ResourceNotFound(regId))
-
-  def retrieveVatSchemeByInternalId(internalId: String): ServiceResult[VatScheme] =
-    OptionT(registrationRepository.retrieveVatSchemeByInternalId(internalId)).toRight(ResourceNotFound(internalId))
 }

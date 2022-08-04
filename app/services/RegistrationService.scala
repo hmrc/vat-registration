@@ -36,11 +36,6 @@ class RegistrationService @Inject()(val vatSchemeRepository: VatSchemeRepository
     vatSchemeRepository.createNewVatScheme(regId, internalId)
   }
 
-  @deprecated("use upsertRegistration instead")
-  def insertVatScheme(vatScheme: VatScheme): Future[VatScheme] =
-    vatSchemeRepository.insertVatScheme(vatScheme)
-
-
   def getAllRegistrations[T](internalId: String)(implicit reads: Reads[T]): Future[List[T]] =
     vatSchemeRepository.getAllRegistrations(internalId).map {
       case Nil => Nil

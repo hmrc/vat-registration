@@ -114,19 +114,6 @@ trait VatMocks extends HttpClientMock {
       EitherT[Future, LeftState, B](Future.successful(Left(a)))
     }
 
-    def mockRetrieveVatSchemeThrowsException(id: String): Unit = {
-      val exception = new Exception("Exception")
-      val idMatcher: String = anyString()
-      when(mockVatRegistrationService.retrieveVatScheme(idMatcher))
-        .thenReturn(serviceError[VatScheme](GenericDatabaseError(exception, Some("regId"))))
-    }
-
-    def mockRetrieveVatScheme(id: String, vatScheme: VatScheme): Unit = {
-      val idMatcher: String = anyString()
-      when(mockVatRegistrationService.retrieveVatScheme(idMatcher))
-        .thenReturn(serviceResult(vatScheme))
-    }
-
     def mockGetDocumentStatus(status: VatRegStatus.Value): Unit = {
       val idMatcher: String = anyString()
       when(mockVatRegistrationService.getStatus(idMatcher))
