@@ -17,14 +17,14 @@
 package controllers
 
 import auth.Authorisation
-import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsObject, JsValue}
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents}
 import repositories.VatSchemeRepository
 import services.EligibilityService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Singleton
@@ -35,22 +35,13 @@ class EligibilityController @Inject()(val eligibilityService: EligibilityService
 
   val resourceConn: VatSchemeRepository = eligibilityService.registrationRepository
 
-  //Full eligibility json
-  def getEligibilityData(regId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "EligibilityController", "getEligibilityData") {
-          eligibilityService.getEligibilityData(regId) sendResult("getEligibilityData", regId)
-        }
-      }
-  }
-
   def updateEligibilityData(regId: String): Action[JsValue] = Action.async[JsValue](parse.json) {
     implicit request =>
-      isAuthorised(regId) { authResult =>
-        authResult.ifAuthorised(regId, "EligibilityController", "updateEligibilityData") {
-          withJsonBody[JsObject] { eligibilityData =>
-            eligibilityService.updateEligibilityData(regId, eligibilityData) sendResult("updateEligibilityData", regId)
+      isAuthenticated { internalId =>
+        withJsonBody[JsObject] { eligibilityData =>
+          eligibilityService.updateEligibilityData(internalId, regId, eligibilityData).map {
+            case Some(json) => Ok(json)
+            case None => NotFound
           }
         }
       }

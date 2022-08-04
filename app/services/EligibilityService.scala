@@ -17,6 +17,7 @@
 package services
 
 import models.api.{EligibilitySubmissionData, VatScheme}
+import models.registration.{EligibilityJsonSectionId, EligibilitySectionId}
 import play.api.Logging
 import play.api.libs.json.{JsObject, JsResultException}
 import repositories.VatSchemeRepository
@@ -29,23 +30,20 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) extends Logging {
 
-  def getEligibilityData(regId: String): Future[Option[JsObject]] =
-    registrationRepository.fetchEligibilityData(regId)
-
-  def updateEligibilityData(regId: String, eligibilityData: JsObject)(implicit ex: ExecutionContext): Future[JsObject] = {
+  def updateEligibilityData(internalId: String, regId: String, eligibilityData: JsObject)(implicit ex: ExecutionContext): Future[Option[JsObject]] = {
     EligibilityDataJsonUtils.toJsObject(eligibilityData)
       .validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads).fold(
       invalid => throw JsResultException(invalid),
       eligibilitySubmissionData => for {
-        _ <- registrationRepository.fetchEligibilitySubmissionData(regId).flatMap {
+        _ <- registrationRepository.getSection[EligibilitySubmissionData](internalId, regId, EligibilitySectionId.repoKey).flatMap {
           case Some(oldEligibilitySubmissionData) =>
             removeInvalidFields(regId, eligibilitySubmissionData, oldEligibilitySubmissionData)
           case None =>
             Future.successful()
         }
-        _ <- registrationRepository.updateEligibilitySubmissionData(regId, eligibilitySubmissionData)
+        _ <- registrationRepository.upsertSection[EligibilitySubmissionData](internalId, regId, EligibilitySectionId.repoKey, eligibilitySubmissionData)
         _ <- logEligibilityPayload(regId, eligibilitySubmissionData)
-        result <- registrationRepository.updateEligibilityData(regId, eligibilityData)
+        result <- registrationRepository.upsertSection[JsObject](internalId, regId, EligibilityJsonSectionId.repoKey, eligibilityData)
       } yield result
     )
   }

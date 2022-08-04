@@ -99,6 +99,14 @@ trait MockVatSchemeRepository extends MockitoSugar {
       ArgumentMatchers.eq(data)
     )(ArgumentMatchers.any())).thenReturn(Future.successful(response))
 
+  def mockUpsertSectionFail[T](internalId: String, regId: String, key: String, data: T)(response: Throwable): OngoingStubbing[Future[Option[T]]] =
+    when(mockVatSchemeRepository.upsertSection[T](
+      ArgumentMatchers.eq(internalId),
+      ArgumentMatchers.eq(regId),
+      ArgumentMatchers.eq(key),
+      ArgumentMatchers.eq(data)
+    )(ArgumentMatchers.any())).thenReturn(Future.failed(response))
+
   def mockDeleteSection(internalId: String, regId: String, key: String)(response: Boolean): OngoingStubbing[Future[Boolean]] =
     when(mockVatSchemeRepository.deleteSection(
       ArgumentMatchers.eq(internalId),

@@ -24,7 +24,7 @@ import enums.VatRegStatus
 import models.api._
 import org.mongodb.scala.Document
 import org.mongodb.scala.model.Filters.{and, equal}
-import org.mongodb.scala.model.Indexes.{ascending, descending}
+import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Projections.include
 import org.mongodb.scala.model.Updates.{combine, set, unset}
 import org.mongodb.scala.model.{FindOneAndReplaceOptions, IndexModel, IndexOptions, UpdateOptions}
@@ -204,7 +204,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .updateOne(
         filter = registrationSelector(regId, Some(internalId)),
         update = combine(set(section, Codecs.toBson(data)), set(timestampKey, timeMachine.timestamp)),
-        options = UpdateOptions().upsert(true)
+        options = UpdateOptions()
       )
       .toFuture()
       .map { result =>
@@ -246,14 +246,6 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
 
   // TODO: Remove deprecated methods once migration to new /registrations API is complete
 
-  def retrieveVatSchemeByInternalId(id: String): Future[Option[VatScheme]] = {
-    implicit val format = VatScheme.format(Some(crypto))
-    collection
-      .find(equal("internalId", id))
-      .sort(descending("_id"))
-      .headOption()
-  }
-
   def updateSubmissionStatus(regId: String, status: VatRegStatus.Value): Future[Boolean] =
     collection
       .updateOne(registrationSelector(regId), set("status", status.toString))
@@ -265,40 +257,9 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .toFuture()
       .map(_ => status)
 
-  @deprecated("migrate to the new /registrations API")
-  def fetchBankAccount(regId: String): Future[Option[BankAccount]] =
-    collection
-      .find[Document](registrationSelector(regId))
-      .headOption()
-      .map(_.flatMap(doc => (Json.parse(doc.toJson()) \ "bankAccount").validateOpt(bankAccountCryptoFormatter).get))
-
-  @deprecated("migrate to the new /registrations API")
-  def updateBankAccount(regId: String, bankAccount: BankAccount): Future[BankAccount] =
-    collection
-      .updateOne(registrationSelector(regId), set("bankAccount", Codecs.toBson(bankAccount)(bankAccountCryptoFormatter)))
-      .toFuture()
-      .map { result =>
-        logger.info(s"[Returns] updating bank account for regId : $regId - documents modified : ${result.getModifiedCount}")
-        bankAccount
-      }
-
   private[repositories] def registrationSelector(regId: String, internalId: Option[String] = None) =
     internalId
       .map(intId => and(equal("registrationId", regId), equal("internalId", intId)))
       .getOrElse(equal("registrationId", regId))
-
-  def fetchEligibilityData(regId: String): Future[Option[JsObject]] =
-    fetchBlock[JsObject](regId, "eligibilityData")
-
-  def updateEligibilityData(regId: String, eligibilityData: JsObject): Future[JsObject] =
-    updateBlock(regId, eligibilityData, "eligibilityData")
-
-  @deprecated("migrate to the new /registrations API")
-  def fetchEligibilitySubmissionData(regId: String): Future[Option[EligibilitySubmissionData]] =
-    fetchBlock[EligibilitySubmissionData](regId, "eligibilitySubmissionData")
-
-  @deprecated("migrate to the new /registrations API")
-  def updateEligibilitySubmissionData(regId: String, eligibilitySubmissionData: EligibilitySubmissionData): Future[EligibilitySubmissionData] =
-    updateBlock(regId, eligibilitySubmissionData, "eligibilitySubmissionData")
 
 }

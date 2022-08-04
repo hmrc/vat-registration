@@ -2,7 +2,6 @@
 package controllers
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import controllers.routes.EligibilityController
 import itutil.IntegrationStubbing
 import play.api.libs.json.{JsArray, JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
@@ -44,7 +43,7 @@ class EligibilityControllerISpec extends IntegrationStubbing {
 
       insertIntoDb(testEmptyVatScheme("regId"))
 
-      val response: WSResponse = await(client(EligibilityController.updateEligibilityData("regId").url)
+      val response: WSResponse = await(client(routes.EligibilityController.updateEligibilityData("regId").url)
         .patch(validEligibilityJson))
 
       response.status mustBe OK
@@ -56,7 +55,7 @@ class EligibilityControllerISpec extends IntegrationStubbing {
 
       insertIntoDb(testEmptyVatScheme("regId"))
 
-      val response: WSResponse = await(client(EligibilityController.updateEligibilityData("regId").url)
+      val response: WSResponse = await(client(routes.EligibilityController.updateEligibilityData("regId").url)
         .patch(invalidEligibilityJson))
 
       response.status mustBe INTERNAL_SERVER_ERROR
@@ -65,7 +64,7 @@ class EligibilityControllerISpec extends IntegrationStubbing {
     "return NOT_FOUND if no reg document is found" in new Setup {
       given.user.isAuthorised
 
-      val response: WSResponse = await(client(EligibilityController.updateEligibilityData("regId").url)
+      val response: WSResponse = await(client(routes.EligibilityController.updateEligibilityData("regId").url)
         .patch(validEligibilityJson))
 
       response.status mustBe NOT_FOUND
@@ -74,7 +73,7 @@ class EligibilityControllerISpec extends IntegrationStubbing {
     "return FORBIDDEN if user is not authorised obtained" in new Setup {
       given.user.isNotAuthorised
 
-      val response: WSResponse = await(client(EligibilityController.updateEligibilityData("regId").url)
+      val response: WSResponse = await(client(routes.EligibilityController.updateEligibilityData("regId").url)
         .patch(validEligibilityJson))
 
       response.status mustBe FORBIDDEN

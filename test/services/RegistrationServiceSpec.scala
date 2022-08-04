@@ -83,16 +83,6 @@ class RegistrationServiceSpec extends VatRegSpec
     }
   }
 
-  "insertVatScheme" should {
-    "return a vat scheme" in {
-      mockInsertVatScheme(testVatScheme)
-
-      val res = await(Service.insertVatScheme(testVatScheme))
-
-      res mustBe testVatScheme
-    }
-  }
-
   "getAllRegistrations" when {
     "registrations exist" when {
       "requested as a Registration" must {
