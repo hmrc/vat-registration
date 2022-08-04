@@ -27,7 +27,8 @@ case class PersonalDetails(name: Name,
                            trn: Option[String],
                            arn: Option[String],
                            identifiersMatch: Boolean,
-                           dateOfBirth: Option[LocalDate]) {
+                           dateOfBirth: Option[LocalDate],
+                           score: Option[Int]) {
 
   def personalIdentifiers: List[CustomerId] =
     List(
@@ -55,6 +56,7 @@ object PersonalDetails {
       (__ \ "trn").formatNullable[String] and
       (__ \ "arn").formatNullable[String] and
       (__ \ "identifiersMatch").formatWithDefault[Boolean](true) and
-      (__ \ "dateOfBirth").formatNullable[LocalDate]
+      (__ \ "dateOfBirth").formatNullable[LocalDate] and
+      (__ \ "score").formatNullable[Int]
     ) (PersonalDetails.apply, unlift(PersonalDetails.unapply))
 }

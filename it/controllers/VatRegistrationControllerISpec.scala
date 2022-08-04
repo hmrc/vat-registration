@@ -223,6 +223,28 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         res.status mustBe OK
       }
+
+      "return appropriate response code when submitted application cannot be processed" in new Setup {
+        given.user.isAuthorised
+        insertIntoDb(
+          testSoleTraderVatScheme.copy(applicantDetails = Some(
+            testRegisteredSoleTraderApplicantDetailsNoBpSafeId.copy(personalDetails = testPersonalDetails.copy(score = Some(testScore)))
+          ))
+        )
+        await(trafficManagementRepo.collection.insertOne(testRegInfo).toFuture())
+
+        stubPost("/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
+        stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
+        stubPost("/hmrc/email", ACCEPTED, "")
+        stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
+
+        val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
+          .withHttpHeaders("authorization" -> testAuthToken)
+          .put(Json.obj("userHeaders" -> headerData))
+        )
+
+        res.status mustBe UNPROCESSABLE_ENTITY
+      }
     }
 
     "the user is a Limited Company" should {

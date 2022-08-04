@@ -157,7 +157,8 @@ trait VatRegistrationFixture {
       trn = None,
       arn = None,
       identifiersMatch = true,
-      dateOfBirth = Some(testDate)
+      dateOfBirth = Some(testDate),
+      None
     ),
     entity = testLtdCoEntity,
     roleInBusiness = testRole,
@@ -174,7 +175,8 @@ trait VatRegistrationFixture {
       trn = None,
       arn = None,
       identifiersMatch = false,
-      dateOfBirth = Some(testDate)
+      dateOfBirth = Some(testDate),
+      None
     ),
     entity = testLtdCoEntity,
     roleInBusiness = testRole,
@@ -194,7 +196,8 @@ trait VatRegistrationFixture {
       trn = None,
       arn = None,
       identifiersMatch = true,
-      dateOfBirth = Some(testDate)
+      dateOfBirth = Some(testDate),
+      None
     ),
     isPartOfOrganisation = Some(true),
     organisationName = Some(testOrgName),
@@ -477,6 +480,6 @@ trait VatRegistrationFixture {
         testLoginTimes
   }
 
-  val testPersonalDetails = PersonalDetails(testName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate))
+  val testPersonalDetails = PersonalDetails(testName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate), Some(100))
 
 }
