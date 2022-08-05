@@ -43,6 +43,7 @@ sealed trait BusinessEntity {
       case (true, Some(BvUnchallenged), NotCalledStatus) => IdVerificationFailed
       case (false, Some(BvUnchallenged), NotCalledStatus) => IdUnverifiable
       case (false, None, NotCalledStatus) => IdUnverifiable
+      case (true, Some(BvUnchallenged), FailedStatus) => IdVerified
       case _ => throw new InternalServerException("[ApplicantDetailsHelper][idVerificationStatus] method called with unsupported data from incorpId")
     }
 }

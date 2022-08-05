@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.OverseasIdentifierDetails
-import models.api.{BvCtEnrolled, BvPass, BvUnchallenged, FailedStatus}
+import models.api.{BusinessVerificationStatus, BvCtEnrolled, BvPass, BvUnchallenged, FailedStatus}
 import models.submission.{Individual, NETP}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.InternalServerException
@@ -155,13 +155,21 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
        |""".stripMargin).as[JsObject]
 
   "buildCustomerIdentificationBlock" should {
-    "build the correct json for a sole trader entity type" in new Setup {
-      val appDetails = validApplicantDetails.copy(entity = testSoleTraderEntity)
-      val eligibilityData = testEligibilitySubmissionData.copy(partyType = Individual)
-      val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
+    "build the correct json for a sole trader entity type with given business verification type" in new Setup {
 
-      val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
-      result mustBe soleTraderBlockJson
+      private def verifySoleTraderEntity(businessVerificationStatus: BusinessVerificationStatus) = {
+        val appDetails = validApplicantDetails.copy(
+          entity = testSoleTraderEntity.copy(businessVerification = Some(businessVerificationStatus))
+        )
+        val eligibilityData = testEligibilitySubmissionData.copy(partyType = Individual)
+        val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
+
+        val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
+        result mustBe soleTraderBlockJson
+      }
+
+      verifySoleTraderEntity(BvPass)
+      verifySoleTraderEntity(BvUnchallenged)
     }
 
     "build the correct json for a NETP entity type" in new Setup {
