@@ -43,7 +43,7 @@ object PropertyExtractor {
   val nrsSubmissionKey = "nrsSubmissionId"
   val locationKey = "location"
 
-  val checksumAlgorithm = "SHA256"
+  val checksumAlgorithm = "SHA-256"
   val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter
     .ofPattern("dd/MM/yyyy hh:mm:ss")
     .withZone(ZoneId.of("UTC"))
