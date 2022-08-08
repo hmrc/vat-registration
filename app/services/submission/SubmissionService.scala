@@ -28,8 +28,8 @@ import play.api.http.Status.{BAD_REQUEST, CONFLICT}
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import repositories._
-import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
 import services._
+import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions}
@@ -57,13 +57,13 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   val authConnector: AuthConnector
                                  )(implicit executionContext: ExecutionContext) extends FutureInstances with AuthorisedFunctions with Logging with FeatureSwitching {
 
-  def submitVatRegistration(regId: String, userHeaders: Map[String, String])
+  def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String])
                            (implicit hc: HeaderCarrier,
                             request: Request[_]): Future[String] = {
     {
       for {
-        _ <- registrationRepository.updateSubmissionStatus(regId, VatRegStatus.locked)
-        vatScheme <- registrationRepository.retrieveVatScheme(regId)
+        _ <- registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.locked)
+        vatScheme <- registrationRepository.getRegistration(internalId, regId)
           .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
         submission = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
         correlationId = idGenerator.createId
@@ -73,20 +73,20 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         (providerId, affinityGroup, optAgentCode) <- retrieveIdentityDetails
         _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
         _ <- trafficManagementService.updateStatus(regId, Submitted)
-        _ <- emailService.sendRegistrationReceivedEmail(regId)
+        _ <- emailService.sendRegistrationReceivedEmail(internalId, regId)
         digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
         optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
         _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, correlationId, optNrsId, providerId)) else Future.successful()
       } yield formBundleId
     } recover {
       case exception: ConflictException =>
-        registrationRepository.updateSubmissionStatus(regId, VatRegStatus.duplicateSubmission)
+        registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.duplicateSubmission)
         throw exception
       case exception: BadRequestException =>
-        registrationRepository.updateSubmissionStatus(regId, VatRegStatus.failed)
+        registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failed)
         throw exception
       case exception =>
-        registrationRepository.updateSubmissionStatus(regId, VatRegStatus.failedRetryable)
+        registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failedRetryable)
         throw exception
     }
   }

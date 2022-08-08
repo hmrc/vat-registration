@@ -104,7 +104,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
     }
     "partially update an existing registration" in new Setup {
       val testReg = testEmptyVatScheme(testRegId).copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData))
-      await(repo.insertVatScheme(testReg))
+      await(repo.upsertRegistration(testInternalid, testRegId, testReg))
       val updatedReg = testReg.copy(vatApplication = Some(testVatApplication.copy(appliedForExemption = Some(true))))
 
       val res = await(repo.upsertRegistration(testInternalid, testRegId, updatedReg))
@@ -136,7 +136,7 @@ class RegistrationRepositoryISpec extends MongoBaseSpec
 
   "getSection" must {
     "get the section if it exists" in new Setup {
-      await(repo.insertVatScheme(testFullVatScheme))
+      await(repo.upsertRegistration(testInternalid, testRegId, testFullVatScheme))
 
       val res = await(repo.getSection[JsValue](testInternalid, testRegId, ApplicantSectionId.repoKey))
 

@@ -57,64 +57,64 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
     "attachments are required" must {
 
       "return a list of the required attachments for a UKCompany with unmatched personal details" in {
-        mockGetVatScheme(testRegId)(Some(testUnverifiedUserVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testUnverifiedUserVatScheme)))
 
-        val res = await(Service.getAttachmentList(testRegId))
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Set(IdentityEvidence)
       }
 
       "return transactorIdentityEvidence in the attachment list fot a transactor with unverified personal details" in {
-        mockGetVatScheme(testRegId)(Some(testUnverifiedTransactorVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testUnverifiedTransactorVatScheme)))
 
-        val res = await(Service.getAttachmentList(testRegId))
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Set(TransactorIdentityEvidence)
       }
 
       "return VAT2 in the attachment list for a Partnership" in {
-        mockGetVatScheme(testRegId)(Some(testPartnershipVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testPartnershipVatScheme)))
 
-        val res = await(Service.getAttachmentList(testRegId))
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Set(VAT2)
       }
 
       "return VAT51 in the attachment list fot a Group Registration" in {
-        mockGetVatScheme(testRegId)(Some(testVatGroupVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testVatGroupVatScheme)))
 
-        val res = await(Service.getAttachmentList(testRegId))
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Set(VAT51)
       }
 
       "return VAT5L in the attachment list fot a user with land and property" in {
-        mockGetVatScheme(testRegId)(Some(testLnpVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testLnpVatScheme)))
 
-        val res = await(Service.getAttachmentList(testRegId))
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Set(VAT5L)
       }
 
       "return VAT1TR in the attachment list if user has opted for tax representative" in {
-        mockGetVatScheme(testRegId)(Some(testSchemeWithTaxRepresentative))
-        val res = await(Service.getAttachmentList(testRegId))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testSchemeWithTaxRepresentative)))
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
         res mustBe Set(TaxRepresentativeAuthorisation)
       }
     }
     "attachments are not required" must {
       "return an empty list" in {
-        mockGetVatScheme(testRegId)(Some(testVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testVatScheme)))
 
-        val res = await(Service.getAttachmentList(testRegId))
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Set.empty
       }
 
       "not return VAT2 in the attachment list for a Limited Liability Partnership" in {
-        mockGetVatScheme(testRegId)(Some(testLlpVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testLlpVatScheme)))
 
-        val res = await(Service.getAttachmentList(testRegId))
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Set.empty
       }
@@ -133,16 +133,16 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
     "return a list of the required attachments for a UKCompany with unmatched personal details" when {
       "the user has no complete upscan details" in {
-        mockGetVatScheme(testRegId)(Some(testUnverifiedUserVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testUnverifiedUserVatScheme)))
         mockGetAllUpscanDetails(testRegId)(Future.successful(Nil))
 
-        val res = await(Service.getIncompleteAttachments(testRegId))
+        val res = await(Service.getIncompleteAttachments(testInternalId, testRegId))
 
         res mustBe List(PrimaryIdentityEvidence, ExtraIdentityEvidence, ExtraIdentityEvidence)
       }
 
       "the user has some complete upscan details" in {
-        mockGetVatScheme(testRegId)(Some(testUnverifiedUserVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testUnverifiedUserVatScheme)))
         mockGetAllUpscanDetails(testRegId)(
           Future.successful(List(
             testUpscanDetails(PrimaryIdentityEvidence),
@@ -150,7 +150,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
           ))
         )
 
-        val res = await(Service.getIncompleteAttachments(testRegId))
+        val res = await(Service.getIncompleteAttachments(testInternalId, testRegId))
 
         res mustBe List(ExtraIdentityEvidence)
       }
@@ -158,16 +158,16 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
     "return transactorIdentityEvidence in the attachment list fot a transactor with unverified personal details" when {
       "the user has no complete upscan details" in {
-        mockGetVatScheme(testRegId)(Some(testUnverifiedTransactorVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testUnverifiedTransactorVatScheme)))
         mockGetAllUpscanDetails(testRegId)(Future.successful(Nil))
 
-        val res = await(Service.getIncompleteAttachments(testRegId))
+        val res = await(Service.getIncompleteAttachments(testInternalId, testRegId))
 
         res mustBe List(PrimaryTransactorIdentityEvidence, ExtraTransactorIdentityEvidence, ExtraTransactorIdentityEvidence)
       }
 
       "the user has some complete upscan details" in {
-        mockGetVatScheme(testRegId)(Some(testUnverifiedTransactorVatScheme))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testUnverifiedTransactorVatScheme)))
         mockGetAllUpscanDetails(testRegId)(
           Future.successful(List(
             testUpscanDetails(PrimaryTransactorIdentityEvidence),
@@ -175,7 +175,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
           ))
         )
 
-        val res = await(Service.getIncompleteAttachments(testRegId))
+        val res = await(Service.getIncompleteAttachments(testInternalId, testRegId))
 
         res mustBe List(ExtraTransactorIdentityEvidence)
       }

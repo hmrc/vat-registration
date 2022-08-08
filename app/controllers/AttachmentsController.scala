@@ -35,21 +35,17 @@ class AttachmentsController @Inject()(controllerComponents: ControllerComponents
   val resourceConn: AuthorisationResource = attachmentsService.registrationRepository
 
   def getAttachmentList(regId: String): Action[AnyContent] = Action.async { implicit request =>
-    isAuthorised(regId) { authResult =>
-      authResult.ifAuthorised(regId, "AttachmentsController", "getAttachmentList") {
-        attachmentsService.getAttachmentList(regId).map { attachmentList =>
-          Ok(Json.toJson(attachmentList))
-        }
+    isAuthenticated { internalId =>
+      attachmentsService.getAttachmentList(internalId, regId).map { attachmentList =>
+        Ok(Json.toJson(attachmentList))
       }
     }
   }
 
   def getIncompleteAttachments(regId: String): Action[AnyContent] = Action.async { implicit request =>
-    isAuthorised(regId) { authResult =>
-      authResult.ifAuthorised(regId, "AttachmentsController", "getAttachmentsToUpload") {
-        attachmentsService.getIncompleteAttachments(regId).map { attachmentList =>
-          Ok(Json.toJson(attachmentList))
-        }
+    isAuthenticated { internalId =>
+      attachmentsService.getIncompleteAttachments(internalId, regId).map { attachmentList =>
+        Ok(Json.toJson(attachmentList))
       }
     }
   }

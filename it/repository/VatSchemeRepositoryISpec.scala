@@ -16,7 +16,6 @@
 
 package repository
 
-import common.exceptions._
 import enums.VatRegStatus
 import itutil._
 import models.api._
@@ -125,31 +124,31 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   }
   "Calling insertVatScheme" should {
     "insert the VatScheme object" in new Setup {
-      await(repository.insertVatScheme(testFullVatScheme)) mustBe testFullVatScheme
-      await(repository.retrieveVatScheme(testRegId)) mustBe Some(testFullVatScheme)
+      await(repository.upsertRegistration(testInternalid, testRegId, testFullVatScheme)) mustBe Some(testFullVatScheme)
+      await(repository.getRegistration(testInternalid, testRegId)) mustBe Some(testFullVatScheme)
     }
     "override a VatScheme with the same regId" in new Setup {
-      await(repository.insertVatScheme(testVatScheme)) mustBe testVatScheme
-      await(repository.retrieveVatScheme(testRegId)) mustBe Some(testVatScheme)
+      await(repository.upsertRegistration(testInternalid, testRegId, testVatScheme)) mustBe Some(testVatScheme)
+      await(repository.getRegistration(testInternalid, testRegId)) mustBe Some(testVatScheme)
 
-      await(repository.insertVatScheme(testFullVatScheme)) mustBe testFullVatScheme
-      await(repository.retrieveVatScheme(testRegId)) mustBe Some(testFullVatScheme)
+      await(repository.upsertRegistration(testInternalid, testRegId, testFullVatScheme)) mustBe Some(testFullVatScheme)
+      await(repository.getRegistration(testInternalid, testRegId)) mustBe Some(testFullVatScheme)
     }
   }
   "Calling retrieveVatScheme" should {
     "retrieve a VatScheme object" in new Setup {
-      insert(testVatScheme).flatMap(_ => repository.retrieveVatScheme(testVatScheme.registrationId)) returns Some(testVatScheme)
+      insert(testVatScheme).flatMap(_ => repository.getRegistration(testVatScheme.internalId, testVatScheme.registrationId)) returns Some(testVatScheme)
     }
     "return a None when there is no corresponding VatScheme object" in new Setup {
-      insert(testVatScheme).flatMap(_ => repository.retrieveVatScheme("fakeRegId")) returns None
+      insert(testVatScheme).flatMap(_ => repository.getRegistration("fakeInternalId", "fakeRegId")) returns None
     }
   }
   "Calling updateSubmissionStatus" should {
     "set the status" in new Setup {
       val result: Future[VatRegStatus.Value] = for {
         _ <- insert(testVatScheme)
-        _ <- repository.updateSubmissionStatus(testVatScheme.registrationId, VatRegStatus.locked)
-        Some(updatedScheme) <- repository.retrieveVatScheme(testVatScheme.registrationId)
+        _ <- repository.updateSubmissionStatus(testVatScheme.internalId, testVatScheme.registrationId, VatRegStatus.locked)
+        Some(updatedScheme) <- repository.getRegistration(testVatScheme.internalId, testVatScheme.registrationId)
       } yield updatedScheme.status
 
       await(result) mustBe VatRegStatus.locked
@@ -160,7 +159,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
       val result: Future[VatScheme] = for {
         _ <- insert(testVatScheme)
         _ <- repository.finishRegistrationSubmission(testVatScheme.registrationId, VatRegStatus.submitted, testFormBundleId)
-        Some(updatedScheme) <- repository.retrieveVatScheme(testVatScheme.registrationId)
+        Some(updatedScheme) <- repository.getRegistration(testVatScheme.internalId, testVatScheme.registrationId)
       } yield updatedScheme
 
       val res = await(result)

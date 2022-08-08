@@ -62,7 +62,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
   "buildAdminBlock" should {
     "return an admin block json object" when {
       "both eligibility and vat application details data are in the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Set[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
@@ -108,7 +108,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
     "throw an exception" when {
       "the eligibility data is missing from the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Set[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
@@ -123,7 +123,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       }
 
       "the vat application details data is missing from the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Set[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
@@ -138,7 +138,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       }
 
       "there is no eligibility data or trading details data in the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testRegId)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
           .thenReturn(Future.successful(Set[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(

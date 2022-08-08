@@ -36,9 +36,9 @@ class RetrieveVatSubmissionController @Inject()(cc: ControllerComponents,
                                                )(implicit ec: ExecutionContext) extends BackendController(cc) with Logging with Authorisation {
 
   def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { implicit request =>
-    isAuthenticated { _ =>
+    isAuthenticated { internalId =>
       for {
-        vatScheme <- resourceConn.retrieveVatScheme(regId)
+        vatScheme <- resourceConn.getRegistration(internalId, regId)
           .map(_.getOrElse(throw new InternalServerException("Missing VatScheme")))
         payload = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
       } yield Ok(payload)

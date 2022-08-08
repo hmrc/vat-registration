@@ -17,11 +17,11 @@
 package repositories
 
 import auth.{AuthorisationResource, CryptoSCRS}
-import com.mongodb.client.model.ReturnDocument
 import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
+import models.registration.{AcknowledgementReferenceSectionId, StatusSectionId}
 import org.mongodb.scala.Document
 import org.mongodb.scala.model.Filters.{and, equal}
 import org.mongodb.scala.model.Indexes.ascending
@@ -131,21 +131,6 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       }
   }
 
-  def insertVatScheme(vatScheme: VatScheme): Future[VatScheme] = {
-    collection
-      .findOneAndReplace(
-        filter = registrationSelector(vatScheme.registrationId, Some(vatScheme.internalId)),
-        replacement = vatScheme,
-        options = FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true)
-      )
-      .toFuture()
-      .recover {
-        case e: Exception =>
-          logger.error(s"[RegistrationMongoRepository] [insertVatScheme] failed to store a VatScheme with regId: ${vatScheme.registrationId}")
-          throw e
-      }
-  }
-
   def getAllRegistrations(internalId: String): Future[List[JsValue]] =
     collection
       .find(equal(internalIdKey, internalId))
@@ -239,21 +224,14 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
         throw new InternalServerException(s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}")
     }
 
-  def retrieveVatScheme(regId: String): Future[Option[VatScheme]] = {
-    implicit val format = VatScheme.format(Some(crypto))
-    collection.find(equal("registrationId", regId)).first().headOption()
-  }
-
-  // TODO: Remove deprecated methods once migration to new /registrations API is complete
-
-  def updateSubmissionStatus(regId: String, status: VatRegStatus.Value): Future[Boolean] =
-    collection
-      .updateOne(registrationSelector(regId), set("status", status.toString))
-      .toFuture()
-      .map(_.getModifiedCount > 0)
+  def updateSubmissionStatus(internalId: String, regId: String, status: VatRegStatus.Value): Future[Option[VatRegStatus.Value]] =
+    upsertSection(internalId, regId, StatusSectionId.repoKey, status)
 
   def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value, formBundleId: String): Future[VatRegStatus.Value] =
-    collection.updateOne(registrationSelector(regId), combine(set("status", status.toString), set("acknowledgementReference", s"$acknowledgementRefPrefix$formBundleId")))
+    collection.updateOne(registrationSelector(regId), combine(
+      set(StatusSectionId.repoKey, status.toString),
+      set(AcknowledgementReferenceSectionId.repoKey, s"$acknowledgementRefPrefix$formBundleId")
+    ))
       .toFuture()
       .map(_ => status)
 

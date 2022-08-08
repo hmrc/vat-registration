@@ -102,7 +102,7 @@ class RegistrationListSectionControllerISpec extends IntegrationStubbing {
         val res = await(client(url(testSectionId, testValidIndex)).delete())
 
         res.status mustBe NO_CONTENT
-        await(repo.retrieveVatScheme(testRegId)) mustBe Some(testVatScheme)
+        await(repo.getRegistration(testInternalid, testRegId)) mustBe Some(testVatScheme)
       }
     }
     "multiple section indexes exist in the registration" must {
@@ -115,7 +115,7 @@ class RegistrationListSectionControllerISpec extends IntegrationStubbing {
         val res = await(client(url(testSectionId, testValidIndex)).delete())
 
         res.status mustBe NO_CONTENT
-        await(repo.retrieveVatScheme(testRegId)) mustBe Some(testVatScheme.copy(otherBusinessInvolvements = Some(List(testOtherBusinessInvolvement))))
+        await(repo.getRegistration(testInternalid, testRegId)) mustBe Some(testVatScheme.copy(otherBusinessInvolvements = Some(List(testOtherBusinessInvolvement))))
       }
     }
     "the section doesn't exist in the registration" must {
@@ -126,7 +126,7 @@ class RegistrationListSectionControllerISpec extends IntegrationStubbing {
         val res = await(client(url(testSectionId, testValidIndex)).delete())
 
         res.status mustBe NO_CONTENT
-        await(repo.retrieveVatScheme(testRegId)) mustBe Some(testVatScheme)
+        await(repo.getRegistration(testInternalid, testRegId)) mustBe Some(testVatScheme)
       }
     }
   }

@@ -26,23 +26,26 @@ import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.HttpClient
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class VatRegistrationService @Inject()(registrationRepository: VatSchemeRepository,
                                        val backendConfig: BackendConfig,
-                                       val http: HttpClient) extends ApplicativeSyntax with FutureInstances with Logging {
+                                       val http: HttpClient)
+                                      (implicit executionContext: ExecutionContext)
+  extends ApplicativeSyntax with FutureInstances with Logging {
 
-  def getStatus(regId: String): Future[VatRegStatus.Value] = {
-    registrationRepository.retrieveVatScheme(regId) map {
+  def getStatus(internalId: String, regId: String): Future[VatRegStatus.Value] = {
+    registrationRepository.getRegistration(internalId, regId) map {
       case Some(registration) =>
         List(
           registration.applicantDetails.flatMap(_.personalDetails.score),
-          registration.transactorDetails.flatMap(_.personalDetails.score)
+          registration.transactorDetails.flatMap(_.personalDetails.score),
+          registration.applicantDetails.flatMap(_.contact.email).map(email => if (backendConfig.emailCheck.exists(email.contains)) 100 else 0),
+          registration.transactorDetails.map(_.email).map(email => if (backendConfig.emailCheck.exists(email.contains)) 100 else 0)
         ).flatten match {
           case scores if scores.contains(100) =>
-            registrationRepository.updateSubmissionStatus(regId, VatRegStatus.contact)
+            registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.contact)
             VatRegStatus.contact
           case _ => registration.status
         }

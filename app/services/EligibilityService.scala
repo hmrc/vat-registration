@@ -37,7 +37,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
       eligibilitySubmissionData => for {
         _ <- registrationRepository.getSection[EligibilitySubmissionData](internalId, regId, EligibilitySectionId.repoKey).flatMap {
           case Some(oldEligibilitySubmissionData) =>
-            removeInvalidFields(regId, eligibilitySubmissionData, oldEligibilitySubmissionData)
+            removeInvalidFields(internalId, regId, eligibilitySubmissionData, oldEligibilitySubmissionData)
           case None =>
             Future.successful()
         }
@@ -63,16 +63,17 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
   }
 
   // scalastyle:off
-  private def removeInvalidFields(regId: String,
+  private def removeInvalidFields(internalId: String,
+                                  regId: String,
                                   eligibilityData: EligibilitySubmissionData,
                                   oldEligibilityData: EligibilitySubmissionData
-                                 )(implicit executionContext: ExecutionContext): Future[VatScheme] = {
+                                 )(implicit executionContext: ExecutionContext): Future[Option[VatScheme]] = {
 
-    registrationRepository.retrieveVatScheme(regId).flatMap {
+    registrationRepository.getRegistration(internalId, regId).flatMap {
       case Some(vatScheme) =>
         oldEligibilityData match {
           case EligibilitySubmissionData(_, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
-            registrationRepository.insertVatScheme(vatScheme.copy(
+            registrationRepository.upsertRegistration(internalId, regId, vatScheme.copy(
               bankAccount = None,
               flatRateScheme = None,
               eligibilityData = None,
@@ -102,13 +103,13 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               vatScheme.transactorDetails
             }
 
-            registrationRepository.insertVatScheme(vatScheme.copy(
+            registrationRepository.upsertRegistration(internalId, regId, vatScheme.copy(
               transactorDetails = clearedTransactor,
               vatApplication = vatApplicationWithClearedExemption
             ))
 
           case _ =>
-            Future.successful(vatScheme)
+            Future.successful(Some(vatScheme))
         }
     }
   }

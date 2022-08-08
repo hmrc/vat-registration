@@ -35,7 +35,7 @@ class EmailService @Inject()(emailConnector: EmailConnector,
 
   private def missingDataLog(missingItem: String, regId: String) = s"Unable to send submission received email for $regId due to missing $missingItem"
 
-  def sendRegistrationReceivedEmail(regId: String)
+  def sendRegistrationReceivedEmail(internalId: String, regId: String)
                                    (implicit hc: HeaderCarrier): Future[EmailResponse] = {
     def resolveEmail(vatScheme: VatScheme): String = {
       val transactorEmail = vatScheme.transactorDetails.map(_.email)
@@ -56,7 +56,7 @@ class EmailService @Inject()(emailConnector: EmailConnector,
     }
 
     (for {
-      optVatScheme <- registrationMongoRepository.retrieveVatScheme(regId)
+      optVatScheme <- registrationMongoRepository.getRegistration(internalId, regId)
       vatScheme = optVatScheme.getOrElse(throw new InternalServerException(missingDataLog("VAT scheme", regId)))
       template = vatScheme.attachments.map(_.method) match {
         case Some(EmailMethod) => emailTemplate
