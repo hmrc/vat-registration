@@ -98,10 +98,10 @@ class SubmissionServiceSpec extends VatRegSpec
 
   "submitVatRegistration" when {
     "successfully submit and return an acknowledgment reference" in new Setup {
-      when(mockRegistrationMongoRepository.retrieveVatScheme(anyString()))
+      when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
-      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), any[VatRegStatus.Value]()))
-        .thenReturn(Future.successful(true))
+      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]()))
+        .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
@@ -110,7 +110,7 @@ class SubmissionServiceSpec extends VatRegSpec
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme)).thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
-      mockSendRegistrationReceivedEmail(testRegId)(Future.successful(EmailSent))
+      mockSendRegistrationReceivedEmail(testInternalId, testRegId)(Future.successful(EmailSent))
 
       val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
 
@@ -135,7 +135,7 @@ class SubmissionServiceSpec extends VatRegSpec
       )
       mockAttachmentList(testFullVatScheme)(Set[AttachmentType]())
 
-      await(service.submitVatRegistration(testRegId, testUserHeaders)) mustBe testFormBundleId
+      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders)) mustBe testFormBundleId
 
       eventually {
         verifyAudit(SubmissionAuditModel(

@@ -115,8 +115,7 @@ trait VatMocks extends HttpClientMock {
     }
 
     def mockGetDocumentStatus(status: VatRegStatus.Value): Unit = {
-      val idMatcher: String = anyString()
-      when(mockVatRegistrationService.getStatus(idMatcher))
+      when(mockVatRegistrationService.getStatus(anyString(), anyString()))
         .thenReturn(Future.successful(status))
     }
   }

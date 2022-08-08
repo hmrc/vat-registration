@@ -33,7 +33,6 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
   val attachmentsUrl: String = routes.AttachmentsController.getAttachmentList(testRegId).url
 
   s"GET /:regId/attachments " must {
-
     "return OK with identityEvidence attachments if identifiers match not complete" in new Setup {
       given.user.isAuthorised
       insertIntoDb(
@@ -63,12 +62,15 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
       response.json mustBe testJson
     }
 
-    "return NOT_FOUND if no document found" in new Setup {
+    "return OK with an empty body if no document found" in new Setup {
       given.user.isAuthorised
+
+      val testJson = Json.parse("[]")
 
       val response: WSResponse = await(client(attachmentsUrl).get())
 
-      response.status mustBe NOT_FOUND
+      response.status mustBe OK
+      response.json mustBe testJson
     }
 
     "return FORBIDDEN if user is not authorised" in new Setup {

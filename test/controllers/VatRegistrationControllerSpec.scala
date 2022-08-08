@@ -52,8 +52,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
     }
   }
 
-  val registrationId = "reg-12345"
-
   "Calling submitVATRegistration" should {
     "return a Forbidden response if the user is not logged in" in new Setup {
       AuthorisationMocks.mockNotLoggedInOrAuthorised(testRegId)
@@ -100,6 +98,7 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
+        ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders)
       )(any[HeaderCarrier], any[Request[_]]))
@@ -117,6 +116,7 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
+        ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders)
       )(any[HeaderCarrier], any[Request[_]]))
@@ -133,6 +133,7 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
       when(mockSubmissionService.submitVatRegistration(
+        ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders)
       )(any[HeaderCarrier], any[Request[_]]))

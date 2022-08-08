@@ -24,6 +24,8 @@ import models.submission.AccountantAgent
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
+import scala.concurrent.Future
+
 class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
 
   object TestBuilder extends DeclarationAuditBlockBuilder
@@ -258,7 +260,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
       }
     }
     "throw an exception if the user hasn't answered the declaration question" in {
-      mockGetVatScheme(testRegId)(Some(testVatScheme))
+      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testVatScheme)))
 
       intercept[InternalServerException](TestBuilder.buildDeclarationBlock(testVatScheme))
     }

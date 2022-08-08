@@ -123,7 +123,7 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         val res = await(client(url(testSectionId)).delete())
 
         res.status mustBe NO_CONTENT
-        await(repo.retrieveVatScheme(testRegId)) mustBe Some(testVatScheme)
+        await(repo.getRegistration(testInternalid, testRegId)) mustBe Some(testVatScheme)
       }
     }
     "the section doesn't exist in the registration" must {
@@ -134,7 +134,7 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         val res = await(client(url(testSectionId)).delete())
 
         res.status mustBe NO_CONTENT
-        await(repo.retrieveVatScheme(testRegId)) mustBe Some(testVatScheme)
+        await(repo.getRegistration(testInternalid, testRegId)) mustBe Some(testVatScheme)
       }
     }
   }

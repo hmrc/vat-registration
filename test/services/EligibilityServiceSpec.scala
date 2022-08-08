@@ -71,14 +71,14 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(
         Some(testEligibilitySubmissionData.copy(partyType = RegSociety))
       ))
-      mockGetVatScheme(testRegId)(Some(testFullVatScheme))
-      mockInsertVatScheme(testClearedVatScheme)
+      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testFullVatScheme)))
+      mockUpsertRegistration(testInternalId, testRegId, testClearedVatScheme)(Future.successful(Some(testClearedVatScheme)))
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 
       result mustBe Some(eligibilityData)
       verify(mockVatSchemeRepository, Mockito.times(1))
-        .insertVatScheme(ArgumentMatchers.eq(testClearedVatScheme))
+        .upsertRegistration(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(testClearedVatScheme))
     }
 
     "return eligibility data and clear user's transactor details if the transactor answer is changed" in new Setup {
@@ -90,14 +90,14 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(
         Some(testEligibilitySubmissionData.copy(isTransactor = true))
       ))
-      mockGetVatScheme(testRegId)(Some(vatSchemeWithTransactor))
-      mockInsertVatScheme(vatSchemeWithoutTransactor)
+      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(vatSchemeWithTransactor)))
+      mockUpsertRegistration(testInternalId, testRegId, vatSchemeWithoutTransactor)(Future.successful(Some(vatSchemeWithoutTransactor)))
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 
       result mustBe Some(eligibilityData)
       verify(mockVatSchemeRepository, Mockito.times(1))
-        .insertVatScheme(ArgumentMatchers.eq(vatSchemeWithoutTransactor))
+        .upsertRegistration(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(vatSchemeWithoutTransactor))
     }
 
     "return eligibility data and clear user's exemption answer if the exception answer is true" in new Setup {
@@ -129,21 +129,23 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(
         Some(testEligibilitySubmissionData)
       ))
-      mockGetVatScheme(testRegId)(Some(vatSchemeWithExemption))
-      mockInsertVatScheme(vatSchemeWithoutExemption)
+      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(vatSchemeWithExemption)))
+      mockUpsertRegistration(testInternalId, testRegId, vatSchemeWithoutExemption)(Future.successful(Some(vatSchemeWithoutExemption)))
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 
       result mustBe Some(eligibilityData)
       verify(mockVatSchemeRepository, Mockito.times(1))
-        .insertVatScheme(ArgumentMatchers.eq(vatSchemeWithoutExemption))
+        .upsertRegistration(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(vatSchemeWithoutExemption))
     }
 
     "return eligibility data and not clear any vatscheme fields where eligibility data is unchanged" in new Setup {
       mockUpsertSection(testInternalId, testRegId, EligibilitySectionId.repoKey, testEligibilitySubmissionData)(Some(testEligibilitySubmissionData))
       mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(Some(testEligibilitySubmissionData)))
-      mockGetVatScheme(testRegId)(Some(testFullVatScheme.copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData))))
+      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
+        testFullVatScheme.copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData))
+      )))
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 

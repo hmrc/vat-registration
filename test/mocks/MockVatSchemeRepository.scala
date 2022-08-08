@@ -38,13 +38,6 @@ trait MockVatSchemeRepository extends MockitoSugar {
       ArgumentMatchers.eq(internalId)
     )).thenReturn(Future.successful(response))
 
-  def mockInsertVatScheme(vatScheme: VatScheme): OngoingStubbing[Future[VatScheme]] =
-    when(mockVatSchemeRepository.insertVatScheme(ArgumentMatchers.eq(vatScheme)))
-      .thenReturn(Future.successful(vatScheme))
-
-  def mockGetVatScheme(regId: String)(response: Option[VatScheme]): OngoingStubbing[Future[Option[VatScheme]]] =
-    when(mockVatSchemeRepository.retrieveVatScheme(regId)).thenReturn(Future.successful(response))
-
   def mockFetchBlock[T](regId: String, key: String)(response: Future[Option[T]]): OngoingStubbing[Future[Option[T]]] =
     when(mockVatSchemeRepository.fetchBlock[T](
       ArgumentMatchers.eq(regId),
