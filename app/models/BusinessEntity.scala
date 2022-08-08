@@ -34,6 +34,8 @@ sealed trait BusinessEntity {
 
   def identifiers: List[CustomerId]
 
+
+  // scalastyle:off
   def idVerificationStatus: IdVerificationStatus =
     (identifiersMatch, businessVerification, registration) match {
       case (true, Some(BvPass), FailedStatus) => IdVerified
@@ -44,6 +46,7 @@ sealed trait BusinessEntity {
       case (false, Some(BvUnchallenged), NotCalledStatus) => IdUnverifiable
       case (false, None, NotCalledStatus) => IdUnverifiable
       case (true, Some(BvUnchallenged), FailedStatus) => IdVerified
+      case (true, Some(BvSaEnrolled), FailedStatus) => IdVerified
       case _ => throw new InternalServerException("[ApplicantDetailsHelper][idVerificationStatus] method called with unsupported data from incorpId")
     }
 }

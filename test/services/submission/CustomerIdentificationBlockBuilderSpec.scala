@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.OverseasIdentifierDetails
-import models.api.{BusinessVerificationStatus, BvCtEnrolled, BvPass, BvUnchallenged, FailedStatus}
+import models.api.{BusinessVerificationStatus, BvCtEnrolled, BvPass, BvSaEnrolled, BvUnchallenged, FailedStatus}
 import models.submission.{Individual, NETP}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.InternalServerException
@@ -170,6 +170,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
       verifySoleTraderEntity(BvPass)
       verifySoleTraderEntity(BvUnchallenged)
+      verifySoleTraderEntity(BvSaEnrolled)
     }
 
     "build the correct json for a NETP entity type" in new Setup {
