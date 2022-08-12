@@ -21,10 +21,10 @@ import play.api.libs.json._
 sealed trait NoUKBankAccount
 
 case object BeingSetup extends NoUKBankAccount
-
 case object OverseasAccount extends NoUKBankAccount
-
 case object NameChange extends NoUKBankAccount
+case object AccountNotInBusinessName extends NoUKBankAccount
+case object DontWantToProvide extends NoUKBankAccount
 
 object NoUKBankAccount {
 
@@ -34,18 +34,26 @@ object NoUKBankAccount {
   val overseasAccountId: String = "3"
   val nameChange: String = "NameChange"
   val nameChangeId: String = "4"
+  val accountNotInBusinessName: String = "AccountNotInBusinessName"
+  val accountNotInBusinessNameId: String = "6"
+  val dontWantToProvide: String = "DontWantToProvide"
+  val dontWantToProvideId: String = "7"
 
-  val reads: Reads[NoUKBankAccount] = Reads[NoUKBankAccount] {
+  implicit val reads: Reads[NoUKBankAccount] = Reads[NoUKBankAccount] {
     case JsString(`beingSetup`) => JsSuccess(BeingSetup)
     case JsString(`overseasAccount`) => JsSuccess(OverseasAccount)
     case JsString(`nameChange`) => JsSuccess(NameChange)
+    case JsString(`accountNotInBusinessName`) => JsSuccess(AccountNotInBusinessName)
+    case JsString(`dontWantToProvide`) => JsSuccess(DontWantToProvide)
     case _ => JsError("Could not parse reason for no UK bank account")
   }
 
-  val writes: Writes[NoUKBankAccount] = Writes[NoUKBankAccount] {
+  implicit val writes: Writes[NoUKBankAccount] = Writes[NoUKBankAccount] {
     case BeingSetup => JsString(beingSetup)
     case OverseasAccount => JsString(overseasAccount)
     case NameChange => JsString(nameChange)
+    case AccountNotInBusinessName => JsString(accountNotInBusinessName)
+    case DontWantToProvide => JsString(dontWantToProvide)
   }
 
   implicit val format: Format[NoUKBankAccount] = Format(reads, writes)
@@ -54,6 +62,8 @@ object NoUKBankAccount {
     case BeingSetup => beingSetupId
     case OverseasAccount => overseasAccountId
     case NameChange => nameChangeId
+    case AccountNotInBusinessName => accountNotInBusinessNameId
+    case DontWantToProvide => dontWantToProvideId
   }
 
 
