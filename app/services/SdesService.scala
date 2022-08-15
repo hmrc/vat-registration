@@ -29,6 +29,7 @@ import repositories.UpscanMongoRepository
 import services.SdesService.{informationType, recipientOrSender}
 import services.monitoring.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.IdGenerator
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,12 +39,12 @@ import scala.concurrent.{ExecutionContext, Future}
 class SdesService @Inject()(sdesConnector: SdesConnector,
                             nonRepudiationConnector: NonRepudiationConnector,
                             upscanMongoRepository: UpscanMongoRepository,
-                            auditService: AuditService)
+                            auditService: AuditService,
+                            idGenerator: IdGenerator)
                            (implicit executionContext: ExecutionContext) extends Logging {
 
   def notifySdes(regId: String,
                  formBundleId: String,
-                 correlationId: String,
                  nrsSubmissionId: Option[String],
                  providerId: String)
                 (implicit hc: HeaderCarrier,
@@ -56,7 +57,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
             informationType = informationType,
             file = FileDetails(
               recipientOrSender = recipientOrSender,
-              name = uploadDetails.fileName,
+              name = s"$formBundleId-${uploadDetails.fileName}",
               location = downloadUrl,
               checksum = Checksum(
                 algorithm = checksumAlgorithm,
@@ -90,7 +91,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
               ))
             ),
             audit = AuditDetals(
-              correlationID = correlationId
+              correlationID = idGenerator.createId
             )
           )
 

@@ -48,7 +48,7 @@ class SdesControllerISpec extends IntegrationStubbing {
   val testLocation = "s3://bucketname/path/to/file/in/upscan"
   val testCallbackJson: JsObject = Json.obj(
     "notification" -> testNotification,
-    "filename" -> testFilename,
+    "filename" -> s"$testFormBundleId-$testFilename",
     "checksumAlgorithm" -> testChecksumAlgorithm,
     "checksum" -> testChecksum,
     "correlationID" -> testCorrelationID,
