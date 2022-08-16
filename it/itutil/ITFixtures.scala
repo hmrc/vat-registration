@@ -741,7 +741,7 @@ trait ITFixtures {
     Some(testDownloadUrl),
     Ready,
     Some(UploadDetails(
-      fileName = testFileName,
+      fileName = s"$testFormBundleId-$testFileName",
       fileMimeType = testMimeType,
       uploadTimestamp = testTimeStamp,
       checksum = testChecksum,

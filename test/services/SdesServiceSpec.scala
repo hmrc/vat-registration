@@ -34,17 +34,24 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.SdesService.{informationType, recipientOrSender}
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.IdGenerator
 
 import java.time.LocalDateTime
 import scala.concurrent.Future
 
 class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUpscanMongoRepository with MockSdesConnector with MockAuditService {
 
+  val testCorrelationid = "testCorrelationid"
+  object TestIdGenerator extends IdGenerator {
+    override def createId: String = testCorrelationid
+  }
+
   object TestService extends SdesService(
     mockSdesConnector,
     mockNonRepudiationConnector,
     mockUpscanMongoRepository,
-    mockAuditService
+    mockAuditService,
+    TestIdGenerator
   )
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -61,7 +68,6 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   val testSize = 123
   val testFormBundleId = "123412341234"
   val testNrsId = "testNrsId"
-  val testCorrelationid = "testCorrelationid"
 
   def testUpscanDetails(reference: String): UpscanDetails = UpscanDetails(
     Some(testRegId),
@@ -83,7 +89,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
     informationType = informationType,
     file = FileDetails(
       recipientOrSender = recipientOrSender,
-      name = testFileName,
+      name = s"$testFormBundleId-$testFileName",
       location = testDownloadUrl,
       checksum = Checksum(
         algorithm = checksumAlgorithm,
@@ -125,7 +131,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
 
   def testCallback(optFailureReason: Option[String]): SdesCallback = SdesCallback(
     notification = testReference,
-    filename = testFileName,
+    filename = s"$testFormBundleId-$testFileName",
     correlationID = testCorrelationid,
     dateTime = testDateTime,
     checksumAlgorithm = Some(checksumAlgorithm),
@@ -163,7 +169,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
         mockNotifySdes(testPayload(reference, Some(testNrsId)), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
       )
 
-      val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, Some(testNrsId), testProviderId))
+      val result = await(TestService.notifySdes(testRegId, testFormBundleId, Some(testNrsId), testProviderId))
 
       result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
 
@@ -181,7 +187,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
         mockNotifySdes(testPayload(reference, None), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
       )
 
-      val result = await(TestService.notifySdes(testRegId, testFormBundleId, testCorrelationid, None, testProviderId))
+      val result = await(TestService.notifySdes(testRegId, testFormBundleId, None, testProviderId))
 
       result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
 

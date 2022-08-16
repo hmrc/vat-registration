@@ -24,6 +24,7 @@ import utils.JsonUtils._
 object SdesAuditing {
 
   case class SdesFileSubmissionAudit(sdesPayload: SdesNotification, response: SdesNotificationResult, providerId: String) extends AuditModel {
+    val formBundleId = sdesPayload.file.getPropertyValue(formBundleKey)
     override val auditType: String = "SDESFileSubmission"
     override val transactionName: String = "SDESFileSubmission"
     override val detail: JsValue = jsonObject(
@@ -31,13 +32,13 @@ object SdesAuditing {
       "informationType" -> sdesPayload.informationType,
       "file" -> jsonObject(
         "recipientOrSender" -> sdesPayload.file.recipientOrSender,
-        "name" -> sdesPayload.file.name,
+        "name" -> s"$formBundleId-${sdesPayload.file.name}",
         "location" -> sdesPayload.file.location,
         "checksum" -> sdesPayload.file.checksum,
         "size" -> sdesPayload.file.size,
         "mimeType" -> sdesPayload.file.getPropertyValue(mimeTypeKey),
         "prefixedFormBundleId" -> sdesPayload.file.getPropertyValue(prefixedFormBundleKey),
-        "formBundleId" -> sdesPayload.file.getPropertyValue(formBundleKey),
+        "formBundleId" -> formBundleId,
         optional("nrsSubmissionId" -> sdesPayload.file.getPropertyValue(nrsSubmissionKey)),
         "attachmentId" -> sdesPayload.file.getPropertyValue(attachmentReferenceKey),
         "submissionDate" -> sdesPayload.file.getPropertyValue(submissionDateKey),

@@ -34,7 +34,6 @@ trait MockSdesService extends HttpClientMock {
 
   def mockNotifySdes(regId: String,
                      formBundleId: String,
-                     correlationId: String,
                      nrsSubmissionId: Option[String],
                      providerId: String,
                      result: Future[Seq[SdesNotificationResult]]): OngoingStubbing[Future[Seq[SdesNotificationResult]]] =
@@ -42,7 +41,6 @@ trait MockSdesService extends HttpClientMock {
       mockSdesService.notifySdes(
         ArgumentMatchers.eq(regId),
         ArgumentMatchers.eq(formBundleId),
-        ArgumentMatchers.eq(correlationId),
         ArgumentMatchers.eq(nrsSubmissionId),
         ArgumentMatchers.eq(providerId)
       )(ArgumentMatchers.any[HeaderCarrier],

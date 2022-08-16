@@ -76,7 +76,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         _ <- emailService.sendRegistrationReceivedEmail(internalId, regId)
         digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
         optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
-        _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, correlationId, optNrsId, providerId)) else Future.successful()
+        _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, optNrsId, providerId)) else Future.successful()
       } yield formBundleId
     } recover {
       case exception: ConflictException =>
