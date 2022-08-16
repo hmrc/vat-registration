@@ -96,7 +96,7 @@ class SdesControllerISpec extends IntegrationStubbing {
         Json.toJson(testNrsPayload),
         testNonRepudiationApiKey)(
         ACCEPTED,
-        Json.obj("nrAttachmentId" -> testNonRepudiationAttachmentId)
+        Json.obj("attachmentId" -> testNonRepudiationAttachmentId)
       )
 
       val res: WSResponse = await(client(url).post(testCallbackJson - "failureReason"))

@@ -97,7 +97,7 @@ class NonRepudiationConnectorISpec extends IntegrationStubbing {
           Json.toJson(testPayload),
           testNonRepudiationApiKey)(
           ACCEPTED,
-          Json.obj("nrAttachmentId" -> testNonRepudiationSubmissionId)
+          Json.obj("attachmentId" -> testNonRepudiationSubmissionId)
         )
 
         val res = connector.submitAttachmentNonRepudiation(testPayload)

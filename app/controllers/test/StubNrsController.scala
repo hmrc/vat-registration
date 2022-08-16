@@ -36,7 +36,7 @@ class StubNrsController @Inject()(cc: ControllerComponents) extends BackendContr
 
   val processAttachmentSubmission: Action[AnyContent] = Action.async {
     Future.successful(Accepted(Json.obj(
-      "nrAttachmentId" -> UUID.randomUUID()
+      "attachmentId" -> UUID.randomUUID()
     )))
   }
 }

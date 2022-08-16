@@ -32,7 +32,7 @@ object SdesAuditing {
       "informationType" -> sdesPayload.informationType,
       "file" -> jsonObject(
         "recipientOrSender" -> sdesPayload.file.recipientOrSender,
-        "name" -> s"$formBundleId-${sdesPayload.file.name}",
+        "name" -> sdesPayload.file.name,
         "location" -> sdesPayload.file.location,
         "checksum" -> sdesPayload.file.checksum,
         "size" -> sdesPayload.file.size,

@@ -695,7 +695,7 @@ trait ITFixtures {
     informationType = "1655996667080",
     file = FileDetails(
       recipientOrSender = "400063095160",
-      name = testFileName,
+      name = s"$testFormBundleId-$testFileName",
       location = testDownloadUrl,
       checksum = Checksum(
         algorithm = checksumAlgorithm,
@@ -741,7 +741,7 @@ trait ITFixtures {
     Some(testDownloadUrl),
     Ready,
     Some(UploadDetails(
-      fileName = s"$testFormBundleId-$testFileName",
+      fileName = testFileName,
       fileMimeType = testMimeType,
       uploadTimestamp = testTimeStamp,
       checksum = testChecksum,

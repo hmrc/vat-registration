@@ -64,7 +64,7 @@ class NonRepudiationConnector @Inject()(httpClient: HttpClient, config: BackendC
       response =>
         response.status match {
           case ACCEPTED =>
-            val attachmentId = (response.json \ "nrAttachmentId").as[String]
+            val attachmentId = (response.json \ "attachmentId").as[String]
             NonRepudiationAttachmentAccepted(attachmentId)
           case _ =>
             NonRepudiationAttachmentFailed(response.body, response.status)
