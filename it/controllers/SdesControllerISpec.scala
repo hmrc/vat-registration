@@ -57,6 +57,10 @@ class SdesControllerISpec extends IntegrationStubbing {
     "dateTime" -> testDateTimeString,
     "properties" -> Json.arr(
       Json.obj(
+        "name" -> "location",
+        "value" -> testLocation
+      ),
+      Json.obj(
         "name" -> "mimeType",
         "value" -> testMimeType
       ),
