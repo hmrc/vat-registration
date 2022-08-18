@@ -66,6 +66,10 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
               size = uploadDetails.size,
               properties = List(
                 Property(
+                  name = locationKey,
+                  value = downloadUrl
+                ),
+                Property(
                   name = mimeTypeKey,
                   value = uploadDetails.fileMimeType
                 ),

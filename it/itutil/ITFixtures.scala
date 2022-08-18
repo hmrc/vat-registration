@@ -704,6 +704,10 @@ trait ITFixtures {
       size = testSize,
       properties = List(
         Property(
+          name = locationKey,
+          value = testDownloadUrl
+        ),
+        Property(
           name = mimeTypeKey,
           value = testMimeType
         ),
