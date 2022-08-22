@@ -17,7 +17,7 @@
 package services.submission
 
 import models.api.NoUKBankAccount.reasonId
-import models.api.{BankAccount, IndeterminateStatus, OverseasAccount, VatScheme}
+import models.api.{BankAccount, IndeterminateStatus, InvalidStatus, OverseasAccount, VatScheme}
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
@@ -36,7 +36,7 @@ class BankDetailsBlockBuilder @Inject()() {
             "accountName" -> details.name,
             "sortCode" -> details.sortCode.replaceAll("-", ""),
             "accountNumber" -> details.number,
-            conditional(details.status.equals(IndeterminateStatus))("bankDetailsNotValid" -> true)
+            conditional(List(IndeterminateStatus, InvalidStatus).contains(details.status))("bankDetailsNotValid" -> true)
           )
         ))
       case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(NETP | NonUkNonEstablished)) =>
