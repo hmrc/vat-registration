@@ -26,7 +26,7 @@ import models.sdes._
 import play.api.Logging
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
-import services.SdesService.{informationType, recipientOrSender}
+import services.SdesService.{fileReceived, informationType, recipientOrSender}
 import services.monitoring.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.IdGenerator
@@ -125,7 +125,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
     val optNrSubmissionId = sdesCallback.getPropertyValue(nrsSubmissionKey)
 
     (optUrl, optAttachmentId, optMimeType, optNrSubmissionId, sdesCallback.checksum, sdesCallback.failureReason) match {
-      case (Some(url), Some(attachmentId), Some(mimeType), Some(nrSubmissionId), Some(checksum), None) =>
+      case (Some(url), Some(attachmentId), Some(mimeType), Some(nrSubmissionId), Some(checksum), None) if sdesCallback.notification == fileReceived =>
         val payload = NonRepudiationAttachment(
           attachmentUrl = url,
           attachmentId = attachmentId,
@@ -142,8 +142,10 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
             auditService.audit(NonRepudiationAttachmentFailureAudit(sdesCallback, status))
             logger.error(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
         }
+      case (Some(_), Some(attachmentId), Some(_), Some(_), Some(_), None) =>
+        Future.successful(logger.info(s"[SdesService] Not sending attachment NRS payload for $attachmentId as SDES notification type was ${sdesCallback.notification}"))
       case (_, Some(attachmentId), _, _, _, Some(failureReason)) =>
-        logger.warn(s"[SdesService] Not sending attachment NRS payload as Callback for $attachmentId failed with reason: $failureReason")
+        logger.warn(s"[SdesService] Not sending attachment NRS payload as callback for $attachmentId failed with reason: $failureReason")
         Future.successful(auditService.audit(SdesCallbackFailureAudit(sdesCallback)))
       case (Some(_), Some(_), Some(_), None, Some(_), _) =>
         Future.successful(logger.warn("[SdesService] Not sending attachment NRS payload as NRS failed for the Registration Submission"))
@@ -156,4 +158,5 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
 object SdesService {
   val informationType = "1655996667080"
   val recipientOrSender = "400063095160"
+  val fileReceived = "FileReceived"
 }

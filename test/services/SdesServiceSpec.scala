@@ -27,7 +27,7 @@ import models.sdes.PropertyExtractor._
 import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesFileSubmissionAudit}
 import models.sdes._
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.{verify, when}
+import org.mockito.Mockito.{verify, verifyNoInteractions, when}
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.mvc.{AnyContent, Request}
 import play.api.test.FakeRequest
@@ -57,7 +57,8 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val request: Request[AnyContent] = FakeRequest()
 
-  val testReference = "testReference"
+  val testNotificationType = "FileReceived"
+  val testReference = "testReference1"
   val testReference2 = "testReference2"
   val testReference3 = "testReference3"
   val testDownloadUrl = "testDownloadUrl"
@@ -133,8 +134,8 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
 
   val testFailureReason = "testFailureReason"
 
-  def testCallback(optFailureReason: Option[String]): SdesCallback = SdesCallback(
-    notification = testReference,
+  def testCallback(optFailureReason: Option[String], notificationType: String = testNotificationType): SdesCallback = SdesCallback(
+    notification = notificationType,
     filename = s"$testFormBundleId-$testFileName",
     correlationID = testCorrelationid,
     dateTime = testDateTime,
@@ -227,6 +228,14 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
         )(ArgumentMatchers.eq(hc))
         verifyAudit(NonRepudiationAttachmentSuccessAudit(testCallback(None), testNrAttachmentId))
       }
+    }
+
+    "Ignore any callbacks other than 'FileReceived'" in {
+      val fileProcessed = "FileProcessed"
+
+      await(TestService.processCallback(testCallback(optFailureReason = None, notificationType = fileProcessed)))
+
+      eventually(verifyNoInteractions(mockNonRepudiationConnector))
     }
 
     "call and audit NRS failure if callback is successful" in {

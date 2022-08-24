@@ -33,7 +33,7 @@ class SdesControllerISpec extends IntegrationStubbing {
 
   val url: String = controllers.routes.SdesController.sdesCallback.url
 
-  val testNotification = "FileReady"
+  val testNotification = "FileReceived"
   val testFilename = "uploadedFilename.doc"
   val testChecksumAlgorithm = "SHA2"
   override val testChecksum = "23aab10f02dd6ca07bfdf270252904d754bcc844bf3ac1f52bbaa3b14126e266"
@@ -93,7 +93,7 @@ class SdesControllerISpec extends IntegrationStubbing {
   )
 
   s"POST $url" must {
-    "return OK after successfully parsing the callback json and calling NRS" in new SetupHelper {
+    "return OK for FileReceived notifications after successfully parsing the callback json and calling NRS" in new SetupHelper {
       stubAudit(OK)
       stubMergedAudit(OK)
       stubAttachmentNonRepudiationSubmission(
@@ -104,6 +104,16 @@ class SdesControllerISpec extends IntegrationStubbing {
       )
 
       val res: WSResponse = await(client(url).post(testCallbackJson - "failureReason"))
+
+      res.status mustBe ACCEPTED
+    }
+
+    "return OK for other notifications and not call NRS" in new SetupHelper {
+      stubAudit(OK)
+      stubMergedAudit(OK)
+
+      val callbackRequest = testCallbackJson.deepMerge(Json.obj("notification" -> "FileProcessed")) - "failureReason"
+      val res: WSResponse = await(client(url).post(callbackRequest))
 
       res.status mustBe ACCEPTED
     }
