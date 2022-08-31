@@ -98,34 +98,6 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
        |}""".stripMargin
   )
 
-  val minimalSubscriptionBlockJsonIntendingTrader: JsValue = Json.parse(
-    s"""
-       |{
-       | "corporateBodyRegistered": {
-       |   "dateOfIncorporation": "2020-01-02",
-       |   "companyRegistrationNumber": "testCrn",
-       |   "countryOfIncorporation": "GB"
-       | },
-       | "reasonForSubscription": {
-       |   "voluntaryOrEarlierDate": "2020-02-02",
-       |   "relevantDate": "2020-02-02",
-       |   "registrationReason": "0013",
-       |   "exemptionOrException": "1"
-       | },
-       | "yourTurnover": {
-       |   "VATRepaymentExpected": false,
-       |   "turnoverNext12Months": $testTurnover,
-       |   "zeroRatedSupplies": 12.99
-       | },
-       | "businessActivities": {
-       |   "SICCodes": {
-       |     "primaryMainCode": "12345"
-       |   },
-       |   "description": "testBusinessDescription"
-       | }
-       |}""".stripMargin
-  )
-
   def fullNetpSubscriptionBlockJson: JsValue = Json.obj(
     "reasonForSubscription" -> Json.obj(
       "relevantDate" -> "2020-10-01",
@@ -281,23 +253,6 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       val result = TestService.buildSubscriptionBlock(vatScheme)
 
       result mustBe minimalSubscriptionBlockJson
-    }
-
-    "build a minimal subscription json when minimum data is provided and user is an intending trader" in {
-      val vatScheme = testVatScheme.copy(
-        applicantDetails = Some(validApplicantDetails),
-        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true), currentlyTrading = Some(true))),
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          registrationReason = Voluntary
-        )),
-        flatRateScheme = Some(validEmptyFlatRateScheme),
-        business = Some(testBusiness.copy(businessActivities = Some(Nil)))
-      )
-
-      val result = TestService.buildSubscriptionBlock(vatScheme)
-
-      result mustBe minimalSubscriptionBlockJsonIntendingTrader
     }
 
     "build a minimal subscription json when no Flat Rate Scheme is provided" in {

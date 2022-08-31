@@ -75,7 +75,7 @@ trait VatRegistrationFixture {
   lazy val testFormerName = FormerName(hasFormerName = Some(true), Some(testName), Some(testDate))
   lazy val testVatApplicationDetails = VatApplication(
     Some(true), Some(true), Some(testTurnover), None, Some(12.99), Some(false), Some(Quarterly),
-    Some(JanuaryStagger), Some(testDate), None, None, None, None, None
+    Some(JanuaryStagger), Some(testDate), None, None, None, None
   )
   lazy val zeroRatedSupplies: BigDecimal = 12.99
   lazy val testBpSafeId = "testBpSafeId"
@@ -232,7 +232,6 @@ trait VatRegistrationFixture {
     Some(JanDecStagger),
     Some(testDate),
     Some(validAASDetails),
-    None,
     None,
     None,
     None

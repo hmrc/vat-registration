@@ -46,7 +46,6 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
     None,
     None,
     Some(testNorthernIrelandProtocol),
-    Some(false),
     Some(false)
   )
 
@@ -63,7 +62,6 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
     None,
     None,
     Some(testNorthernIrelandProtocol),
-    None,
     None
   )
 
@@ -80,7 +78,6 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
     Some(AASDetails(BankGIRO, MonthlyPayment)),
     None,
     Some(testNorthernIrelandProtocol),
-    None,
     None
   )
 
@@ -111,8 +108,7 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
         "answer" -> false
       )
     ),
-    "hasTaxRepresentative" -> false,
-    "currentlyTrading" -> false
+    "hasTaxRepresentative" -> false
   )
 
   val validQuarterlyVatApplicationJson: JsObject = Json.obj(
