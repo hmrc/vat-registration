@@ -32,8 +32,7 @@ case class VatApplication(eoriRequested: Option[Boolean],
                           annualAccountingDetails: Option[AASDetails],
                           overseasCompliance: Option[OverseasCompliance],
                           northernIrelandProtocol: Option[NIPCompliance],
-                          hasTaxRepresentative: Option[Boolean],
-                          currentlyTrading: Option[Boolean])
+                          hasTaxRepresentative: Option[Boolean])
 
 object VatApplication extends JsonUtilities {
   implicit val format: Format[VatApplication] = Json.format[VatApplication]

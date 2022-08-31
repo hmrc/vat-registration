@@ -78,8 +78,7 @@ trait ITFixtures {
     annualAccountingDetails = None,
     overseasCompliance = None,
     northernIrelandProtocol = Some(testNorthernIrelandProtocol),
-    hasTaxRepresentative = Some(false),
-    currentlyTrading = None
+    hasTaxRepresentative = Some(false)
   )
 
   val frsDetails = FRSDetails(
@@ -107,8 +106,7 @@ trait ITFixtures {
     annualAccountingDetails = Some(aasDetails),
     overseasCompliance = None,
     northernIrelandProtocol = Some(testNorthernIrelandProtocol),
-    hasTaxRepresentative = Some(false),
-    currentlyTrading = None
+    hasTaxRepresentative = Some(false)
   )
 
   lazy val testFirstName = "testFirstName"
@@ -561,8 +559,7 @@ trait ITFixtures {
       Some(testWarehouseName)
     )),
     None,
-    hasTaxRepresentative = Some(false),
-    currentlyTrading = None
+    hasTaxRepresentative = Some(false)
   )
 
   val testNetpEntity = SoleTraderIdEntity(

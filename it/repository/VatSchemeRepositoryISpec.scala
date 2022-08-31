@@ -98,8 +98,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     appliedForExemption = None,
     annualAccountingDetails = None,
     overseasCompliance = None,
-    hasTaxRepresentative = Some(false),
-    currentlyTrading = None
+    hasTaxRepresentative = Some(false)
   )
 
   val vatSchemeWithReturns = VatScheme(
