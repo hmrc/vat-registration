@@ -48,9 +48,8 @@ object EligibilitySubmissionData {
         (json \ "businessEntity").validate[PartyType] and
         (json \ "registrationReason").validateOpt[String] and
         (json \ "registeringBusiness").validate[String] and
-        json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None)) and
-        (json \ "currentlyTrading").validateOpt[Boolean]
-      ) ((threshold, exception, businessEntity, registrationReason, registeringBusiness, optTogcCole, optCurrentlyTrading) =>
+        json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None))
+      ) ((threshold, exception, businessEntity, registrationReason, registeringBusiness, optTogcCole) =>
       EligibilitySubmissionData(
         threshold,
         exception,
@@ -59,8 +58,6 @@ object EligibilitySubmissionData {
           case Some(`sellingGoodsAndServices`) | None => threshold match {
             case Threshold(true, _, _, _, Some(_)) =>
               NonUk
-            case Threshold(false, _, _, _, _) if optCurrentlyTrading.contains(false) =>
-              IntendingTrader
             case Threshold(false, _, _, _, _) =>
               Voluntary
             case Threshold(true, forwardLook1, _, forwardLook2, _)

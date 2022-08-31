@@ -33,7 +33,10 @@ class SubscriptionBlockBuilder @Inject()() {
     (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication, vatScheme.applicantDetails, vatScheme.business, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
       case (Some(eligibilityData), Some(vatApplication), Some(applicantDetails), Some(business), otherBusinessInvolvements) => jsonObject(
         "reasonForSubscription" -> jsonObject(
-          "registrationReason" -> eligibilityData.registrationReason.key,
+          "registrationReason" -> {
+            if (vatApplication.currentlyTrading.contains(true) && eligibilityData.registrationReason.equals(Voluntary)) IntendingTrader.key
+            else eligibilityData.registrationReason.key
+          },
           "relevantDate" -> {
             eligibilityData.registrationReason match {
               case Voluntary | SuppliesOutsideUk | GroupRegistration | IntendingTrader => vatApplication.startDate
