@@ -103,6 +103,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
       None,
       None,
       None,
+      None,
       None
     )
 
