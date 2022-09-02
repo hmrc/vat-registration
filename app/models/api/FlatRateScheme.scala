@@ -26,7 +26,7 @@ object FlatRateScheme {
   implicit val format: Format[FlatRateScheme] = Json.format[FlatRateScheme]
 }
 
-case class BusinessGoods(estimatedTotalSales: Long, overTurnover: Boolean)
+case class BusinessGoods(estimatedTotalSales: BigDecimal, overTurnover: Boolean)
 
 object BusinessGoods {
   implicit val format: OFormat[BusinessGoods] = Json.format[BusinessGoods]

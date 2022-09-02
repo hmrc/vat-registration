@@ -79,7 +79,7 @@ class FlatRateSchemeSpec extends BaseSpec with JsonFormatValidation with VatRegi
         val json = Json.parse(
           s"""
              |{
-             |  "estimatedTotalSales": 1234567891011
+             |  "estimatedTotalSales": 1234567891
              |}
          """.stripMargin)
         val result = Json.fromJson[BusinessGoods](json)
