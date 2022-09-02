@@ -254,7 +254,7 @@ trait VatRegistrationFixture {
 
   lazy val validFullFRSDetails: FRSDetails =
     FRSDetails(
-      businessGoods = Some(BusinessGoods(1234567891011L, overTurnover = true)),
+      businessGoods = Some(BusinessGoods(BigDecimal(1234567891), overTurnover = true)),
       startDate = Some(testDate),
       categoryOfBusiness = Some("testCategory"),
       percent = 15,
@@ -332,7 +332,7 @@ trait VatRegistrationFixture {
        |{
        |  "businessGoods" : {
        |    "overTurnover": true,
-       |    "estimatedTotalSales": 1234567891011
+       |    "estimatedTotalSales": 1234567891
        |  },
        |  "startDate": "$testDate",
        |  "categoryOfBusiness":"testCategory",
@@ -356,7 +356,7 @@ trait VatRegistrationFixture {
        |{
        |  "businessGoods" : {
        |    "overTurnover": true,
-       |    "estimatedTotalSales": 1234567891011
+       |    "estimatedTotalSales": 1234567891
        |  },
        |  "startDate": "$testDate",
        |  "categoryOfBusiness":"testCategory",
