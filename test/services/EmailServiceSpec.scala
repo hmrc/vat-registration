@@ -43,6 +43,9 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
   val basicTemplate = "mtdfb_vatreg_registration_received"
   val emailTemplate = s"${basicTemplate}_email"
   val postalTemplate = s"${basicTemplate}_post"
+  val basicCyTemplate = s"${basicTemplate}_cy"
+  val emailCyTemplate = s"${emailTemplate}_cy"
+  val postalCyTemplate = s"${postalTemplate}_cy"
   val testEmailFirstName = "Forename"
   val testApplicantEmail = "skylake@vilikariet.com"
 
@@ -62,7 +65,17 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
               mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testEmailVatScheme)))
               mockSendSubmissionReceivedEmail(testEmail, emailTemplate, testParams, force = true)(Future.successful(EmailSent))
 
-              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId))
+              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "en"))
+
+              res mustBe EmailSent
+            }
+          }
+          "the welsh email sends successfully" must {
+            "send the Submission Received email to the transactor's email and use the transactor name as the salutation" in {
+              mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testEmailVatScheme)))
+              mockSendSubmissionReceivedEmail(testEmail, emailCyTemplate, testParams, force = true)(Future.successful(EmailSent))
+
+              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "cy"))
 
               res mustBe EmailSent
             }
@@ -72,7 +85,7 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
               mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testEmailVatScheme)))
               mockSendSubmissionReceivedEmail(testEmail, emailTemplate, testParams, force = true)(Future.successful(EmailFailedToSend))
 
-              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId))
+              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "en"))
 
               res mustBe EmailFailedToSend
             }
@@ -82,7 +95,7 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
               mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testEmailVatScheme)))
               mockSendSubmissionReceivedEmail(testEmail, emailTemplate, testParams, force = true)(Future.failed(new GatewayTimeoutException("")))
 
-              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId))
+              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "en"))
 
               res mustBe EmailFailedToSend
             }
@@ -95,7 +108,18 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
               mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(vatScheme)))
               mockSendSubmissionReceivedEmail(testApplicantEmail, emailTemplate, testParams, force = true)(Future.successful(EmailSent))
 
-              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId))
+              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "en"))
+
+              res mustBe EmailSent
+            }
+          }
+          "the welsh email sends successfully" must {
+            "send the Submission Received email to the applicant's email and use the applicant name as the salutation" in {
+              val vatScheme = testEmailVatScheme.copy(transactorDetails = None)
+              mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(vatScheme)))
+              mockSendSubmissionReceivedEmail(testApplicantEmail, emailCyTemplate, testParams, force = true)(Future.successful(EmailSent))
+
+              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "cy"))
 
               res mustBe EmailSent
             }
@@ -106,7 +130,7 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
               mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(vatScheme)))
               mockSendSubmissionReceivedEmail(testApplicantEmail, emailTemplate, testParams, force = true)(Future.successful(EmailFailedToSend))
 
-              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId))
+              val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "en"))
 
               res mustBe EmailFailedToSend
             }
@@ -119,7 +143,7 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
 
           mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(vatScheme)))
 
-          val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId))
+          val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "en"))
 
           res mustBe EmailFailedToSend
         }
@@ -129,7 +153,7 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
       "return EmailFailedToSend" in {
         mockGetRegistration(testInternalId, testRegId)(Future.successful(None))
 
-        val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId))
+        val res = await(TestService.sendRegistrationReceivedEmail(testInternalId, testRegId, "en"))
 
         res mustBe EmailFailedToSend
       }

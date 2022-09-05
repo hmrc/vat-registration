@@ -100,7 +100,9 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       when(mockSubmissionService.submitVatRegistration(
         ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(testUserHeaders)
+        ArgumentMatchers.eq(testUserHeaders),
+        ArgumentMatchers.eq("en")
+
       )(any[HeaderCarrier], any[Request[_]]))
         .thenReturn(Future.failed(UpstreamErrorResponse("message", 501)))
 
@@ -118,7 +120,8 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       when(mockSubmissionService.submitVatRegistration(
         ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(testUserHeaders)
+        ArgumentMatchers.eq(testUserHeaders),
+        ArgumentMatchers.eq("en")
       )(any[HeaderCarrier], any[Request[_]]))
         .thenReturn(Future.successful("VRS00000000001"))
 
@@ -135,7 +138,9 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       when(mockSubmissionService.submitVatRegistration(
         ArgumentMatchers.eq(testInternalId),
         ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(testUserHeaders)
+        ArgumentMatchers.eq(testUserHeaders),
+        ArgumentMatchers.eq("en")
+
       )(any[HeaderCarrier], any[Request[_]]))
         .thenReturn(Future.successful("VRS00000000001"))
 

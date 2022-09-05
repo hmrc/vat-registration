@@ -50,13 +50,14 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
     implicit request =>
       isAuthenticated { internalId =>
         val userHeaders = (request.body \ "userHeaders").asOpt[Map[String, String]].getOrElse(Map.empty)
+        val lang = (request.body \ "lang").asOpt[String].getOrElse("en")
 
         registrationService.getStatus(internalId, regId).flatMap {
           case `locked` => Future.successful(TooManyRequests)
           case `submitted` => Future.successful(Ok)
           case `duplicateSubmission` => Future.successful(Conflict)
           case `contact` => Future.successful(UnprocessableEntity)
-          case _ => submissionService.submitVatRegistration(internalId, regId, userHeaders).map { _ =>
+          case _ => submissionService.submitVatRegistration(internalId, regId, userHeaders, lang).map { _ =>
             Ok
           }.recover {
             case _: ConflictException => Conflict
