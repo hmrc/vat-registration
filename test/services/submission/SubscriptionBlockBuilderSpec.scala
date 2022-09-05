@@ -286,7 +286,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a minimal subscription json when minimum data is provided and user is an intending trader" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true), currentlyTrading = Some(true))),
+        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true), currentlyTrading = Some(false))),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
           threshold = Threshold(mandatoryRegistration = false, None, None, None),
           registrationReason = Voluntary

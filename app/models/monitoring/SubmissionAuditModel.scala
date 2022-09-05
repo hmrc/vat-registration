@@ -56,7 +56,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           ),
           "eoriRequested" -> vatApplication.eoriRequested,
           "registrationReason" -> {
-            if (vatApplication.currentlyTrading.contains(true) && eligibilityData.registrationReason.equals(Voluntary)) IntendingTrader.humanReadableKey
+            if (vatApplication.currentlyTrading.contains(false) && eligibilityData.registrationReason.equals(Voluntary)) IntendingTrader.humanReadableKey
             else eligibilityData.registrationReason.humanReadableKey
           },
           optional("registrationRelevantDate" -> {
