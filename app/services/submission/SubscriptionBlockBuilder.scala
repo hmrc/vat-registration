@@ -34,7 +34,7 @@ class SubscriptionBlockBuilder @Inject()() {
       case (Some(eligibilityData), Some(vatApplication), Some(applicantDetails), Some(business), otherBusinessInvolvements) => jsonObject(
         "reasonForSubscription" -> jsonObject(
           "registrationReason" -> {
-            if (vatApplication.currentlyTrading.contains(true) && eligibilityData.registrationReason.equals(Voluntary)) IntendingTrader.key
+            if (vatApplication.currentlyTrading.contains(false) && eligibilityData.registrationReason.equals(Voluntary)) IntendingTrader.key
             else eligibilityData.registrationReason.key
           },
           "relevantDate" -> {
