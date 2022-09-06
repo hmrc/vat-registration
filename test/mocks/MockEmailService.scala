@@ -18,10 +18,10 @@ package mocks
 
 import connectors.EmailResponse
 import org.mockito.ArgumentMatchers
-import org.scalatest.Suite
-import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
+import org.scalatest.Suite
+import org.scalatestplus.mockito.MockitoSugar
 import services.EmailService
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -32,9 +32,13 @@ trait MockEmailService extends MockitoSugar {
 
   val mockEmailService = mock[EmailService]
 
-  def mockSendRegistrationReceivedEmail(internalId: String, regId: String)
+  def mockSendRegistrationReceivedEmail(internalId: String, regId: String, lang: String)
                                        (response: Future[EmailResponse]): OngoingStubbing[Future[EmailResponse]] =
-    when(mockEmailService.sendRegistrationReceivedEmail(ArgumentMatchers.eq(internalId), ArgumentMatchers.eq(regId))(ArgumentMatchers.any[HeaderCarrier]))
-      .thenReturn(response)
+    when(mockEmailService.sendRegistrationReceivedEmail(
+      ArgumentMatchers.eq(internalId),
+      ArgumentMatchers.eq(regId),
+      ArgumentMatchers.eq(lang)
+    )(ArgumentMatchers.any[HeaderCarrier])
+    ).thenReturn(response)
 
 }

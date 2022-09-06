@@ -110,7 +110,7 @@ class SubmissionServiceSpec extends VatRegSpec
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme)).thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
-      mockSendRegistrationReceivedEmail(testInternalId, testRegId)(Future.successful(EmailSent))
+      mockSendRegistrationReceivedEmail(testInternalId, testRegId, "en")(Future.successful(EmailSent))
 
       val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
 
@@ -135,7 +135,7 @@ class SubmissionServiceSpec extends VatRegSpec
       )
       mockAttachmentList(testFullVatScheme)(Set[AttachmentType]())
 
-      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders)) mustBe testFormBundleId
+      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe testFormBundleId
 
       eventually {
         verifyAudit(SubmissionAuditModel(

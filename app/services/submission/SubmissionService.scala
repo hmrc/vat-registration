@@ -57,7 +57,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   val authConnector: AuthConnector
                                  )(implicit executionContext: ExecutionContext) extends FutureInstances with AuthorisedFunctions with Logging with FeatureSwitching {
 
-  def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String])
+  def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String], lang: String)
                            (implicit hc: HeaderCarrier,
                             request: Request[_]): Future[String] = {
     {
@@ -73,7 +73,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         (providerId, affinityGroup, optAgentCode) <- retrieveIdentityDetails
         _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
         _ <- trafficManagementService.updateStatus(regId, Submitted)
-        _ <- emailService.sendRegistrationReceivedEmail(internalId, regId)
+        _ <- emailService.sendRegistrationReceivedEmail(internalId, regId, lang)
         digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
         optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
         _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, optNrsId, providerId)) else Future.successful()
