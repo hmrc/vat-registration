@@ -16,6 +16,7 @@
 
 package services
 
+import config.BackendConfig
 import connectors.{NonRepudiationConnector, SdesConnector}
 import models.api.{Ready, UpscanDetails}
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
@@ -26,7 +27,7 @@ import models.sdes._
 import play.api.Logging
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
-import services.SdesService.{fileReceived, informationType, recipientOrSender}
+import services.SdesService.fileReceived
 import services.monitoring.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.IdGenerator
@@ -41,7 +42,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
                             upscanMongoRepository: UpscanMongoRepository,
                             auditService: AuditService,
                             idGenerator: IdGenerator)
-                           (implicit executionContext: ExecutionContext) extends Logging {
+                           (implicit executionContext: ExecutionContext, appConfig: BackendConfig) extends Logging {
 
   def notifySdes(regId: String,
                  formBundleId: String,
@@ -54,9 +55,9 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
       Future.sequence(upscanDetailsList.collect {
         case UpscanDetails(_, reference, _, Some(downloadUrl), Ready, Some(uploadDetails), _) =>
           val payload: SdesNotification = SdesNotification(
-            informationType = informationType,
+            informationType = appConfig.sdesInformationType,
             file = FileDetails(
-              recipientOrSender = recipientOrSender,
+              recipientOrSender = appConfig.sdesRecipientOrSender,
               name = s"$formBundleId-${uploadDetails.fileName}",
               location = downloadUrl,
               checksum = Checksum(
@@ -156,7 +157,5 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
 }
 
 object SdesService {
-  val informationType = "1655996667080"
-  val recipientOrSender = "400063095160"
   val fileReceived = "FileReceived"
 }
