@@ -23,6 +23,7 @@ import featureswitch.core.config.FeatureSwitching
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import models.api.vatapplication.Annual
 import models.api.{Attached, PersonalDetails, Submitted, VatScheme}
+import models.{IntendingTrader, Voluntary}
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
 import play.api.libs.json.JsObject
@@ -167,6 +168,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     Future.successful()
   }
 
+  // scalastyle:off
   private[services] def logSubmission(vatScheme: VatScheme,
                                       vatSubmissionStatus: VatSubmissionResponse): Future[Unit] = {
 
@@ -191,12 +193,19 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
 
     val attachmentList = attachmentsService.attachmentList(vatScheme).map(_.toString)
 
+    val regReason = if (vatScheme.vatApplication.exists(_.currentlyTrading.contains(false)) &&
+      vatScheme.eligibilitySubmissionData.exists(_.registrationReason.equals(Voluntary))) {
+      Some(IntendingTrader.toString)
+    } else {
+      vatScheme.eligibilitySubmissionData.map(_.registrationReason.toString)
+    }
+
     logger.info(jsonObject(
       "logInfo" -> "SubmissionLog",
       "status" -> vatSubmissionStatus.fold(_ => "Failed", _ => "Successful"),
       "regId" -> vatScheme.registrationId,
       "partyType" -> vatScheme.partyType.map(_.toString),
-      "regReason" -> vatScheme.eligibilitySubmissionData.map(_.registrationReason.toString),
+      "regReason" -> regReason,
       optional("agentOrTransactor" -> agentOrTransactor),
       conditional(specialSituations.nonEmpty)("specialSituations" -> specialSituations),
       optional("attachments" -> vatScheme.attachments.map(attachmentDetails => jsonObject(
