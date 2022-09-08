@@ -18,7 +18,10 @@ package models.api
 
 import play.api.libs.json.{Format, Json}
 
-case class Attachments(method: AttachmentMethod)
+case class Attachments(method: AttachmentMethod,
+                       supplyVat1614a: Option[Boolean] = None,
+                       supplyVat1614h: Option[Boolean] = None,
+                       supplySupportingDocuments: Option[Boolean] = None)
 
 object Attachments {
   implicit val format: Format[Attachments] = Json.format[Attachments]
