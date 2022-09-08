@@ -16,6 +16,7 @@
 
 package services
 
+import config.BackendConfig
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.monitoring.MockAuditService
@@ -32,7 +33,6 @@ import org.scalatest.concurrent.Eventually.eventually
 import play.api.mvc.{AnyContent, Request}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import services.SdesService.{informationType, recipientOrSender}
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.IdGenerator
 
@@ -45,6 +45,8 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   object TestIdGenerator extends IdGenerator {
     override def createId: String = testCorrelationid
   }
+
+  implicit val appConfig = app.injector.instanceOf[BackendConfig]
 
   object TestService extends SdesService(
     mockSdesConnector,
@@ -68,6 +70,8 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   val testChecksum = "1234567890"
   val testSize = 123
   val testFormBundleId = "123412341234"
+  val testInfoType = "1655996667080"
+  val testRecipientOrSender = "400063095160"
   val testNrsId = "testNrsId"
 
   def testUpscanDetails(reference: String): UpscanDetails = UpscanDetails(
@@ -87,9 +91,9 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   )
 
   def testPayload(attachmentReference: String, nrsKey: Option[String]): SdesNotification = SdesNotification(
-    informationType = informationType,
+    informationType = testInfoType,
     file = FileDetails(
-      recipientOrSender = recipientOrSender,
+      recipientOrSender = testRecipientOrSender,
       name = s"$testFormBundleId-$testFileName",
       location = testDownloadUrl,
       checksum = Checksum(
@@ -175,7 +179,6 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       )
 
       val result = await(TestService.notifySdes(testRegId, testFormBundleId, Some(testNrsId), testProviderId))
-
       result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
 
       eventually {

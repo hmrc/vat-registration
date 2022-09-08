@@ -124,6 +124,8 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
   def sendEmailUrl: String = s"$emailBaseUrl/hmrc/email"
 
   lazy val sdesAuthorizationToken: String = servicesConfig.getString("microservice.services.sdes.api-key")
+  lazy val sdesInformationType = servicesConfig.getString("microservice.services.sdes.informationType")
+  lazy val sdesRecipientOrSender = servicesConfig.getString("microservice.services.sdes.recipientOrSender")
 
   lazy val emailCheck: List[String] = servicesConfig.getString("constants.emailCheck").split(',').toList
 }
