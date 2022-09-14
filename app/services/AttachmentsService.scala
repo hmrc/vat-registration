@@ -57,8 +57,8 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
       getIdentityEvidenceAttachment(vatScheme),
       getVat2Attachment(vatScheme),
       getVat51Attachment(vatScheme),
-      getVat5LAttachment(vatScheme),
-      getTaxRepresentativeAttachment(vatScheme)
+      getTaxRepresentativeAttachment(vatScheme),
+      getVat5LAttachment(vatScheme)
     ).flatten
   }
 
