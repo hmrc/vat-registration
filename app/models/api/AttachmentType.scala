@@ -64,13 +64,13 @@ object AttachmentType {
     Writes[AttachmentType](attachmentType => JsString(map(attachmentType)))
   )
 
-  def submissionWrites(attachmentOption: AttachmentMethod): Writes[Set[AttachmentType]] = Writes { attachments =>
+  def submissionWrites(attachmentOption: AttachmentMethod): Writes[List[AttachmentType]] = Writes { attachments =>
     Json.toJson(
       attachments
         .map {
           case TransactorIdentityEvidence | _: DetailedIdentityEvidence => IdentityEvidence
           case attachment => attachment
-        }
+        }.distinct
         .map { attachmentType =>
           map(attachmentType) -> {
             if (attachmentOption == EmailMethod) {

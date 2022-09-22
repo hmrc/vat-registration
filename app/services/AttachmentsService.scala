@@ -29,16 +29,16 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
                                    upscanMongoRepository: UpscanMongoRepository
                                   )(implicit executionContext: ExecutionContext) {
 
-  def getAttachmentList(internalId: String, regId: String): Future[Set[AttachmentType]] =
+  def getAttachmentList(internalId: String, regId: String): Future[List[AttachmentType]] =
     registrationRepository.getRegistration(internalId, regId).map {
       case Some(vatScheme) => attachmentList(vatScheme)
-      case None => Set.empty
+      case None => List.empty[AttachmentType]
     }
 
   def getIncompleteAttachments(internalId: String, regId: String): Future[List[AttachmentType]] = {
     for {
       attachmentList <- getAttachmentList(internalId, regId)
-      requiredAttachments = attachmentList.toList.flatMap {
+      requiredAttachments = attachmentList.flatMap {
         case IdentityEvidence => List(PrimaryIdentityEvidence, ExtraIdentityEvidence, ExtraIdentityEvidence)
         case TransactorIdentityEvidence => List(PrimaryTransactorIdentityEvidence, ExtraTransactorIdentityEvidence, ExtraTransactorIdentityEvidence)
         case attachmentType => List(attachmentType)
@@ -51,8 +51,8 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
     } yield incompleteAttachments
   }
 
-  def attachmentList(vatScheme: VatScheme): Set[AttachmentType] = {
-    Set(
+  def attachmentList(vatScheme: VatScheme): List[AttachmentType] = {
+    List(
       getTransactorIdentityEvidenceAttachment(vatScheme),
       getIdentityEvidenceAttachment(vatScheme),
       getVat2Attachment(vatScheme),
