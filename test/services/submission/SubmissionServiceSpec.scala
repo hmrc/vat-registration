@@ -133,7 +133,7 @@ class SubmissionServiceSpec extends VatRegSpec
           Some(testCredentials)
         )
       )
-      mockAttachmentList(testFullVatScheme)(Set[AttachmentType]())
+      mockAttachmentList(testFullVatScheme)(List[AttachmentType]())
 
       await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe testFormBundleId
 

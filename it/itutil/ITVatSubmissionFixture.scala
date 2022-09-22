@@ -1334,7 +1334,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
-  def testSubmissionJson(customerIdentification: JsObject, entities: Option[JsArray], regReason: RegistrationReason = ForwardLook, optSubscriptionBlock: Option[JsObject] = None, attachmentList: Set[AttachmentType] = Set()): JsObject = Json.obj(
+  def testSubmissionJson(customerIdentification: JsObject, entities: Option[JsArray], regReason: RegistrationReason = ForwardLook, optSubscriptionBlock: Option[JsObject] = None, attachmentList: List[AttachmentType] = List()): JsObject = Json.obj(
     "messageType" -> "SubscriptionCreate",
     "admin" -> Json.obj(
       "additionalInformation" -> Json.obj(

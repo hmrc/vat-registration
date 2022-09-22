@@ -61,7 +61,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
-        res mustBe Set(IdentityEvidence)
+        res mustBe List(IdentityEvidence)
       }
 
       "return transactorIdentityEvidence in the attachment list fot a transactor with unverified personal details" in {
@@ -69,7 +69,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
-        res mustBe Set(TransactorIdentityEvidence)
+        res mustBe List(TransactorIdentityEvidence)
       }
 
       "return VAT2 in the attachment list for a Partnership" in {
@@ -77,7 +77,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
-        res mustBe Set(VAT2)
+        res mustBe List(VAT2)
       }
 
       "return VAT51 in the attachment list fot a Group Registration" in {
@@ -85,7 +85,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
-        res mustBe Set(VAT51)
+        res mustBe List(VAT51)
       }
 
       "return VAT5L in the attachment list fot a user with land and property" in {
@@ -93,13 +93,13 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
-        res mustBe Set(VAT5L)
+        res mustBe List(VAT5L)
       }
 
       "return VAT1TR in the attachment list if user has opted for tax representative" in {
         mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testSchemeWithTaxRepresentative)))
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
-        res mustBe Set(TaxRepresentativeAuthorisation)
+        res mustBe List(TaxRepresentativeAuthorisation)
       }
     }
     "attachments are not required" must {
@@ -108,7 +108,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
-        res mustBe Set.empty
+        res mustBe Nil
       }
 
       "not return VAT2 in the attachment list for a Limited Liability Partnership" in {
@@ -116,7 +116,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
-        res mustBe Set.empty
+        res mustBe Nil
       }
     }
   }

@@ -466,7 +466,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost(
           "/vat/subscription",
-          testSubmissionJson(generalPartnershipCustomerId, Some(soleTraderLeadPartner), attachmentList = Set(VAT2)),
+          testSubmissionJson(generalPartnershipCustomerId, Some(soleTraderLeadPartner), attachmentList = List(VAT2)),
           OK,
           Json.stringify(testSubmissionResponse)
         )
@@ -488,7 +488,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost(
           "/vat/subscription",
-          testSubmissionJson(generalPartnershipCustomerId, Some(ukCompanyLeadPartner), attachmentList = Set(VAT2)),
+          testSubmissionJson(generalPartnershipCustomerId, Some(ukCompanyLeadPartner), attachmentList = List(VAT2)),
           OK,
           Json.stringify(testSubmissionResponse)
         )
@@ -512,7 +512,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost(
           "/vat/subscription",
-          testSubmissionJson(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner), attachmentList = Set(VAT2)),
+          testSubmissionJson(limitedPartnershipCustomerId, Some(scottishPartnershipLeadPartner), attachmentList = List(VAT2)),
           OK,
           Json.stringify(testSubmissionResponse)
         )
@@ -555,7 +555,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
         stubPost(
           "/vat/subscription",
-          testSubmissionJson(vatGroupCustomerId, Some(ukCompanyLeadEntity), GroupRegistration, Some(corporateBodyRegisteredJson), Set(VAT51)),
+          testSubmissionJson(vatGroupCustomerId, Some(ukCompanyLeadEntity), GroupRegistration, Some(corporateBodyRegisteredJson), List(VAT51)),
           OK,
           Json.stringify(testSubmissionResponse)
         )

@@ -63,7 +63,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
     "return an admin block json object" when {
       "both eligibility and vat application details data are in the database" in {
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(Set[AttachmentType]()))
+          .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -83,7 +83,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         )
 
         when(mockAttachmentService.attachmentList(ArgumentMatchers.eq(vatScheme)))
-          .thenReturn(Set[AttachmentType](IdentityEvidence))
+          .thenReturn(List[AttachmentType](IdentityEvidence))
 
         val result = TestBuilder.buildAdminBlock(vatScheme)
 
@@ -98,7 +98,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         )
 
         when(mockAttachmentService.attachmentList(ArgumentMatchers.eq(vatScheme)))
-          .thenReturn(Set[AttachmentType](IdentityEvidence))
+          .thenReturn(List[AttachmentType](IdentityEvidence))
 
         val result = TestBuilder.buildAdminBlock(vatScheme)
 
@@ -109,7 +109,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
     "throw an exception" when {
       "the eligibility data is missing from the database" in {
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(Set[AttachmentType]()))
+          .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = None,
@@ -124,7 +124,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
       "the vat application details data is missing from the database" in {
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(Set[AttachmentType]()))
+          .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -139,7 +139,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
       "there is no eligibility data or trading details data in the database" in {
         when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(Set[AttachmentType]()))
+          .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = None,
