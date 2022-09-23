@@ -20,17 +20,16 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.GroupRegistration
 import models.api._
-import models.registration.sections.PartnersSection
 import models.submission._
 import play.api.libs.json.Json
 
 class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   object Builder extends EntitiesBlockBuilder
-  
+
   val testEntity = testSoleTraderEntity.copy(bpSafeId = Some(testBpSafeId))
   val testEntityNoSafeId = testSoleTraderEntity.copy(bpSafeId = None)
-  val testPartner = Partner(details = testEntity, partyType = Individual, isLeadPartner = true)
+  val testPartner = Entity(details = Some(testEntity), partyType = Individual, isLeadPartner = Some(true))
   val testApplicantContact = DigitalContactOptional(
     email = Some(testEmail),
     tel = Some(testTelephone),
@@ -43,7 +42,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
           business = Some(testBusiness),
-          partners = Some(PartnersSection(List(testPartner))),
+          entities = Some(List(testPartner)),
           applicantDetails = Some(validApplicantDetails)
         )
 
@@ -75,7 +74,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           val vatScheme = testVatScheme.copy(
             eligibilitySubmissionData = Some(testEligibilitySubmissionData),
             business = Some(testBusiness),
-            partners = Some(PartnersSection(List(testPartner.copy(details = testEntityNoSafeId)))),
+            entities = Some(List(testPartner.copy(details = Some(testEntityNoSafeId)))),
             applicantDetails = Some(validApplicantDetails)
           )
 
@@ -111,11 +110,11 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       "an SA UTR was not provided" should {
         "return a JSON array containing a single partner without identifiers" in {
           val testEntity = testSoleTraderEntity.copy(bpSafeId = None, sautr = None)
-          val testPartner = Partner(details = testEntity, partyType = Individual, isLeadPartner = true)
+          val testPartner = Entity(details = Some(testEntity), partyType = Individual, isLeadPartner = Some(true))
           val vatScheme = testVatScheme.copy(
             eligibilitySubmissionData = Some(testEligibilitySubmissionData),
             business = Some(testBusiness),
-            partners = Some(PartnersSection(List(testPartner))),
+            entities = Some(List(testPartner)),
             applicantDetails = Some(validApplicantDetails)
           )
 
@@ -154,7 +153,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
           business = Some(testBusiness),
-          partners = None,
+          entities = None,
           applicantDetails = Some(validApplicantDetails)
         )
 
@@ -166,7 +165,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
           business = Some(testBusiness),
-          partners = None,
+          entities = None,
           applicantDetails = Some(validApplicantDetails.copy(contact = testApplicantContact))
         )
 
@@ -199,7 +198,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
           business = Some(testBusiness),
-          partners = None,
+          entities = None,
           applicantDetails = Some(validApplicantDetails.copy(
             entity = testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId)),
             contact = testApplicantContact

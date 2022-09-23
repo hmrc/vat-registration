@@ -53,12 +53,6 @@ case object FlatRateSchemeSectionId extends RegistrationSectionId {
   val repoKey = "flatRateScheme"
 }
 
-// TODO Rename to 'entities' in preparedness for VAT groups
-case object PartnersSectionId extends RegistrationSectionId {
-  val key = "partners"
-  val repoKey = key
-}
-
 case object TransactorSectionId extends RegistrationSectionId {
   val key = "transactor"
   val repoKey = "transactorDetails"
@@ -112,7 +106,7 @@ object RegistrationSectionId {
             case ("section", BankAccountSectionId.key) => Right(BankAccountSectionId)
             case ("section", EligibilitySectionId.key) => Right(EligibilitySectionId)
             case ("section", FlatRateSchemeSectionId.key) => Right(FlatRateSchemeSectionId)
-            case ("section", PartnersSectionId.key) => Right(PartnersSectionId)
+            case ("section", EntitiesSectionId.key) => Right(EntitiesSectionId)
             case ("section", TransactorSectionId.key) => Right(TransactorSectionId)
             case ("section", OtherBusinessInvolvementsSectionId.key) => Right(OtherBusinessInvolvementsSectionId)
             case ("section", BusinessSectionId.key) => Right(BusinessSectionId)

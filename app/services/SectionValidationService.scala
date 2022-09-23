@@ -20,7 +20,6 @@ import enums.VatRegStatus
 import models.api._
 import models.api.vatapplication.VatApplication
 import models.registration._
-import models.registration.sections.PartnersSection
 import models.submission.PartyType
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
@@ -48,7 +47,7 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
       case BankAccountSectionId => Future(validate[BankAccount](json))
       case EligibilitySectionId => Future(validate[EligibilitySubmissionData](json))
       case FlatRateSchemeSectionId => Future(validate[FlatRateScheme](json))
-      case PartnersSectionId => Future(validate[PartnersSection](json))
+      case EntitiesSectionId => Future(validate[List[Entity]](json))
       case TransactorSectionId => Future(validate[TransactorDetails](json))
       case OtherBusinessInvolvementsSectionId => Future(validate[List[OtherBusinessInvolvement]](json))
       case BusinessSectionId => Future(validate[Business](json))
@@ -64,6 +63,7 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
   def validateIndex(section: CollectionSectionId, json: JsValue): Future[Either[InvalidSection, ValidSection]] =
     section match {
       case OtherBusinessInvolvementsSectionId => Future(validate[OtherBusinessInvolvement](json))
+      case EntitiesSectionId => Future(validate[Entity](json))
       case unknown => throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported collection section: ${unknown.toString}")
     }
 

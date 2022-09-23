@@ -38,19 +38,6 @@ trait MockVatSchemeRepository extends MockitoSugar {
       ArgumentMatchers.eq(internalId)
     )).thenReturn(Future.successful(response))
 
-  def mockFetchBlock[T](regId: String, key: String)(response: Future[Option[T]]): OngoingStubbing[Future[Option[T]]] =
-    when(mockVatSchemeRepository.fetchBlock[T](
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(key)
-    )(ArgumentMatchers.any())).thenReturn(response)
-
-  def mockUpdateBlock[T](regId: String, data: T, key: String): OngoingStubbing[Future[T]] =
-    when(mockVatSchemeRepository.updateBlock[T](
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(data),
-      ArgumentMatchers.eq(key)
-    )(ArgumentMatchers.any())).thenReturn(Future.successful(data))
-
   def mockGetAllRegistrations(internalId: String)(response: Future[List[JsValue]]): OngoingStubbing[Future[List[JsValue]]] =
     when(mockVatSchemeRepository.getAllRegistrations(
       ArgumentMatchers.eq(internalId)

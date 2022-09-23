@@ -29,6 +29,12 @@ case object OtherBusinessInvolvementsSectionId extends CollectionSectionId {
   val maxIndex = 10
 }
 
+case object EntitiesSectionId extends CollectionSectionId {
+  val key = "entities"
+  val repoKey: String = key
+  val maxIndex = 50
+}
+
 object CollectionSectionId {
   // scalastyle:off
   implicit def urlBinder(implicit stringBinder: PathBindable[String]): PathBindable[CollectionSectionId] =
@@ -38,6 +44,7 @@ object CollectionSectionId {
           id <- stringBinder.bind(key, value).right
           section <- (key, id) match {
             case ("section", OtherBusinessInvolvementsSectionId.key) => Right(OtherBusinessInvolvementsSectionId)
+            case ("section", EntitiesSectionId.key) => Right(EntitiesSectionId)
             case _ => Left("Invalid registration section")
           }
         } yield section

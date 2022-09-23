@@ -66,7 +66,7 @@ object BusinessEntity {
     }
   }
 
-  val writes: Writes[BusinessEntity] = Writes {
+  implicit val writes: Writes[BusinessEntity] = Writes {
     case incorporatedEntity: IncorporatedEntity =>
       Json.toJson(incorporatedEntity)(IncorporatedEntity.format)
     case soleTrader@SoleTraderIdEntity(_, _, _, _, _, _, _, _, _, _, _) =>

@@ -17,11 +17,10 @@
 package repositories
 
 import auth.{AuthorisationResource, CryptoSCRS}
-import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
-import models.registration.{AcknowledgementReferenceSectionId, StatusSectionId}
+import models.registration.{AcknowledgementReferenceSectionId, EntitiesSectionId, StatusSectionId}
 import org.mongodb.scala.Document
 import org.mongodb.scala.model.Filters.{and, equal}
 import org.mongodb.scala.model.Indexes.ascending
@@ -73,7 +72,6 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
     )
   ) with AuthorisationResource with JsonErrorUtil with Logging {
 
-  private val bankAccountCryptoFormatter = BankAccountMongoFormat.encryptedFormat(crypto)
   private val acknowledgementRefPrefix = "VRS"
   private val timestampKey = "timestamp"
   private val internalIdKey = "internalId"
@@ -84,35 +82,6 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .first()
       .map(_.internalId)
       .headOption()
-
-  @deprecated("migrate to the new /registrations API")
-  def fetchBlock[T](regId: String, key: String)(implicit rds: Reads[T]): Future[Option[T]] =
-    collection
-      .find[Document](registrationSelector(regId))
-      .projection(include(key))
-      .headOption()
-      .map {
-        case Some(doc) => (Json.parse(doc.toJson()) \ key).validateOpt[T].get
-        case _ => throw MissingRegDocument(regId)
-      }
-
-  @deprecated("migrate to the new /registrations API")
-  def updateBlock[T](regId: String, data: T, key: String)(implicit writes: Writes[T]): Future[T] = {
-    collection
-      .updateOne(
-        filter = registrationSelector(regId),
-        update = combine(set(key, Codecs.toBson(data)), set(timestampKey, timeMachine.timestamp)),
-        options = UpdateOptions().upsert(false)
-      )
-      .toFuture()
-      .map { result =>
-        if (result.getModifiedCount > 0) {
-          data
-        } else {
-          throw MissingRegDocument(regId)
-        }
-      }
-  }
 
   def createNewVatScheme(regId: String, intId: String): Future[VatScheme] = {
     val doc = VatScheme(
@@ -171,18 +140,36 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
         }
       }
 
-  def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] =
-    collection
-      .find[Document](registrationSelector(regId, Some(internalId)))
-      .projection(include(section))
-      .headOption()
-      .map {
-        case Some(doc) =>
-          (Json.parse(doc.toJson()) \ section).validate[T].asOpt
-        case _ =>
-          logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
-          None
-      }
+  def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T]): Future[Option[T]] = {
+    if (section.equals(EntitiesSectionId.repoKey)) { // Temp handling for users with old data, remove in 2 weeks.
+      collection
+        .find[Document](registrationSelector(regId, Some(internalId)))
+        .projection(include(section, "partners"))
+        .headOption()
+        .map {
+          case Some(doc) =>
+            val list = (Json.parse(doc.toJson()) \ section).validate[List[Entity]].asOpt
+            val oldList = (Json.parse(doc.toJson()) \ "partners").validate[List[Entity]].asOpt
+            val latestList = if (list.isDefined) list else oldList
+            latestList.flatMap(Json.toJson(_).validate[T].asOpt)
+          case _ =>
+            logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+            None
+        }
+    } else {
+      collection
+        .find[Document](registrationSelector(regId, Some(internalId)))
+        .projection(include(section))
+        .headOption()
+        .map {
+          case Some(doc) =>
+            (Json.parse(doc.toJson()) \ section).validate[T].asOpt
+          case _ =>
+            logger.warn(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
+            None
+        }
+    }
+  }
 
   def upsertSection[T](internalId: String, regId: String, section: String = "", data: T)(implicit writes: Writes[T]): Future[Option[T]] =
     collection

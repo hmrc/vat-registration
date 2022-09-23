@@ -23,7 +23,6 @@ import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
 import models.api._
 import models.nonrepudiation.NonRepudiationMetadata
-import models.registration.sections.PartnersSection
 import models.submission.IdVerificationStatus.toJsString
 import models.submission._
 import models.{GroupRegistration, TogcCole, TransferOfAGoingConcern}
@@ -84,25 +83,26 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
     "metadata" -> testNonRepudiationMetadata
   )
 
-  lazy val testPartner: Partner = Partner(
-    details = testSoleTraderEntity.copy(businessVerification = None),
+  lazy val testPartner: Entity = Entity(
+    details = Some(testSoleTraderEntity.copy(businessVerification = None)),
     partyType = Individual,
-    isLeadPartner = true
+    isLeadPartner = Some(true)
   )
 
-  lazy val testUkCompanyPartner: Partner = testPartner.copy(
-    details = testLtdCoEntity.copy(businessVerification = None, registration = FailedStatus),
+  lazy val testUkCompanyPartner: Entity = testPartner.copy(
+    details = Some(testLtdCoEntity.copy(businessVerification = None, registration = FailedStatus)),
     partyType = UkCompany
   )
 
-  lazy val testScottishPartnershipPartner: Partner = testPartner.copy(
-    details = testGeneralPartnershipEntity.copy(bpSafeId = None, businessVerification = None, registration = FailedStatus),
-    partyType = ScotPartnership
+  lazy val testScottishPartnershipPartner: Entity = testPartner.copy(
+    details = Some(testGeneralPartnershipEntity.copy(bpSafeId = None, businessVerification = None, registration = FailedStatus)),
+    partyType = ScotPartnership,
+    optScottishPartnershipName = Some(testCompanyName)
   )
 
   lazy val generalPartnershipWithSoleTraderPartner: VatScheme = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
-    partners = Some(PartnersSection(List(testPartner))),
+    entities = Some(List(testPartner)),
     applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
       bpSafeId = None,
       businessVerification = Some(BvFail),
@@ -114,7 +114,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   lazy val generalPartnershipWithUkCompanyPartner: VatScheme = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
-    partners = Some(PartnersSection(List(testUkCompanyPartner))),
+    entities = Some(List(testUkCompanyPartner)),
     applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
       bpSafeId = None,
       businessVerification = Some(BvFail),
@@ -126,7 +126,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   lazy val limitedPartnershipWithScotPartnershipPartner: VatScheme = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = LtdPartnership)),
-    partners = Some(PartnersSection(List(testScottishPartnershipPartner))),
+    entities = Some(List(testScottishPartnershipPartner)),
     applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
       companyNumber = Some(testCrn),
       dateOfIncorporation = Some(testDateOfIncorp),
@@ -140,7 +140,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   lazy val limitedLiabilityPartnership: VatScheme = limitedPartnershipWithScotPartnershipPartner.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)),
-    partners = None,
+    entities = None,
     attachments = None
   )
 
