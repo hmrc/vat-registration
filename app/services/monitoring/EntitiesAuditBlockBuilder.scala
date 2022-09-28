@@ -17,7 +17,7 @@
 package services.monitoring
 
 import models._
-import models.api.{Address, Partner, VatScheme}
+import models.api.{Address, Entity, VatScheme}
 import models.submission._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.http.InternalServerException
@@ -41,15 +41,16 @@ class EntitiesAuditBlockBuilder @Inject()(implicit ec: ExecutionContext) {
     val regReason = vatScheme.eligibilitySubmissionData.map(_.registrationReason)
       .getOrElse(throw new InternalServerException("Attempted to build entities block without reg reason"))
 
-    val entities = vatScheme.partners match {
-      case Some(entitiesSection) => entitiesSection.partners
-      case None if regReason.equals(GroupRegistration) => List(Partner(
-        applicantDetails.entity,
+    val entities = vatScheme.entities match {
+      case Some(entityList) => entityList.filter(entity => entity.details.isDefined)
+      case None if regReason.equals(GroupRegistration) => List(Entity(
+        Some(applicantDetails.entity),
         UkCompany,
-        isLeadPartner = true
+        isLeadPartner = Some(true)
       ))
       case _ => Nil
     }
+
     entities match {
       case entities if entities.nonEmpty =>
         Some(Json.toJson(entities.map { partner =>
@@ -67,13 +68,13 @@ class EntitiesAuditBlockBuilder @Inject()(implicit ec: ExecutionContext) {
             }),
             "customerIdentification" -> {
               partner.details match {
-                case _ if partner.details.bpSafeId.isDefined =>
-                  jsonObject("primeBPSafeID" -> partner.details.bpSafeId)
-                case _ =>
+                case Some(details) if details.bpSafeId.isDefined =>
+                  jsonObject("primeBPSafeID" -> details.bpSafeId)
+                case Some(details) =>
                   jsonObject(
-                    "customerID" -> Json.toJson(partner.details.identifiers)
+                    "customerID" -> Json.toJson(details.identifiers)
                   ) ++ {
-                    partner.details match {
+                    details match {
                       case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, _, _, _, _, _) =>
                         jsonObject(
                           "name" -> jsonObject(

@@ -20,7 +20,6 @@ import auth.CryptoSCRS
 import enums.VatRegStatus
 import models.api.vatapplication.VatApplication
 import models.registration._
-import models.registration.sections.PartnersSection
 import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -40,7 +39,7 @@ case class VatScheme(registrationId: String,
                      eligibilitySubmissionData: Option[EligibilitySubmissionData] = None,
                      transactorDetails: Option[TransactorDetails] = None,
                      applicantDetails: Option[ApplicantDetails] = None,
-                     partners: Option[PartnersSection] = None,
+                     entities: Option[List[Entity]] = None,
                      business: Option[Business] = None,
                      otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None,
                      vatApplication: Option[VatApplication] = None,
@@ -84,7 +83,7 @@ object VatScheme {
         (__ \ EligibilitySectionId.repoKey).readNullable[EligibilitySubmissionData] and
         (__ \ TransactorSectionId.repoKey).readNullable[TransactorDetails] and
         (__ \ ApplicantSectionId.repoKey).readNullable[ApplicantDetails](ApplicantDetails.reads(partyType)) and
-        (__ \ PartnersSectionId.repoKey).readNullable[PartnersSection] and
+        (__ \ EntitiesSectionId.repoKey).read[List[Entity]].fmap(entities => Option(entities)).orElse((__ \ "partners").readNullable[List[Entity]]) and
         (__ \ BusinessSectionId.repoKey).readNullable[Business] and
         (__ \ OtherBusinessInvolvementsSectionId.repoKey).readNullable[List[OtherBusinessInvolvement]] and
         (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication] and
@@ -105,7 +104,7 @@ object VatScheme {
         (__ \ EligibilitySectionId.repoKey).readNullable[EligibilitySubmissionData] and
         (__ \ TransactorSectionId.repoKey).readNullable[TransactorDetails] and
         Reads.pure(None) and
-        (__ \ PartnersSectionId.repoKey).readNullable[PartnersSection] and
+        (__ \ EntitiesSectionId.repoKey).read[List[Entity]].fmap(entities => Option(entities)).orElse((__ \ "partners").readNullable[List[Entity]]) and
         (__ \ BusinessSectionId.repoKey).readNullable[Business] and
         (__ \ OtherBusinessInvolvementsSectionId.repoKey).readNullable[List[OtherBusinessInvolvement]] and
         (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication] and
@@ -128,7 +127,7 @@ object VatScheme {
     (__ \ EligibilitySectionId.repoKey).writeNullable[EligibilitySubmissionData] and
     (__ \ TransactorSectionId.repoKey).writeNullable[TransactorDetails] and
     (__ \ ApplicantSectionId.repoKey).writeNullable[ApplicantDetails] and
-    (__ \ PartnersSectionId.repoKey).writeNullable[PartnersSection] and
+    (__ \ EntitiesSectionId.repoKey).writeNullable[List[Entity]] and
     (__ \ BusinessSectionId.repoKey).writeNullable[Business] and
     (__ \ OtherBusinessInvolvementsSectionId.repoKey).writeNullable[List[OtherBusinessInvolvement]] and
     (__ \ VatApplicationSectionId.repoKey).writeNullable[VatApplication] and

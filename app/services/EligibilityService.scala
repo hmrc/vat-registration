@@ -81,7 +81,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               applicantDetails = None,
               transactorDetails = None,
               nrsSubmissionPayload = None,
-              partners = None,
+              entities = None,
               attachments = None,
               otherBusinessInvolvements = None,
               business = None,

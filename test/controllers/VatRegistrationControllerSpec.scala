@@ -131,7 +131,7 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       status(response) mustBe Status.OK
     }
     "return an Ok response for a valid submission with partners" in new Setup {
-      val testPartner = Partner(testSoleTraderEntity, Individual, isLeadPartner = true)
+      val testPartner = Entity(Some(testSoleTraderEntity), Individual, isLeadPartner = Some(true))
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
@@ -140,7 +140,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
         ArgumentMatchers.eq(testRegId),
         ArgumentMatchers.eq(testUserHeaders),
         ArgumentMatchers.eq("en")
-
       )(any[HeaderCarrier], any[Request[_]]))
         .thenReturn(Future.successful("VRS00000000001"))
 
