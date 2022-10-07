@@ -29,7 +29,14 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   val testEntity = testSoleTraderEntity.copy(bpSafeId = Some(testBpSafeId))
   val testEntityNoSafeId = testSoleTraderEntity.copy(bpSafeId = None)
-  val testPartner = Entity(details = Some(testEntity), partyType = Individual, isLeadPartner = Some(true))
+  val testPartner = Entity(
+    details = Some(testEntity),
+    partyType = Individual,
+    isLeadPartner = Some(true),
+    address = None,
+    email = None,
+    telephoneNumber = None
+  )
   val testApplicantContact = DigitalContactOptional(
     email = Some(testEmail),
     tel = Some(testTelephone),
@@ -38,11 +45,44 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   "buildEntitiesBlock" when {
     "the partner was successfully matched by the identity service" should {
-      "return a JSON array containing a single partner with a business partner safe ID" in {
+      "return a JSON array containing a lead partner with a business partner safe ID" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
           business = Some(testBusiness),
           entities = Some(List(testPartner)),
+          applicantDetails = Some(validApplicantDetails)
+        )
+
+        Builder.buildEntitiesBlock(vatScheme) mustBe Some(Json.arr(Json.obj(
+          "action" -> "1",
+          "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
+          "tradersPartyType" -> Json.toJson[PartyType](Individual),
+          "customerIdentification" -> Json.obj(
+            "primeBPSafeID" -> testBpSafeId
+          ),
+          "businessContactDetails" -> Json.obj(
+            "address" -> Json.obj(
+              "line1" -> "line1",
+              "line2" -> "line2",
+              "postCode" -> "ZZ1 1ZZ",
+              "countryCode" -> "GB"
+            ),
+            "commDetails" -> Json.obj(
+              "telephone" -> testTelephone,
+              "email" -> testEmail
+            )
+          )
+        )))
+      }
+      "return a JSON array containing a non-lead partner with a business contact details" in {
+        val vatScheme = testVatScheme.copy(
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+          business = Some(testBusiness.copy(ppobAddress = None, email = None, telephoneNumber = None)),
+          entities = Some(List(testPartner.copy(
+            isLeadPartner = Some(false),
+            address = Some(testAddress),
+            email = Some(testEmail),
+            telephoneNumber = Some(testTelephone)))),
           applicantDetails = Some(validApplicantDetails)
         )
 
@@ -110,7 +150,14 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       "an SA UTR was not provided" should {
         "return a JSON array containing a single partner without identifiers" in {
           val testEntity = testSoleTraderEntity.copy(bpSafeId = None, sautr = None)
-          val testPartner = Entity(details = Some(testEntity), partyType = Individual, isLeadPartner = Some(true))
+          val testPartner = Entity(
+            details = Some(testEntity),
+            partyType = Individual,
+            isLeadPartner = Some(true),
+            address = None,
+            email = None,
+            telephoneNumber = None
+          )
           val vatScheme = testVatScheme.copy(
             eligibilitySubmissionData = Some(testEligibilitySubmissionData),
             business = Some(testBusiness),

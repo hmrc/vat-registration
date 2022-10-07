@@ -24,21 +24,30 @@ import play.api.libs.json._
 case class Entity(details: Option[BusinessEntity],
                   partyType: PartyType,
                   isLeadPartner: Option[Boolean],
-                  optScottishPartnershipName: Option[String] = None)
+                  optScottishPartnershipName: Option[String] = None,
+                  address: Option[Address],
+                  email: Option[String],
+                  telephoneNumber: Option[String])
 
 object Entity {
   private val partyTypeKey = "partyType"
   private val detailsKey = "details"
   private val leadPartnerKey = "isLeadPartner"
   private val optScottishPartnershipNameKey = "optScottishPartnershipName"
+  private val addressKey = "address"
+  private val emailKey = "email"
+  private val telephoneNumberKey = "telephoneNumber"
 
   val reads: Reads[Entity] =
     (__ \ partyTypeKey).read[PartyType].flatMap { partyType =>
       (
         (__ \ detailsKey).readNullable[BusinessEntity](BusinessEntity.reads(partyType)) and
         (__ \ leadPartnerKey).readNullable[Boolean] and
-        (__ \ optScottishPartnershipNameKey).readNullable[String]
-      ) { (optDetails, optIsLeadPartner, optScottishPartnershipName) =>
+        (__ \ optScottishPartnershipNameKey).readNullable[String] and
+        (__ \ addressKey).readNullable[Address] and
+        (__ \ emailKey).readNullable[String] and
+        (__ \ telephoneNumberKey).readNullable[String]
+      ) { (optDetails, optIsLeadPartner, optScottishPartnershipName, optAddress, optEmail, optTelephoneNumber) =>
         val updatedDetails = optDetails.map {
           case details: PartnershipIdEntity if partyType.equals(ScotPartnership) => details.copy(companyName = optScottishPartnershipName)
           case notScottishPartnership => notScottishPartnership
@@ -48,7 +57,10 @@ object Entity {
           updatedDetails,
           partyType,
           optIsLeadPartner,
-          optScottishPartnershipName
+          optScottishPartnershipName,
+          optAddress,
+          optEmail,
+          optTelephoneNumber
         )
       }
     }

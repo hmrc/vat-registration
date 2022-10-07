@@ -29,14 +29,20 @@ class EntitySpec extends VatRegSpec with VatRegistrationFixture {
       val testJson = Json.obj(
         "details" -> Json.toJson(testSoleTraderEntity),
         "partyType" -> toJsString(Individual),
-        "isLeadPartner" -> true
+        "isLeadPartner" -> true,
+        "address" -> Json.toJson(testAddress),
+        "email" -> testEmail,
+        "telephoneNumber" -> testTelephone
       )
 
       testJson.validate[Entity].asOpt mustBe Some(
         Entity(
           details = Some(testSoleTraderEntity),
           partyType = Individual,
-          isLeadPartner = Some(true)
+          isLeadPartner = Some(true),
+          address = Some(testAddress),
+          email = Some(testEmail),
+          telephoneNumber = Some(testTelephone)
         )
       )
     }
@@ -44,14 +50,20 @@ class EntitySpec extends VatRegSpec with VatRegistrationFixture {
       val testJson = Json.obj(
         "details" -> Json.toJson(testLtdCoEntity),
         "partyType" -> toJsString(UkCompany),
-        "isLeadPartner" -> true
+        "isLeadPartner" -> true,
+        "address" -> Json.toJson(testAddress),
+        "email" -> testEmail,
+        "telephoneNumber" -> testTelephone
       )
 
       testJson.validate[Entity].asOpt mustBe Some(
         Entity(
           details = Some(testLtdCoEntity),
           partyType = UkCompany,
-          isLeadPartner = Some(true)
+          isLeadPartner = Some(true),
+          address = Some(testAddress),
+          email = Some(testEmail),
+          telephoneNumber = Some(testTelephone)
         )
       )
     }
@@ -59,14 +71,20 @@ class EntitySpec extends VatRegSpec with VatRegistrationFixture {
       val testJson = Json.obj(
         "details" -> Json.toJson(testGeneralPartnershipEntity),
         "partyType" -> toJsString(Partnership),
-        "isLeadPartner" -> false
+        "isLeadPartner" -> false,
+        "address" -> Json.toJson(testAddress),
+        "email" -> testEmail,
+        "telephoneNumber" -> testTelephone
       )
 
       testJson.validate[Entity].asOpt mustBe Some(
         Entity(
           details = Some(testGeneralPartnershipEntity),
           partyType = Partnership,
-          isLeadPartner = Some(false)
+          isLeadPartner = Some(false),
+          address = Some(testAddress),
+          email = Some(testEmail),
+          telephoneNumber = Some(testTelephone)
         )
       )
     }
@@ -77,7 +95,10 @@ class EntitySpec extends VatRegSpec with VatRegistrationFixture {
         "details" -> Json.toJson(testGeneralPartnershipEntity.copy(companyName = None)),
         "partyType" -> toJsString(ScotPartnership),
         "isLeadPartner" -> false,
-        "optScottishPartnershipName" -> testPartnershipName
+        "optScottishPartnershipName" -> testPartnershipName,
+        "address" -> Json.toJson(testAddress),
+        "email" -> testEmail,
+        "telephoneNumber" -> testTelephone
       )
 
       testJson.validate[Entity].asOpt mustBe Some(
@@ -85,7 +106,10 @@ class EntitySpec extends VatRegSpec with VatRegistrationFixture {
           details = Some(testGeneralPartnershipEntity.copy(companyName = Some(testPartnershipName))),
           partyType = ScotPartnership,
           isLeadPartner = Some(false),
-          optScottishPartnershipName = Some(testPartnershipName)
+          optScottishPartnershipName = Some(testPartnershipName),
+          address = Some(testAddress),
+          email = Some(testEmail),
+          telephoneNumber = Some(testTelephone)
         )
       )
     }
@@ -106,7 +130,10 @@ class EntitySpec extends VatRegSpec with VatRegistrationFixture {
       val entity = Entity(
         details = Some(testSoleTraderEntity),
         partyType = Individual,
-        isLeadPartner = Some(true)
+        isLeadPartner = Some(true),
+        address = None,
+        email = None,
+        telephoneNumber = None
       )
 
       Json.toJson(entity) mustBe Json.obj(
@@ -119,7 +146,10 @@ class EntitySpec extends VatRegSpec with VatRegistrationFixture {
       val entity = Entity(
         details = Some(testLtdCoEntity),
         partyType = UkCompany,
-        isLeadPartner = Some(true)
+        isLeadPartner = Some(true),
+        address = None,
+        email = None,
+        telephoneNumber = None
       )
 
       Json.toJson(entity) mustBe Json.obj(
@@ -132,7 +162,10 @@ class EntitySpec extends VatRegSpec with VatRegistrationFixture {
       val entity = Entity(
         details = Some(testGeneralPartnershipEntity),
         partyType = Partnership,
-        isLeadPartner = Some(false)
+        isLeadPartner = Some(false),
+        address = None,
+        email = None,
+        telephoneNumber = None
       )
 
       Json.toJson(entity) mustBe Json.obj(

@@ -20,8 +20,6 @@ import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockRegistrationService
-import models.api._
-import models.submission.Individual
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -131,7 +129,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       status(response) mustBe Status.OK
     }
     "return an Ok response for a valid submission with partners" in new Setup {
-      val testPartner = Entity(Some(testSoleTraderEntity), Individual, isLeadPartner = Some(true))
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
