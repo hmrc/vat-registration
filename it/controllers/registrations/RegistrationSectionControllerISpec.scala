@@ -1,8 +1,10 @@
 
 package controllers.registrations
 
+import auth.CryptoSCRS
 import itutil.IntegrationStubbing
-import models.registration.TransactorSectionId
+import models.api.{BankAccount, BankAccountMongoFormat}
+import models.registration.{BankAccountSectionId, TransactorSectionId}
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 
@@ -24,7 +26,20 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         res.status mustBe OK
         res.json mustBe Json.toJson(testTransactorDetails)
       }
+
+      "return OK with decrypted json for a decryptable section" in new SetupHelper {
+        val testBankAccount: BankAccount = BankAccount(isProvided = true, Some(testBankDetails), None, None)
+
+        given.user.isAuthorised
+        insertIntoDb(testVatScheme.copy(bankAccount = Some(testBankAccount)))
+
+        val res = await(client(url(BankAccountSectionId.key)).get())
+
+        res.status mustBe OK
+        res.json mustBe Json.toJson(testBankAccount)
+      }
     }
+
     "the section doesn't exist in the registration" must {
       "return NOT FOUND" in new SetupHelper {
         given.user.isAuthorised
