@@ -86,7 +86,10 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   lazy val testPartner: Entity = Entity(
     details = Some(testSoleTraderEntity.copy(businessVerification = None)),
     partyType = Individual,
-    isLeadPartner = Some(true)
+    isLeadPartner = Some(true),
+    address = None,
+    email = None,
+    telephoneNumber = None
   )
 
   lazy val testUkCompanyPartner: Entity = testPartner.copy(

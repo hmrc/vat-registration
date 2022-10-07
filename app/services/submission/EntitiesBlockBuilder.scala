@@ -43,9 +43,12 @@ class EntitiesBlockBuilder @Inject()() {
     val entities = vatScheme.entities match {
       case Some(entityList) => entityList.filter(entity => entity.details.isDefined)
       case None if regReason.equals(GroupRegistration) => List(Entity(
-        Some(applicantDetails.entity),
-        UkCompany,
-        isLeadPartner = Some(true)
+        details = Some(applicantDetails.entity),
+        partyType = UkCompany,
+        isLeadPartner = Some(true),
+        address = None,
+        email = None,
+        telephoneNumber = None
       ))
       case _ => Nil
     }
@@ -89,22 +92,37 @@ class EntitiesBlockBuilder @Inject()() {
                   }
               }
             },
-            "businessContactDetails" -> jsonObject(
-              "address" -> business.ppobAddress.map(formatAddress),
-              "commDetails" -> {
-                regReason match {
-                  case GroupRegistration => jsonObject(
-                    optional("telephone" -> applicantDetails.contact.tel),
-                    optional("mobileNumber" -> applicantDetails.contact.mobile),
-                    optional("email" -> applicantDetails.contact.email)
+            "businessContactDetails" -> {
+              partner.isLeadPartner match {
+                case Some(true) =>
+                  jsonObject(
+                    "address" -> business.ppobAddress.map(formatAddress),
+                    "commDetails" -> {
+                      regReason match {
+                        case GroupRegistration => jsonObject(
+                          optional("telephone" -> applicantDetails.contact.tel),
+                          optional("mobileNumber" -> applicantDetails.contact.mobile),
+                          optional("email" -> applicantDetails.contact.email)
+                        )
+                        case _ => jsonObject(
+                          required("telephone" -> business.telephoneNumber),
+                          required("email" -> business.email)
+                        )
+                      }
+                    }
                   )
-                  case _ => jsonObject(
-                    required("telephone" -> business.telephoneNumber),
-                    required("email" -> business.email)
+                case _ =>
+                  jsonObject(
+                    "address" -> partner.address.map(formatAddress),
+                    "commDetails" -> {
+                      jsonObject(
+                        optional("telephone" -> partner.telephoneNumber),
+                        optional("email" -> partner.email)
+                      )
+                    }
                   )
-                }
               }
-            )
+            }
           )
         }))
       case _ =>
