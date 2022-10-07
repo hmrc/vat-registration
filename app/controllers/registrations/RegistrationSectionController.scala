@@ -51,10 +51,8 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
       registrationService.getSection[JsValue](internalId, regId, section).flatMap {
         case Some(sectionData) =>
           sectionValidationService.validate(internalId, regId, section, cipherService.conditionallyDecrypt(section, sectionData)).map {
-            case Right(ValidSection(_)) =>
-              Ok(sectionData)
-            case Left(response@InvalidSection(_)) =>
-              InternalServerError(response.asString)
+            case Right(ValidSection(value)) => Ok(value)
+            case Left(response@InvalidSection(_)) => InternalServerError(response.asString)
           }
         case _ =>
           Future.successful(NotFound)
