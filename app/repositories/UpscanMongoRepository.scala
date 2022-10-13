@@ -39,6 +39,7 @@ class UpscanMongoRepository @Inject()(mongo: MongoComponent,
     mongoComponent = mongo,
     collectionName = "upscan",
     domainFormat = UpscanDetails.format,
+    replaceIndexes = true,
     indexes = Seq(
       model.IndexModel(
         keys = ascending("reference"),
@@ -56,7 +57,7 @@ class UpscanMongoRepository @Inject()(mongo: MongoComponent,
         keys = ascending("timestamp"),
         indexOptions = IndexOptions()
           .name("TTL")
-          .expireAfter(backendConfig.expiryInSeconds, TimeUnit.SECONDS)
+          .expireAfter(backendConfig.upscanRepositoryExpiryInSeconds, TimeUnit.SECONDS)
       )
     )
   ) {
