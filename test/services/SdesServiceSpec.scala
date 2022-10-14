@@ -42,6 +42,7 @@ import scala.concurrent.Future
 class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUpscanMongoRepository with MockSdesConnector with MockAuditService {
 
   val testCorrelationid = "testCorrelationid"
+
   object TestIdGenerator extends IdGenerator {
     override def createId: String = testCorrelationid
   }
@@ -90,11 +91,11 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
     None
   )
 
-  def testPayload(attachmentReference: String, nrsKey: Option[String]): SdesNotification = SdesNotification(
+  def testPayload(attachmentReference: String, nrsKey: Option[String], index: Int): SdesNotification = SdesNotification(
     informationType = testInfoType,
     file = FileDetails(
       recipientOrSender = testRecipientOrSender,
-      name = s"$testFormBundleId-$testFileName",
+      name = s"$testFormBundleId-$index-$testFileName",
       location = testDownloadUrl,
       checksum = Checksum(
         algorithm = checksumAlgorithm,
@@ -174,35 +175,35 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
     "create a payload for every upscanDetails in repository and send it" in {
       val referenceList = Seq(testReference, testReference2, testReference3)
       mockGetAllUpscanDetails(testRegId)(Future.successful(referenceList.map(testUpscanDetails)))
-      referenceList.map(reference =>
-        mockNotifySdes(testPayload(reference, Some(testNrsId)), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
-      )
+      referenceList.zipWithIndex.map { case (reference, index) =>
+        mockNotifySdes(testPayload(reference, Some(testNrsId), index), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
+      }
 
       val result = await(TestService.notifySdes(testRegId, testFormBundleId, Some(testNrsId), testProviderId))
       result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
 
       eventually {
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, Some(testNrsId)), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, Some(testNrsId), 0), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, Some(testNrsId), 1), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, Some(testNrsId), 2), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
       }
     }
 
     "create a payload without nrsSubmissionId and send it" in {
       val referenceList = Seq(testReference, testReference2, testReference3)
       mockGetAllUpscanDetails(testRegId)(Future.successful(referenceList.map(testUpscanDetails)))
-      referenceList.map(reference =>
-        mockNotifySdes(testPayload(reference, None), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
-      )
+      referenceList.zipWithIndex.map { case (reference, index) =>
+        mockNotifySdes(testPayload(reference, None, index), Future.successful(SdesNotificationSuccess(NO_CONTENT, "")))
+      }
 
       val result = await(TestService.notifySdes(testRegId, testFormBundleId, None, testProviderId))
 
       result mustBe Seq(SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""), SdesNotificationSuccess(NO_CONTENT, ""))
 
       eventually {
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, None), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, None), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
-        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, None), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference, None, 0), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference2, None, 1), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
+        verifyAudit(SdesFileSubmissionAudit(testPayload(testReference3, None, 2), SdesNotificationSuccess(NO_CONTENT, ""), testProviderId))
       }
     }
   }
@@ -271,6 +272,41 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       eventually {
         verifyAudit(SdesCallbackFailureAudit(testCallback(Some(testFailureReason))))
       }
+    }
+  }
+
+  "normaliseFileName" must {
+    val testFormBundleId = "099000109175"
+    val testIndex = 1
+    val testExtension = ".docx"
+    "return a already valid fileName unchanged" in {
+      val testFileName = "-+()$ _1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
+      val fullName = s"$testFormBundleId-$testIndex-$testFileName$testExtension"
+
+      TestService.normaliseFileName(fullName) mustBe fullName
+    }
+
+    "strip invalid characters and return a valid fileName" in {
+      val testFileName = "testFileName"
+      val invalidCharacters = "\'\"&^%£@!?*{}[]=€#<>/\\|:;’”‘“.,йцукенгшщздлорпавыфячсмитьбюхъжэ"
+      val fullName = s"$testFormBundleId-$testIndex-$testFileName$invalidCharacters$testExtension"
+
+      val strippedFullName = s"$testFormBundleId-$testIndex-$testFileName$testExtension"
+
+      TestService.normaliseFileName(fullName) mustBe strippedFullName
+    }
+
+    "truncate a fileName exceeding 99 characters and return a valid fileName" in {
+      val originalLength = 200
+      val testFileName = "a" * originalLength
+      val fullName = s"$testFormBundleId-$testIndex-$testFileName$testExtension"
+
+      val allowedLength = 99 - s"$testFormBundleId-$testIndex-".length
+      val truncatedFileName = "a" * allowedLength
+      val truncatedFullName = s"$testFormBundleId-$testIndex-$truncatedFileName$testExtension"
+
+      TestService.normaliseFileName(fullName) mustBe truncatedFullName
+      TestService.normaliseFileName(fullName).length mustBe 99 + testExtension.length
     }
   }
 }

@@ -52,13 +52,13 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
                  request: Request[_],
                  executionContext: ExecutionContext): Future[Seq[SdesNotificationResult]] = {
     upscanMongoRepository.getAllUpscanDetails(regId).flatMap { upscanDetailsList =>
-      Future.sequence(upscanDetailsList.collect {
-        case UpscanDetails(_, reference, _, Some(downloadUrl), Ready, Some(uploadDetails), _) =>
+      Future.sequence(upscanDetailsList.zipWithIndex.collect {
+        case (UpscanDetails(_, reference, _, Some(downloadUrl), Ready, Some(uploadDetails), _), index) =>
           val payload: SdesNotification = SdesNotification(
             informationType = appConfig.sdesInformationType,
             file = FileDetails(
               recipientOrSender = appConfig.sdesRecipientOrSender,
-              name = s"$formBundleId-${uploadDetails.fileName}",
+              name = normaliseFileName(s"$formBundleId-$index-${uploadDetails.fileName}"),
               location = downloadUrl,
               checksum = Checksum(
                 algorithm = checksumAlgorithm,
@@ -153,6 +153,22 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
       case _ =>
         Future.successful(logger.error("[SdesService] Could not send attachment NRS payload due to missing data in the callback"))
     }
+  }
+
+  private[services] def normaliseFileName(fileName: String): String = {
+    val (name, extension): (String, String) = fileName.split('.') match {
+      case array if array.length > 1 => (array.dropRight(1).mkString, s".${array.last}")
+      case array => (array.head, "")
+    }
+
+    val maxLength = 99
+
+    val normalisedName = name.replaceAll("""[^-+()$ \w]""", "") match {
+      case string if string.length > maxLength => string.substring(0, maxLength)
+      case string => string
+    }
+
+    s"$normalisedName$extension"
   }
 }
 
