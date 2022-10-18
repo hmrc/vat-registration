@@ -40,6 +40,19 @@ case class UploadDetails(fileName: String,
 
 object UploadDetails {
   implicit val format: OFormat[UploadDetails] = Json.format[UploadDetails]
+
+  val mimeTypeMapping: Map[String, String] = Map(
+    "application/pdf" -> ".pdf",
+    "application/msword" -> ".doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> ".docx",
+    "application/vnd.ms-excel" -> ".xls",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" -> ".xlsx",
+    "image/bmp" -> ".bmp",
+    "image/gif" -> ".gif",
+    "image/png" -> ".png",
+    "image/jpeg" -> ".jpeg",
+    "text/plain" -> ".txt"
+  )
 }
 
 case class FailureDetails(failureReason: String,

@@ -18,7 +18,7 @@ package services
 
 import config.BackendConfig
 import connectors.{NonRepudiationConnector, SdesConnector}
-import models.api.{Ready, UpscanDetails}
+import models.api.{Ready, UploadDetails, UpscanDetails}
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.sdes.PropertyExtractor._
@@ -58,7 +58,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
             informationType = appConfig.sdesInformationType,
             file = FileDetails(
               recipientOrSender = appConfig.sdesRecipientOrSender,
-              name = normaliseFileName(s"$formBundleId-$index-${uploadDetails.fileName}"),
+              name = normaliseFileName(s"$formBundleId-$index-${uploadDetails.fileName}", uploadDetails.fileMimeType),
               location = downloadUrl,
               checksum = Checksum(
                 algorithm = checksumAlgorithm,
@@ -155,7 +155,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
     }
   }
 
-  private[services] def normaliseFileName(fileName: String): String = {
+  private[services] def normaliseFileName(fileName: String, mimeType: String): String = {
     val (name, extension): (String, String) = fileName.split('.') match {
       case array if array.length > 1 => (array.dropRight(1).mkString, s".${array.last}")
       case array => (array.head, "")
@@ -168,7 +168,9 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
       case string => string
     }
 
-    s"$normalisedName$extension"
+    val normalisedExtension = UploadDetails.mimeTypeMapping.getOrElse(mimeType, extension.toLowerCase)
+
+    s"$normalisedName$normalisedExtension"
   }
 }
 
