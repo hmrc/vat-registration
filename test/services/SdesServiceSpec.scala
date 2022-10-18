@@ -47,7 +47,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
     override def createId: String = testCorrelationid
   }
 
-  implicit val appConfig = app.injector.instanceOf[BackendConfig]
+  implicit val appConfig: BackendConfig = app.injector.instanceOf[BackendConfig]
 
   object TestService extends SdesService(
     mockSdesConnector,
@@ -278,25 +278,54 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
   "normaliseFileName" must {
     val testFormBundleId = "099000109175"
     val testIndex = 1
-    val testExtension = ".docx"
-    "return a already valid fileName unchanged" in {
+
+    "return an already valid fileName unchanged" in {
+      val testExtension = ".docx"
+      val testMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       val testFileName = "-+()$ _1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
       val fullName = s"$testFormBundleId-$testIndex-$testFileName$testExtension"
 
-      TestService.normaliseFileName(fullName) mustBe fullName
+      TestService.normaliseFileName(fullName, testMimeType) mustBe fullName
+    }
+
+    "replace extension not matching mimetype and return a valid fileName" in {
+      val testExtension = ".docx"
+      val testFileName = "testFileName"
+      val testXlsxMimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      val testXlsxExtension = ".xlsx"
+      val fullName = s"$testFormBundleId-$testIndex-$testFileName$testExtension"
+
+      val updatedFullName = s"$testFormBundleId-$testIndex-$testFileName$testXlsxExtension"
+
+      TestService.normaliseFileName(fullName, testXlsxMimeType) mustBe updatedFullName
+    }
+
+    "return a valid fileName with a lowercase extension if mimetype could not be matched" in {
+      val testExtension = ".docx"
+      val testFileName = "testFileName"
+      val testUnknownMimeType = "unknown"
+      val fullName = s"$testFormBundleId-$testIndex-$testFileName${testExtension.toUpperCase}"
+
+      val updatedFullName = s"$testFormBundleId-$testIndex-$testFileName${testExtension.toLowerCase}"
+
+      TestService.normaliseFileName(fullName, testUnknownMimeType) mustBe updatedFullName
     }
 
     "strip invalid characters and return a valid fileName" in {
+      val testExtension = ".pdf"
+      val testMimeType = "application/pdf"
       val testFileName = "testFileName"
       val invalidCharacters = "\'\"&^%£@!?*{}[]=€#<>/\\|:;’”‘“.,йцукенгшщздлорпавыфячсмитьбюхъжэ"
       val fullName = s"$testFormBundleId-$testIndex-$testFileName$invalidCharacters$testExtension"
 
       val strippedFullName = s"$testFormBundleId-$testIndex-$testFileName$testExtension"
 
-      TestService.normaliseFileName(fullName) mustBe strippedFullName
+      TestService.normaliseFileName(fullName, testMimeType) mustBe strippedFullName
     }
 
     "truncate a fileName exceeding 99 characters and return a valid fileName" in {
+      val testExtension = ".jpeg"
+      val testMimeType = "image/jpeg"
       val originalLength = 200
       val testFileName = "a" * originalLength
       val fullName = s"$testFormBundleId-$testIndex-$testFileName$testExtension"
@@ -305,8 +334,8 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       val truncatedFileName = "a" * allowedLength
       val truncatedFullName = s"$testFormBundleId-$testIndex-$truncatedFileName$testExtension"
 
-      TestService.normaliseFileName(fullName) mustBe truncatedFullName
-      TestService.normaliseFileName(fullName).length mustBe 99 + testExtension.length
+      TestService.normaliseFileName(fullName, testMimeType) mustBe truncatedFullName
+      TestService.normaliseFileName(fullName, testMimeType).length mustBe 99 + testExtension.length
     }
   }
 }
