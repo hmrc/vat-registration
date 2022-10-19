@@ -49,6 +49,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
     collectionName = "registration-information",
     mongoComponent = mongoComponent,
     domainFormat = VatScheme.format(Some(crypto)),
+    replaceIndexes = true,
     indexes = Seq(
       IndexModel(
         keys = ascending("registrationId"),
