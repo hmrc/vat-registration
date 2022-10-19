@@ -41,6 +41,7 @@ class TrafficManagementRepository @Inject()(mongo: MongoComponent,
     mongoComponent = mongo,
     collectionName = "traffic-management",
     domainFormat = RegistrationInformation.format,
+    replaceIndexes = true,
     indexes = Seq(
       model.IndexModel(
         keys = ascending("registrationId", "internalId"),
