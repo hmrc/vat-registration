@@ -31,7 +31,7 @@ class AdminBlockBuilder @Inject()(attachmentsService: AttachmentsService) {
   private val MTDfB = "2"
 
   def buildAdminBlock(vatScheme: VatScheme): JsObject = {
-    val attachmentList = attachmentsService.attachmentList(vatScheme)
+    val mandatoryAttachmentList = attachmentsService.mandatoryAttachmentList(vatScheme)
     (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication) match {
       case (Some(eligibilityData), Some(vatApplication)) =>
         jsonObject(
@@ -44,8 +44,11 @@ class AdminBlockBuilder @Inject()(attachmentsService: AttachmentsService) {
           "attachments" -> (jsonObject(
             optional("EORIrequested" -> vatApplication.eoriRequested)) ++ {
             vatScheme.attachments.map(_.method) match {
-              case Some(attachmentMethod) => AttachmentType.submissionWrites(attachmentMethod).writes(attachmentList).as[JsObject]
-              case None => Json.obj()
+              case Some(attachmentMethod) if mandatoryAttachmentList.nonEmpty =>
+                val fullAttachmentList = mandatoryAttachmentList ++ attachmentsService.optionalAttachmentList(vatScheme)
+                AttachmentType.submissionWrites(attachmentMethod).writes(fullAttachmentList).as[JsObject]
+              case _ =>
+                Json.obj()
             }
           })
         )

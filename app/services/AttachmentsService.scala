@@ -31,7 +31,7 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
 
   def getAttachmentList(internalId: String, regId: String): Future[List[AttachmentType]] =
     registrationRepository.getRegistration(internalId, regId).map {
-      case Some(vatScheme) => attachmentList(vatScheme)
+      case Some(vatScheme) => mandatoryAttachmentList(vatScheme)
       case None => List.empty[AttachmentType]
     }
 
@@ -51,7 +51,7 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
     } yield incompleteAttachments
   }
 
-  def attachmentList(vatScheme: VatScheme): List[AttachmentType] = {
+  def mandatoryAttachmentList(vatScheme: VatScheme): List[AttachmentType] = {
     List(
       getTransactorIdentityEvidenceAttachment(vatScheme),
       getIdentityEvidenceAttachment(vatScheme),
@@ -59,6 +59,14 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
       getVat51Attachment(vatScheme),
       getTaxRepresentativeAttachment(vatScheme),
       getVat5LAttachment(vatScheme)
+    ).flatten
+  }
+
+  def optionalAttachmentList(vatScheme: VatScheme): List[AttachmentType] = {
+    List(
+      if (vatScheme.attachments.flatMap(_.supplyVat1614a).contains(true)) Some(Attachment1614a) else None,
+      if (vatScheme.attachments.flatMap(_.supplyVat1614h).contains(true)) Some(Attachment1614h) else None,
+      if (vatScheme.attachments.flatMap(_.supplySupportingDocuments).contains(true)) Some(LandPropertyOtherDocs) else None
     ).flatten
   }
 
