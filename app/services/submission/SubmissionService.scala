@@ -70,15 +70,11 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         correlationId = idGenerator.createId
         submissionResponse <- submit(submission, regId, correlationId)
         _ <- logSubmission(vatScheme, submissionResponse)
-        formBundleId <- handleResponse(submissionResponse, regId) // chain ends here if the main submission failed
-        (providerId, affinityGroup, optAgentCode) <- retrieveIdentityDetails
-        _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
-        _ <- trafficManagementService.updateStatus(regId, Submitted)
-        _ <- emailService.sendRegistrationReceivedEmail(internalId, regId, lang)
-        digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
-        optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
-        _ <- if (digitalAttachments) Future.successful(sdesService.notifySdes(regId, formBundleId, optNrsId, providerId)) else Future.successful()
-      } yield formBundleId
+        formBundleId <- handleResponse(submissionResponse, regId)
+      } yield {
+        postSubmissionTasks(vatScheme, formBundleId, lang, userHeaders) //Non blocking async post submission tasks
+        formBundleId
+      }
     } recover {
       case exception: ConflictException =>
         registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.duplicateSubmission)
@@ -92,11 +88,29 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     }
   }
 
+  // Non blocking tasks to be done after a successful submission.
+  // To be called on a separate async thread to allow the user to proceed.
+  private[services] def postSubmissionTasks(vatScheme: VatScheme,
+                                            formBundleId: String,
+                                            lang: String,
+                                            userHeaders: Map[String, String])
+                                           (implicit hc: HeaderCarrier, request: Request[_]): Future[Unit] = {
+    for {
+      (providerId, affinityGroup, optAgentCode) <- retrieveIdentityDetails
+      _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
+      _ <- trafficManagementService.updateStatus(vatScheme.registrationId, Submitted)
+      _ <- emailService.sendRegistrationReceivedEmail(vatScheme.internalId, vatScheme.registrationId, lang)
+      digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
+      optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
+      _ <- if (digitalAttachments) sdesService.notifySdes(vatScheme.registrationId, formBundleId, optNrsId, providerId) else Future.successful()
+    } yield {}
+  }
+
   private[services] def submit(submission: JsObject,
                                regId: String,
-                               correlationId: String
-                              )(implicit hc: HeaderCarrier,
-                                request: Request[_]): Future[VatSubmissionResponse] = {
+                               correlationId: String)
+                              (implicit hc: HeaderCarrier,
+                               request: Request[_]): Future[VatSubmissionResponse] = {
 
     logger.info(s"VAT Submission API Correlation Id: $correlationId for the following regId: $regId")
 
@@ -106,8 +120,9 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
   }
 
   private[services] def handleResponse(vatSubmissionStatus: VatSubmissionResponse,
-                                       regId: String)(implicit hc: HeaderCarrier,
-                                                      request: Request[_]): Future[String] = {
+                                       regId: String)
+                                      (implicit hc: HeaderCarrier,
+                                       request: Request[_]): Future[String] = {
     vatSubmissionStatus.fold(
       failure =>
         failure.status match {
@@ -132,11 +147,12 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       .getOrElse(throw new InternalServerException("[SubmissionService][submit] Missing NRS Submission payload"))
     val payloadString = new String(Base64.getDecoder.decode(encodedHtml))
 
-    nonRepudiationService.submitNonRepudiation(vatScheme.registrationId, payloadString, timeMachine.timestamp, formBundleId, userHeaders, digitalAttachments).recover {
-      case _ =>
-        logger.error("[SubmissionService] NRS Returned an unexpected exception")
-        None
-    }
+    nonRepudiationService.submitNonRepudiation(vatScheme.registrationId, payloadString, timeMachine.timestamp, formBundleId, userHeaders, digitalAttachments)
+      .recover {
+        case _ =>
+          logger.error("[SubmissionService] NRS Returned an unexpected exception")
+          None
+      }
   }
 
   private[services] def retrieveIdentityDetails(implicit hc: HeaderCarrier,
@@ -145,7 +161,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       case Some(credentials) ~ Some(affinity) ~ optAgentCode =>
         Future.successful((credentials.providerId, affinity, optAgentCode))
       case _ =>
-        Future.failed(throw new InternalServerException("Couldn't retrieve auth details for user"))
+        Future.failed(throw new InternalServerException("[SubmissionService] Couldn't retrieve auth details for user"))
     }
 
   private[services] def auditSubmission(formBundleId: String,
@@ -155,7 +171,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                         optAgentCode: Option[String])
                                        (implicit hc: HeaderCarrier,
                                         request: Request[_]): Future[Unit] = {
-    auditService.audit(
+    Future.successful(auditService.audit(
       submissionAuditBlockBuilder.buildAuditJson(
         vatScheme = vatScheme,
         authProviderId = providerId,
@@ -163,9 +179,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         optAgentReferenceNumber = optAgentCode,
         formBundleId = formBundleId
       )
-    )
-
-    Future.successful()
+    ))
   }
 
   // scalastyle:off
@@ -200,7 +214,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       vatScheme.eligibilitySubmissionData.map(_.registrationReason.toString)
     }
 
-    logger.info(jsonObject(
+    Future.successful(logger.info(jsonObject(
       "logInfo" -> "SubmissionLog",
       "status" -> vatSubmissionStatus.fold(_ => "Failed", _ => "Successful"),
       "regId" -> vatScheme.registrationId,
@@ -208,12 +222,10 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       "regReason" -> regReason,
       optional("agentOrTransactor" -> agentOrTransactor),
       conditional(specialSituations.nonEmpty)("specialSituations" -> specialSituations),
-      optional("attachments" -> vatScheme.attachments.map(attachmentDetails => jsonObject(
+      conditional(attachmentList.nonEmpty)("attachments" -> vatScheme.attachments.map(attachmentDetails => jsonObject(
         "attachmentMethod" -> attachmentDetails.method.toString,
-        "attachments" -> attachmentList
+        "attachmentList" -> attachmentList
       )))
-    ).toString())
-
-    Future.successful()
+    ).toString()))
   }
 }
