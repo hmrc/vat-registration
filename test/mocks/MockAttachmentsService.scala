@@ -40,5 +40,10 @@ trait MockAttachmentsService extends MockitoSugar {
                         (response: List[AttachmentType]): OngoingStubbing[List[AttachmentType]] =
     when(mockAttachmentService.mandatoryAttachmentList(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
+
+  def mockOptionalAttachmentList(vatScheme: VatScheme)
+                        (response: List[AttachmentType]): OngoingStubbing[List[AttachmentType]] =
+    when(mockAttachmentService.optionalAttachmentList(ArgumentMatchers.eq(vatScheme)))
+      .thenReturn(response)
 }
 
