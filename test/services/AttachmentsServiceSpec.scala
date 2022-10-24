@@ -51,6 +51,8 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   val vatGroupEligibilityData = testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)
   val testVatGroupVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(vatGroupEligibilityData))
   val testLnpVatScheme = testVatScheme.copy(business = Some(testBusiness.copy(hasLandAndProperty = Some(true))))
+  val test1614aVatScheme = testVatScheme.copy(attachments = Some(Attachments(method = Attached, supplyVat1614a = Some(true))))
+  val test1614hVatScheme = testVatScheme.copy(attachments = Some(Attachments(method = Attached, supplyVat1614h = Some(true))))
   val testSchemeWithTaxRepresentative = testVatScheme.copy(vatApplication = Some(testVatApplicationDetails.copy(hasTaxRepresentative = Some(true))))
 
   "getAttachmentsList" when {
@@ -80,7 +82,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
         res mustBe List(VAT2)
       }
 
-      "return VAT51 in the attachment list fot a Group Registration" in {
+      "return VAT51 in the attachment list for a Group Registration" in {
         mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testVatGroupVatScheme)))
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
@@ -88,7 +90,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
         res mustBe List(VAT51)
       }
 
-      "return VAT5L in the attachment list fot a user with land and property" in {
+      "return VAT5L in the attachment list for a user with land and property" in {
         mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testLnpVatScheme)))
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))

@@ -205,7 +205,10 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     val hasObi = if (vatScheme.otherBusinessInvolvements.exists(_.nonEmpty)) Some("OtherBusinessInvolvements") else None
     val specialSituations = List(exceptionOrExemption, appliedForAas, appliedForFrs, hasObi).flatten
 
-    val attachmentList = attachmentsService.mandatoryAttachmentList(vatScheme).map(_.toString)
+    val attachmentList = (
+      attachmentsService.mandatoryAttachmentList(vatScheme) ++
+        attachmentsService.optionalAttachmentList(vatScheme)
+      ).map(_.toString)
 
     val regReason = if (vatScheme.vatApplication.exists(_.currentlyTrading.contains(false)) &&
       vatScheme.eligibilitySubmissionData.exists(_.registrationReason.equals(Voluntary))) {
