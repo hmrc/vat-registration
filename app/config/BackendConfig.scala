@@ -19,8 +19,10 @@ package config
 import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import utils.Retrying
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 @Singleton
 class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
@@ -48,6 +50,18 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
   lazy val allowUsersFrom: Int = servicesConfig.getInt("traffic-management.hours.from")
   lazy val allowUsersUntil: Int = servicesConfig.getInt("traffic-management.hours.until")
 
+  val nrsConfig  = runModeConfiguration.get[Configuration]("microservice.services.non-repudiation")
+  lazy val nrsRetries: List[FiniteDuration] =
+    Retrying.fibonacciDelays(getFiniteDuration(nrsConfig), nrsConfig.get[Int]("numberOfRetries"))
+
+  private final def getFiniteDuration(config: Configuration, path: String = "initialDelay"): FiniteDuration = {
+    val string = config.get[String](path)
+
+    Duration.create(string) match {
+      case f: FiniteDuration => f
+      case _ => throw new RuntimeException(s"Not a finite duration '$string' for $path")
+    }
+  }
   object DailyQuotas {
     val enrolledUkCompany = servicesConfig.getInt("traffic-management.quotas.uk-company-enrolled")
     val ukCompany = servicesConfig.getInt("traffic-management.quotas.uk-company")
