@@ -1,10 +1,5 @@
 # microservice specific routes
 
-POST         /traffic-management/:regId/allocate    controllers.TrafficManagementController.allocate(regId)
-GET          /traffic-management/:regId/reg-info    controllers.TrafficManagementController.getRegInfoById(regId)
-PUT          /traffic-management/:regId/reg-info    controllers.TrafficManagementController.upsertRegInfoById(regId)
-DELETE       /traffic-management/:regId/reg-info    controllers.TrafficManagementController.deleteRegInfoById(regId)
-
 GET          /threshold/:date                       controllers.VatThresholdController.getThresholdForDate(date: String)
 
 PUT          /:regID/submit-registration            controllers.VatRegistrationController.submitVATRegistration(regID : String)

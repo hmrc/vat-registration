@@ -46,11 +46,9 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
 
   lazy val urlHeaderEnvironment: String = servicesConfig.getString("microservice.services.integration-framework.environment")
   lazy val urlHeaderAuthorization: String = s"Bearer ${servicesConfig.getString("microservice.services.integration-framework.authorization-token")}"
+  lazy val nonRepudiationUrl: String = servicesConfig.baseUrl("non-repudiation")
 
-  lazy val allowUsersFrom: Int = servicesConfig.getInt("traffic-management.hours.from")
-  lazy val allowUsersUntil: Int = servicesConfig.getInt("traffic-management.hours.until")
-
-  val nrsConfig  = runModeConfiguration.get[Configuration]("microservice.services.non-repudiation")
+  val nrsConfig = runModeConfiguration.get[Configuration]("microservice.services.non-repudiation")
   lazy val nrsRetries: List[FiniteDuration] =
     Retrying.fibonacciDelays(getFiniteDuration(nrsConfig), nrsConfig.get[Int]("numberOfRetries"))
 
@@ -62,36 +60,6 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
       case _ => throw new RuntimeException(s"Not a finite duration '$string' for $path")
     }
   }
-  object DailyQuotas {
-    val enrolledUkCompany = servicesConfig.getInt("traffic-management.quotas.uk-company-enrolled")
-    val ukCompany = servicesConfig.getInt("traffic-management.quotas.uk-company")
-    val enrolledSoleTrader = servicesConfig.getInt("traffic-management.quotas.sole-trader-enrolled")
-    val soleTrader = servicesConfig.getInt("traffic-management.quotas.sole-trader")
-    val enrolledNetp = servicesConfig.getInt("traffic-management.quotas.netp-enrolled")
-    val netp = servicesConfig.getInt("traffic-management.quotas.netp")
-    val enrolledNonUkCompany = servicesConfig.getInt("traffic-management.quotas.non-uk-company-enrolled")
-    val nonUkCompany = servicesConfig.getInt("traffic-management.quotas.non-uk-company")
-    val enrolledRegSociety = servicesConfig.getInt("traffic-management.quotas.reg-society-enrolled")
-    val regSociety = servicesConfig.getInt("traffic-management.quotas.reg-society")
-    val enrolledCharitableIncorpOrg = servicesConfig.getInt("traffic-management.quotas.charitable-incorp-org-enrolled")
-    val charitableIncorpOrg = servicesConfig.getInt("traffic-management.quotas.charitable-incorp-org")
-    val enrolledPartnership = servicesConfig.getInt("traffic-management.quotas.partnership-enrolled")
-    val partnership = servicesConfig.getInt("traffic-management.quotas.partnership")
-    val enrolledLtdPartnership = servicesConfig.getInt("traffic-management.quotas.limited-partnership-enrolled")
-    val ltdPartnership = servicesConfig.getInt("traffic-management.quotas.limited-partnership")
-    val enrolledScotPartnership = servicesConfig.getInt("traffic-management.quotas.scottish-partnership-enrolled")
-    val scotPartnership = servicesConfig.getInt("traffic-management.quotas.scottish-partnership")
-    val enrolledScotLtdPartnership = servicesConfig.getInt("traffic-management.quotas.scottish-limited-partnership-enrolled")
-    val scotLtdPartnership = servicesConfig.getInt("traffic-management.quotas.scottish-limited-partnership")
-    val enrolledLtdLiabilityPartnership = servicesConfig.getInt("traffic-management.quotas.limited-liability-partnership-enrolled")
-    val ltdLiabilityPartnership = servicesConfig.getInt("traffic-management.quotas.limited-liability-partnership")
-    val enrolledTrust = servicesConfig.getInt("traffic-management.quotas.trust-enrolled")
-    val trust = servicesConfig.getInt("traffic-management.quotas.trust")
-    val enrolledUnincorpAssoc = servicesConfig.getInt("traffic-management.quotas.unincorp-assoc-enrolled")
-    val unincorpAssoc = servicesConfig.getInt("traffic-management.quotas.unincorp-assoc")
-  }
-
-  lazy val nonRepudiationUrl: String = servicesConfig.baseUrl("non-repudiation")
 
   def nonRepudiationSubmissionUrl: String = {
     val endpoint = "/submission"
@@ -119,8 +87,6 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
 
   lazy val expiryInSeconds: Int = servicesConfig.getInt("cache.expiryInSeconds")
   lazy val upscanRepositoryExpiryInSeconds: Int = servicesConfig.getInt("cache.upscan.expiryInSeconds")
-  lazy val dailyQuotaExpiryInSeconds: Int = servicesConfig.getInt("traffic-management.quotas.time-to-live")
-
   lazy val sdesUrl: String = servicesConfig.baseUrl("sdes")
 
   def sdesNotificationUrl: String = {

@@ -46,7 +46,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   vatSubmissionConnector: VatSubmissionConnector,
                                   nonRepudiationService: NonRepudiationService,
-                                  trafficManagementService: TrafficManagementService,
                                   submissionPayloadBuilder: SubmissionPayloadBuilder,
                                   submissionAuditBlockBuilder: SubmissionAuditBlockBuilder,
                                   attachmentsService: AttachmentsService,
@@ -98,7 +97,6 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     for {
       (providerId, affinityGroup, optAgentCode) <- retrieveIdentityDetails
       _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
-      _ <- trafficManagementService.updateStatus(vatScheme.registrationId, Submitted)
       _ <- emailService.sendRegistrationReceivedEmail(vatScheme.internalId, vatScheme.registrationId, lang)
       digitalAttachments = vatScheme.attachments.exists(_.method.contains(Attached)) && attachmentsService.mandatoryAttachmentList(vatScheme).nonEmpty
       optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)

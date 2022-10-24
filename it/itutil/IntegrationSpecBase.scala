@@ -26,7 +26,6 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSRequest}
 import play.api.test.DefaultAwaitTimeout
 import play.api.test.Helpers._
-import repositories.trafficmanagement.{DailyQuotaRepository, TrafficManagementRepository}
 import repositories.{UpscanMongoRepository, VatSchemeRepository}
 import utils.{IdGenerator, TimeMachine}
 
@@ -62,13 +61,7 @@ trait IntegrationSpecBase extends PlaySpec
     "microservice.services.sdes.port" -> mockPort,
     "microservice.services.email.host" -> mockHost,
     "microservice.services.email.port" -> mockPort,
-    "mongo-encryption.key" -> "ABCDEFGHIJKLMNOPQRSTUV==",
-    "traffic-management.quotas.uk-company-enrolled" -> "11",
-    "traffic-management.quotas.uk-company" -> "1",
-    "traffic-management.quotas.sole-trader" -> "1",
-    "traffic-management.hours.from" -> "9",
-    "traffic-management.hours.until" -> "17",
-    "traffic-management.quotas.time-to-live" -> "86400"
+    "mongo-encryption.key" -> "ABCDEFGHIJKLMNOPQRSTUV=="
   ) ++ additionalConfig
 
 
@@ -80,17 +73,11 @@ trait IntegrationSpecBase extends PlaySpec
     .build()
 
   lazy val repo: VatSchemeRepository = app.injector.instanceOf[VatSchemeRepository]
-  lazy val dailyQuotaRepo: DailyQuotaRepository = app.injector.instanceOf[DailyQuotaRepository]
-  lazy val trafficManagementRepo: TrafficManagementRepository = app.injector.instanceOf[TrafficManagementRepository]
   lazy val upscanMongoRepository: UpscanMongoRepository = app.injector.instanceOf[UpscanMongoRepository]
 
   trait SetupHelper {
     await(repo.collection.drop.toFuture())
     await(repo.ensureIndexes)
-    await(dailyQuotaRepo.collection.drop().toFuture())
-    await(dailyQuotaRepo.ensureIndexes)
-    await(trafficManagementRepo.collection.drop().toFuture())
-    await(trafficManagementRepo.ensureIndexes)
     await(upscanMongoRepository.collection.drop().toFuture())
     await(upscanMongoRepository.ensureIndexes)
 
