@@ -15,6 +15,7 @@
  */
 
 import sbt._
+import play.core.PlayVersion
 
 object AppDependencies {
   def apply(): Seq[ModuleID] = CompileDependencies() ++ UnitTestDependencies() ++ IntegrationTestDependencies()
@@ -51,7 +52,8 @@ object UnitTestDependencies extends CommonTestDependencies {
   override val testDependencies: Seq[ModuleID] = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
     "org.scoverage" %% "scalac-scoverage-runtime" % scoverageVersion % scope,
-    "org.mockito" % "mockito-core" % mockitoVersion % scope
+    "org.mockito" % "mockito-core" % mockitoVersion % scope,
+    "com.miguno.akka" %% "akka-mock-scheduler" % "0.5.5" % scope
   )
 
   def apply(): Seq[ModuleID] = testDependencies
