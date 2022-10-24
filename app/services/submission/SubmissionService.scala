@@ -100,7 +100,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
       _ <- trafficManagementService.updateStatus(vatScheme.registrationId, Submitted)
       _ <- emailService.sendRegistrationReceivedEmail(vatScheme.internalId, vatScheme.registrationId, lang)
-      digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.attachmentList(vatScheme).nonEmpty
+      digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.mandatoryAttachmentList(vatScheme).nonEmpty
       optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
       _ <- if (digitalAttachments) sdesService.notifySdes(vatScheme.registrationId, formBundleId, optNrsId, providerId) else Future.successful()
     } yield {}
@@ -205,7 +205,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     val hasObi = if (vatScheme.otherBusinessInvolvements.exists(_.nonEmpty)) Some("OtherBusinessInvolvements") else None
     val specialSituations = List(exceptionOrExemption, appliedForAas, appliedForFrs, hasObi).flatten
 
-    val attachmentList = attachmentsService.attachmentList(vatScheme).map(_.toString)
+    val attachmentList = attachmentsService.mandatoryAttachmentList(vatScheme).map(_.toString)
 
     val regReason = if (vatScheme.vatApplication.exists(_.currentlyTrading.contains(false)) &&
       vatScheme.eligibilitySubmissionData.exists(_.registrationReason.equals(Voluntary))) {

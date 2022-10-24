@@ -44,7 +44,7 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
                      optAgentReferenceNumber: Option[String],
                      formBundleId: String
                     ): SubmissionAuditModel = {
-    val attachmentList = attachmentsService.attachmentList(vatScheme)
+    val mandatoryAttachmentList = attachmentsService.mandatoryAttachmentList(vatScheme)
     val details = jsonObject(
       "outsideEUSales" -> {
         vatScheme.vatApplication.map(_.eoriRequested) match {
@@ -60,9 +60,10 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
       "bankDetails" -> bankAuditBlockBuilder.buildBankAuditBlock(vatScheme),
       "periods" -> periodsAuditBlockBuilder.buildPeriodsBlock(vatScheme),
       optional("joinAA" -> annualAccountingAuditBlockBuilder.buildAnnualAccountingAuditBlock(vatScheme)),
-      optionalRequiredIf(attachmentList.nonEmpty)("attachments" -> vatScheme.attachments.map(attachments =>
-        AttachmentType.submissionWrites(attachments.method).writes(attachmentList)
-      )),
+      optionalRequiredIf(mandatoryAttachmentList.nonEmpty)("attachments" -> vatScheme.attachments.map { attachments =>
+        val fullAttachmentList = mandatoryAttachmentList ++ attachmentsService.optionalAttachmentList(vatScheme)
+        AttachmentType.submissionWrites(attachments.method).writes(fullAttachmentList)
+      }),
       optional("entities" -> entitiesAuditBlockBuilder.buildEntitiesAuditBlock(vatScheme))
     )
 

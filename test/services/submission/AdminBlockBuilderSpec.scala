@@ -47,6 +47,20 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       )
     )
 
+  val expectedFullVat5lJson: JsObject =
+    Json.obj(
+      "additionalInformation" -> Json.obj(
+        "customerStatus" -> "2"
+      ),
+      "attachments" -> Json.obj(
+        "EORIrequested" -> true,
+        "VAT5L" -> Json.toJson[AttachmentMethod](Attached),
+        "attachment1614a" -> Json.toJson[AttachmentMethod](Attached),
+        "attachment1614h" -> Json.toJson[AttachmentMethod](Attached),
+        "landPropertyOtherDocs" -> Json.toJson[AttachmentMethod](Attached)
+      )
+    )
+
   val expectedNetpJson: JsObject =
     Json.obj(
       "additionalInformation" -> Json.obj(
@@ -62,9 +76,6 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
   "buildAdminBlock" should {
     "return an admin block json object" when {
       "both eligibility and vat application details data are in the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
-          .thenReturn(Future.successful(List[AttachmentType]()))
-
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
           vatApplication = Some(testVatApplicationDetails)
@@ -75,6 +86,22 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         result mustBe expectedJson
       }
 
+      "all the data is present, user has selected land and property and chose to submit OTT forms and method is Attached" in {
+        val vatScheme = testFullVatScheme.copy(
+          business = Some(testBusiness.copy(hasLandAndProperty = Some(true))),
+          attachments = Some(Attachments(Attached, Some(true), Some(true), Some(true)))
+        )
+
+        when(mockAttachmentService.mandatoryAttachmentList(ArgumentMatchers.eq(vatScheme)))
+          .thenReturn(List[AttachmentType](VAT5L, Attachment1614a, Attachment1614h, LandPropertyOtherDocs))
+        when(mockAttachmentService.optionalAttachmentList(ArgumentMatchers.eq(vatScheme)))
+          .thenReturn(Nil)
+
+        val result = TestBuilder.buildAdminBlock(vatScheme)
+
+        result mustBe expectedFullVat5lJson
+      }
+
       "both NETP eligibility and vat application details data are in the database" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP)),
@@ -82,8 +109,10 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
           attachments = Some(Attachments(Post))
         )
 
-        when(mockAttachmentService.attachmentList(ArgumentMatchers.eq(vatScheme)))
+        when(mockAttachmentService.mandatoryAttachmentList(ArgumentMatchers.eq(vatScheme)))
           .thenReturn(List[AttachmentType](IdentityEvidence))
+        when(mockAttachmentService.optionalAttachmentList(ArgumentMatchers.eq(vatScheme)))
+          .thenReturn(Nil)
 
         val result = TestBuilder.buildAdminBlock(vatScheme)
 
@@ -97,8 +126,10 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
           attachments = Some(Attachments(EmailMethod))
         )
 
-        when(mockAttachmentService.attachmentList(ArgumentMatchers.eq(vatScheme)))
+        when(mockAttachmentService.mandatoryAttachmentList(ArgumentMatchers.eq(vatScheme)))
           .thenReturn(List[AttachmentType](IdentityEvidence))
+        when(mockAttachmentService.optionalAttachmentList(ArgumentMatchers.eq(vatScheme)))
+          .thenReturn(Nil)
 
         val result = TestBuilder.buildAdminBlock(vatScheme)
 
