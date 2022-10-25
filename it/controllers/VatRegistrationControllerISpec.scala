@@ -111,7 +111,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    attachments = Some(Attachments(Post)),
+    attachments = Some(Attachments(Some(Post))),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
 
@@ -123,7 +123,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    attachments = Some(Attachments(Post)),
+    attachments = Some(Attachments(Some(Post))),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
 
@@ -137,7 +137,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
     ))),
-    attachments = Some(Attachments(Post)),
+    attachments = Some(Attachments(Some(Post))),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
 
@@ -156,7 +156,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       businessVerification = Some(BvPass),
       registration = FailedStatus
     ))),
-    attachments = Some(Attachments(Post)),
+    attachments = Some(Attachments(Some(Post))),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
 
@@ -630,7 +630,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           .upscanDetailsRepo.insertIntoDb(testUpscanDetails(testReference2), upscanMongoRepository.collection.insertOne)
 
         insertIntoDb(testMinimalVatSchemeWithVerifiedSoleTrader.copy(
-          attachments = Some(Attachments(method = Attached)),
+          attachments = Some(Attachments(method = Some(Attached))),
           business = Some(testBusiness.copy(hasLandAndProperty = Some(true)))
         ))
 
@@ -639,7 +639,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
           "metadata" -> (Json.toJson(testNonRepudiationMetadata).as[JsObject] ++ Json.obj("attachmentIds" -> Seq(testReference, testReference2)))
         )
         val testSubmissionJson: JsObject = testVerifiedSoleTraderJson.deepMerge(Json.obj("admin" -> Json.obj("attachments" -> Json.obj(
-          "VAT5L" -> Json.toJson[AttachmentMethod](Attached)
+          "VAT5L" -> Json.toJson[Option[AttachmentMethod]](Some(Attached))
         ))))
 
         stubPost("/vat/subscription", testSubmissionJson, OK, Json.stringify(testSubmissionResponse))

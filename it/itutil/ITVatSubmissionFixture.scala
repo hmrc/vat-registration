@@ -1342,7 +1342,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "attachments" -> (Json.obj(
         "EORIrequested" -> true
-      ) ++ AttachmentType.submissionWrites(Post).writes(attachmentList).as[JsObject])
+      ) ++ AttachmentType.submissionWrites(Some(Post)).writes(attachmentList).as[JsObject])
     ),
     "customerIdentification" -> customerIdentification,
     "contact" -> Json.obj(

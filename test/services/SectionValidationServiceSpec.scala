@@ -45,7 +45,7 @@ class SectionValidationServiceSpec extends VatRegSpec
     }
     "the section is Attachments" must {
       "return ValidSection when the data is valid" in {
-        val data = Json.toJson(Attachments(EmailMethod))
+        val data = Json.toJson(Attachments(Some(EmailMethod)))
         val res = await(Service.validate(testInternalId, testRegId, AttachmentsSectionId, data))
 
         res mustBe Right(ValidSection(data))

@@ -22,11 +22,11 @@ import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import models.api.vatapplication.Annual
-import models.api.{Attached, PersonalDetails, Submitted, VatScheme}
+import models.api.{Attached, AttachmentMethod, PersonalDetails, Submitted, VatScheme}
 import models.{IntendingTrader, Voluntary}
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
-import play.api.libs.json.JsObject
+import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
 import repositories._
 import services._
@@ -100,7 +100,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
       _ <- trafficManagementService.updateStatus(vatScheme.registrationId, Submitted)
       _ <- emailService.sendRegistrationReceivedEmail(vatScheme.internalId, vatScheme.registrationId, lang)
-      digitalAttachments = vatScheme.attachments.exists(_.method.equals(Attached)) && attachmentsService.mandatoryAttachmentList(vatScheme).nonEmpty
+      digitalAttachments = vatScheme.attachments.exists(_.method.contains(Attached)) && attachmentsService.mandatoryAttachmentList(vatScheme).nonEmpty
       optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
       _ <- if (digitalAttachments) sdesService.notifySdes(vatScheme.registrationId, formBundleId, optNrsId, providerId) else Future.successful()
     } yield {}
@@ -226,7 +226,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       optional("agentOrTransactor" -> agentOrTransactor),
       conditional(specialSituations.nonEmpty)("specialSituations" -> specialSituations),
       conditional(attachmentList.nonEmpty)("attachments" -> vatScheme.attachments.map(attachmentDetails => jsonObject(
-        "attachmentMethod" -> attachmentDetails.method.toString,
+        "attachmentMethod" -> attachmentDetails.method.map(_.toString),
         "attachmentList" -> attachmentList
       )))
     ).toString()))
