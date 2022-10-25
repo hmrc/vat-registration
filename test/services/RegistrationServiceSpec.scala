@@ -21,7 +21,7 @@ import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import mocks.{MockDailyQuotaRepository, MockTrafficManagementService, MockVatSchemeRepository}
+import mocks.MockVatSchemeRepository
 import models.api._
 import models.registration.{OtherBusinessInvolvementsSectionId, TransactorSectionId}
 import org.scalatest.BeforeAndAfterEach
@@ -34,8 +34,6 @@ import java.time.{LocalDate, LocalDateTime, LocalTime}
 import scala.concurrent.Future
 
 class RegistrationServiceSpec extends VatRegSpec
-  with MockDailyQuotaRepository
-  with MockTrafficManagementService
   with MockVatSchemeRepository
   with FeatureSwitching
   with BeforeAndAfterEach
@@ -55,15 +53,6 @@ class RegistrationServiceSpec extends VatRegSpec
     internalId = testInternalId,
     status = VatRegStatus.draft,
     createdDate = testDate
-  )
-
-  val testRegInfo = RegistrationInformation(
-    internalId = testInternalId,
-    registrationId = testRegId,
-    status = Draft,
-    regStartDate = testDate,
-    channel = VatReg,
-    lastModified = testDateTime
   )
 
   val fakeRegIdService = new FakeRegistrationIdService

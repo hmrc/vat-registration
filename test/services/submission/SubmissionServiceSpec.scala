@@ -25,7 +25,7 @@ import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import httpparsers.VatSubmissionSuccess
 import mocks.monitoring.MockAuditService
-import mocks.{MockAttachmentsService, MockEmailService, MockSdesService, MockTrafficManagementService}
+import mocks.{MockAttachmentsService, MockEmailService, MockSdesService}
 import models.api._
 import models.monitoring.SubmissionAuditModel
 import org.mockito.ArgumentMatchers
@@ -52,7 +52,6 @@ class SubmissionServiceSpec extends VatRegSpec
   with FutureInstances
   with MockAuditService
   with Eventually
-  with MockTrafficManagementService
   with MockAttachmentsService
   with MockSubmissionPayloadBuilder
   with MockSubmissionAuditBlockBuilder
@@ -70,7 +69,6 @@ class SubmissionServiceSpec extends VatRegSpec
       registrationRepository = mockRegistrationMongoRepository,
       vatSubmissionConnector = mockVatSubmissionConnector,
       nonRepudiationService = mockNonRepudiationService,
-      trafficManagementService = mockTrafficManagementService,
       submissionPayloadBuilder = mockSubmissionPayloadBuilder,
       submissionAuditBlockBuilder = mockSubmissionAuditBlockBuilder,
       attachmentsService = mockAttachmentService,
@@ -82,15 +80,6 @@ class SubmissionServiceSpec extends VatRegSpec
       authConnector = mockAuthConnector
     )
   }
-
-  val testRegInfo: RegistrationInformation = RegistrationInformation(
-    internalId = testInternalId,
-    registrationId = testRegId,
-    status = Submitted,
-    regStartDate = testDate,
-    channel = VatReg,
-    lastModified = testDateTime
-  )
 
   val testCorrelationId = "testCorrelationId"
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -106,7 +95,6 @@ class SubmissionServiceSpec extends VatRegSpec
         .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.submitted))
-      mockUpdateStatus(testRegId, Submitted)(Future.successful(Some(testRegInfo)))
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme)).thenReturn(vatSubmissionVoluntaryJson.as[JsObject])

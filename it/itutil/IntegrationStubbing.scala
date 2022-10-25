@@ -16,7 +16,7 @@
 package itutil
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, stubFor, urlMatching}
-import models.api.{DailyQuota, RegistrationInformation, UpscanDetails}
+import models.api.UpscanDetails
 import org.mongodb.scala.SingleObservable
 import org.mongodb.scala.result.InsertOneResult
 import play.api.test.Helpers._
@@ -28,26 +28,10 @@ trait IntegrationStubbing extends IntegrationSpecBase with ITFixtures {
     implicit val builder: PreconditionBuilder = this
 
     def user: User = User()
-    def dailyQuotaRepo: DailyQuotaRepo = DailyQuotaRepo()
-    def regInfoRepo: RegInfoRepo = RegInfoRepo()
     def upscanDetailsRepo: UpscanDetailsRepo = UpscanDetailsRepo()
   }
 
   def given: PreconditionBuilder = new PreconditionBuilder
-
-  case class DailyQuotaRepo()(implicit builder: PreconditionBuilder) {
-    def insertIntoDb(v: DailyQuota, f: DailyQuota => SingleObservable[InsertOneResult]): PreconditionBuilder = {
-      await(f(v).toFuture())
-      builder
-    }
-  }
-
-  case class RegInfoRepo()(implicit builder: PreconditionBuilder) {
-    def insertIntoDb(v: RegistrationInformation, f: RegistrationInformation => SingleObservable[InsertOneResult]): PreconditionBuilder = {
-      await(f(v).toFuture())
-      builder
-    }
-  }
 
   case class UpscanDetailsRepo()(implicit builder: PreconditionBuilder) {
     def insertIntoDb(v: UpscanDetails, f: UpscanDetails => SingleObservable[InsertOneResult]): PreconditionBuilder = {

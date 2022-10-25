@@ -41,15 +41,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   val testNonRepudiationApiKey = "testNonRepudiationApiKey"
   override lazy val additionalConfig = Map("microservice.services.non-repudiation.api-key" -> testNonRepudiationApiKey)
 
-  val testRegInfo = RegistrationInformation(
-    internalId = testInternalid,
-    registrationId = testRegId,
-    status = Draft,
-    regStartDate = testDate,
-    channel = VatReg,
-    lastModified = testDateTime
-  )
-
   class Setup extends SetupHelper
 
   def testEncodedPayload(payload: String): String = Base64.getEncoder.encodeToString(payload.getBytes(StandardCharsets.UTF_8))
@@ -62,7 +53,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   val formBundleId = "123412341234"
   val testSubmissionResponse = Json.obj("formBundle" -> formBundleId)
-
   val testAuthToken = "testAuthToken"
   val headerData = Map("testHeaderKey" -> "testHeaderValue")
 
@@ -178,7 +168,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
         given.user.isAuthorised
         insertIntoDb(testSoleTraderVatScheme)
-        await(trafficManagementRepo.collection.insertOne(testRegInfo).toFuture())
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
@@ -234,7 +223,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
             testRegisteredSoleTraderApplicantDetailsNoBpSafeId.copy(personalDetails = testPersonalDetails.copy(score = Some(testScore)))
           ))
         )
-        await(trafficManagementRepo.collection.insertOne(testRegInfo).toFuture())
 
         stubPost("/vat/subscription", testVerifiedSoleTraderJsonWithUTR, OK, Json.stringify(testSubmissionResponse))
         stubPost("/auth/authorise", OK, AuthTestData.identityJson.toString())
