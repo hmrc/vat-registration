@@ -62,7 +62,7 @@ class EmailService @Inject()(emailConnector: EmailConnector,
     (for {
       optVatScheme <- registrationMongoRepository.getRegistration(internalId, regId)
       vatScheme = optVatScheme.getOrElse(throw new InternalServerException(missingDataLog("VAT scheme", regId)))
-      template = vatScheme.attachments.map(_.method) match {
+      template = vatScheme.attachments.flatMap(_.method) match {
         case Some(EmailMethod) if lang.equals("cy") => emailCyTemplate
         case Some(EmailMethod) => emailTemplate
         case Some(Post) if lang.equals("cy") => postalCyTemplate

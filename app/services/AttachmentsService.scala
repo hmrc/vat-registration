@@ -81,9 +81,14 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   }
 
   private def getVat2Attachment(vatScheme: VatScheme): Option[VAT2.type] = {
-    val allPartnershipsExceptLLP = List(Partnership, LtdPartnership, ScotPartnership, ScotLtdPartnership)
-    val needVat2ForPartnership = vatScheme.eligibilitySubmissionData.exists(data => allPartnershipsExceptLLP.contains(data.partyType))
-    if (needVat2ForPartnership) Some(VAT2) else None
+    vatScheme.attachments.flatMap(_.additionalPartnersDocuments) match {
+      case Some(true) => Some(VAT2)
+      case Some(false) => None
+      case _ =>
+        val allPartnershipsExceptLLP = List(Partnership, LtdPartnership, ScotPartnership, ScotLtdPartnership)
+        val needVat2ForPartnership = vatScheme.eligibilitySubmissionData.exists(data => allPartnershipsExceptLLP.contains(data.partyType))
+        if (needVat2ForPartnership) Some(VAT2) else None
+    }
   }
 
   private def getVat51Attachment(vatScheme: VatScheme): Option[VAT51.type] = {

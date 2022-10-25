@@ -623,7 +623,7 @@ trait ITFixtures {
       eligibilitySubmissionData = Some(testNetpEligibilitySubmissionData),
       vatApplication = Some(testNetpVatApplication),
       flatRateScheme = None,
-      attachments = Some(Attachments(Post)),
+      attachments = Some(Attachments(Some(Post))),
       business = Some(testBusiness.copy(ppobAddress = Some(testOverseasAddress)))
     )
 

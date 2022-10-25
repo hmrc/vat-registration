@@ -36,7 +36,7 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
   val testEmailVatScheme = testVatScheme.copy(
     applicantDetails = Some(validApplicantDetails),
     transactorDetails = Some(validTransactorDetails),
-    attachments = Some(Attachments(EmailMethod)),
+    attachments = Some(Attachments(Some(EmailMethod))),
     acknowledgementReference = Some(testAckReference)
   )
 
