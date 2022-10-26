@@ -83,7 +83,7 @@ object VatScheme {
         (__ \ EligibilitySectionId.repoKey).readNullable[EligibilitySubmissionData] and
         (__ \ TransactorSectionId.repoKey).readNullable[TransactorDetails] and
         (__ \ ApplicantSectionId.repoKey).readNullable[ApplicantDetails](ApplicantDetails.reads(partyType)) and
-        (__ \ EntitiesSectionId.repoKey).read[List[Entity]].fmap(entities => Option(entities)).orElse((__ \ "partners").readNullable[List[Entity]]) and
+        (__ \ EntitiesSectionId.repoKey).readNullable[List[Entity]] and
         (__ \ BusinessSectionId.repoKey).readNullable[Business] and
         (__ \ OtherBusinessInvolvementsSectionId.repoKey).readNullable[List[OtherBusinessInvolvement]] and
         (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication] and
@@ -104,7 +104,7 @@ object VatScheme {
         (__ \ EligibilitySectionId.repoKey).readNullable[EligibilitySubmissionData] and
         (__ \ TransactorSectionId.repoKey).readNullable[TransactorDetails] and
         Reads.pure(None) and
-        (__ \ EntitiesSectionId.repoKey).read[List[Entity]].fmap(entities => Option(entities)).orElse((__ \ "partners").readNullable[List[Entity]]) and
+        (__ \ EntitiesSectionId.repoKey).readNullable[List[Entity]] and
         (__ \ BusinessSectionId.repoKey).readNullable[Business] and
         (__ \ OtherBusinessInvolvementsSectionId.repoKey).readNullable[List[OtherBusinessInvolvement]] and
         (__ \ VatApplicationSectionId.repoKey).readNullable[VatApplication] and

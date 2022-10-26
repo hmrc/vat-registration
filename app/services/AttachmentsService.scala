@@ -18,6 +18,7 @@ package services
 
 import models.GroupRegistration
 import models.api._
+import models.registration.AttachmentsSectionId
 import models.submission._
 import repositories.{UpscanMongoRepository, VatSchemeRepository}
 
@@ -31,8 +32,23 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
 
   def getAttachmentList(internalId: String, regId: String): Future[List[AttachmentType]] =
     registrationRepository.getRegistration(internalId, regId).map {
-      case Some(vatScheme) => mandatoryAttachmentList(vatScheme)
-      case None => List.empty[AttachmentType]
+      case Some(vatScheme) =>
+        mandatoryAttachmentList(vatScheme) match {
+          case Nil if vatScheme.attachments.exists(_.method.isDefined) => // Only triggered when users change answers, this drops the old invalid ones.
+            upscanMongoRepository.deleteAllUpscanDetails(regId)
+            if (vatScheme.attachments.exists(_.additionalPartnersDocuments.isEmpty)) {
+              registrationRepository.deleteSection(internalId, regId, AttachmentsSectionId.repoKey)
+            } else {
+              val updatedAttachments = vatScheme.attachments
+                .map(_.copy(method = None, supplyVat1614a = None, supplyVat1614h = None, supplySupportingDocuments = None))
+                .getOrElse(Attachments())
+              registrationRepository.upsertSection(internalId, regId, AttachmentsSectionId.repoKey, updatedAttachments)
+            }
+            Nil
+          case list => list
+        }
+      case None =>
+        List.empty[AttachmentType]
     }
 
   def getIncompleteAttachments(internalId: String, regId: String): Future[List[AttachmentType]] = {
