@@ -49,7 +49,7 @@ trait VatRegistrationFixture {
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
   lazy val testAddress = Address("line1", Some("line2"), None, None, None, Some("ZZ1 1ZZ"), Some(Country(Some("GB"), Some("UK"))), addressValidated = Some(true))
   lazy val testPostcode = "ZZ1 1ZZ"
-  lazy val testSicCode = SicCode("88888", "description", "displayDetails")
+  lazy val testSicCode = SicCode("88888", "description", "description")
   lazy val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
   lazy val testOldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   lazy val testPreviousName = FormerName(hasFormerName = Some(true), name = Some(testOldName), change = Some(testDate))
@@ -209,7 +209,7 @@ trait VatRegistrationFixture {
   )
 
   lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =
-    SicCode("00998", "otherBusiness desc 1", "fooBar 1") :: SicCode("00889", "otherBusiness desc 2", "fooBar 2") :: Nil
+    SicCode("00998", "otherBusiness desc 1", "otherBusiness desc 1") :: SicCode("00889", "otherBusiness desc 2", "otherBusiness desc 2") :: Nil
 
   lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None, None)
   lazy val testBankAccountOverseas = BankAccount(isProvided = true, None, overseasDetails = Some(testBankDetailsOverseas), None)
@@ -270,15 +270,15 @@ trait VatRegistrationFixture {
   lazy val testSicCode1 = "12345"
   lazy val testSicDesc1 = "testMainSicDesc"
   lazy val testSicDisplay1 = "testMainSicDisplay"
-  lazy val testSic1 = SicCode(testSicCode1, testSicDesc1, testSicDisplay1)
+  lazy val testSic1 = SicCode(testSicCode1, testSicDesc1, testSicDesc1)
   lazy val testSicCode2 = "23456"
   lazy val testSicDesc2 = "testSicDesc2"
   lazy val testSicDisplay2 = "testSicDisplay2"
-  lazy val testSic2 = SicCode(testSicCode2, testSicDesc2, testSicDisplay2)
+  lazy val testSic2 = SicCode(testSicCode2, testSicDesc2, testSicDesc2)
   lazy val testSicCode3 = "34567"
   lazy val testSicDesc3 = "testSicDesc3"
   lazy val testSicDisplay3 = "testSicDisplay3"
-  lazy val testSic3 = SicCode(testSicCode3, testSicDesc3, testSicDisplay3)
+  lazy val testSic3 = SicCode(testSicCode3, testSicDesc3, testSicDesc3)
   lazy val testBusinessActivities: List[SicCode] = List(testSic1, testSic2, testSic3)
   lazy val testBusiness: Business = Business(
     hasTradingName = Some(true),
