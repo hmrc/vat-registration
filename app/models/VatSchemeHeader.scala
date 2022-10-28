@@ -17,6 +17,7 @@
 package models
 
 import enums.VatRegStatus
+import models.api.Attachments
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -34,7 +35,7 @@ case object VatSchemeHeader {
       (__ \ "status").read[VatRegStatus.Value] and
       (__ \ "applicationReference").readNullable[String] and
       (__ \ "createdDate").read[LocalDate] and
-      (__ \ "attachments").readNullable[JsValue].fmap(block => block.isDefined)
+      (__ \ "attachments").readNullable[Attachments].fmap(block => block.exists(_.method.isDefined))
     ) (VatSchemeHeader.apply _)
 
   val writes: Writes[VatSchemeHeader] = Json.writes[VatSchemeHeader]

@@ -21,7 +21,10 @@ import helpers.VatRegSpec
 import mocks.{MockUpscanMongoRepository, MockVatSchemeRepository}
 import models.GroupRegistration
 import models.api._
+import models.registration.AttachmentsSectionId
 import models.submission.{LtdLiabilityPartnership, Partnership}
+import org.mockito.Mockito.{reset, verify}
+import org.mockito.{ArgumentMatchers, Mockito}
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
@@ -54,6 +57,12 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   val test1614aVatScheme = testVatScheme.copy(attachments = Some(Attachments(method = Some(Attached), supplyVat1614a = Some(true))))
   val test1614hVatScheme = testVatScheme.copy(attachments = Some(Attachments(method = Some(Attached), supplyVat1614h = Some(true))))
   val testSchemeWithTaxRepresentative = testVatScheme.copy(vatApplication = Some(testVatApplicationDetails.copy(hasTaxRepresentative = Some(true))))
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockVatSchemeRepository)
+    reset(mockUpscanMongoRepository)
+  }
 
   "getAttachmentsList" when {
     "attachments are required" must {
@@ -131,6 +140,40 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Nil
+      }
+
+      "return an empty list after clearing down old upscan references and attachment answers" in {
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
+          testVatScheme.copy(attachments = Some(Attachments(Some(Attached))))
+        )))
+        mockDeleteSection(testInternalId, testRegId, AttachmentsSectionId.repoKey)(response = true)
+        mockDeleteAllUpscanDetails(testRegId)(Future.successful(true))
+
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
+
+        res mustBe Nil
+        verify(mockVatSchemeRepository, Mockito.times(1))
+          .deleteSection(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(AttachmentsSectionId.repoKey))
+        verify(mockUpscanMongoRepository, Mockito.times(1))
+          .deleteAllUpscanDetails(ArgumentMatchers.eq(testRegId))
+      }
+
+      "return an empty list after clearing down old upscan references and attachment answers except the VAT2 flag" in {
+        val oldAttachmentsInfo = Attachments(Some(Attached), Some(true), Some(false), Some(true), Some(false))
+        val clearedAttachmentsInfo = Attachments(additionalPartnersDocuments = Some(false))
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
+          testVatScheme.copy(attachments = Some(oldAttachmentsInfo))
+        )))
+        mockUpsertSection(testInternalId, testRegId, AttachmentsSectionId.repoKey, clearedAttachmentsInfo)(Some(clearedAttachmentsInfo))
+        mockDeleteAllUpscanDetails(testRegId)(Future.successful(true))
+
+        val res = await(Service.getAttachmentList(testInternalId, testRegId))
+
+        res mustBe Nil
+        verify(mockVatSchemeRepository, Mockito.times(1))
+          .upsertSection(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(AttachmentsSectionId.repoKey), ArgumentMatchers.eq(clearedAttachmentsInfo))(ArgumentMatchers.any())
+        verify(mockUpscanMongoRepository, Mockito.times(1))
+          .deleteAllUpscanDetails(ArgumentMatchers.eq(testRegId))
       }
 
       "not return VAT2 in the attachment list for a Limited Liability Partnership" in {
