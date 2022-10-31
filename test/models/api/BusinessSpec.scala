@@ -46,21 +46,21 @@ class BusinessSpec extends BaseSpec with VatRegistrationFixture {
       Json.obj(
         "code" -> testSicCode1,
         "desc" -> testSicDesc1,
-        "indexes" -> testSicDisplay1
+        "descCy" -> testSicDesc1
       ), Json.obj(
         "code" -> testSicCode2,
         "desc" -> testSicDesc2,
-        "indexes" -> testSicDisplay2
+        "descCy" -> testSicDesc2
       ), Json.obj(
         "code" -> testSicCode3,
         "desc" -> testSicDesc3,
-        "indexes" -> testSicDisplay3
+        "descCy" -> testSicDesc3
       )
     ),
     "mainBusinessActivity" -> Json.obj(
       "code" -> testSicCode1,
       "desc" -> testSicDesc1,
-      "indexes" -> testSicDisplay1
+      "descCy" -> testSicDesc1
     ),
     "labourCompliance" -> Json.obj(
       "numOfWorkersSupplied" -> 1000,

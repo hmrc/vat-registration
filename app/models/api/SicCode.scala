@@ -21,13 +21,13 @@ import play.api.libs.json._
 
 case class SicCode(id: String,
                    description: String,
-                   displayDetails: String)
+                   descriptionCy: String = "")
 
 object SicCode {
 
   implicit val apiFormat: Format[SicCode] = (
     (__ \ "code").format[String] and
       (__ \ "desc").format[String] and
-      (__ \ "indexes").format[String]
+      (__ \ "descCy").format[String]
     ) (SicCode.apply, unlift(SicCode.unapply))
 }
