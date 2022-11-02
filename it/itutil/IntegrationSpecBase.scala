@@ -21,6 +21,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
+import play.api.http.HeaderNames
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.{WSClient, WSRequest}
@@ -36,6 +37,7 @@ trait IntegrationSpecBase extends PlaySpec
   val mockUrl: String = WiremockHelper.url
   val mockHost: String = WiremockHelper.wiremockHost
   val mockPort: String = WiremockHelper.wiremockPort.toString
+  val testAuthToken = "testAuthToken"
 
   lazy val additionalConfig: Map[String, String] = Map.empty
 
@@ -90,10 +92,11 @@ trait IntegrationSpecBase extends PlaySpec
 
     lazy val ws: WSClient = app.injector.instanceOf(classOf[WSClient])
 
-    def client(path: String): WSRequest = ws.url(s"http://localhost:$port/vatreg${path.replace("/vatreg", "")}").withFollowRedirects(false)
-  }
+    def client(path: String): WSRequest = ws.url(s"http://localhost:$port/vatreg${path.replace("/vatreg", "")}")
+      .withHttpHeaders(HeaderNames.COOKIE -> "test")
+      .withHttpHeaders("authorization" -> testAuthToken)
+      .withFollowRedirects(false)
 
-  override def beforeEach(): Unit = {
     resetWiremock()
   }
 

@@ -22,7 +22,7 @@ import models.nonrepudiation.{IdentityData, NonRepudiationMetadata, NonRepudiati
 import org.joda.time.LocalDate
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
-import services.NonRepudiationService._
+import services.NonRepudiationService.{NonRepudiationIdentityRetrievals, _}
 import services.monitoring.AuditService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
@@ -139,7 +139,7 @@ object NonRepudiationService {
 
 
   val nonRepudiationIdentityRetrievals: Retrieval[NonRepudiationIdentityRetrievals] =
-    Retrievals.affinityGroup and Retrievals.internalId and
+    (Retrievals.affinityGroup and Retrievals.internalId and
       Retrievals.externalId and Retrievals.agentCode and
       Retrievals.credentials and Retrievals.confidenceLevel and
       Retrievals.nino and Retrievals.saUtr and
@@ -148,6 +148,7 @@ object NonRepudiationService {
       Retrievals.groupIdentifier and Retrievals.credentialRole and
       Retrievals.mdtpInformation and Retrievals.itmpName and
       Retrievals.itmpDateOfBirth and Retrievals.itmpAddress and
-      Retrievals.credentialStrength and Retrievals.loginTimes
+      Retrievals.credentialStrength and Retrievals.loginTimes)
+      .asInstanceOf[Retrieval[NonRepudiationIdentityRetrievals]]
 
 }

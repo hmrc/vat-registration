@@ -53,7 +53,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   val formBundleId = "123412341234"
   val testSubmissionResponse = Json.obj("formBundle" -> formBundleId)
-  val testAuthToken = "testAuthToken"
   val headerData = Map("testHeaderKey" -> "testHeaderValue")
 
   val testNonRepudiationMetadata: NonRepudiationMetadata = NonRepudiationMetadata(
@@ -175,7 +174,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -192,7 +190,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -209,7 +206,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -230,7 +226,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -249,7 +244,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -291,7 +285,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -310,7 +303,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -332,7 +324,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -349,7 +340,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -366,7 +356,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -385,7 +374,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -404,7 +392,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -423,7 +410,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -442,7 +428,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -466,7 +451,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -488,7 +472,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -512,7 +495,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -531,7 +513,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -555,7 +536,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -602,7 +582,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubNonRepudiationSubmission(expectedNrsRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 
@@ -638,7 +617,6 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         stubSdesNotification(Json.toJson(testSdesPayload(testReference2)))(NO_CONTENT)
 
         val res: WSResponse = await(client(controllers.routes.VatRegistrationController.submitVATRegistration(testRegId).url)
-          .withHttpHeaders("authorization" -> testAuthToken)
           .put(Json.obj("userHeaders" -> headerData))
         )
 

@@ -26,7 +26,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 
-trait MockSdesConnector extends HttpClientMock {
+trait MockSdesConnector {
 
   this: MockitoSugar =>
 

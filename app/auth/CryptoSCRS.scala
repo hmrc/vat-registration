@@ -16,15 +16,16 @@
 
 package auth
 
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.json.{JsString, Reads, Writes}
-import uk.gov.hmrc.crypto.{ApplicationCrypto, CompositeSymmetricCrypto, Crypted, PlainText}
+import uk.gov.hmrc.crypto.{ApplicationCrypto, Crypted, PlainText}
+
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class CryptoSCRS @Inject()(config: Configuration) {
 
-  lazy val crypto: CompositeSymmetricCrypto = new ApplicationCrypto(config.underlying).JsonCrypto
+  lazy val crypto = new ApplicationCrypto(config.underlying).JsonCrypto
 
   val rds: Reads[String] = Reads[String](js =>
     js.validate[String].map { encryptedUtr =>

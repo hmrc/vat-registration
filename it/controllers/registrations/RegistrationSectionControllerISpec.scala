@@ -1,9 +1,8 @@
 
 package controllers.registrations
 
-import auth.CryptoSCRS
 import itutil.IntegrationStubbing
-import models.api.{BankAccount, BankAccountMongoFormat}
+import models.api.BankAccount
 import models.registration.{BankAccountSectionId, TransactorSectionId}
 import play.api.libs.json.Json
 import play.api.test.Helpers._

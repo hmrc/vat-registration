@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MockSdesService extends HttpClientMock {
+trait MockSdesService {
   this: MockitoSugar =>
 
   val mockSdesService: SdesService = mock[SdesService]

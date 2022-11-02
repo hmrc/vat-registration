@@ -23,15 +23,13 @@ import config.BackendConfig
 import enums.VatRegStatus
 import play.api.Logging
 import repositories.VatSchemeRepository
-import uk.gov.hmrc.http.HttpClient
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class VatRegistrationService @Inject()(registrationRepository: VatSchemeRepository,
-                                       val backendConfig: BackendConfig,
-                                       val http: HttpClient)
+                                       val backendConfig: BackendConfig)
                                       (implicit executionContext: ExecutionContext)
   extends ApplicativeSyntax with FutureInstances with Logging {
 

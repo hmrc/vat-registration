@@ -20,8 +20,10 @@ import config.BackendConfig
 import models.sdes.PropertyExtractor.locationKey
 import models.sdes.{Property, SdesCallback, SdesNotification}
 import play.api.Logging
+import play.api.libs.json.Json
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.http.{HttpClient, HttpReadsHttpResponse, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HttpReadsHttpResponse, HttpResponse, StringContextOps}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.LocalDateTime
@@ -30,7 +32,7 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class StubSdesController @Inject()(cc: ControllerComponents,
-                                   httpClient: HttpClient,
+                                   httpClient: HttpClientV2,
                                    config: BackendConfig)
                                   (implicit executionContext: ExecutionContext) extends BackendController(cc) with Logging with HttpReadsHttpResponse {
 
@@ -48,9 +50,9 @@ class StubSdesController @Inject()(cc: ControllerComponents,
       failureReason = None
     )
 
-    httpClient.POST[SdesCallback, HttpResponse](
-      url = url,
-      body = payload
-    ).map(_ => NoContent)
+    httpClient.post(url"$url")
+      .withBody(Json.toJson(payload))
+      .execute[HttpResponse]
+      .map(_ => NoContent)
   }
 }
