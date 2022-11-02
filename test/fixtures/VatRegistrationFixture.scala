@@ -26,7 +26,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 
 import java.nio.charset.StandardCharsets
-import java.time.{LocalDate, LocalDateTime, LocalTime}
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneOffset}
 import java.util.Base64
 
 trait VatRegistrationFixture {
@@ -429,7 +429,7 @@ trait VatRegistrationFixture {
       None
     )
     val testCredentialStrength = CredentialStrength.strong
-    val testLoginTimes = LoginTimes(org.joda.time.DateTime.now(), Some(org.joda.time.DateTime.now()))
+    val testLoginTimes = LoginTimes(LocalDateTime.now.toInstant(ZoneOffset.UTC), Some(LocalDateTime.now.toInstant(ZoneOffset.UTC)))
 
     val testNonRepudiationIdentityData: IdentityData = IdentityData(
       Some(testInternalId),

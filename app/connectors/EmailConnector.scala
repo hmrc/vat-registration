@@ -19,36 +19,39 @@ package connectors
 import config.BackendConfig
 import play.api.Logging
 import play.api.http.Status._
-import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReadsHttpResponse, HttpResponse}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReadsHttpResponse, HttpResponse, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EmailConnector @Inject()(httpClient: HttpClient)
+class EmailConnector @Inject()(httpClient: HttpClientV2)
                               (implicit ec: ExecutionContext, appConfig: BackendConfig) extends HttpReadsHttpResponse with Logging {
 
   def sendEmail(email: String, template: String, params: Map[String, String], force: Boolean)
                (implicit hc: HeaderCarrier): Future[EmailResponse] =
 
-    httpClient.POST[JsValue, HttpResponse](
-      url = appConfig.sendEmailUrl,
-      body = Json.obj(
-        "to" -> Json.arr(email),
-        "templateId" -> template,
-        "parameters" -> Json.toJson(params),
-        "force" -> force
+    httpClient.post(url"${appConfig.sendEmailUrl}")
+      .withBody(
+        Json.obj(
+          "to" -> Json.arr(email),
+          "templateId" -> template,
+          "parameters" -> Json.toJson(params),
+          "force" -> force
+        )
       )
-    ).map { res =>
-      res.status match {
-        case ACCEPTED =>
-          EmailSent
-        case status =>
-          logger.warn(s"Unexpected status returned from Email service: $status")
-          EmailFailedToSend
+      .execute[HttpResponse]
+      .map { res =>
+        res.status match {
+          case ACCEPTED =>
+            EmailSent
+          case status =>
+            logger.warn(s"Unexpected status returned from Email service: $status")
+            EmailFailedToSend
+        }
       }
-    }
 
 }
 

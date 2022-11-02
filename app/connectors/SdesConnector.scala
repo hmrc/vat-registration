@@ -19,30 +19,23 @@ package connectors
 import config.BackendConfig
 import httpparsers.SdesNotificationHttpParser.SdesNotificationHttpReads
 import models.sdes.{SdesNotification, SdesNotificationResult}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReadsHttpResponse}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReadsHttpResponse, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SdesConnector @Inject()(httpClient: HttpClient,
+class SdesConnector @Inject()(httpClient: HttpClientV2,
                               config: BackendConfig)
                              (implicit executionContext: ExecutionContext) extends HttpReadsHttpResponse {
 
-  val sdesHeaders = Seq(
-    "x-client-id" -> config.sdesAuthorizationToken,
-    "Content-Type" -> "application/json"
-  )
-
   def notifySdes(payload: SdesNotification)(implicit hc: HeaderCarrier): Future[SdesNotificationResult] =
-    httpClient.POST[SdesNotification, SdesNotificationResult](
-      url = config.sdesNotificationUrl,
-      body = payload,
-      headers = sdesHeaders
-    )(
-      wts = SdesNotification.format,
-      rds = SdesNotificationHttpReads,
-      hc = hc,
-      ec = executionContext
-    )
+    httpClient.post(url"${config.sdesNotificationUrl}")
+      .withBody(Json.toJson(payload)(SdesNotification.format))
+      .setHeader("x-client-id" -> config.sdesAuthorizationToken)
+      .setHeader("Content-Type" -> "application/json")
+      .execute[SdesNotificationResult](SdesNotificationHttpReads, executionContext)
+
 }

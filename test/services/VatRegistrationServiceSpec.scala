@@ -29,7 +29,7 @@ import scala.concurrent.Future
 class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
 
   class Setup {
-    lazy val service: VatRegistrationService = new VatRegistrationService(mockVatSchemeRepository, backendConfig, mockHttpClient)
+    lazy val service: VatRegistrationService = new VatRegistrationService(mockVatSchemeRepository, backendConfig)
   }
 
   implicit val hc: HeaderCarrier = HeaderCarrier()

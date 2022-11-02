@@ -36,7 +36,7 @@ import utils.TimeMachine
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait VatMocks extends HttpClientMock {
+trait VatMocks {
 
   this: MockitoSugar =>
 

@@ -28,7 +28,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.nio.charset.StandardCharsets
-import java.time.{LocalDate, LocalDateTime, LocalTime}
+import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneOffset}
 import java.util.Base64
 
 trait ITFixtures {
@@ -484,7 +484,7 @@ trait ITFixtures {
       None
     )
     val testCredentialStrength = CredentialStrength.strong
-    val testLoginTimes = LoginTimes(org.joda.time.DateTime.now(), Some(org.joda.time.DateTime.now()))
+    val testLoginTimes = LoginTimes(LocalDateTime.now().toInstant(ZoneOffset.UTC), Some(LocalDateTime.now().toInstant(ZoneOffset.UTC)))
     lazy val testAffinityGroup: AffinityGroup = AffinityGroup.Organisation
     lazy val testProviderId: String = "testProviderID"
     lazy val testProviderType: String = "GovernmentGateway"

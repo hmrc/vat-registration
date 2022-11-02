@@ -20,36 +20,25 @@ import config.BackendConfig
 import httpparsers.VatSubmissionHttpParser.{VatSubmissionHttpReads, VatSubmissionResponse}
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class VatSubmissionConnector @Inject()(appConfig: BackendConfig,
-                                       http: HttpClient
+                                       http: HttpClientV2
                                       )(implicit executionContext: ExecutionContext) {
 
-  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[VatSubmissionResponse] = {
-
-    val submissionHeaders = Seq(
-      "Authorization" -> appConfig.urlHeaderAuthorization,
-      "Environment" -> appConfig.urlHeaderEnvironment,
-      "CorrelationId" -> correlationId,
-      "Credential-Id" -> credentialId,
-      "Content-Type" -> "application/json"
-    ) ++ hc.headers(Seq("X-Session-ID"))
-
-    http.POST[JsObject, VatSubmissionResponse](
-      url = appConfig.vatSubmissionUrl,
-      body = submissionData,
-      headers = submissionHeaders
-    )(
-      wts = JsObject.writes,
-      rds = VatSubmissionHttpReads,
-      hc = hc,
-      ec = executionContext
-    )
-
-  }
+  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[VatSubmissionResponse] =
+    http.post(url"${appConfig.vatSubmissionUrl}")
+      .withBody(submissionData)
+      .setHeader("Authorization" -> appConfig.urlHeaderAuthorization)
+      .setHeader("Environment" -> appConfig.urlHeaderEnvironment)
+      .setHeader("CorrelationId" -> correlationId)
+      .setHeader("Credential-Id" -> credentialId)
+      .setHeader("Content-Type" -> "application/json")
+      .setHeader(hc.headers(Seq("X-Session-ID")): _*)
+      .execute[VatSubmissionResponse](VatSubmissionHttpReads, executionContext)
 
 }

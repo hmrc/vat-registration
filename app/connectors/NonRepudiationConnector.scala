@@ -21,8 +21,9 @@ import config.BackendConfig
 import models.nonrepudiation._
 import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
-import play.api.libs.json.{JsObject, JsValue, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReadsHttpResponse, HttpResponse}
+import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReadsHttpResponse, HttpResponse, StringContextOps}
 import utils.{Delayer, Retrying}
 
 import javax.inject.{Inject, Singleton}
@@ -31,7 +32,7 @@ import scala.util.control.NonFatal
 import scala.util.{Success, Try}
 
 @Singleton
-class NonRepudiationConnector @Inject()(httpClient: HttpClient, config: BackendConfig)(implicit val scheduler: Scheduler, val ec: ExecutionContext)
+class NonRepudiationConnector @Inject()(httpClient: HttpClientV2, config: BackendConfig)(implicit val scheduler: Scheduler, val ec: ExecutionContext)
   extends HttpReadsHttpResponse with Retrying with Delayer {
 
   def submitNonRepudiation(encodedPayloadString: String,
@@ -50,22 +51,22 @@ class NonRepudiationConnector @Inject()(httpClient: HttpClient, config: BackendC
     }
 
     retry[NonRepudiationSubmissionResult](config.nrsRetries, retryCondition) { _ =>
-      httpClient.POST[JsValue, HttpResponse](
-        url = config.nonRepudiationSubmissionUrl,
-        body = jsonBody,
-        headers = Seq("X-API-Key" -> config.nonRepudiationApiKey)
-      ).map {
-        response =>
-          response.status match {
-            case ACCEPTED =>
-              val submissionId = (response.json \ "nrSubmissionId").as[String]
-              NonRepudiationSubmissionAccepted(submissionId)
-            case _ =>
-              NonRepudiationSubmissionFailed(response.body, response.status)
-          }
-      }.recover { case NonFatal(e) =>
-        NonRepudiationSubmissionFailed(e.getMessage, INTERNAL_SERVER_ERROR)
-      }
+      httpClient.post(url"${config.nonRepudiationSubmissionUrl}")
+        .withBody(jsonBody)
+        .setHeader("X-API-Key" -> config.nonRepudiationApiKey)
+        .execute[HttpResponse]
+        .map {
+          response =>
+            response.status match {
+              case ACCEPTED =>
+                val submissionId = (response.json \ "nrSubmissionId").as[String]
+                NonRepudiationSubmissionAccepted(submissionId)
+              case _ =>
+                NonRepudiationSubmissionFailed(response.body, response.status)
+            }
+        }.recover { case NonFatal(e) =>
+          NonRepudiationSubmissionFailed(e.getMessage, INTERNAL_SERVER_ERROR)
+        }
     }
   }
 
@@ -77,22 +78,21 @@ class NonRepudiationConnector @Inject()(httpClient: HttpClient, config: BackendC
     }
 
     retry[NonRepudiationAttachmentResult](config.nrsRetries, retryCondition) { _ =>
-      httpClient.POST[NonRepudiationAttachment, HttpResponse](
-        url = config.attachmentNonRepudiationSubmissionUrl,
-        body = payload,
-        headers = Seq("X-API-Key" -> config.nonRepudiationApiKey)
-      ).map {
-        response =>
-          response.status match {
-            case ACCEPTED =>
-              val attachmentId = (response.json \ "attachmentId").as[String]
-              NonRepudiationAttachmentAccepted(attachmentId)
-            case _ =>
-              NonRepudiationAttachmentFailed(response.body, response.status)
-          }
-      }.recover { case NonFatal(e) =>
-        NonRepudiationAttachmentFailed(e.getMessage, INTERNAL_SERVER_ERROR)
-      }
+      httpClient.post(url"${config.attachmentNonRepudiationSubmissionUrl}")
+        .withBody(Json.toJson(payload))
+        .setHeader("X-API-Key" -> config.nonRepudiationApiKey)
+        .execute[HttpResponse].map {
+          response =>
+            response.status match {
+              case ACCEPTED =>
+                val attachmentId = (response.json \ "attachmentId").as[String]
+                NonRepudiationAttachmentAccepted(attachmentId)
+              case _ =>
+                NonRepudiationAttachmentFailed(response.body, response.status)
+            }
+        }.recover { case NonFatal(e) =>
+          NonRepudiationAttachmentFailed(e.getMessage, INTERNAL_SERVER_ERROR)
+        }
     }
   }
 }
