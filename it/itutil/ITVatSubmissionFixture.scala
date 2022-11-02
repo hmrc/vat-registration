@@ -87,10 +87,10 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "goodsSoldToOtherEU" -> testTurnover
       ),
       "schemes" -> Json.obj(
-        "FRSCategory" -> frsDetails.categoryOfBusiness.get,
-        "FRSPercentage" -> frsDetails.percent,
-        "startDate" -> frsDetails.startDate.get,
-        "limitedCostTrader" -> frsDetails.limitedCostTrader.get
+        "FRSCategory" -> testFlatRateScheme.categoryOfBusiness,
+        "FRSPercentage" -> testFlatRateScheme.percent,
+        "startDate" -> testFlatRateScheme.frsStart,
+        "limitedCostTrader" -> testFlatRateScheme.limitedCostTrader
       )
     ),
     "periods" -> Json.obj(
@@ -247,10 +247,10 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "goodsSoldToOtherEU" -> testTurnover
       ),
       "schemes" -> Json.obj(
-        "FRSCategory" -> frsDetails.categoryOfBusiness.get,
-        "FRSPercentage" -> frsDetails.percent,
-        "startDate" -> frsDetails.startDate.get,
-        "limitedCostTrader" -> frsDetails.limitedCostTrader.get
+        "FRSCategory" -> testFlatRateScheme.categoryOfBusiness,
+        "FRSPercentage" -> testFlatRateScheme.percent,
+        "startDate" -> testFlatRateScheme.frsStart,
+        "limitedCostTrader" -> testFlatRateScheme.limitedCostTrader
       )
     ),
     "periods" -> Json.obj(
@@ -408,10 +408,10 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "goodsSoldToOtherEU" -> testTurnover
       ),
       "schemes" -> Json.obj(
-        "FRSCategory" -> frsDetails.categoryOfBusiness.get,
-        "FRSPercentage" -> frsDetails.percent,
-        "startDate" -> frsDetails.startDate.get,
-        "limitedCostTrader" -> frsDetails.limitedCostTrader.get
+        "FRSCategory" -> testFlatRateScheme.categoryOfBusiness,
+        "FRSPercentage" -> testFlatRateScheme.percent,
+        "startDate" -> testFlatRateScheme.frsStart,
+        "limitedCostTrader" -> testFlatRateScheme.limitedCostTrader
       )
     ),
     "periods" -> Json.obj(
@@ -1412,7 +1412,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "compliance" -> Json.obj(
       "supplyWorkers" -> testBusiness.labourCompliance.get.supplyWorkers,
-      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied,
+      "numOfWorkersSupplied" -> testBusiness.labourCompliance.get.numOfWorkersSupplied
     ),
     "declaration" -> Json.obj(
       "applicantDetails" -> Json.obj(

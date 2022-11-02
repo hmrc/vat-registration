@@ -22,11 +22,11 @@ import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import models.api.vatapplication.Annual
-import models.api.{Attached, AttachmentMethod, PersonalDetails, Submitted, VatScheme}
+import models.api.{Attached, PersonalDetails, VatScheme}
 import models.{IntendingTrader, Voluntary}
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import repositories._
 import services._
@@ -199,7 +199,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       case _ => None
     }
     val appliedForAas = if (vatScheme.vatApplication.flatMap(_.returnsFrequency).contains(Annual)) Some("AnnualAccountingScheme") else None
-    val appliedForFrs = if (vatScheme.flatRateScheme.exists(_.joinFrs)) Some("FlatRateScheme") else None
+    val appliedForFrs = if (vatScheme.flatRateScheme.exists(_.joinFrs.contains(true))) Some("FlatRateScheme") else None
     val hasObi = if (vatScheme.otherBusinessInvolvements.exists(_.nonEmpty)) Some("OtherBusinessInvolvements") else None
     val specialSituations = List(exceptionOrExemption, appliedForAas, appliedForFrs, hasObi).flatten
 
