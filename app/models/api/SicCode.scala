@@ -28,6 +28,6 @@ object SicCode {
   implicit val apiFormat: Format[SicCode] = (
     (__ \ "code").format[String] and
       (__ \ "desc").format[String] and
-      (__ \ "descCy").format[String]
+      (__ \ "descCy").formatWithDefault[String]("")
     ) (SicCode.apply, unlift(SicCode.unapply))
 }
