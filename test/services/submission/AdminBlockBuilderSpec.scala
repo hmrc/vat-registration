@@ -73,6 +73,15 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       )
     )
 
+  val expectedWelshLanguageJson: JsObject =
+    Json.obj(
+      "additionalInformation" -> Json.obj(
+        "customerStatus" -> "2",
+        "welshLanguage" -> true
+      ),
+      "attachments" -> Json.obj()
+    )
+
   "buildAdminBlock" should {
     "return an admin block json object" when {
       "both eligibility and vat application details data are in the database" in {
@@ -84,6 +93,18 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         val result = TestBuilder.buildAdminBlock(vatScheme)
 
         result mustBe expectedJson
+      }
+
+      "both eligibility and vat application details data are in the database and welshLanguage is selected" in {
+        val vatScheme = testVatScheme.copy(
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData),
+          vatApplication = Some(testVatApplicationDetails.copy(eoriRequested = None)),
+          business = Some(testBusiness.copy(welshLanguage = Some(true)))
+        )
+
+        val result = TestBuilder.buildAdminBlock(vatScheme)
+
+        result mustBe expectedWelshLanguageJson
       }
 
       "all the data is present, user has selected land and property and chose to submit OTT forms and method is Attached" in {

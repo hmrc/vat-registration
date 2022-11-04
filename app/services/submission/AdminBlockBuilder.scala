@@ -39,7 +39,8 @@ class AdminBlockBuilder @Inject()(attachmentsService: AttachmentsService) {
             "customerStatus" -> MTDfB,
             conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
               "overseasTrader" -> true
-            )
+            ),
+            conditional(vatScheme.business.exists(_.welshLanguage.exists(_ == true)))("welshLanguage" -> true)
           ),
           "attachments" -> (jsonObject(
             optional("EORIrequested" -> vatApplication.eoriRequested)) ++ {

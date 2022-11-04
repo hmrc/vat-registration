@@ -290,6 +290,7 @@ trait VatRegistrationFixture {
     hasWebsite = Some(true),
     website = Some(testWebsite),
     contactPreference = Some(Email),
+    welshLanguage = Some(false),
     hasLandAndProperty = Some(false),
     businessDescription = Some(testBusinessDescription),
     businessActivities = Some(testBusinessActivities),
@@ -314,7 +315,7 @@ trait VatRegistrationFixture {
 
   lazy val validFullBusinessDetails: Business = Business(hasTradingName = Some(true), tradingName = Some(testTradingName),
     shortOrgName = None, ppobAddress = None, email = None, telephoneNumber = None, hasWebsite = None, website = None,
-    contactPreference = None, hasLandAndProperty = None, businessDescription = None, businessActivities = None,
+    contactPreference = None, welshLanguage = None, hasLandAndProperty = None, businessDescription = None, businessActivities = None,
     mainBusinessActivity = None, labourCompliance = None, otherBusinessInvolvement = None)
 
   lazy val validFullOtherBusinessInvolvement: OtherBusinessInvolvement = OtherBusinessInvolvement(businessName = testCompanyName, hasVrn = true, vrn = Some(testVrn), hasUtr = Some(true), utr = Some(testUtr), stillTrading = true)

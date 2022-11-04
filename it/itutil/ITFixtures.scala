@@ -257,6 +257,7 @@ trait ITFixtures {
     hasWebsite = Some(true),
     website = Some(testWebsite),
     contactPreference = Some(Email),
+    welshLanguage = Some(false),
     hasLandAndProperty = Some(false),
     businessDescription = Some(testBusinessDescription),
     businessActivities = Some(testBusinessActivities),
