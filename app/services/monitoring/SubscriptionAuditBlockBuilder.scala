@@ -72,15 +72,15 @@ class SubscriptionAuditBlockBuilder {
           }
         }),
         optional("schemes" -> optFlatRateScheme.flatMap { flatRateScheme =>
-          (flatRateScheme.joinFrs, flatRateScheme.frsDetails) match {
-            case (true, Some(details)) =>
+          (flatRateScheme.joinFrs, flatRateScheme.categoryOfBusiness, flatRateScheme.percent, flatRateScheme.frsStart, flatRateScheme.limitedCostTrader) match {
+            case (Some(true), optCategoryOfBusiness, Some(percent), Some(frsStartDate), Some(limitedCostTrader)) =>
               Some(jsonObject(
-                optional("flatRateSchemeCategory" -> details.categoryOfBusiness),
-                "flatRateSchemePercentage" -> details.percent,
-                optional("startDate" -> details.startDate),
-                optional("limitedCostTrader" -> details.limitedCostTrader)
+                optional("flatRateSchemeCategory" -> optCategoryOfBusiness),
+                "flatRateSchemePercentage" -> percent,
+                "startDate" -> frsStartDate,
+                "limitedCostTrader" -> limitedCostTrader
               ))
-            case (false, _) => None
+            case (Some(false), _, _, _, _) => None
             case _ => throw new InternalServerException("[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true")
           }
         }),

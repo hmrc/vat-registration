@@ -82,14 +82,6 @@ trait ITFixtures {
     currentlyTrading = None
   )
 
-  val frsDetails = FRSDetails(
-    businessGoods = Some(BusinessGoods(BigDecimal(12345678), true)),
-    startDate = Some(testDate),
-    categoryOfBusiness = Some("123"),
-    percent = 15,
-    limitedCostTrader = Some(false)
-  )
-
   val aasDetails = vatapplication.AASDetails(
     paymentMethod = StandingOrder,
     paymentFrequency = MonthlyPayment
@@ -113,7 +105,17 @@ trait ITFixtures {
 
   lazy val testFirstName = "testFirstName"
   lazy val testLastName = "testLastName"
-  val testFlatRateScheme = FlatRateScheme(joinFrs = true, Some(frsDetails))
+  val testFlatRateScheme = FlatRateScheme(
+    joinFrs = Some(true),
+    overBusinessGoods = Some(true),
+    estimateTotalSales = Some(BigDecimal(12345678)),
+    overBusinessGoodsPercent = Some(true),
+    useThisRate = Some(true),
+    frsStart = Some(testDate),
+    categoryOfBusiness = Some("123"),
+    percent = Some(15),
+    limitedCostTrader = Some(false)
+  )
   val EstimateValue: Long = 1000L
   val zeroRatedTurnoverEstimate: Long = 1000L
   val testCountry = Country(Some("GB"), None)
@@ -366,7 +368,7 @@ trait ITFixtures {
       vatApplication = Some(testVatApplication),
       bankAccount = Some(BankAccount(isProvided = false, None, None, Some(BeingSetup))),
       acknowledgementReference = Some("ackRef"),
-      flatRateScheme = Some(FlatRateScheme(joinFrs = false, None)),
+      flatRateScheme = Some(FlatRateScheme(joinFrs = Some(false))),
       status = VatRegStatus.draft,
       applicantDetails = Some(testRegisteredApplicantDetails),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData),

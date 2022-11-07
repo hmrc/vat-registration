@@ -16,37 +16,53 @@
 
 package models.api
 
-import java.time.LocalDate
 import play.api.libs.json._
 
-case class FlatRateScheme(joinFrs: Boolean,
-                          frsDetails: Option[FRSDetails])
+import java.time.LocalDate
+
+case class FlatRateScheme(joinFrs: Option[Boolean] = None,
+                          overBusinessGoods: Option[Boolean] = None,
+                          estimateTotalSales: Option[BigDecimal] = None,
+                          overBusinessGoodsPercent: Option[Boolean] = None,
+                          useThisRate: Option[Boolean] = None,
+                          frsStart: Option[LocalDate] = None,
+                          categoryOfBusiness: Option[String] = None,
+                          percent: Option[BigDecimal] = None,
+                          limitedCostTrader: Option[Boolean] = None)
 
 object FlatRateScheme {
-  implicit val format: Format[FlatRateScheme] = Json.format[FlatRateScheme]
-}
+  val oldRepoReads: Reads[FlatRateScheme] = (json: JsValue) => {
+    val joinFrs = (json \ "joinFrs").as[Boolean]
+    val details = (json \ "frsDetails").validateOpt[JsObject].get
+    val start = details.flatMap { js =>
+      val date = (js \ "startDate").asOpt[LocalDate]
+      (joinFrs, date) match {
+        case (true, None) => None
+        case (false, _) => None
+        case _ => date
+      }
+    }
 
-case class BusinessGoods(estimatedTotalSales: BigDecimal, overTurnover: Boolean)
+    val businessGoods = details.flatMap(js => (js \ "businessGoods").validateOpt[JsObject].get)
 
-object BusinessGoods {
-  implicit val format: OFormat[BusinessGoods] = Json.format[BusinessGoods]
-}
-
-case class FRSDetails(businessGoods: Option[BusinessGoods],
-                      startDate: Option[LocalDate],
-                      categoryOfBusiness: Option[String],
-                      percent: BigDecimal,
-                      limitedCostTrader: Option[Boolean])
-
-object FRSDetails {
-  implicit val format: Format[FRSDetails] = Json.format[FRSDetails]
-
-  val auditWrites: Writes[FRSDetails] = Writes[FRSDetails] { frs =>
-    Json.obj(
-      "startDate" -> frs.startDate,
-      "frsCategory" -> frs.categoryOfBusiness,
-      "frsPercentage" -> frs.percent,
-      "limitedCostTrader" -> frs.limitedCostTrader
-    )
+    JsSuccess(FlatRateScheme(
+      Some(joinFrs),
+      if (!joinFrs && details.isEmpty) None else Some(businessGoods.isDefined),
+      businessGoods.map(js => (js \ "estimatedTotalSales").as[BigDecimal]),
+      businessGoods.map(js => (js \ "overTurnover").as[Boolean]),
+      if (details.isEmpty) None else Some(joinFrs),
+      start,
+      details.flatMap(js => (js \ "categoryOfBusiness").asOpt[String]),
+      details.flatMap(js => (js \ "percent").asOpt[BigDecimal]),
+      details.flatMap(js => (js \ "limitedCostTrader").asOpt[Boolean])
+    ))
   }
+
+  val fallbackReads: Reads[FlatRateScheme] = //TODO: replace with Json.reads[FlatRateScheme] 2 weeks after this is merged
+    (__ \ "frsDetails").readNullable[JsObject].flatMap {
+      case None => Json.reads[FlatRateScheme]
+      case _ => oldRepoReads
+    }
+  val writes: Writes[FlatRateScheme] = Json.writes[FlatRateScheme]
+  implicit val format: Format[FlatRateScheme] = Format(fallbackReads, writes)
 }

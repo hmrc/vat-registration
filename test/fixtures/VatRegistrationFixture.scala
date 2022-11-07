@@ -21,7 +21,6 @@ import models._
 import models.api._
 import models.api.vatapplication._
 import models.submission._
-import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
 
@@ -252,18 +251,19 @@ trait VatRegistrationFixture {
       fulfilmentWarehouseName = Some(testWarehouseName)
     )))
 
-  lazy val validFullFRSDetails: FRSDetails =
-    FRSDetails(
-      businessGoods = Some(BusinessGoods(BigDecimal(1234567891), overTurnover = true)),
-      startDate = Some(testDate),
-      categoryOfBusiness = Some("testCategory"),
-      percent = 15,
-      limitedCostTrader = Some(false)
-    )
-
-  lazy val validFullFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = true, Some(validFullFRSDetails))
-  lazy val validEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = false, None)
-  lazy val invalidEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = true, None)
+  lazy val validFullFlatRateScheme: FlatRateScheme = FlatRateScheme(
+    joinFrs = Some(true),
+    overBusinessGoods = Some(true),
+    estimateTotalSales = Some(BigDecimal(1234567891)),
+    overBusinessGoodsPercent = Some(true),
+    useThisRate = Some(true),
+    frsStart = Some(testDate),
+    categoryOfBusiness = Some("testCategory"),
+    percent = Some(15),
+    limitedCostTrader = Some(false)
+  )
+  lazy val validEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = Some(false))
+  lazy val invalidEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = Some(true))
 
   lazy val testBusinessDescription = "testBusinessDescription"
   lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = true)
@@ -318,84 +318,6 @@ trait VatRegistrationFixture {
     mainBusinessActivity = None, labourCompliance = None, otherBusinessInvolvement = None)
 
   lazy val validFullOtherBusinessInvolvement: OtherBusinessInvolvement = OtherBusinessInvolvement(businessName = testCompanyName, hasVrn = true, vrn = Some(testVrn), hasUtr = Some(true), utr = Some(testUtr), stillTrading = true)
-  lazy val validFullObiJson: JsObject = Json.obj(
-    "businessName" -> s"$testCompanyName",
-    "hasVrn" -> true,
-    "vrn" -> s"$testVrn",
-    "hasUtr" -> true,
-    "utr" -> s"$testUtr",
-    "stillTrading" -> true
-  )
-
-  lazy val validFullFRSDetailsJsonWithBusinessGoods: JsObject = Json.parse(
-    s"""
-       |{
-       |  "businessGoods" : {
-       |    "overTurnover": true,
-       |    "estimatedTotalSales": 1234567891
-       |  },
-       |  "startDate": "$testDate",
-       |  "categoryOfBusiness":"testCategory",
-       |  "percent":15.00,
-       |  "limitedCostTrader":false
-       |}
-     """.stripMargin).as[JsObject]
-
-  lazy val validFRSDetailsJsonWithoutBusinessGoods: JsObject = Json.parse(
-    s"""
-       |{
-       |  "startDate": "$testDate",
-       |  "categoryOfBusiness":"testCategory",
-       |  "percent":15.00,
-       |  "limitedCostTrader":false
-       |}
-     """.stripMargin).as[JsObject]
-
-  lazy val validFullFRSDetailsJsonWithOptionals: JsObject = Json.parse(
-    s"""
-       |{
-       |  "businessGoods" : {
-       |    "overTurnover": true,
-       |    "estimatedTotalSales": 1234567891
-       |  },
-       |  "startDate": "$testDate",
-       |  "categoryOfBusiness":"testCategory",
-       |  "percent":15.00,
-       |  "limitedCostTrader":false
-       |}
-     """.stripMargin).as[JsObject]
-
-  lazy val validFRSDetailsJsonWithoutOptionals: JsObject = Json.parse(
-    s"""
-       |{
-       |  "percent":15.00,
-       |  "limitedCostTrader":false
-       |}
-     """.stripMargin).as[JsObject]
-
-
-  lazy val validFullFlatRateSchemeJson: JsObject = Json.parse(
-    s"""
-       |{
-       |  "joinFrs": true,
-       |  "frsDetails":$validFullFRSDetailsJsonWithBusinessGoods
-       |}
-     """.stripMargin).as[JsObject]
-
-  lazy val detailsPresentJoinFrsFalse: JsObject = Json.parse(
-    s"""
-       |{
-       |  "joinFrs":false,
-       |  "frsDetails":$validFullFRSDetailsJsonWithBusinessGoods
-       |}
-     """.stripMargin).as[JsObject]
-
-  lazy val validEmptyFlatRateSchemeJson: JsObject = Json.parse(
-    s"""
-       |{
-       |  "joinFrs": false
-       |}
-     """.stripMargin).as[JsObject]
 
   object AuthTestData {
 
