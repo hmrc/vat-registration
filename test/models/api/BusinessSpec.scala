@@ -39,6 +39,7 @@ class BusinessSpec extends BaseSpec with VatRegistrationFixture {
     "telephoneNumber" -> testTelephone,
     "hasWebsite" -> true,
     "website" -> testWebsite,
+    "welshLanguage" -> false,
     "contactPreference" -> ContactPreference.email,
     "hasLandAndProperty" -> false,
     "businessDescription" -> testBusinessDescription,
