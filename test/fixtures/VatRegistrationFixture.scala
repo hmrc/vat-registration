@@ -37,7 +37,7 @@ trait VatRegistrationFixture {
   lazy val testAckReference = "BRPY000000000001"
   lazy val testDate: LocalDate = LocalDate.of(2018, 1, 1)
   lazy val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.MIDNIGHT)
-  lazy val testDateOfBirth = DateOfBirth(testDate)
+  lazy val testDateOfBirth = testDate
   lazy val testCompanyName = "testCompanyName"
   lazy val testCrn = "testCrn"
   lazy val testVrn = "testVrn"

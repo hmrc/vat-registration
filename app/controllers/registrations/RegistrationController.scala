@@ -16,7 +16,7 @@
 
 package controllers.registrations
 
-import auth.{Authorisation, AuthorisationResource}
+import auth.Authorisation
 import models.VatSchemeHeader
 import models.api.VatScheme
 import play.api.libs.json._
@@ -33,8 +33,6 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
                                        val registrationService: RegistrationService,
                                        controllerComponents: ControllerComponents
                                       )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
-
-  override val resourceConn: AuthorisationResource = registrationService.vatSchemeRepository
 
   /** GET /registrations
    * ===Purpose===
@@ -89,9 +87,9 @@ class RegistrationController @Inject()(val authConnector: AuthConnector,
   /** PUT /registrations/:regId
    *  ===Purpose===
    *  Upsert the complete details of a registration
-   *  ===Detais===
-   * @param regId
-   * @return OK - JSON the details of the updated registration
+   *  ===Detail===
+   * @param regId     - the unique ID for the desired registration
+   * @return OK       - JSON the details of the updated registration
    */
   def upsertRegistration(regId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     isAuthenticated { internalId =>

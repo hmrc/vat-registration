@@ -17,7 +17,9 @@
 package services
 
 import java.util.UUID
+import javax.inject.Singleton
 
+@Singleton
 class RegistrationIdService {
 
   def generateRegistrationId(): String = UUID.randomUUID().toString

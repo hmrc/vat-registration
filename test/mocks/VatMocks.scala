@@ -16,9 +16,6 @@
 
 package mocks
 
-import auth.AuthorisationResource
-import cats.data.EitherT
-import common.exceptions._
 import connectors._
 import enums.VatRegStatus
 import org.mockito.ArgumentMatchers.{any, anyString}
@@ -41,7 +38,6 @@ trait VatMocks {
   this: MockitoSugar =>
 
   lazy val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  lazy val mockAuthorisationResource: AuthorisationResource = mock[AuthorisationResource]
   lazy val mockRegistrationMongoRepository: VatSchemeRepository = mock[VatSchemeRepository]
   lazy val mockSubmissionService: SubmissionService = mock[SubmissionService]
   lazy val mockVatRegistrationService: VatRegistrationService = mock[VatRegistrationService]
@@ -104,15 +100,6 @@ trait VatMocks {
 
 
   object ServiceMocks {
-
-    def serviceResult[B](b: B): ServiceResult[B] = {
-      EitherT[Future, LeftState, B](Future.successful(Right(b)))
-    }
-
-    def serviceError[B](a: LeftState): ServiceResult[B] = {
-      EitherT[Future, LeftState, B](Future.successful(Left(a)))
-    }
-
     def mockGetDocumentStatus(status: VatRegStatus.Value): Unit = {
       when(mockVatRegistrationService.getStatus(anyString(), anyString()))
         .thenReturn(Future.successful(status))

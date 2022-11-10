@@ -34,8 +34,6 @@ case class AuthResourceNotFound(intId: String) extends AuthorisationResult
 
 trait Authorisation extends AuthorisedFunctions with Logging {
 
-  val resourceConn : AuthorisationResource
-
   def isAuthenticated(f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     authorised().retrieve(internalId) { id =>
       id.fold {
@@ -49,37 +47,5 @@ trait Authorisation extends AuthorisedFunctions with Logging {
       case ex: Exception => Future.failed(throw ex)
     }
   }
-// TODO: implement this on every controller where it is needed when user story is played
-  def isAuthorised(regId: String)(f: => AuthorisationResult => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
-    authorised().retrieve(internalId) { id =>
-      resourceConn.getInternalId(regId) flatMap { resource =>
-        f(mapToAuthResult(id, resource))
-      }
-    } recoverWith {
-      case ar: AuthorisationException =>
-        logger.warn(s"[Authorisation] - [isAuthorised]: An error occurred, err: ${ar.getMessage}")
-        f(NotLoggedInOrAuthorised)
-      case e =>
-        throw e
-    }
-  }
 
-  private def mapToAuthResult(authContext: Option[String], resource: Option[String] ) : AuthorisationResult = {
-    authContext match {
-      case None =>
-        logger.warn("[mapToAuthResult]: No authority was found")
-        NotLoggedInOrAuthorised
-      case Some(id) =>
-        resource match {
-        case None =>
-          logger.info("[Authorisation] [mapToAuthResult]: No auth resource was found for the current user")
-          AuthResourceNotFound(id)
-        case Some(resourceId) if resourceId == id =>
-          Authorised(id)
-        case _ =>
-          logger.warn("[mapToAuthResult]: The current user is not authorised to access this resource")
-          NotAuthorised(id)
-      }
-    }
-  }
 }

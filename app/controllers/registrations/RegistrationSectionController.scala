@@ -16,7 +16,7 @@
 
 package controllers.registrations
 
-import auth.{Authorisation, AuthorisationResource}
+import auth.Authorisation
 import models.registration.RegistrationSectionId
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -24,17 +24,16 @@ import services._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
                                               val registrationService: RegistrationService,
                                               val sectionValidationService: SectionValidationService,
                                               controllerComponents: ControllerComponents,
                                               cipherService: CipherService
                                              )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
-
-  override val resourceConn: AuthorisationResource = registrationService.vatSchemeRepository
 
   /** GET /registrations/:regId/sections/:sectionId
    * ===Purpose===

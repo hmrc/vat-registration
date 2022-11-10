@@ -16,11 +16,10 @@
 
 package controllers
 
-import auth.{Authorisation, AuthorisationResource}
+import auth.Authorisation
 import models.api.{UpscanCreate, UpscanDetails}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import repositories.VatSchemeRepository
 import services.UpscanService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.InternalServerException
@@ -32,37 +31,28 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class UpscanController @Inject()(controllerComponents: ControllerComponents,
                                  upscanService: UpscanService,
-                                 registrationRepository: VatSchemeRepository,
                                  val authConnector: AuthConnector
                                 )(implicit ec: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation {
 
-  override val resourceConn: AuthorisationResource = registrationRepository
-
   def createUpscanDetails(regId: String): Action[UpscanCreate] = Action.async(parse.json[UpscanCreate]) { implicit request =>
-    isAuthorised(regId) { authResult =>
-      authResult.ifAuthorised(regId, "UpscanController", "createUpscanDetails") {
-        upscanService.createUpscanDetails(regId, request.body).map(_ => Ok)
-      }
+    isAuthenticated { _ =>
+      upscanService.createUpscanDetails(regId, request.body).map(_ => Ok)
     }
   }
 
   def getUpscanDetails(regId: String, reference: String): Action[AnyContent] = Action.async { implicit request =>
-    isAuthorised(regId) { authResult =>
-      authResult.ifAuthorised(regId, "UpscanController", "getUpscanDetails") {
-        upscanService.getUpscanDetails(reference).map {
-          case Some(upscanDetails) => Ok(Json.toJson(upscanDetails))
-          case None => NotFound
-        }
+    isAuthenticated { _ =>
+      upscanService.getUpscanDetails(reference).map {
+        case Some(upscanDetails) => Ok(Json.toJson(upscanDetails))
+        case None => NotFound
       }
     }
   }
 
   def getAllUpscanDetails(regId: String): Action[AnyContent] = Action.async { implicit request =>
-    isAuthorised(regId) { authResult =>
-      authResult.ifAuthorised(regId, "UpscanController", "getUpscanDetails") {
-        upscanService.getAllUpscanDetails(regId).map(upscanDetails => Ok(Json.toJson(upscanDetails)))
-      }
+    isAuthenticated { _ =>
+      upscanService.getAllUpscanDetails(regId).map(upscanDetails => Ok(Json.toJson(upscanDetails)))
     }
   }
 
@@ -77,21 +67,17 @@ class UpscanController @Inject()(controllerComponents: ControllerComponents,
   }
 
   def deleteUpscanDetails(regId: String, reference: String): Action[AnyContent] = Action.async { implicit request =>
-    isAuthorised(regId) { authResult =>
-      authResult.ifAuthorised(regId, "UpscanController", "deleteUpscanDetails") {
-        upscanService.deleteUpscanDetails(reference).map { _ =>
-          NoContent
-        }
+    isAuthenticated { _ =>
+      upscanService.deleteUpscanDetails(reference).map { _ =>
+        NoContent
       }
     }
   }
 
   def deleteAllUpscanDetails(regId: String): Action[AnyContent] = Action.async { implicit request =>
-    isAuthorised(regId) { authResult =>
-      authResult.ifAuthorised(regId, "UpscanController", "deleteAllUpscanDetails") {
-        upscanService.deleteAllUpscanDetails(regId).map { _ =>
-          NoContent
-        }
+    isAuthenticated { _ =>
+      upscanService.deleteAllUpscanDetails(regId).map { _ =>
+        NoContent
       }
     }
   }

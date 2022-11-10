@@ -19,7 +19,6 @@ package controllers
 import auth.Authorisation
 import play.api.libs.json.{JsObject, JsValue}
 import play.api.mvc.{Action, ControllerComponents}
-import repositories.VatSchemeRepository
 import services.EligibilityService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -32,8 +31,6 @@ class EligibilityController @Inject()(val eligibilityService: EligibilityService
                                       val authConnector: AuthConnector,
                                       controllerComponents: ControllerComponents
                                      ) extends BackendController(controllerComponents) with Authorisation {
-
-  val resourceConn: VatSchemeRepository = eligibilityService.registrationRepository
 
   def updateEligibilityData(regId: String): Action[JsValue] = Action.async[JsValue](parse.json) {
     implicit request =>

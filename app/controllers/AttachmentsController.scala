@@ -16,7 +16,7 @@
 
 package controllers
 
-import auth.{Authorisation, AuthorisationResource}
+import auth.Authorisation
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.AttachmentsService
@@ -31,8 +31,6 @@ class AttachmentsController @Inject()(controllerComponents: ControllerComponents
                                       val authConnector: AuthConnector,
                                       attachmentsService: AttachmentsService
                                      )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
-
-  val resourceConn: AuthorisationResource = attachmentsService.registrationRepository
 
   def getAttachmentList(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
