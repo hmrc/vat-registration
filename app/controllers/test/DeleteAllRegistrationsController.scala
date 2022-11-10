@@ -16,23 +16,22 @@
 
 package controllers.test
 
-import auth.{Authorisation, AuthorisationResource}
+import auth.Authorisation
 import org.mongodb.scala.model.Filters.equal
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
+@Singleton
 class DeleteAllRegistrationsController @Inject()(val authConnector: AuthConnector,
                                                  vatSchemeRepository: VatSchemeRepository)
                                                 (implicit ec: ExecutionContext, cc: ControllerComponents) extends BackendController(cc) with Authorisation {
 
-  override val resourceConn: AuthorisationResource = vatSchemeRepository
-
-  def deleteAllRegistrations: Action[AnyContent] = Action.async { implicit request =>
+  def deleteAllRegistrations(): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { intId =>
       vatSchemeRepository.collection.deleteMany(equal("internalId", intId)).toFuture().map {
         case wr if wr.getDeletedCount > 0 => NoContent

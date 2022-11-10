@@ -17,7 +17,9 @@
 package utils
 
 import java.time.{LocalDate, LocalDateTime}
+import javax.inject.Singleton
 
+@Singleton
 class TimeMachine {
 
   def today: LocalDate = LocalDate.now

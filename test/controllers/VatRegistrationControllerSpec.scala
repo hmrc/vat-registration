@@ -27,7 +27,6 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.{Request, Result}
 import play.api.test.FakeRequest
-import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import scala.concurrent.Future
@@ -40,14 +39,10 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
     val controller: VatRegistrationController = new VatRegistrationController(
       mockVatRegistrationService,
       mockSubmissionService,
-      mockRegistrationMongoRepository,
       mockAuthConnector,
       mockRegistrationService,
-      stubControllerComponents()) {
-
-      override val registrationRepository: VatSchemeRepository = mockRegistrationMongoRepository
-      override val resourceConn: VatSchemeRepository = mockRegistrationMongoRepository
-    }
+      stubControllerComponents()
+    )
   }
 
   "Calling submitVATRegistration" should {

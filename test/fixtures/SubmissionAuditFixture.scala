@@ -16,7 +16,7 @@
 
 package fixtures
 
-import models.api.Submitted
+import enums.VatRegStatus
 import models.submission.UkCompany
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
@@ -140,7 +140,7 @@ trait SubmissionAuditFixture extends VatRegistrationFixture {
     "journeyId" -> testRegId,
     "userType" -> Organisation.toString,
     "messageType" -> "SubscriptionCreate",
-    "customerStatus" -> Submitted.toString,
+    "customerStatus" -> VatRegStatus.submitted,
     "eoriRequested" -> true,
     "corporateBodyRegistered" -> Json.obj(
       "dateOfIncorporation" -> testDate,

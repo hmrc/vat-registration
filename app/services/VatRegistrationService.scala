@@ -18,11 +18,11 @@ package services
 
 import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
-import common.exceptions._
 import config.BackendConfig
 import enums.VatRegStatus
 import play.api.Logging
 import repositories.VatSchemeRepository
+import uk.gov.hmrc.http.InternalServerException
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -49,7 +49,7 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
         }
       case None =>
         logger.warn(s"[getStatus] - No VAT registration document found for $regId")
-        throw MissingRegDocument(regId)
+        throw new InternalServerException("[VatRegistrationService] No VAT registration document found for $regId")
     }
   }
 }

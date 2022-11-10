@@ -1,7 +1,7 @@
 
 package itutil
 
-import models.api.Submitted
+import enums.VatRegStatus
 import models.submission.{IdType, UtrIdType, VrnIdType}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
@@ -157,7 +157,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
     "journeyId" -> vatScheme.registrationId,
     "userType" -> Organisation.toString,
     "messageType" -> "SubscriptionCreate",
-    "customerStatus" -> Submitted.toString,
+    "customerStatus" -> VatRegStatus.submitted,
     "eoriRequested" -> true,
     "corporateBodyRegistered" -> Json.obj(
       "dateOfIncorporation" -> "2017-01-01",

@@ -16,7 +16,7 @@
 
 package repositories
 
-import auth.{AuthorisationResource, CryptoSCRS}
+import auth.CryptoSCRS
 import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
@@ -71,7 +71,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
           .expireAfter(backendConfig.expiryInSeconds, TimeUnit.SECONDS)
       )
     )
-  ) with AuthorisationResource with JsonErrorUtil with Logging {
+  ) with JsonErrorUtil with Logging {
 
   private val acknowledgementRefPrefix = "VRS"
   private val timestampKey = "timestamp"

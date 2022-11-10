@@ -16,13 +16,11 @@
 
 package controllers
 
-import auth.{Authorisation, AuthorisationResource}
+import auth.Authorisation
 import cats.instances.FutureInstances
-import common.exceptions.LeftState
 import enums.VatRegStatus._
 import play.api.libs.json._
 import play.api.mvc._
-import repositories.VatSchemeRepository
 import services._
 import services.submission.SubmissionService
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -35,16 +33,11 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class VatRegistrationController @Inject()(val registrationService: VatRegistrationService,
                                           val submissionService: SubmissionService,
-                                          val registrationRepository: VatSchemeRepository,
                                           val authConnector: AuthConnector,
                                           val newRegistrationService: RegistrationService,
                                           controllerComponents: ControllerComponents
                                          )(implicit executionContext: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation with FutureInstances {
-
-
-  override val resourceConn: AuthorisationResource = registrationRepository
-  val errorHandler: LeftState => Result = err => err.toResult
 
   def submitVATRegistration(regId: String): Action[JsValue] = Action.async(parse.json) {
     implicit request =>

@@ -130,7 +130,7 @@ trait ITFixtures {
   val testProperName = Name(first = Some(testFirstName), middle = None, last = testLastName)
   val testFormerName = FormerName(hasFormerName = Some(true), name = Some(oldName), change = Some(testDate))
   val testCompanyName = "testCompanyName"
-  val testDateOfBirth = DateOfBirth(testDate)
+  val testDateOfBirth = testDate
   val testCrn = "testCrn"
   val testCtUtr = "testCtUtr"
   val testSaUtr = "testSaUtr"
