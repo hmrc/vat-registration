@@ -16,9 +16,10 @@
 
 package utils
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class StringNormaliserSpec extends WordSpec with Matchers {
+class StringNormaliserSpec extends AnyWordSpec with Matchers {
 
   "normaliseString" should {
     Map(

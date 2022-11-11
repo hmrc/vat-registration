@@ -19,11 +19,13 @@ package services
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.VatThreshold
-import org.joda.time.format.DateTimeFormat
+
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class VatThresholdServiceSpec extends VatRegSpec with VatRegistrationFixture {
 
-  def date(s: String) = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(s)
+  def date(s: String): LocalDate = LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE)
 
   class Setup {
     val service: VatThresholdService = new VatThresholdService(backendConfig) {

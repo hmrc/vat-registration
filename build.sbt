@@ -34,20 +34,20 @@ lazy val aliases: Seq[Def.Setting[_]] = Seq(
 ).flatten
 
 lazy val testSettings = Seq(
-  fork                       in IntegrationTest := false,
-  testForkedParallel         in IntegrationTest := false,
-  parallelExecution          in IntegrationTest := false,
-  logBuffered                in IntegrationTest := false,
-  unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest) (base => Seq(base / "it")).value,
-  fork                       in Test            := true,
-  testForkedParallel         in Test            := false,
-  parallelExecution          in Test            := true,
-  logBuffered                in Test            := false,
+  Test / fork                            := true,
+  Test / testForkedParallel              := false,
+  Test / parallelExecution               := true,
+  Test / logBuffered                     := false,
+  IntegrationTest / fork                 := false,
+  IntegrationTest / testForkedParallel   := false,
+  IntegrationTest / parallelExecution    := false,
+  IntegrationTest / logBuffered          := false,
+  IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
   addTestReportOption(IntegrationTest, "int-test-reports")
 )
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(Seq(PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory): _*)
+  .enablePlugins(Seq(PlayScala, SbtGitVersioning, SbtDistributablesPlugin): _*)
   .settings(routesImport := Seq("models.registration.RegistrationSectionId.urlBinder"))
   .settings(PlayKeys.playDefaultPort := 9896)
   .settings(scalaSettings: _*)
@@ -58,15 +58,12 @@ lazy val microservice = Project(appName, file("."))
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
   .settings(testSettings: _*)
   .settings(aliases: _*)
-  .settings(majorVersion := 0)
   .settings(
-    scalaVersion                     := "2.12.12",
-    libraryDependencies              ++= AppDependencies(),
-    retrieveManaged                  := true,
-    cancelable             in Global := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
+    scalaVersion := "2.12.12",
+    libraryDependencies ++= AppDependencies(),
+    retrieveManaged := true,
+    Global / cancelable := true
   )
+  .settings(majorVersion := 0)
+
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
-
-
-

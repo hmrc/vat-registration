@@ -17,7 +17,7 @@
 package services.submission
 
 import models.api.NoUKBankAccount.reasonId
-import models.api.{BankAccount, IndeterminateStatus, InvalidStatus, OverseasAccount, VatScheme}
+import models.api._
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException

@@ -19,7 +19,7 @@ package services.monitoring
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
-import models.api.{ApplicantDetails, DeclarationCapacityAnswer, DigitalContactOptional, Name, PersonalDetails, TransactorDetails, VatScheme}
+import models.api._
 import models.submission.AccountantAgent
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException

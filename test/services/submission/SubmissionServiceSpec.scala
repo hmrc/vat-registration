@@ -32,6 +32,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.Eventually
+import org.scalatest.time.{Seconds, Span}
 import play.api.libs.json.JsObject
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
@@ -95,7 +96,9 @@ class SubmissionServiceSpec extends VatRegSpec
         .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.submitted))
-      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
+        SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)
+      )
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme)).thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
       mockSendRegistrationReceivedEmail(testInternalId, testRegId, "en")(Future.successful(EmailSent))
@@ -126,7 +129,15 @@ class SubmissionServiceSpec extends VatRegSpec
 
       await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe testFormBundleId
 
-      eventually {
+      eventually(timeout(Span(5, Seconds))) {
+        verify(mockNonRepudiationService, atLeastOnce()).submitNonRepudiation(
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testSubmissionPayload),
+          ArgumentMatchers.eq(testDateTime),
+          ArgumentMatchers.eq(testFormBundleId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.any[Boolean]
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
         verifyAudit(SubmissionAuditModel(
           detailBlockAnswers,
           testFullVatScheme,
@@ -135,14 +146,6 @@ class SubmissionServiceSpec extends VatRegSpec
           None,
           testFormBundleId
         ))
-        verify(mockNonRepudiationService).submitNonRepudiation(
-          ArgumentMatchers.eq(testRegId),
-          ArgumentMatchers.eq(testSubmissionPayload),
-          ArgumentMatchers.eq(testDateTime),
-          ArgumentMatchers.eq(testFormBundleId),
-          ArgumentMatchers.eq(testUserHeaders),
-          ArgumentMatchers.any[Boolean]
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
       }
     }
   }

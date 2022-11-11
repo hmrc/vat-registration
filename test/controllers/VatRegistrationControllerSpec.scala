@@ -40,7 +40,6 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
       mockVatRegistrationService,
       mockSubmissionService,
       mockAuthConnector,
-      mockRegistrationService,
       stubControllerComponents()
     )
   }

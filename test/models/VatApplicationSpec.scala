@@ -17,7 +17,7 @@
 package models
 
 import helpers.BaseSpec
-import models.api.vatapplication.{AASDetails, Annual, BankGIRO, ConditionalValue, JanDecStagger, JanuaryStagger, Monthly, MonthlyPayment, MonthlyStagger, NIPCompliance, OverseasCompliance, PaymentFrequency, PaymentMethod, Quarterly, ReturnsFrequency, Stagger, StoringGoodsForDispatch, StoringWithinUk, VatApplication}
+import models.api.vatapplication._
 import play.api.libs.json._
 
 import java.time.LocalDate

@@ -19,10 +19,10 @@ package services
 import connectors.NonRepudiationConnector
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationSubmissionFailureAudit, NonRepudiationSubmissionSuccessAudit}
 import models.nonrepudiation.{IdentityData, NonRepudiationMetadata, NonRepudiationSubmissionAccepted, NonRepudiationSubmissionFailed}
-import org.joda.time.LocalDate
+import java.time.LocalDate
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
-import services.NonRepudiationService.{NonRepudiationIdentityRetrievals, _}
+import services.NonRepudiationService._
 import services.monitoring.AuditService
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate

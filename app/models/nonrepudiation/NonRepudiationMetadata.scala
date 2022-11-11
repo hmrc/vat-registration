@@ -16,10 +16,10 @@
 
 package models.nonrepudiation
 
-import java.time.{LocalDateTime, ZoneId}
-import java.time.format.DateTimeFormatter
+import play.api.libs.json._
 
-import play.api.libs.json.{Format, JsResult, JsString, JsValue, Json, OFormat}
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDateTime, ZoneId}
 
 case class NonRepudiationMetadata(businessId: String,
                                   notableEvent: String,

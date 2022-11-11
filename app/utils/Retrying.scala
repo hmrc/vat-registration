@@ -16,10 +16,10 @@
 
 package utils
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
 
 object Retrying {
   private val fibonacci: Stream[Int] = 1 #:: fibonacci.scanLeft(1)(_ + _)
