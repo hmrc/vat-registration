@@ -16,11 +16,11 @@
 
 package models.nonrepudiation
 
-import org.joda.time.{DateTime, LocalDate}
-import play.api.libs.json.{Format, Json, OFormat}
+import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.{AffinityGroup, ConfidenceLevel, CredentialRole}
-import uk.gov.hmrc.http.controllers.RestFormats
+
+import java.time.LocalDate
 
 case class IdentityData(
                          internalId: Option[String] = None,
@@ -46,8 +46,6 @@ case class IdentityData(
                        )
 
 object IdentityData {
-  implicit val localDateFormat: Format[LocalDate] = RestFormats.localDateFormats
-  implicit val dateTimeFormat: Format[DateTime] = RestFormats.dateTimeFormats
   implicit val credFormat: OFormat[Credentials] = Json.format[Credentials]
   implicit val nameFormat: OFormat[Name] = Json.format[Name]
   implicit val agentInfoFormat: OFormat[AgentInformation] = Json.format[AgentInformation]

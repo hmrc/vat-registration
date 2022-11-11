@@ -18,10 +18,11 @@ package services
 
 import com.typesafe.config.{ConfigList, ConfigRenderOptions}
 import config.BackendConfig
-import javax.inject.{Inject, Singleton}
 import models.VatThreshold
-import org.joda.time.DateTime
 import play.api.libs.json._
+
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class VatThresholdService @Inject()(backendConfig: BackendConfig) {
@@ -29,7 +30,7 @@ class VatThresholdService @Inject()(backendConfig: BackendConfig) {
   lazy val thresholdString: String = backendConfig.runModeConfiguration.get[ConfigList]("thresholds").render(ConfigRenderOptions.concise())
   lazy val thresholds: Seq[VatThreshold] = Json.parse(thresholdString).as[List[VatThreshold]]
 
-  def getThresholdForGivenDate(givenDate: DateTime): Option[VatThreshold] = {
+  def getThresholdForGivenDate(givenDate: LocalDate): Option[VatThreshold] = {
     thresholds
       .sortWith(_.date isAfter _.date)
       .find(model => givenDate.isAfter(model.date) || givenDate.isEqual(model.date))

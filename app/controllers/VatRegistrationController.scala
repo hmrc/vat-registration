@@ -34,7 +34,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class VatRegistrationController @Inject()(val registrationService: VatRegistrationService,
                                           val submissionService: SubmissionService,
                                           val authConnector: AuthConnector,
-                                          val newRegistrationService: RegistrationService,
                                           controllerComponents: ControllerComponents
                                          )(implicit executionContext: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation with FutureInstances {

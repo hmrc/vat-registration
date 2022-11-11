@@ -16,8 +16,9 @@
 
 package models.api.vatapplication
 
-import utils.JsonUtilities
 import play.api.libs.json._
+import utils.JsonUtilities
+
 import java.time.LocalDate
 
 case class VatApplication(eoriRequested: Option[Boolean],

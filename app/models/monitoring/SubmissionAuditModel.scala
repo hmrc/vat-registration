@@ -16,9 +16,9 @@
 
 package models.monitoring
 
+import models._
 import models.api.VatScheme
 import models.submission.{IdVerificationStatus, NETP, NonUkNonEstablished}
-import models._
 import play.api.libs.json.{JsString, JsValue}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup

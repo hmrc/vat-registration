@@ -22,12 +22,12 @@ import helpers.VatRegSpec
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.ExecutionContext
-import uk.gov.hmrc.http.HeaderCarrier
-import play.api.mvc.AnyContentAsEmpty
 
 class AuditServiceSpec extends VatRegSpec with VatRegistrationFixture {
 

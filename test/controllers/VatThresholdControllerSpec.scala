@@ -19,14 +19,14 @@ package controllers
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.VatThreshold
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.concurrent.Future
 
 class VatThresholdControllerSpec extends VatRegSpec with VatRegistrationFixture {
@@ -42,7 +42,7 @@ class VatThresholdControllerSpec extends VatRegSpec with VatRegistrationFixture 
   class Setup extends SetupMocks(false)
   class SetupWithMockSubmission extends SetupMocks(true)
 
-  def date(s: String): DateTime = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(s)
+  def date(s: String): LocalDate = LocalDate.parse(s, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
 
   "getThresholdForTime" should {

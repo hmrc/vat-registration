@@ -16,28 +16,29 @@
 
 package models
 
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Format, JsString, Reads, Writes, __}
+import play.api.libs.json._
 
-case class VatThreshold(date: DateTime, amount: String)
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+case class VatThreshold(date: LocalDate, amount: String)
 
 object VatThreshold {
 
-  val dateFormat: Format[DateTime] = Format[DateTime](
-    Reads[DateTime](js =>
+  val dateFormat: Format[LocalDate] = Format[LocalDate](
+    Reads[LocalDate](js =>
       js.validate[String].map(
-        DateTime.parse(_, DateTimeFormat.forPattern("yyyy-MM-dd"))
+        LocalDate.parse(_, DateTimeFormatter.ISO_LOCAL_DATE)
       )
     ),
-    Writes[DateTime] { dt =>
-       JsString(dt.toString("yyyy-MM-dd"))
+    Writes[LocalDate] { dt =>
+       JsString(dt.format(DateTimeFormatter.ISO_LOCAL_DATE))
     }
   )
 
   val reads: Reads[VatThreshold] = (
-      (__ \ "date").read[DateTime](dateFormat) and
+      (__ \ "date").read[LocalDate](dateFormat) and
       (__ \ "amount").read[String]
     )(VatThreshold.apply _)
 

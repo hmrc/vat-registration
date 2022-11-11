@@ -16,10 +16,10 @@
 
 package models
 
-import java.time.LocalDate
-
 import helpers.BaseSpec
 import play.api.libs.json.{JsValue, Json}
+
+import java.time.LocalDate
 
 class DESSubmissionSpec extends BaseSpec with JsonFormatValidation {
 

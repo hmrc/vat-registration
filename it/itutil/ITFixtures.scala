@@ -468,14 +468,14 @@ trait ITFixtures {
     val testConfidenceLevel = ConfidenceLevel.L200
     val testSautr = "testSautr"
     val testAuthName = uk.gov.hmrc.auth.core.retrieve.Name(Some("testFirstName"), Some("testLastName"))
-    val testAuthDateOfBirth = org.joda.time.LocalDate.now()
+    val testAuthDateOfBirth = LocalDate.now()
     val testEmail = "testEmail"
     val testAgentInformation = AgentInformation(Some("testAgentId"), Some("testAgentCode"), Some("testAgentFriendlyName"))
     val testGroupIdentifier = "testGroupIdentifier"
     val testCredentialRole = User
     val testMdtpInformation = MdtpInformation("testDeviceId", "testSessionId")
     val testItmpName = ItmpName(Some("testGivenName"), Some("testMiddleName"), Some("testFamilyName"))
-    val testItmpDateOfBirth = org.joda.time.LocalDate.now()
+    val testItmpDateOfBirth = LocalDate.now()
     val testItmpAddress = ItmpAddress(
       Some("testLine1"),
       None,

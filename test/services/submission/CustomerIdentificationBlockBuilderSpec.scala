@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.OverseasIdentifierDetails
-import models.api.{BusinessVerificationStatus, BvCtEnrolled, BvPass, BvSaEnrolled, BvUnchallenged, FailedStatus}
+import models.api._
 import models.submission.{Individual, NETP}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.InternalServerException
