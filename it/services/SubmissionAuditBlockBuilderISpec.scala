@@ -12,7 +12,7 @@ class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with Submissi
   val service = app.injector.instanceOf[SubmissionAuditBlockBuilder]
 
   override lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
-    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
+    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),

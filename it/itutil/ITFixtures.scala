@@ -298,7 +298,7 @@ trait ITFixtures {
   lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, createdDate = testDate)
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
-    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
+    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -314,7 +314,7 @@ trait ITFixtures {
       internalId = testInternalid,
       createdDate = testDate,
       vatApplication = Some(testAASVatApplicationDetails),
-      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
+      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
       status = VatRegStatus.draft,
@@ -350,7 +350,7 @@ trait ITFixtures {
       createdDate = testDate,
       transactorDetails = Some(testAgentTransactorDetails),
       vatApplication = Some(testAASVatApplicationDetails),
-      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
+      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
       status = VatRegStatus.draft,
@@ -367,7 +367,7 @@ trait ITFixtures {
       internalId = testInternalid,
       createdDate = testDate,
       vatApplication = Some(testVatApplication),
-      bankAccount = Some(BankAccount(isProvided = false, None, None, Some(BeingSetup))),
+      bankAccount = Some(BankAccount(isProvided = false, None, Some(BeingSetup))),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(FlatRateScheme(joinFrs = Some(false))),
       status = VatRegStatus.draft,

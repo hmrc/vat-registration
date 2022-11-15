@@ -46,14 +46,6 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
     )
   )
 
-  val bankDetailsOverseasBlockJson: JsObject = Json.obj(
-    "Overseas" -> Json.obj(
-      "name" -> testOverseasBankName,
-      "bic" -> testBic,
-      "iban" -> testIban
-    )
-  )
-
   val bankDetailsNotProvidedBlockJson: JsObject = Json.obj(
     "UK" -> Json.obj(
       "reasonBankAccNotProvided" -> NoUKBankAccount.reasonId(BeingSetup)
@@ -98,16 +90,6 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
         result mustBe Some(notValidBankDetailsBlockJson)
       }
 
-      "the applicant has a overseas bank account" in new Setup {
-        val vatScheme = testVatScheme.copy(
-          bankAccount = Some(testBankAccountOverseas),
-          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP))
-        )
-
-        val result: Option[JsObject] = service.buildBankDetailsBlock(vatScheme)
-        result mustBe Some(bankDetailsOverseasBlockJson)
-      }
-
       "the applicant has a bank account with a sortcode containing hyphens" in new Setup {
         val vatScheme = testVatScheme.copy(
           bankAccount = Some(testBankAccount.copy(details = Some(testBankDetails.copy(sortCode = "01-02-03")))),
@@ -143,15 +125,6 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
         val vatScheme = testVatScheme.copy(
           bankAccount = Some(testBankAccount.copy(details = None)),
           eligibilitySubmissionData = Some(testEligibilitySubmissionData)
-        )
-
-        intercept[InternalServerException](service.buildBankDetailsBlock(vatScheme))
-      }
-
-      "the bank account overseas details are missing" in new Setup {
-        val vatScheme = testVatScheme.copy(
-          bankAccount = Some(testBankAccountOverseas.copy(overseasDetails = None)),
-          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP))
         )
 
         intercept[InternalServerException](service.buildBankDetailsBlock(vatScheme))

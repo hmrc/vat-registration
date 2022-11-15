@@ -73,7 +73,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   val encryptedAccountNumber = "V0g2RXVUcUZpSUk4STgvbGNFdlAydz09"
   val sortCode = "12-34-56"
   val bankAccountDetails: BankAccountDetails = BankAccountDetails("testAccountName", sortCode, testAccountNumber, ValidStatus)
-  val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails), None, None)
+  val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails), None)
 
   val vatSchemeWithEligibilityData = VatScheme(
     registrationId = testRegId,

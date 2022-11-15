@@ -22,7 +22,6 @@ import play.api.libs.json._
 
 case class BankAccount(isProvided: Boolean,
                        details: Option[BankAccountDetails],
-                       overseasDetails: Option[BankAccountOverseasDetails],
                        reason: Option[NoUKBankAccount])
 
 case class BankAccountDetails(name: String,
@@ -30,20 +29,12 @@ case class BankAccountDetails(name: String,
                               number: String,
                               status: BankAccountDetailsStatus)
 
-case class BankAccountOverseasDetails(name: String,
-                                      bic: String,
-                                      iban: String)
-
 object BankAccount {
   implicit val format: Format[BankAccount] = Json.format[BankAccount]
 }
 
 object BankAccountDetails {
   implicit val format: Format[BankAccountDetails] = Json.format[BankAccountDetails]
-}
-
-object BankAccountOverseasDetails {
-  implicit val format: Format[BankAccountOverseasDetails] = Json.format[BankAccountOverseasDetails]
 }
 
 object BankAccountDetailsMongoFormat {
@@ -55,20 +46,10 @@ object BankAccountDetailsMongoFormat {
     ) (BankAccountDetails.apply, unlift(BankAccountDetails.unapply))
 }
 
-object BankAccountOverseasDetailsMongoFormat {
-  def format(crypto: CryptoSCRS): Format[BankAccountOverseasDetails] = (
-    (__ \ "name").format[String] and
-      (__ \ "bic").format[String](crypto.rds)(crypto.wts) and
-      (__ \ "iban").format[String](crypto.rds)(crypto.wts)
-    ) (BankAccountOverseasDetails.apply, unlift(BankAccountOverseasDetails.unapply))
-}
-
-
 object BankAccountMongoFormat {
   def encryptedFormat(crypto: CryptoSCRS): OFormat[BankAccount] = (
     (__ \ "isProvided").format[Boolean] and
       (__ \ "details").formatNullable[BankAccountDetails](BankAccountDetailsMongoFormat.format(crypto)) and
-      (__ \ "overseasDetails").formatNullable[BankAccountOverseasDetails](BankAccountOverseasDetailsMongoFormat.format(crypto)) and
       (__ \ "reason").formatNullable[NoUKBankAccount]
     ) (BankAccount.apply, unlift(BankAccount.unapply))
 }
