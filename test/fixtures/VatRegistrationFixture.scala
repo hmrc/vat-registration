@@ -67,10 +67,6 @@ trait VatRegistrationFixture {
   lazy val testSortCode = "010203"
   lazy val testBankNumber = "01023456"
   lazy val testBankDetails = BankAccountDetails(testBankName, testSortCode, testBankNumber, ValidStatus)
-  lazy val testOverseasBankName = "Test Overseas Bank Account"
-  lazy val testBic = "010203"
-  lazy val testIban = "01023456"
-  lazy val testBankDetailsOverseas = BankAccountOverseasDetails(testOverseasBankName, testBic, testIban)
   lazy val testFormerName = FormerName(hasFormerName = Some(true), Some(testName), Some(testDate))
   lazy val testVatApplicationDetails = VatApplication(
     Some(true), Some(true), Some(testTurnover), None, Some(12.99), Some(false), Some(Quarterly),
@@ -210,9 +206,8 @@ trait VatRegistrationFixture {
   lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =
     SicCode("00998", "otherBusiness desc 1", "otherBusiness desc 1") :: SicCode("00889", "otherBusiness desc 2", "otherBusiness desc 2") :: Nil
 
-  lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None, None)
-  lazy val testBankAccountOverseas = BankAccount(isProvided = true, None, overseasDetails = Some(testBankDetailsOverseas), None)
-  lazy val testBankAccountNotProvided = BankAccount(isProvided = false, details = None, overseasDetails = None, reason = Some(BeingSetup))
+  lazy val testBankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None)
+  lazy val testBankAccountNotProvided = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup))
 
   lazy val validAASDetails: AASDetails = AASDetails(
     paymentMethod = StandingOrder,

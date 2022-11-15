@@ -27,7 +27,7 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
       }
 
       "return OK with decrypted json for a decryptable section" in new SetupHelper {
-        val testBankAccount: BankAccount = BankAccount(isProvided = true, Some(testBankDetails), None, None)
+        val testBankAccount: BankAccount = BankAccount(isProvided = true, Some(testBankDetails), None)
 
         given.user.isAuthorised
         insertIntoDb(testVatScheme.copy(bankAccount = Some(testBankAccount)))

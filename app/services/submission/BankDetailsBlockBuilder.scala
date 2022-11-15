@@ -30,7 +30,7 @@ class BankDetailsBlockBuilder @Inject()() {
 
   def buildBankDetailsBlock(vatScheme: VatScheme): Option[JsObject] =
     (vatScheme.bankAccount, vatScheme.partyType) match {
-      case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) if !List(NETP, NonUkNonEstablished).contains(partyType) =>
+      case (Some(BankAccount(true, Some(details), _)), Some(partyType)) if !List(NETP, NonUkNonEstablished).contains(partyType) =>
         Some(jsonObject(
           "UK" -> jsonObject(
             "accountName" -> details.name,
@@ -39,21 +39,13 @@ class BankDetailsBlockBuilder @Inject()() {
             conditional(List(IndeterminateStatus, InvalidStatus).contains(details.status))("bankDetailsNotValid" -> true)
           )
         ))
-      case (Some(BankAccount(true, _, Some(overseasDetails), _)), Some(NETP | NonUkNonEstablished)) =>
-        Some(jsonObject(
-          "Overseas" -> jsonObject(
-            "name" -> overseasDetails.name,
-            "bic" -> overseasDetails.bic,
-            "iban" -> overseasDetails.iban
-          )
-        ))
-      case (Some(BankAccount(false, _, _, Some(reason))), _) =>
+      case (Some(BankAccount(false, _, Some(reason))), _) =>
         Some(jsonObject(
           "UK" -> jsonObject(
             "reasonBankAccNotProvided" -> reasonId(reason)
           )
         ))
-      case (None, Some(NETP | NonUkNonEstablished)) =>
+      case (_, Some(NETP | NonUkNonEstablished)) =>
         Some(jsonObject("UK" -> jsonObject(
           "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
         )))

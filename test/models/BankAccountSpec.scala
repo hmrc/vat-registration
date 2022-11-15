@@ -34,17 +34,6 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       number = "12345678",
       status = ValidStatus
     )),
-    overseasDetails = None,
-    reason = None
-  )
-  val fullBankAccountOverseasModel: BankAccount = BankAccount(
-    isProvided = true,
-    details = None,
-    overseasDetails = Some(BankAccountOverseasDetails(
-      name = "Test Account name",
-      bic = "3",
-      iban = "3333333"
-    )),
     reason = None
   )
   val fullBankAccountJson: JsValue = Json.parse(
@@ -60,20 +49,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
        |}
         """.stripMargin)
 
-  val fullBankAccountOverseasJson: JsValue = Json.parse(
-    s"""
-       |{
-       |  "isProvided":true,
-       |  "overseasDetails":{
-       |    "name":"Test Account name",
-       |    "bic":"3",
-       |    "iban":"3333333"
-       |  }
-       |}
-        """.stripMargin)
-
-
-  val noDetailsBankAccountModel: BankAccount = BankAccount(isProvided = false, None, None, Some(BeingSetup))
+  val noDetailsBankAccountModel: BankAccount = BankAccount(isProvided = false, None, Some(BeingSetup))
   val noDetailsBankAccountJson: JsValue = Json.parse(
     s"""
        |{
@@ -88,9 +64,6 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
     "complete successfully" when {
       "from full Json" in {
         Json.fromJson[BankAccount](fullBankAccountJson) mustBe JsSuccess(fullBankAccountModel)
-      }
-      "from full overseas Json" in {
-        Json.fromJson[BankAccount](fullBankAccountOverseasJson) mustBe JsSuccess(fullBankAccountOverseasModel)
       }
       "from full Json without details" in {
         Json.fromJson[BankAccount](noDetailsBankAccountJson) mustBe JsSuccess(noDetailsBankAccountModel)
@@ -173,9 +146,6 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       "full model is given" in {
         Json.toJson[BankAccount](fullBankAccountModel) mustBe fullBankAccountJson
       }
-      "full overseas model is given" in {
-        Json.toJson[BankAccount](fullBankAccountOverseasModel) mustBe fullBankAccountOverseasJson
-      }
       "full model without details is given" in {
         Json.toJson[BankAccount](noDetailsBankAccountModel) mustBe noDetailsBankAccountJson
       }
@@ -205,61 +175,29 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
         number = "12345678",
         status = ValidStatus
       )),
-      overseasDetails = None,
-      reason = None
-    )
-
-    val bankAccountOverseas = BankAccount(
-      isProvided = true,
-      details = None,
-      overseasDetails = Some(BankAccountOverseasDetails(
-        name = "Test Account name",
-        bic = "3",
-        iban = "3333333"
-      )),
       reason = None
     )
 
     val encryptedJson = Json.parse(
       s"""
-        |{
-        | "isProvided":true,
-        | "details":{
-        |   "name":"Test Account name",
-        |   "sortCode":"00-99-22",
-        |   "number":"V3BrR3VxdHB2YzBYb1BrbHk3UGJzdz09",
-        |   "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
-        | }
-        |}
-      """.stripMargin)
-
-    val encryptedOverseasJson = Json.parse(
-      """
-        |{
-        | "isProvided":true,
-        | "overseasDetails":{
-        |   "name":"Test Account name",
-        |   "bic":"dDZDN0dJdzRHakhLeTVBVldDalZvdz09",
-        |   "iban":"QkFYUWZhbk5CZ2FPREVZRWs3NHUwZz09"
-        | }
-        |}
+         |{
+         | "isProvided":true,
+         | "details":{
+         |   "name":"Test Account name",
+         |   "sortCode":"00-99-22",
+         |   "number":"V3BrR3VxdHB2YzBYb1BrbHk3UGJzdz09",
+         |   "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
+         | }
+         |}
       """.stripMargin)
 
     "write from a BankAccount case class to a correct Json representation with an encrypted account number" in {
       val writeResult = Json.toJson(bankAccount)(encryptionFormat)
       writeResult mustBe encryptedJson
     }
-    "write from a BankAccount case class to a correct Json representation with an encrypted bic and iban" in {
-      val writeResult = Json.toJson(bankAccountOverseas)(encryptionFormat)
-      writeResult mustBe encryptedOverseasJson
-    }
     "read from a Json object with an encrypted account number to a correct BankAccount case class" in {
       val readResult = Json.fromJson(encryptedJson)(encryptionFormat).get
       readResult mustBe bankAccount
-    }
-    "read from a Json object with an encrypted bic and iban to a correct BankAccount case class" in {
-      val readResult = Json.fromJson(encryptedOverseasJson)(encryptionFormat).get
-      readResult mustBe bankAccountOverseas
     }
   }
 }
