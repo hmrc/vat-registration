@@ -16,8 +16,8 @@
 
 package services.monitoring
 
-import models.api.{IndeterminateStatus, VatScheme}
-import models.submission.{NETP, NonUkNonEstablished}
+import models.api._
+import models.submission._
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -32,7 +32,7 @@ class BankAuditBlockBuilder {
       case Some(bankAccount) =>
         if (bankAccount.isProvided) {
           bankAccount.details match {
-            case Some(bankAccountDetails) =>
+            case Some(bankAccountDetails: BankAccountDetails) =>
               jsonObject(
                 "accountName" -> bankAccountDetails.name,
                 "sortCode" -> bankAccountDetails.sortCode,
@@ -50,7 +50,7 @@ class BankAuditBlockBuilder {
         }
       case None if vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType)) =>
         jsonObject(
-          "reasonBankAccNotProvided" -> "3"
+          "reasonBankAccNotProvided" -> NoUKBankAccount.overseasAccount
         )
       case None =>
         throw new InternalServerException("BankAuditBlockBuilder: Could not build bank details block for audit due to missing bank account")
