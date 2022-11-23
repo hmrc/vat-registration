@@ -34,7 +34,7 @@ class TransactorDetailsSpec extends BaseSpec with JsonFormatValidation with VatR
   "Parsing an invalid json should" should {
     "fail with a JsonValidationError" in {
       Json.fromJson[TransactorDetails](Json.obj(
-        "invalid" -> "json"
+        "isPartOfOrganisation" -> "notBoolean"
       )).isError mustBe true
     }
   }

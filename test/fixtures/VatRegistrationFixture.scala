@@ -185,7 +185,7 @@ trait VatRegistrationFixture {
   lazy val testTelephone = "1234567890"
   lazy val testOrgName = "testOrganisationName"
   lazy val validTransactorDetails: TransactorDetails = TransactorDetails(
-    personalDetails = PersonalDetails(
+    personalDetails = Some(PersonalDetails(
       name = testName,
       nino = Some(testNino),
       trn = None,
@@ -193,14 +193,14 @@ trait VatRegistrationFixture {
       identifiersMatch = true,
       dateOfBirth = Some(testDate),
       None
-    ),
+    )),
     isPartOfOrganisation = Some(true),
     organisationName = Some(testOrgName),
-    telephone = testTelephone,
-    email = testEmail,
-    emailVerified = true,
+    telephone = Some(testTelephone),
+    email = Some(testEmail),
+    emailVerified = Some(true),
     address = Some(testAddress),
-    declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
+    declarationCapacity = Some(DeclarationCapacityAnswer(AuthorisedEmployee))
   )
 
   lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =

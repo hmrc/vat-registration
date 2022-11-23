@@ -39,9 +39,9 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
   )
   val testUnverifiedTransactorVatScheme = testFullVatScheme.copy(
     transactorDetails = Some(validTransactorDetails.copy(
-      personalDetails = validTransactorDetails.personalDetails.copy(
+      personalDetails = validTransactorDetails.personalDetails.map(_.copy(
         identifiersMatch = false
-      )
+      ))
     )),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
       isTransactor = true

@@ -184,7 +184,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
   private[services] def logSubmission(vatScheme: VatScheme,
                                       vatSubmissionStatus: VatSubmissionResponse): Future[Unit] = {
 
-    val agentOrTransactor = (vatScheme.transactorDetails.map(_.personalDetails), vatScheme.eligibilitySubmissionData.map(_.isTransactor)) match {
+    val agentOrTransactor = (vatScheme.transactorDetails.flatMap(_.personalDetails), vatScheme.eligibilitySubmissionData.map(_.isTransactor)) match {
       case (Some(PersonalDetails(_, _, _, Some(_), _, _, _)), Some(true)) => Some("AgentFlow")
       case (Some(_), Some(true)) => Some("TransactorFlow")
       case _ => None

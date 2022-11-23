@@ -38,9 +38,9 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
       case Some(registration) =>
         List(
           registration.applicantDetails.flatMap(_.personalDetails.score),
-          registration.transactorDetails.flatMap(_.personalDetails.score),
+          registration.transactorDetails.flatMap(_.personalDetails.flatMap(_.score)),
           registration.applicantDetails.flatMap(_.contact.email).map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0),
-          registration.transactorDetails.map(_.email).map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0)
+          registration.transactorDetails.flatMap(_.email).map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0)
         ).flatten match {
           case scores if scores.contains(100) =>
             registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.contact)

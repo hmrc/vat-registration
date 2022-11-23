@@ -326,7 +326,7 @@ trait ITFixtures {
     )
 
   val testAgentTransactorDetails = TransactorDetails(
-    personalDetails = PersonalDetails(
+    personalDetails = Some(PersonalDetails(
       name = Name(Some(testFirstName), None, testLastName),
       nino = None,
       trn = None,
@@ -334,13 +334,14 @@ trait ITFixtures {
       identifiersMatch = true,
       dateOfBirth = None,
       score = None
-    ),
-    telephone = testTelephone,
-    email = testEmail,
+    )),
+    telephone = Some(testTelephone),
+    email = Some(testEmail),
     isPartOfOrganisation = None,
-    emailVerified = true,
+    organisationName = None,
+    emailVerified = Some(true),
     address = None,
-    declarationCapacity = DeclarationCapacityAnswer(AccountantAgent)
+    declarationCapacity = Some(DeclarationCapacityAnswer(AccountantAgent))
   )
 
   lazy val testAgentVatScheme: VatScheme =
@@ -665,14 +666,14 @@ trait ITFixtures {
   val testPersonalDetails = PersonalDetails(testProperName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate), None)
 
   lazy val testTransactorDetails = TransactorDetails(
-    personalDetails = testPersonalDetails,
+    personalDetails = Some(testPersonalDetails),
     isPartOfOrganisation = Some(true),
     organisationName = Some(testOrganisationName),
-    telephone = testTelephone,
-    email = testEmail,
-    emailVerified = true,
+    telephone = Some(testTelephone),
+    email = Some(testEmail),
+    emailVerified = Some(true),
     address = Some(testFullAddress),
-    declarationCapacity = DeclarationCapacityAnswer(AuthorisedEmployee)
+    declarationCapacity = Some(DeclarationCapacityAnswer(AuthorisedEmployee))
   )
 
   lazy val testOtherBusinessInvolvement = OtherBusinessInvolvement(

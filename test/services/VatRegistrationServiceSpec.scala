@@ -57,7 +57,7 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
 
     "return correct status when if transactor details cannot be processed" in new Setup {
       mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-        testVatScheme.copy(transactorDetails = Some(validTransactorDetails.copy(personalDetails = testPersonalDetails)))
+        testVatScheme.copy(transactorDetails = Some(validTransactorDetails.copy(personalDetails = Some(testPersonalDetails))))
       )))
 
       await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
@@ -67,7 +67,7 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
     "return correct status when if either transactor/applicant details cannot be processed" in new Setup {
       mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
         testVatScheme.copy(
-          transactorDetails = Some(validTransactorDetails.copy(personalDetails = testPersonalDetails)),
+          transactorDetails = Some(validTransactorDetails.copy(personalDetails = Some(testPersonalDetails))),
           applicantDetails = Some(validApplicantDetails.copy(personalDetails = testPersonalDetails.copy(score = Some(0))))
         )
       )))
@@ -79,7 +79,7 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
     "return correct status when transactor email cannot be processed" in new Setup {
       mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
         testVatScheme.copy(
-          transactorDetails = Some(validTransactorDetails.copy(email = "email@fake.contact.me"))
+          transactorDetails = Some(validTransactorDetails.copy(email = Some("email@fake.contact.me")))
         )
       )))
 
