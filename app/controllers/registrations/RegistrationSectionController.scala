@@ -84,7 +84,7 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
         case (_, None) =>
           InternalServerError(s"[RegistrationSectionController][upsertSection] Unable to update section ${section.key}")
         case (Left(response@InvalidSection(_)), _) =>
-          logger.debug(s"[RegistrationSectionController][upsertSection] Missing keys: ${response.asString}")
+          logger.debug(s"[RegistrationSectionController][upsertSection] Invalid keys: ${response.asString}")
           BadRequest(response.asString)
       }
     }

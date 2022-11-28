@@ -92,7 +92,7 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   }
 
   private def getTransactorIdentityEvidenceAttachment(vatScheme: VatScheme): Option[TransactorIdentityEvidence.type] = {
-    val needIdentityDocuments = vatScheme.transactorDetails.exists(data => !data.personalDetails.identifiersMatch)
+    val needIdentityDocuments = vatScheme.transactorDetails.exists(data => !data.personalDetails.exists(_.identifiersMatch))
     if (needIdentityDocuments) Some(TransactorIdentityEvidence) else None
   }
 

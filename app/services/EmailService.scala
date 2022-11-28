@@ -42,7 +42,7 @@ class EmailService @Inject()(emailConnector: EmailConnector,
   def sendRegistrationReceivedEmail(internalId: String, regId: String, lang: String)
                                    (implicit hc: HeaderCarrier): Future[EmailResponse] = {
     def resolveEmail(vatScheme: VatScheme): String = {
-      val transactorEmail = vatScheme.transactorDetails.map(_.email)
+      val transactorEmail = vatScheme.transactorDetails.flatMap(_.email)
       val applicantEmail = vatScheme.applicantDetails.flatMap(_.contact.email)
         .getOrElse(throw new InternalServerException(missingDataLog("applicant email address", regId)))
 
@@ -50,7 +50,7 @@ class EmailService @Inject()(emailConnector: EmailConnector,
     }
 
     def submissionParameters(vatScheme: VatScheme): Map[String, String] = {
-      val transactorName = vatScheme.transactorDetails.flatMap(_.personalDetails.name.first)
+      val transactorName = vatScheme.transactorDetails.flatMap(_.personalDetails.flatMap(_.name.first))
       val applicantName = vatScheme.applicantDetails.flatMap(_.personalDetails.name.first)
 
       Map(

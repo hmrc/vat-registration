@@ -72,7 +72,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
       }
       "the user is an agent" in {
         val scheme = declarationVatScheme.copy(transactorDetails = Some(TransactorDetails(
-          personalDetails = PersonalDetails(
+          personalDetails = Some(PersonalDetails(
             name = Name(Some(testFirstName), None, testLastName),
             nino = None,
             trn = None,
@@ -80,60 +80,61 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             identifiersMatch = true,
             dateOfBirth = None,
             score = None
-          ),
-          telephone = testTelephone,
-          email = testEmail,
+          )),
+          telephone = Some(testTelephone),
+          email = Some(testEmail),
           isPartOfOrganisation = None,
-          emailVerified = true,
+          organisationName = None,
+          emailVerified = Some(true),
           address = None,
-          declarationCapacity = DeclarationCapacityAnswer(AccountantAgent)
+          declarationCapacity = Some(DeclarationCapacityAnswer(AccountantAgent))
         )))
         val res = TestBuilder.buildDeclarationBlock(scheme)
 
         res mustBe Json.parse(
           s"""{
-            |  "declarationSigning": {
-            |    "confirmInformationDeclaration": true,
-            |    "declarationCapacity": "AccountantAgent"
-            |  },
-            |  "applicant": {
-            |    "roleInBusiness": "Director",
-            |    "name": {
-            |      "firstName": "Forename",
-            |      "lastName": "Surname"
-            |    },
-            |    "currentAddress": {
-            |      "line1": "line1",
-            |      "line2": "line2",
-            |      "postcode": "ZZ1 1ZZ",
-            |      "countryCode": "GB"
-            |    },
-            |    "dateOfBirth": "2018-01-01",
-            |    "communicationDetails": {
-            |      "emailAddress": "skylake@vilikariet.com"
-            |    },
-            |    "identifiers": {
-            |      "nationalInsuranceNumber": "AB123456A"
-            |    }
-            |  },
-            |  "agentOrCapacitor": {
-            |    "individualName": {
-            |      "firstName": "$testFirstName",
-            |      "lastName": "$testLastName"
-            |    },
-            |    "commDetails": {
-            |      "telephone": "$testTelephone",
-            |      "email": "$testEmail"
-            |    },
-            |    "identification": [
-            |      {
-            |        "idValue": "$testArn",
-            |        "idType": "ARN",
-            |        "IDsVerificationStatus": "1"
-            |      }
-            |    ]
-            |  }
-            |}""".stripMargin
+             |  "declarationSigning": {
+             |    "confirmInformationDeclaration": true,
+             |    "declarationCapacity": "AccountantAgent"
+             |  },
+             |  "applicant": {
+             |    "roleInBusiness": "Director",
+             |    "name": {
+             |      "firstName": "Forename",
+             |      "lastName": "Surname"
+             |    },
+             |    "currentAddress": {
+             |      "line1": "line1",
+             |      "line2": "line2",
+             |      "postcode": "ZZ1 1ZZ",
+             |      "countryCode": "GB"
+             |    },
+             |    "dateOfBirth": "2018-01-01",
+             |    "communicationDetails": {
+             |      "emailAddress": "skylake@vilikariet.com"
+             |    },
+             |    "identifiers": {
+             |      "nationalInsuranceNumber": "AB123456A"
+             |    }
+             |  },
+             |  "agentOrCapacitor": {
+             |    "individualName": {
+             |      "firstName": "$testFirstName",
+             |      "lastName": "$testLastName"
+             |    },
+             |    "commDetails": {
+             |      "telephone": "$testTelephone",
+             |      "email": "$testEmail"
+             |    },
+             |    "identification": [
+             |      {
+             |        "idValue": "$testArn",
+             |        "idType": "ARN",
+             |        "IDsVerificationStatus": "1"
+             |      }
+             |    ]
+             |  }
+             |}""".stripMargin
         )
       }
       "the user has a previous address" in {

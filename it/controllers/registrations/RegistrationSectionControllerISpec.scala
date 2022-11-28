@@ -58,11 +58,11 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         insertIntoDb(testVatScheme.copy(transactorDetails = Some(testTransactorDetails)))
 
         val res = await(client(url(testSectionId)).patch(
-          Json.toJson(testTransactorDetails.copy(personalDetails = testPersonalDetails.copy(trn = Some(testTrn)))))
+          Json.toJson(testTransactorDetails.copy(personalDetails = Some(testPersonalDetails.copy(trn = Some(testTrn))))))
         )
 
         res.status mustBe OK
-        res.json mustBe Json.toJson(testTransactorDetails.copy(personalDetails = testPersonalDetails.copy(trn = Some(testTrn))))
+        res.json mustBe Json.toJson(testTransactorDetails.copy(personalDetails = Some(testPersonalDetails.copy(trn = Some(testTrn)))))
       }
     }
     "the section doesn't exist in the registration" must {
@@ -85,7 +85,7 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         )))
 
         res.status mustBe OK
-        res.json mustBe Json.toJson(testTransactorDetails.copy(personalDetails = updatedAnswer))
+        res.json mustBe Json.toJson(testTransactorDetails.copy(personalDetails = Some(updatedAnswer)))
       }
     }
   }
@@ -97,11 +97,11 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         insertIntoDb(testVatScheme.copy(transactorDetails = Some(testTransactorDetails)))
 
         val res = await(client(url(testSectionId)).put(
-          Json.toJson(testTransactorDetails.copy(personalDetails = testPersonalDetails.copy(trn = Some(testTrn)))))
+          Json.toJson(testTransactorDetails.copy(personalDetails = Some(testPersonalDetails.copy(trn = Some(testTrn))))))
         )
 
         res.status mustBe OK
-        res.json mustBe Json.toJson(testTransactorDetails.copy(personalDetails = testPersonalDetails.copy(trn = Some(testTrn))))
+        res.json mustBe Json.toJson(testTransactorDetails.copy(personalDetails = Some(testPersonalDetails.copy(trn = Some(testTrn)))))
       }
     }
     "the section doesn't exist in the registration" must {
@@ -114,13 +114,12 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         res.status mustBe OK
         res.json mustBe Json.toJson(testTransactorDetails)
       }
-      "return BAD_REQUEST with JSON for the new section for a single answer" in new SetupHelper {
+      "return BAD_REQUEST with JSON for the new section for an invalid answer" in new SetupHelper {
         given.user.isAuthorised
         insertIntoDb(testVatScheme.copy(transactorDetails = Some(testTransactorDetails)))
 
-        val updatedAnswer = testPersonalDetails.copy(trn = Some(testTrn))
         val res = await(client(url(testSectionId)).put(Json.obj(
-          "personalDetails" -> Json.toJson(updatedAnswer)
+          "isPartOfOrganisation" -> "notBoolean"
         )))
 
         res.status mustBe BAD_REQUEST

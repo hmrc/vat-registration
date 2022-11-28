@@ -19,14 +19,14 @@ package models.api
 import models.submission.DeclarationCapacity
 import play.api.libs.json.{Format, Json}
 
-case class TransactorDetails(personalDetails: PersonalDetails,
+case class TransactorDetails(personalDetails: Option[PersonalDetails],
                              isPartOfOrganisation: Option[Boolean],
-                             organisationName: Option[String] = None,
-                             telephone: String,
-                             email: String,
-                             emailVerified: Boolean,
+                             organisationName: Option[String],
+                             telephone: Option[String],
+                             email: Option[String],
+                             emailVerified: Option[Boolean],
                              address: Option[Address],
-                             declarationCapacity: DeclarationCapacityAnswer)
+                             declarationCapacity: Option[DeclarationCapacityAnswer])
 
 object TransactorDetails {
   implicit val format: Format[TransactorDetails] = Json.format[TransactorDetails]

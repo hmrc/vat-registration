@@ -34,10 +34,10 @@ class DeclarationBlockBuilder @Inject()() {
         jsonObject(
           "declarationSigning" -> jsonObject(
             "confirmInformationDeclaration" -> declaration,
-            "declarationCapacity" -> optTransactorDetails.map(_.declarationCapacity.role).getOrElse(
+            "declarationCapacity" -> optTransactorDetails.flatMap(_.declarationCapacity.map(_.role)).getOrElse(
               applicantDetails.roleInBusiness.toDeclarationCapacity
             ),
-            optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.otherRole))
+            optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.flatMap(_.otherRole)))
           ),
           "applicantDetails" -> jsonObject(
             "roleInBusiness" -> applicantDetails.roleInBusiness,
@@ -59,17 +59,21 @@ class DeclarationBlockBuilder @Inject()() {
           ),
           optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>
             jsonObject(
-              "individualName" -> formatName(transactorDetails.personalDetails.name),
-              optionalRequiredIf(transactorDetails.isPartOfOrganisation.contains(true))("organisationName" -> transactorDetails.organisationName),
+              required("individualName" -> transactorDetails.personalDetails.map(details => formatName(details.name))),
+              optionalRequiredIf(transactorDetails.isPartOfOrganisation.contains(true))(
+                "organisationName" -> transactorDetails.organisationName
+              ),
               "commDetails" -> jsonObject(
                 "telephone" -> transactorDetails.telephone,
                 "email" -> transactorDetails.email
               ),
-              optionalRequiredIf(transactorDetails.personalDetails.arn.isEmpty)("address" -> transactorDetails.address.map(formatAddress)),
-              conditional(transactorDetails.personalDetails.personalIdentifiers.nonEmpty)(
-                "identification" -> transactorDetails.personalDetails.personalIdentifiers.map(identifier =>
+              optionalRequiredIf(transactorDetails.personalDetails.exists(_.arn.isEmpty))(
+                "address" -> transactorDetails.address.map(formatAddress)
+              ),
+              optionalRequiredIf(transactorDetails.personalDetails.exists(_.personalIdentifiers.nonEmpty))(
+                "identification" -> transactorDetails.personalDetails.map(_.personalIdentifiers.map(identifier =>
                   Json.toJson(identifier)(CustomerId.transactorWrites)
-                )
+                ))
               )
             )
           })
