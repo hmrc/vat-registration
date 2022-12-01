@@ -122,7 +122,7 @@ trait ITFixtures {
   val testAddress = Address("line1", Some("line2"), None, None, None, Some("XX XX"), Some(testCountry), addressValidated = Some(true))
   val testFullAddress = Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some("XX XX"), Some(testCountry), addressValidated = Some(true))
   val testOverseasAddress = testFullAddress.copy(country = Some(Country(Some("EE"), None)), addressValidated = Some(false))
-  val testDigitalContactOptional = DigitalContactOptional(Some("skylake@vilikariet.com"), Some("1234567890"), Some("1234567890"), Some(true))
+  val testContact = Contact(Some("skylake@vilikariet.com"), Some("1234567890"), Some(true))
   val testNino = "NB686868C"
   val testTrn = "testTrn"
   val testRole = Director
@@ -143,7 +143,7 @@ trait ITFixtures {
   lazy val testTelephone = "1234567890"
 
   val testUnregisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
-    personalDetails = PersonalDetails(
+    personalDetails = Some(PersonalDetails(
       name = testName,
       nino = Some(testNino),
       arn = None,
@@ -151,8 +151,8 @@ trait ITFixtures {
       identifiersMatch = true,
       dateOfBirth = Some(testDate),
       score = None
-    ),
-    entity = IncorporatedEntity(
+    )),
+    entity = Some(IncorporatedEntity(
       companyName = Some(testCompanyName),
       companyNumber = testCrn,
       dateOfIncorporation = Some(testDateOfIncorp),
@@ -162,16 +162,16 @@ trait ITFixtures {
       identifiersMatch = true,
       bpSafeId = None,
       chrn = None
-    ),
-    roleInBusiness = testRole,
-    currentAddress = testFullAddress,
-    contact = testDigitalContactOptional,
-    changeOfName = Some(testFormerName),
+    )),
+    roleInTheBusiness = Some(testRole),
+    currentAddress = Some(testFullAddress),
+    contact = testContact,
+    changeOfName = testFormerName,
     previousAddress = Some(testFullAddress)
   )
 
   val testRegisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
-    personalDetails = PersonalDetails(
+    personalDetails = Some(PersonalDetails(
       name = testName,
       nino = Some(testNino),
       trn = None,
@@ -179,8 +179,8 @@ trait ITFixtures {
       identifiersMatch = true,
       dateOfBirth = Some(testDate),
       score = None
-    ),
-    entity = IncorporatedEntity(
+    )),
+    entity = Some(IncorporatedEntity(
       companyName = Some(testCompanyName),
       companyNumber = testCrn,
       dateOfIncorporation = Some(testDateOfIncorp),
@@ -190,17 +190,17 @@ trait ITFixtures {
       registration = RegisteredStatus,
       bpSafeId = Some(testBpSafeId),
       chrn = None
-    ),
-    roleInBusiness = testRole,
-    currentAddress = testAddress,
-    contact = testDigitalContactOptional,
-    changeOfName = None,
+    )),
+    roleInTheBusiness = Some(testRole),
+    currentAddress = Some(testAddress),
+    contact = testContact,
+    changeOfName = FormerName(),
     previousAddress = None
   )
 
   val testRegisteredSoleTraderApplicantDetails: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
-      entity = SoleTraderIdEntity(
+      entity = Some(SoleTraderIdEntity(
         testFirstName,
         testLastName,
         testDate,
@@ -211,13 +211,13 @@ trait ITFixtures {
         businessVerification = Some(BvPass),
         registration = RegisteredStatus,
         identifiersMatch = true
-      ),
-      roleInBusiness = OwnerProprietor
+      )),
+      roleInTheBusiness = Some(OwnerProprietor)
     )
 
   val testRegisteredSoleTraderApplicantDetailsNoBpSafeId: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
-      entity = SoleTraderIdEntity(
+      entity = Some(SoleTraderIdEntity(
         testFirstName,
         testLastName,
         testDate,
@@ -228,8 +228,8 @@ trait ITFixtures {
         businessVerification = Some(BvPass),
         registration = FailedStatus,
         identifiersMatch = true
-      ),
-      roleInBusiness = OwnerProprietor
+      )),
+      roleInTheBusiness = Some(OwnerProprietor)
     )
 
   lazy val testBusinessDescription = "testBusinessDescription"
@@ -388,7 +388,7 @@ trait ITFixtures {
 
   lazy val testMinimalVatSchemeWithTrust: VatScheme =
     testMinimalVatSchemeWithRegisteredBusinessPartner.copy(
-      applicantDetails = Some(testRegisteredApplicantDetails.copy(entity = testTrustEntity)),
+      applicantDetails = Some(testRegisteredApplicantDetails.copy(entity = Some(testTrustEntity))),
       eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Trust)),
       nrsSubmissionPayload = Some(testEncodedPayload)
     )
@@ -614,10 +614,10 @@ trait ITFixtures {
 
   val testNetpApplicantDetails: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
-      entity = testNetpEntity,
-      personalDetails = testNetpTransactorDetails,
-      currentAddress = testOverseasAddress,
-      roleInBusiness = OwnerProprietor
+      entity = Some(testNetpEntity),
+      personalDetails = Some(testNetpTransactorDetails),
+      currentAddress = Some(testOverseasAddress),
+      roleInTheBusiness = Some(OwnerProprietor)
     )
 
   lazy val testNetpVatScheme: VatScheme =
@@ -651,10 +651,10 @@ trait ITFixtures {
 
   lazy val testNonUkCompanyApplicantDetails: ApplicantDetails =
     testRegisteredApplicantDetails.copy(
-      entity = testNonUkCompanyEntity,
-      personalDetails = testNetpTransactorDetails,
-      currentAddress = testOverseasAddress,
-      roleInBusiness = Director
+      entity = Some(testNonUkCompanyEntity),
+      personalDetails = Some(testNetpTransactorDetails),
+      currentAddress = Some(testOverseasAddress),
+      roleInTheBusiness = Some(Director)
     )
 
   lazy val testNonUkCompanyVatScheme: VatScheme =

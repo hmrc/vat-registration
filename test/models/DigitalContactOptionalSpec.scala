@@ -17,26 +17,25 @@
 package models
 
 import helpers.BaseSpec
-import models.api.DigitalContactOptional
+import models.api.Contact
 import play.api.libs.json._
 
-class DigitalContactOptionalSpec extends BaseSpec with JsonFormatValidation {
+class ContactSpec extends BaseSpec with JsonFormatValidation {
 
 
-  "Creating a DigitalContactOptional model from Json" should {
+  "Creating a Contact model from Json" should {
     "complete successfully" when {
       "from full Json" in {
         val json = Json.parse(
           s"""
              |{
              |  "email":"test@test.com",
-             |  "tel":"12345678910",
-             |  "mobile":"12345678910"
+             |  "tel":"12345678910"
              |}
         """.stripMargin)
-        val tstVatDigitalContact = DigitalContactOptional(Some("test@test.com"), Some("12345678910"), Some("12345678910"))
+        val tstVatDigitalContact = Contact(Some("test@test.com"), Some("12345678910"))
 
-        Json.fromJson[DigitalContactOptional](json) mustBe JsSuccess(tstVatDigitalContact)
+        Json.fromJson[Contact](json) mustBe JsSuccess(tstVatDigitalContact)
       }
 
       "from partial Json" in {
@@ -46,21 +45,20 @@ class DigitalContactOptionalSpec extends BaseSpec with JsonFormatValidation {
              |  "tel":"12345678910"
              |}
         """.stripMargin)
-        val tstVatDigitalContact = DigitalContactOptional(None, Some("12345678910"), None)
+        val tstVatDigitalContact = Contact(None, Some("12345678910"))
 
-        Json.fromJson[DigitalContactOptional](json) mustBe JsSuccess(tstVatDigitalContact)
+        Json.fromJson[Contact](json) mustBe JsSuccess(tstVatDigitalContact)
       }
-    }
 
-    "fail to read" when {
       "Json is empty" in {
         val json = Json.parse(
           s"""
              |{}
         """.stripMargin)
 
-        val result = Json.fromJson[DigitalContactOptional](json)
-        result shouldHaveErrors (JsPath() -> JsonValidationError("error.path.missing.atLeast.oneValue"))
+        val result = Json.fromJson[Contact](json)
+
+        Json.fromJson[Contact](json) mustBe JsSuccess(Contact())
       }
     }
   }

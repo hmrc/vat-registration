@@ -159,7 +159,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
       private def verifySoleTraderEntity(businessVerificationStatus: BusinessVerificationStatus) = {
         val appDetails = validApplicantDetails.copy(
-          entity = testSoleTraderEntity.copy(businessVerification = Some(businessVerificationStatus))
+          entity = Some(testSoleTraderEntity.copy(businessVerification = Some(businessVerificationStatus)))
         )
         val eligibilityData = testEligibilitySubmissionData.copy(partyType = Individual)
         val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
@@ -175,10 +175,10 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
     "build the correct json for a NETP entity type" in new Setup {
       val appDetails = validApplicantDetails.copy(
-        entity = testSoleTraderEntity.copy(
+        entity = Some(testSoleTraderEntity.copy(
           nino = None,
           trn = Some(testTrn)
-        )
+        ))
       )
       val eligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
       val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
@@ -189,14 +189,14 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
     "build the correct json for a NETP entity type with overseas details" in new Setup {
       val appDetails = validApplicantDetails.copy(
-        entity = testSoleTraderEntity.copy(
+        entity = Some(testSoleTraderEntity.copy(
           nino = None,
           trn = Some(testTrn),
           overseas = Some(OverseasIdentifierDetails(
             taxIdentifier = "1234",
             country = "FR"
           ))
-        )
+        ))
       )
       val eligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
       val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
@@ -207,14 +207,14 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
     "return Status Code 1" when {
       "the businessVerificationStatus is BvPass" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvPass), registration = FailedStatus))
+        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvPass), registration = FailedStatus)))
         val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe customerIdentificationBlockJson(1)
       }
       "the businessVerificationStatus is CtEnrolled" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), registration = FailedStatus))
+        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), registration = FailedStatus)))
         val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
@@ -223,7 +223,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return Status Code 2" when {
       "the identifiersMatch is false" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged), identifiersMatch = false))
+        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged), identifiersMatch = false)))
         val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
@@ -236,7 +236,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
         result mustBe customerIdentificationBlockJson(3)
       }
       "businessVerification is not called" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged)))
+        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged))))
         val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
@@ -245,14 +245,14 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return the BP Safe ID" when {
       "businessVerificationStatus is Pass" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvPass), bpSafeId = Some(testBpSafeId)))
+        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvPass), bpSafeId = Some(testBpSafeId))))
         val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe customerIdentificationBlockWithBPJson
       }
       "businessVerification is CT-Enrolled" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), bpSafeId = Some(testBpSafeId)))
+        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), bpSafeId = Some(testBpSafeId))))
         val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)

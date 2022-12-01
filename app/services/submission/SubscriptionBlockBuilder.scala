@@ -51,7 +51,7 @@ class SubscriptionBlockBuilder @Inject()() {
           ),
           "exemptionOrException" -> VatScheme.exceptionOrExemption(eligibilityData, vatApplication)
         ),
-        optional("corporateBodyRegistered" -> Option(applicantDetails.entity).collect {
+        optional("corporateBodyRegistered" -> applicantDetails.entity.collect {
           case IncorporatedEntity(_, companyNumber, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
             Some(jsonObject(
               "companyRegistrationNumber" -> companyNumber,

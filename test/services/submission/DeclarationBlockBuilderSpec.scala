@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
-import models.api.DigitalContactOptional
+import models.api.{Contact, FormerName}
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
@@ -27,7 +27,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
   object TestBuilder extends DeclarationBlockBuilder
 
-  val testApplicantDetails = validApplicantDetails.copy(changeOfName = None)
+  val testApplicantDetails = validApplicantDetails.copy(changeOfName = FormerName())
   val declarationVatScheme = testVatScheme.copy(applicantDetails = Some(testApplicantDetails), confirmInformationDeclaration = Some(true))
 
   "The declaration block builder" must {
@@ -120,7 +120,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             |""".stripMargin)
       }
       "the user has a previous name" in {
-        val applicantDetails = testApplicantDetails.copy(changeOfName = Some(testFormerName))
+        val applicantDetails = testApplicantDetails.copy(changeOfName = testFormerName)
         val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
 
         val res = TestBuilder.buildDeclarationBlock(vatScheme)
@@ -166,10 +166,9 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
         )
       }
       "the user provides all contact details" in {
-        val contactDetails = DigitalContactOptional(
+        val contactDetails = Contact(
           email = Some("skylake@vilikariet.com"),
           tel = Some("1234"),
-          mobile = Some("5678"),
           emailVerified = Some(true)
         )
         val applicantDetails = testApplicantDetails.copy(contact = contactDetails)
@@ -199,8 +198,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             |    },
             |    "commDetails": {
             |      "email": "skylake@vilikariet.com",
-            |      "telephone": "1234",
-            |      "mobileNumber": "5678"
+            |      "telephone": "1234"
             |    },
             |    "identifiers": [
             |      {

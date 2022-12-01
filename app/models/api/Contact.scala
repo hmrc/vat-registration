@@ -18,12 +18,10 @@ package models.api
 
 import play.api.libs.json._
 
-import java.time.LocalDate
+case class Contact(email: Option[String] = None,
+                   tel: Option[String] = None,
+                   emailVerified: Option[Boolean] = None)
 
-case class FormerName(hasFormerName: Option[Boolean] = None,
-                      name: Option[Name] = None,
-                      change: Option[LocalDate] = None)
-
-object FormerName {
-  implicit val format: OFormat[FormerName] = Json.format[FormerName]
+object Contact {
+  implicit val format: Format[Contact] = Json.format[Contact]
 }

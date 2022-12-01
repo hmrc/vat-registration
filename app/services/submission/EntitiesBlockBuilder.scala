@@ -43,7 +43,7 @@ class EntitiesBlockBuilder @Inject()() {
     val entities = vatScheme.entities match {
       case Some(entityList) => entityList.filter(entity => entity.details.isDefined)
       case None if regReason.equals(GroupRegistration) => List(Entity(
-        details = Some(applicantDetails.entity),
+        details = applicantDetails.entity,
         partyType = UkCompany,
         isLeadPartner = Some(true),
         address = None,
@@ -101,7 +101,6 @@ class EntitiesBlockBuilder @Inject()() {
                       regReason match {
                         case GroupRegistration => jsonObject(
                           optional("telephone" -> applicantDetails.contact.tel),
-                          optional("mobileNumber" -> applicantDetails.contact.mobile),
                           optional("email" -> applicantDetails.contact.email)
                         )
                         case _ => jsonObject(

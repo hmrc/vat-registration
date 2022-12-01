@@ -150,9 +150,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate,
         "identifiers" -> Json.arr(
@@ -311,9 +310,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate,
         "identifiers" -> Json.arr(
@@ -500,9 +498,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate,
         "identifiers" -> Json.arr(
@@ -610,9 +607,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate,
         "identifiers" -> Json.arr(
@@ -715,9 +711,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate,
         "identifiers" -> Json.arr(
@@ -843,9 +838,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> false
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate
       ),
@@ -961,9 +955,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> false
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate
       ),
@@ -1087,9 +1080,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> false
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate
       ),
@@ -1208,9 +1200,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate,
         "identifiers" -> Json.arr(
@@ -1313,9 +1304,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email.get,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email.get,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate,
         "identifiers" -> Json.arr(
@@ -1447,9 +1437,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "addressValidated" -> true
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email,
+          "telephone" -> testContact.tel
         ),
         "dateOfBirth" -> testDate,
         "identifiers" -> Json.arr(
@@ -1607,9 +1596,8 @@ trait ITVatSubmissionFixture extends ITFixtures {
           "countryCode" -> "GB"
         ),
         "commDetails" -> Json.obj(
-          "email" -> testDigitalContactOptional.email,
-          "telephone" -> testDigitalContactOptional.tel,
-          "mobileNumber" -> testDigitalContactOptional.mobile
+          "email" -> testContact.email,
+          "telephone" -> testContact.tel
         )
       )
     )

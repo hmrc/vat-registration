@@ -33,6 +33,8 @@ class CustomerIdentificationBlockBuilder @Inject()() {
   def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsObject =
     (vatScheme.eligibilitySubmissionData, vatScheme.applicantDetails, vatScheme.business) match {
       case (Some(eligibilityData), Some(applicantDetails), Some(business)) =>
+        val entity = applicantDetails.entity.getOrElse(throw new InternalServerException("[CustomerIdentificationBlockBuilder] missing applicant entity"))
+
         jsonObject(
           "tradersPartyType" -> {
             eligibilityData match {
@@ -43,19 +45,19 @@ class CustomerIdentificationBlockBuilder @Inject()() {
           },
           optional("tradingName" -> business.tradingName.map(StringNormaliser.normaliseString))
         ) ++ {
-          applicantDetails.entity.bpSafeId match {
+          entity.bpSafeId match {
             case _ if eligibilityData.registrationReason.equals(GroupRegistration) =>
               jsonObject()
             case Some(bpSafeId) =>
               jsonObject("primeBPSafeID" -> bpSafeId)
-            case None if applicantDetails.entity.identifiers.nonEmpty =>
-              jsonObject("customerID" -> Json.toJson(applicantDetails.entity.identifiers))
+            case None if entity.identifiers.nonEmpty =>
+              jsonObject("customerID" -> Json.toJson(entity.identifiers))
             case _ =>
               jsonObject()
           }
         } ++ {
           val shortOrgName = business.shortOrgName.map(StringNormaliser.normaliseString)
-          applicantDetails.entity match {
+          entity match {
             case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, bpSafeId, _, _, _, _) if bpSafeId.isEmpty =>
               jsonObject(
                 "name" -> jsonObject(

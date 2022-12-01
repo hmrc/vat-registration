@@ -62,7 +62,7 @@ trait VatRegistrationFixture {
     Some(LocalDate.of(2020, 10, 7))
   )
 
-  lazy val testDigitalContactOptional = DigitalContactOptional(Some("skylake@vilikariet.com"), None, None)
+  lazy val testContact = Contact(Some("skylake@vilikariet.com"), None, None)
   lazy val testBankName = "Test Bank Account"
   lazy val testSortCode = "010203"
   lazy val testBankNumber = "01023456"
@@ -146,7 +146,7 @@ trait VatRegistrationFixture {
   )
 
   lazy val validApplicantDetails: ApplicantDetails = ApplicantDetails(
-    personalDetails = PersonalDetails(
+    personalDetails = Some(PersonalDetails(
       name = testName,
       nino = Some(testNino),
       trn = None,
@@ -154,17 +154,17 @@ trait VatRegistrationFixture {
       identifiersMatch = true,
       dateOfBirth = Some(testDate),
       None
-    ),
-    entity = testLtdCoEntity,
-    roleInBusiness = testRole,
-    currentAddress = testAddress,
-    contact = testDigitalContactOptional,
-    changeOfName = Some(testFormerName),
+    )),
+    entity = Some(testLtdCoEntity),
+    roleInTheBusiness = Some(testRole),
+    currentAddress = Some(testAddress),
+    contact = testContact,
+    changeOfName = testFormerName,
     previousAddress = None
   )
 
   lazy val unverifiedUserApplicantDetails: ApplicantDetails = ApplicantDetails(
-    personalDetails = PersonalDetails(
+    personalDetails = Some(PersonalDetails(
       name = testName,
       nino = Some(testNino),
       trn = None,
@@ -172,12 +172,12 @@ trait VatRegistrationFixture {
       identifiersMatch = false,
       dateOfBirth = Some(testDate),
       None
-    ),
-    entity = testLtdCoEntity,
-    roleInBusiness = testRole,
-    currentAddress = testAddress,
-    contact = testDigitalContactOptional,
-    changeOfName = Some(testFormerName),
+    )),
+    entity = Some(testLtdCoEntity),
+    roleInTheBusiness = Some(testRole),
+    currentAddress = Some(testAddress),
+    contact = testContact,
+    changeOfName = testFormerName,
     previousAddress = None
   )
 

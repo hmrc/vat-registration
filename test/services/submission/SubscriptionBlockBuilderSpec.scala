@@ -244,10 +244,10 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a full subscription json when all data is provided and user is NETP" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails.copy(
-          entity = testSoleTraderEntity.copy(
+          entity = Some(testSoleTraderEntity.copy(
             nino = None,
             trn = Some(testTrn)
-          )
+          ))
         )),
         vatApplication = Some(testOverseasVatApplicationDetails),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(

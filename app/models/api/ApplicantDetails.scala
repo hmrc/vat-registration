@@ -22,34 +22,37 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import utils.JsonUtilities
 
-case class ApplicantDetails(personalDetails: PersonalDetails,
-                            entity: BusinessEntity,
-                            currentAddress: Address,
+case class ApplicantDetails(personalDetails: Option[PersonalDetails] = None,
+                            entity: Option[BusinessEntity] = None,
+                            currentAddress: Option[Address] = None,
+                            noPreviousAddress: Option[Boolean] = None,
                             previousAddress: Option[Address] = None,
-                            contact: DigitalContactOptional,
-                            changeOfName: Option[FormerName] = None,
-                            roleInBusiness: RoleInTheBusiness)
+                            contact: Contact = Contact(),
+                            changeOfName: FormerName = FormerName(),
+                            roleInTheBusiness: Option[RoleInTheBusiness] = None)
 
 object ApplicantDetails extends JsonUtilities {
 
   def reads(partyType: PartyType): Reads[ApplicantDetails] = (
-    (__ \ "personalDetails").read[PersonalDetails] and
-      (__ \ "entity").read[BusinessEntity](BusinessEntity.reads(partyType)) and
-      (__ \ "currentAddress").read[Address] and
+    (__ \ "personalDetails").readNullable[PersonalDetails] and
+      (__ \ "entity").readNullable[BusinessEntity](BusinessEntity.reads(partyType)) and
+      (__ \ "currentAddress").readNullable[Address] and
+      (__ \ "noPreviousAddress").readNullable[Boolean] and
       (__ \ "previousAddress").readNullable[Address] and
-      (__ \ "contact").read[DigitalContactOptional] and
-      (__ \ "changeOfName").readNullable[FormerName] and
-      (__ \ "roleInTheBusiness").read[RoleInTheBusiness]
+      (__ \ "contact").readWithDefault[Contact](Contact()) and
+      (__ \ "changeOfName").readWithDefault[FormerName](FormerName()) and
+      (__ \ "roleInTheBusiness").readNullable[RoleInTheBusiness]
     ) (ApplicantDetails.apply _)
 
   implicit val writes: Writes[ApplicantDetails] = (
-    (__ \ "personalDetails").write[PersonalDetails] and
-      (__ \ "entity").write[BusinessEntity](BusinessEntity.writes) and
-      (__ \ "currentAddress").write[Address] and
+    (__ \ "personalDetails").writeNullable[PersonalDetails] and
+      (__ \ "entity").writeNullable[BusinessEntity] and
+      (__ \ "currentAddress").writeNullable[Address] and
+      (__ \ "noPreviousAddress").writeNullable[Boolean] and
       (__ \ "previousAddress").writeNullable[Address] and
-      (__ \ "contact").write[DigitalContactOptional] and
-      (__ \ "changeOfName").writeNullable[FormerName] and
-      (__ \ "roleInTheBusiness").write[RoleInTheBusiness]
+      (__ \ "contact").write[Contact] and
+      (__ \ "changeOfName").write[FormerName] and
+      (__ \ "roleInTheBusiness").writeNullable[RoleInTheBusiness]
     ) (unlift(ApplicantDetails.unapply))
 
 }
