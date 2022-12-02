@@ -37,7 +37,7 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
     registrationRepository.getRegistration(internalId, regId) map {
       case Some(registration) =>
         List(
-          registration.applicantDetails.flatMap(_.personalDetails.score),
+          registration.applicantDetails.flatMap(_.personalDetails.flatMap(_.score)),
           registration.transactorDetails.flatMap(_.personalDetails.flatMap(_.score)),
           registration.applicantDetails.flatMap(_.contact.email).map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0),
           registration.transactorDetails.flatMap(_.email).map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0)

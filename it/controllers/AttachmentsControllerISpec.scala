@@ -37,7 +37,7 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
       given.user.isAuthorised
       insertIntoDb(
         testEmptyVatScheme(testRegId).copy(
-          applicantDetails = Some(testUnregisteredApplicantDetails.copy(personalDetails = testPersonalDetails.copy(identifiersMatch = false))),
+          applicantDetails = Some(testUnregisteredApplicantDetails.copy(personalDetails = Some(testPersonalDetails.copy(identifiersMatch = false)))),
           eligibilitySubmissionData = Some(testEligibilitySubmissionData)
         )
       )
@@ -86,7 +86,7 @@ class AttachmentsControllerISpec extends IntegrationStubbing {
     val url = controllers.routes.AttachmentsController.getIncompleteAttachments(testRegId).url
     "return a list of required attachment uploads for a user that needs identity evidence" when {
       val testVatScheme: VatScheme = testEmptyVatScheme(testRegId).copy(
-        applicantDetails = Some(testUnregisteredApplicantDetails.copy(personalDetails = testPersonalDetails.copy(identifiersMatch = false))),
+        applicantDetails = Some(testUnregisteredApplicantDetails.copy(personalDetails = Some(testPersonalDetails.copy(identifiersMatch = false)))),
         eligibilitySubmissionData = Some(testEligibilitySubmissionData)
       )
       "no attachments have been uploaded yet" in new Setup {

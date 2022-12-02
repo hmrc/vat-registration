@@ -87,7 +87,7 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
   }
 
   private def getIdentityEvidenceAttachment(vatScheme: VatScheme): Option[IdentityEvidence.type] = {
-    val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.identifiersMatch)
+    val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.exists(_.identifiersMatch))
     if (unverifiedPersonalDetails) Some(IdentityEvidence) else None
   }
 

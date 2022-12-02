@@ -130,7 +130,6 @@ trait VatSubmissionFixture {
       |  },
       |  "contact": {
       |    "commDetails": {
-      |      "mobileNumber": "54321",
       |      "webAddress": "www.foo.com",
       |      "telephone": "12345",
       |      "email": "email@email.com",
@@ -266,7 +265,6 @@ trait VatSubmissionFixture {
       |  },
       |  "contact": {
       |    "commDetails": {
-      |      "mobileNumber": "54321",
       |      "webAddress": "www.foo.com",
       |      "telephone": "12345",
       |      "email": "email@email.com",

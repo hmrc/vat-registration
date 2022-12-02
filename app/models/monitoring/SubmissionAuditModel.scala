@@ -69,7 +69,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           }),
           optional("corporateBodyRegistered" -> {
             applicantDetails.entity match {
-              case IncorporatedEntity(_, _, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _) =>
+              case Some(IncorporatedEntity(_, _, dateOfIncorporation, _, _, countryOfIncorporation, _, _, _, _)) =>
                 Some(jsonObject(
                   "countryOfIncorporation" -> countryOfIncorporation,
                   optional("dateOfIncorporation" -> dateOfIncorporation)
@@ -77,11 +77,11 @@ case class SubmissionAuditModel(userAnswers: JsValue,
               case _ => None
             }
           }),
-          "idsVerificationStatus" -> applicantDetails.entity.bpSafeId.fold(
-            IdVerificationStatus.toJsString(applicantDetails.entity.idVerificationStatus)
-          )(_ => JsString(registeredStatus)),
+          "idsVerificationStatus" -> applicantDetails.entity.map(entity => entity.bpSafeId.fold(
+            IdVerificationStatus.toJsString(entity.idVerificationStatus)
+          )(_ => JsString(registeredStatus))),
           "cidVerification" -> cidVerificationStatus,
-          optional("businessPartnerReference" -> applicantDetails.entity.bpSafeId),
+          optional("businessPartnerReference" -> applicantDetails.entity.flatMap(_.bpSafeId)),
           "userEnteredDetails" -> userAnswers
         )
       case _ =>

@@ -30,7 +30,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
 
   object TestBuilder extends DeclarationAuditBlockBuilder
 
-  val testApplicantDetails: ApplicantDetails = validApplicantDetails.copy(changeOfName = None)
+  val testApplicantDetails: ApplicantDetails = validApplicantDetails.copy(changeOfName = FormerName())
   val declarationVatScheme: VatScheme = testVatScheme.copy(
     applicantDetails = Some(testApplicantDetails),
     confirmInformationDeclaration = Some(true)
@@ -179,7 +179,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |""".stripMargin)
       }
       "the user has a previous name" in {
-        val applicantDetails = testApplicantDetails.copy(changeOfName = Some(testFormerName))
+        val applicantDetails = testApplicantDetails.copy(changeOfName = testFormerName)
 
         val res = TestBuilder.buildDeclarationBlock(declarationVatScheme.copy(applicantDetails = Some(applicantDetails)))
 
@@ -218,10 +218,9 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
         )
       }
       "the user provides all contact details" in {
-        val contactDetails = DigitalContactOptional(
+        val contactDetails = Contact(
           email = Some("skylake@vilikariet.com"),
           tel = Some("1234"),
-          mobile = Some("5678"),
           emailVerified = Some(true)
         )
         val applicantDetails = testApplicantDetails.copy(contact = contactDetails)
@@ -249,8 +248,7 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |    "dateOfBirth": "2018-01-01",
             |    "communicationDetails": {
             |      "emailAddress": "skylake@vilikariet.com",
-            |      "telephone": "1234",
-            |      "mobileNumber": "5678"
+            |      "telephone": "1234"
             |    },
             |    "identifiers": {
             |      "nationalInsuranceNumber": "AB123456A"

@@ -91,8 +91,7 @@ trait SubmissionAuditFixture extends VatRegistrationFixture {
         "dateOfBirth" -> testDate,
         "communicationDetails" -> Json.obj(
           "emailAddress" -> "skylake@vilikariet.com",
-          "telephone" -> "1234567890",
-          "mobileNumber" -> "1234567890"
+          "telephone" -> "1234567890"
         ),
         "identifiers" -> Json.obj(
           "nationalInsuranceNumber" -> testNino

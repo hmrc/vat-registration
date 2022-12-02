@@ -18,7 +18,7 @@ package services.submission
 
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
-import models.api.DigitalContactOptional
+import models.api.Contact
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.InternalServerException
 
@@ -54,7 +54,7 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
         val vatScheme = testVatScheme.copy(
           business = Some(testBusiness),
           applicantDetails = Some(validApplicantDetails.copy(
-            contact = DigitalContactOptional(
+            contact = Contact(
               email = testBusiness.email,
               emailVerified = Some(true)
             )

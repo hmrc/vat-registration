@@ -37,10 +37,9 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
     email = None,
     telephoneNumber = None
   )
-  val testApplicantContact = DigitalContactOptional(
+  val testApplicantContact = Contact(
     email = Some(testEmail),
-    tel = Some(testTelephone),
-    mobile = Some(testTelephone)
+    tel = Some(testTelephone)
   )
 
   "buildEntitiesBlock" when {
@@ -233,7 +232,6 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
               "countryCode" -> "GB"
             ),
             "commDetails" -> Json.obj(
-              "mobileNumber" -> testTelephone,
               "telephone" -> testTelephone,
               "email" -> testEmail
             )
@@ -247,7 +245,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           business = Some(testBusiness),
           entities = None,
           applicantDetails = Some(validApplicantDetails.copy(
-            entity = testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId)),
+            entity = Some(testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId))),
             contact = testApplicantContact
           ))
         )
@@ -267,7 +265,6 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
               "countryCode" -> "GB"
             ),
             "commDetails" -> Json.obj(
-              "mobileNumber" -> testTelephone,
               "telephone" -> testTelephone,
               "email" -> testEmail
             )

@@ -77,7 +77,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
           )
         }
         "return the root JSON block when BP Safe ID is present" in {
-          val applicantDetailsWithSafeId = validApplicantDetails.copy(entity = testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId)))
+          val applicantDetailsWithSafeId = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId))))
           val res = model(rootBlockTestVatScheme.copy(applicantDetails = Some(applicantDetailsWithSafeId)))
 
           res.detail mustBe Json.obj(

@@ -36,7 +36,7 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
     "parse successfully if the entity is a Sole Trader" in {
       implicit val fmt = format(Individual)
       val soleTraderAppDetails = validApplicantDetails.copy(
-        entity = testSoleTraderEntity
+        entity = Some(testSoleTraderEntity)
       )
       writeAndRead(soleTraderAppDetails) resultsIn soleTraderAppDetails
     }
@@ -44,7 +44,7 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
     "parse successfully if the entity is a General Partnership" in {
       implicit val fmt = format(Partnership)
       val generalPartnershipAppDetails = validApplicantDetails.copy(
-        entity = testGeneralPartnershipEntity
+        entity = Some(testGeneralPartnershipEntity)
       )
       writeAndRead(generalPartnershipAppDetails) resultsIn generalPartnershipAppDetails
     }
@@ -52,7 +52,7 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
     "parse successfully if the entity is a Trust" in {
       implicit val fmt = format(Trust)
       val trustAppDetails = validApplicantDetails.copy(
-        entity = testTrustEntity
+        entity = Some(testTrustEntity)
       )
       writeAndRead(trustAppDetails) resultsIn trustAppDetails
     }

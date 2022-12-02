@@ -51,7 +51,7 @@ class EmailService @Inject()(emailConnector: EmailConnector,
 
     def submissionParameters(vatScheme: VatScheme): Map[String, String] = {
       val transactorName = vatScheme.transactorDetails.flatMap(_.personalDetails.flatMap(_.name.first))
-      val applicantName = vatScheme.applicantDetails.flatMap(_.personalDetails.name.first)
+      val applicantName = vatScheme.applicantDetails.flatMap(_.personalDetails.flatMap(_.name.first))
 
       Map(
         "name" -> transactorName.getOrElse(applicantName.getOrElse(throw new InternalServerException(missingDataLog("applicant Name", regId)))),

@@ -106,7 +106,6 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
     ),
     "commDetails" -> Json.obj(
       "telephone" -> "12345",
-      "mobileNumber" -> "54321",
       "email" -> "email@email.com",
       "commsPreference" -> "ZEL"
     )

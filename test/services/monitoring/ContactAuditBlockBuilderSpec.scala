@@ -93,7 +93,7 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
           contactPreference = Some(Email),
           hasWebsite = Some(true)
         )),
-        applicantDetails = Some(validApplicantDetails.copy(contact = DigitalContactOptional(
+        applicantDetails = Some(validApplicantDetails.copy(contact = Contact(
           email = Some("email@email.com"),
           emailVerified = Some(true)
         )))

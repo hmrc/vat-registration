@@ -16,8 +16,8 @@
 
 package services.monitoring
 
-import models.api.{ApplicantDetails, VatScheme}
-import models.{IncorporatedEntity, MinorEntity, PartnershipIdEntity, SoleTraderIdEntity}
+import models.api.VatScheme
+import models._
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -31,10 +31,12 @@ class CustomerIdentificationAuditBlockBuilder {
   def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsValue = {
     (vatScheme.applicantDetails, vatScheme.business) match {
       case (Some(applicantDetails), Some(business)) =>
+        val entity = applicantDetails.entity.getOrElse(throw new InternalServerException("[CustomerIdentificationBlockBuilder] missing applicant entity"))
+
         jsonObject(
           "tradersPartyType" -> vatScheme.partyType,
           optional("identifiers" -> {
-            applicantDetails.entity match {
+            entity match {
               case IncorporatedEntity(_, companyNumber, _, optCtutr, _, _, _, _, _, optChrn) =>
                 Some(jsonObject(
                   "companyRegistrationNumber" -> companyNumber,
@@ -55,10 +57,12 @@ class CustomerIdentificationAuditBlockBuilder {
                 None
             }
           }),
-          optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
+          optionalRequiredIf(applicantDetails.personalDetails.exists(_.arn.isEmpty))(
+            "dateOfBirth" -> applicantDetails.personalDetails.flatMap(_.dateOfBirth)
+          ),
           optional("tradingName" -> business.tradingName)
         ) ++ {
-          (business.shortOrgName, getCompanyName(applicantDetails)) match {
+          (business.shortOrgName, getCompanyName(entity)) match {
             case (Some(shortOrgName), Some(companyName)) => jsonObject(
               "shortOrgName" -> shortOrgName,
               "organisationName" -> companyName
@@ -77,8 +81,8 @@ class CustomerIdentificationAuditBlockBuilder {
   }
 
 
-  def getCompanyName(applicantDetails: ApplicantDetails): Option[String] = {
-    applicantDetails.entity match {
+  def getCompanyName(entity: BusinessEntity): Option[String] = {
+    entity match {
       case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => companyName
       case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => companyName
       case PartnershipIdEntity(_, _, companyName, _, _, _, _, _, _, _) => companyName

@@ -23,6 +23,7 @@ import utils.JsonUtils.{jsonObject, _}
 
 import javax.inject.Singleton
 
+// scalastyle:off
 @Singleton
 class DeclarationAuditBlockBuilder {
 
@@ -32,25 +33,32 @@ class DeclarationAuditBlockBuilder {
         jsonObject(
           "declarationSigning" -> jsonObject(
             "confirmInformationDeclaration" -> declaration,
-            "declarationCapacity" -> optTransactorDetails.flatMap(_.declarationCapacity.map(_.role)).getOrElse(
-              applicantDetails.roleInBusiness.toDeclarationCapacity
-            ).toString,
+            required("declarationCapacity" -> {
+              if (optTransactorDetails.isDefined) {
+                optTransactorDetails.flatMap(_.declarationCapacity.map(_.role))
+              } else {
+                applicantDetails.roleInTheBusiness.map(_.toDeclarationCapacity)
+              }
+            }.map(_.toString)),
             optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.flatMap(_.otherRole)))
           ),
           "applicant" -> jsonObject(
-            "roleInBusiness" -> applicantDetails.roleInBusiness.toString,
-            "name" -> formatName(applicantDetails.personalDetails.name),
-            optional("previousName" -> applicantDetails.changeOfName.map(formatFormerName)),
-            "currentAddress" -> formatAddress(applicantDetails.currentAddress),
+            "roleInBusiness" -> applicantDetails.roleInTheBusiness.map(_.toString),
+            required("name" -> applicantDetails.personalDetails.map(details => formatName(details.name))),
+            optionalRequiredIf(applicantDetails.changeOfName.hasFormerName.contains(true))(
+              "previousName" -> formatFormerName(applicantDetails.changeOfName)
+            ),
+            "currentAddress" -> applicantDetails.currentAddress.map(formatAddress),
             optional("previousAddress" -> applicantDetails.previousAddress.map(formatAddress)),
-            optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
+            optionalRequiredIf(applicantDetails.personalDetails.exists(_.arn.isEmpty))(
+              "dateOfBirth" -> applicantDetails.personalDetails.flatMap(_.dateOfBirth)
+            ),
             "communicationDetails" -> jsonObject(
               optional("emailAddress" -> applicantDetails.contact.email),
-              optional("telephone" -> applicantDetails.contact.tel),
-              optional("mobileNumber" -> applicantDetails.contact.mobile)
+              optional("telephone" -> applicantDetails.contact.tel)
             ),
             "identifiers" -> jsonObject(
-              optional("nationalInsuranceNumber" -> applicantDetails.personalDetails.nino)
+              optional("nationalInsuranceNumber" -> applicantDetails.personalDetails.map(_.nino))
             )
           ),
           optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>

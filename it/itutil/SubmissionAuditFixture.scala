@@ -75,8 +75,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
         "dateOfBirth" -> "2017-01-01",
         "communicationDetails" -> Json.obj(
           "emailAddress" -> "skylake@vilikariet.com",
-          "telephone" -> "1234567890",
-          "mobileNumber" -> "1234567890"
+          "telephone" -> "1234567890"
         ),
         "identifiers" -> Json.obj(
           "nationalInsuranceNumber" -> "NB686868C"

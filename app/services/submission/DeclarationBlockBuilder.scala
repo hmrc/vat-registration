@@ -34,27 +34,32 @@ class DeclarationBlockBuilder @Inject()() {
         jsonObject(
           "declarationSigning" -> jsonObject(
             "confirmInformationDeclaration" -> declaration,
-            "declarationCapacity" -> optTransactorDetails.flatMap(_.declarationCapacity.map(_.role)).getOrElse(
-              applicantDetails.roleInBusiness.toDeclarationCapacity
-            ),
+            required("declarationCapacity" -> {
+              if (optTransactorDetails.isDefined) {
+                optTransactorDetails.flatMap(_.declarationCapacity.map(_.role))
+              } else {
+                applicantDetails.roleInTheBusiness.map(_.toDeclarationCapacity)
+              }
+            }),
             optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.flatMap(_.otherRole)))
           ),
           "applicantDetails" -> jsonObject(
-            "roleInBusiness" -> applicantDetails.roleInBusiness,
-            "name" -> formatName(applicantDetails.personalDetails.name),
-            conditional(applicantDetails.changeOfName.exists(_.hasFormerName.contains(true)))(
-              "prevName" -> applicantDetails.changeOfName.map(formatFormerName)
+            required("roleInBusiness" -> applicantDetails.roleInTheBusiness),
+            required("name" -> applicantDetails.personalDetails.map(details => formatName(details.name))),
+            optionalRequiredIf(applicantDetails.changeOfName.hasFormerName.contains(true))(
+              "prevName" -> formatFormerName(applicantDetails.changeOfName)
             ),
-            optionalRequiredIf(applicantDetails.personalDetails.arn.isEmpty)("dateOfBirth" -> applicantDetails.personalDetails.dateOfBirth),
-            "currAddress" -> formatAddress(applicantDetails.currentAddress),
+            optionalRequiredIf(applicantDetails.personalDetails.exists(_.arn.isEmpty))(
+              "dateOfBirth" -> applicantDetails.personalDetails.flatMap(_.dateOfBirth)
+            ),
+            required("currAddress" -> applicantDetails.currentAddress.map(formatAddress)),
             optional("prevAddress" -> applicantDetails.previousAddress.map(formatAddress)),
             "commDetails" -> jsonObject(
               optional("email" -> applicantDetails.contact.email),
-              optional("telephone" -> applicantDetails.contact.tel),
-              optional("mobileNumber" -> applicantDetails.contact.mobile)
+              optional("telephone" -> applicantDetails.contact.tel)
             ),
-            conditional(applicantDetails.personalDetails.personalIdentifiers.nonEmpty)(
-              "identifiers" -> applicantDetails.personalDetails.personalIdentifiers
+            optionalRequiredIf(applicantDetails.personalDetails.exists(_.personalIdentifiers.nonEmpty))(
+              "identifiers" -> applicantDetails.personalDetails.map(_.personalIdentifiers)
             )
           ),
           optional("agentOrCapacitor" -> optTransactorDetails.map { transactorDetails =>

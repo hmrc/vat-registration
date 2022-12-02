@@ -95,11 +95,11 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   lazy val generalPartnershipWithSoleTraderPartner: VatScheme = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
     entities = Some(List(testPartner)),
-    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = Some(testGeneralPartnershipEntity.copy(
       bpSafeId = None,
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
-    ))),
+    )))),
     attachments = Some(Attachments(Some(Post))),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
@@ -107,11 +107,11 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   lazy val generalPartnershipWithUkCompanyPartner: VatScheme = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Partnership)),
     entities = Some(List(testUkCompanyPartner)),
-    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = Some(testGeneralPartnershipEntity.copy(
       bpSafeId = None,
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
-    ))),
+    )))),
     attachments = Some(Attachments(Some(Post))),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
@@ -119,13 +119,13 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   lazy val limitedPartnershipWithScotPartnershipPartner: VatScheme = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = LtdPartnership)),
     entities = Some(List(testScottishPartnershipPartner)),
-    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testGeneralPartnershipEntity.copy(
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = Some(testGeneralPartnershipEntity.copy(
       companyNumber = Some(testCrn),
       dateOfIncorporation = Some(testDateOfIncorp),
       bpSafeId = None,
       businessVerification = Some(BvFail),
       registration = NotCalledStatus
-    ))),
+    )))),
     attachments = Some(Attachments(Some(Post))),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
@@ -138,13 +138,13 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
 
   lazy val vatGroupVatScheme: VatScheme = testFullVatScheme.copy(
     eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
-    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testLtdCoEntity.copy(
+    applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(
       companyNumber = testCrn,
       dateOfIncorporation = Some(testDateOfIncorp),
       bpSafeId = None,
       businessVerification = Some(BvPass),
       registration = FailedStatus
-    ))),
+    )))),
     attachments = Some(Attachments(Some(Post))),
     business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
   )
@@ -216,7 +216,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         given.user.isAuthorised
         insertIntoDb(
           testSoleTraderVatScheme.copy(applicantDetails = Some(
-            testRegisteredSoleTraderApplicantDetailsNoBpSafeId.copy(personalDetails = testPersonalDetails.copy(score = Some(testScore)))
+            testRegisteredSoleTraderApplicantDetailsNoBpSafeId.copy(personalDetails = Some(testPersonalDetails.copy(score = Some(testScore))))
           ))
         )
 
@@ -383,7 +383,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       "return OK if the submission is successful with overseas details" in new Setup {
         given.user.isAuthorised
         insertIntoDb(
-          testNetpVatScheme.copy(applicantDetails = Some(testNetpApplicantDetails.copy(entity = testNetpEntityOverseas)))
+          testNetpVatScheme.copy(applicantDetails = Some(testNetpApplicantDetails.copy(entity = Some(testNetpEntityOverseas))))
         )
 
         stubPost("/vat/subscription", testNetpJsonOverseas, OK, Json.stringify(testSubmissionResponse))
@@ -558,13 +558,13 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
             registrationReason = TransferOfAGoingConcern,
             togcCole = Some(togcBlock)
           )),
-          applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = testLtdCoEntity.copy(
+          applicantDetails = Some(testUnregisteredApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(
             companyNumber = testCrn,
             dateOfIncorporation = Some(testDateOfIncorp),
             bpSafeId = None,
             businessVerification = Some(BvPass),
             registration = FailedStatus
-          ))),
+          )))),
           business = Some(testBusiness.copy(shortOrgName = Some(testShortOrgName)))
         )
 
