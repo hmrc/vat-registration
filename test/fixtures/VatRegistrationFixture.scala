@@ -210,8 +210,8 @@ trait VatRegistrationFixture {
   lazy val testBankAccountNotProvided = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup))
 
   lazy val validAASDetails: AASDetails = AASDetails(
-    paymentMethod = StandingOrder,
-    paymentFrequency = MonthlyPayment
+    paymentMethod = Some(StandingOrder),
+    paymentFrequency = Some(MonthlyPayment)
   )
 
   lazy val testTurnover = 10000
@@ -238,9 +238,9 @@ trait VatRegistrationFixture {
   val testOverseasVatApplicationDetails: VatApplication = testVatApplicationDetails.copy(
     startDate = None,
     overseasCompliance = Some(OverseasCompliance(
-      goodsToOverseas = true,
+      goodsToOverseas = Some(true),
       goodsToEu = Some(true),
-      storingGoodsForDispatch = StoringWithinUk,
+      storingGoodsForDispatch = Some(StoringWithinUk),
       usingWarehouse = Some(true),
       fulfilmentWarehouseNumber = Some(testWarehouseNumber),
       fulfilmentWarehouseName = Some(testWarehouseName)
@@ -261,7 +261,7 @@ trait VatRegistrationFixture {
   lazy val invalidEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = Some(true))
 
   lazy val testBusinessDescription = "testBusinessDescription"
-  lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = true)
+  lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = Some(true))
   lazy val testSicCode1 = "12345"
   lazy val testSicDesc1 = "testMainSicDesc"
   lazy val testSicDisplay1 = "testMainSicDisplay"

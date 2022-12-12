@@ -30,7 +30,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
   val emptyLabourCompliance = ComplianceLabour(
     numOfWorkersSupplied = None,
     intermediaryArrangement = None,
-    supplyWorkers = true
+    supplyWorkers = Some(true)
   )
 
   "The compliance block builder" must {

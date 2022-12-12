@@ -29,8 +29,8 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   val testWarehouseNumber = "test12345678"
   val testWarehouseName = "testWarehouseName"
   val testNorthernIrelandProtocol: NIPCompliance = NIPCompliance(
-    ConditionalValue(answer = true, Some(testTurnover)),
-    ConditionalValue(answer = false, None)
+    Some(ConditionalValue(answer = true, Some(testTurnover))),
+    Some(ConditionalValue(answer = false, None))
   )
 
   val testMonthlyVatApplication: VatApplication = VatApplication(
@@ -77,7 +77,7 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
     Some(Annual),
     Some(JanDecStagger),
     Some(testDate),
-    Some(AASDetails(BankGIRO, MonthlyPayment)),
+    Some(AASDetails(Some(BankGIRO), Some(MonthlyPayment))),
     None,
     Some(testNorthernIrelandProtocol),
     None,
@@ -85,9 +85,9 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val testOverseasVatApplication: VatApplication = testQuarterlyVatApplication.copy(overseasCompliance = Some(OverseasCompliance(
-    goodsToOverseas = true,
+    goodsToOverseas = Some(true),
     goodsToEu = Some(true),
-    storingGoodsForDispatch = StoringWithinUk,
+    storingGoodsForDispatch = Some(StoringWithinUk),
     usingWarehouse = Some(true),
     fulfilmentWarehouseNumber = Some(testWarehouseNumber),
     fulfilmentWarehouseName = Some(testWarehouseName)

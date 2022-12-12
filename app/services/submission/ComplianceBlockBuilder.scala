@@ -32,7 +32,7 @@ class ComplianceBlockBuilder @Inject()() {
         jsonObject(
           optional("numOfWorkersSupplied" -> labourCompliance.numOfWorkersSupplied),
           optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
-          "supplyWorkers" -> labourCompliance.supplyWorkers
+          optional("supplyWorkers" -> labourCompliance.supplyWorkers)
         ))
       case _ =>
         throw new InternalServerException("Couldn't build compliance block due to missing business data")

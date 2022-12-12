@@ -34,9 +34,9 @@ class AnnualAccountingBlockBuilder @Inject()() {
           "submissionType" -> "1",
           "customerRequest" -> vatApplication.annualAccountingDetails.map { details =>
             jsonObject(
-              "paymentMethod" -> details.paymentMethod,
+              required("paymentMethod" -> details.paymentMethod),
               "annualStagger" -> vatApplication.staggerStart,
-              "paymentFrequency" -> details.paymentFrequency,
+              required("paymentFrequency" -> details.paymentFrequency),
               required("estimatedTurnover" -> vatApplication.turnoverEstimate),
               "reqStartDate" -> {
                 eligibilitySubmissionData.registrationReason match {

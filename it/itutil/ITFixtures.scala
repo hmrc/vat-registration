@@ -60,8 +60,8 @@ trait ITFixtures {
   val testWarehouseName = "testWarehouseName"
   val testTurnover = 10000
   val testNorthernIrelandProtocol: NIPCompliance = NIPCompliance(
-    ConditionalValue(answer = true, Some(testTurnover)),
-    ConditionalValue(answer = true, Some(testTurnover))
+    Some(ConditionalValue(answer = true, Some(testTurnover))),
+    Some(ConditionalValue(answer = true, Some(testTurnover)))
   )
   val testPreviousBusinessName = "testPreviousBusinessName"
   val testVrn = "testVrn"
@@ -83,8 +83,8 @@ trait ITFixtures {
   )
 
   val aasDetails = vatapplication.AASDetails(
-    paymentMethod = StandingOrder,
-    paymentFrequency = MonthlyPayment
+    paymentMethod = Some(StandingOrder),
+    paymentFrequency = Some(MonthlyPayment)
   )
 
   val testAASVatApplicationDetails: VatApplication = VatApplication(
@@ -233,7 +233,7 @@ trait ITFixtures {
     )
 
   lazy val testBusinessDescription = "testBusinessDescription"
-  lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = true)
+  lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = Some(true))
   lazy val testSicCode1 = "12345"
   lazy val testSicDesc1 = "testMainSicDesc"
   lazy val testSicDisplay1 = "testMainSicDisplay"
@@ -557,9 +557,9 @@ trait ITFixtures {
     startDate = None,
     annualAccountingDetails = None,
     overseasCompliance = Some(OverseasCompliance(
-      true,
       Some(true),
-      StoringWithinUk,
+      Some(true),
+      Some(StoringWithinUk),
       Some(true),
       Some(testWarehouseNumber),
       Some(testWarehouseName)

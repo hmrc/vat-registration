@@ -32,7 +32,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
       val testLabourCompliance: ComplianceLabour = ComplianceLabour(
         numOfWorkersSupplied = None,
         intermediaryArrangement = None,
-        supplyWorkers = true
+        supplyWorkers = Some(true)
       )
       val testScheme = testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = Some(testLabourCompliance))))
 
@@ -47,7 +47,7 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
       val testLabourCompliance: ComplianceLabour = ComplianceLabour(
         numOfWorkersSupplied = Some(1),
         intermediaryArrangement = Some(true),
-        supplyWorkers = true
+        supplyWorkers = Some(true)
       )
       val testScheme = testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = Some(testLabourCompliance))))
 

@@ -92,8 +92,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     staggerStart = Some(JanuaryStagger),
     startDate = Some(testDate),
     northernIrelandProtocol = Some(NIPCompliance(
-      goodsToEU = ConditionalValue(true, Some(testTurnover)),
-      goodsFromEU = ConditionalValue(true, Some(testTurnover))
+      goodsToEU = Some(ConditionalValue(true, Some(testTurnover))),
+      goodsFromEU = Some(ConditionalValue(true, Some(testTurnover)))
     )),
     appliedForExemption = None,
     annualAccountingDetails = None,

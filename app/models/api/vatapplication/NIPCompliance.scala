@@ -18,8 +18,8 @@ package models.api.vatapplication
 
 import play.api.libs.json.{Json, OFormat}
 
-case class NIPCompliance(goodsToEU: ConditionalValue,
-                         goodsFromEU: ConditionalValue)
+case class NIPCompliance(goodsToEU: Option[ConditionalValue],
+                         goodsFromEU: Option[ConditionalValue])
 
 object NIPCompliance {
   implicit val format: OFormat[NIPCompliance] = Json.format[NIPCompliance]

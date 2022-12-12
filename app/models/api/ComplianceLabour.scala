@@ -20,7 +20,7 @@ import play.api.libs.json.{Format, Json}
 
 case class ComplianceLabour(numOfWorkersSupplied: Option[Int],
                             intermediaryArrangement: Option[Boolean],
-                            supplyWorkers: Boolean)
+                            supplyWorkers: Option[Boolean])
 
 object ComplianceLabour {
   implicit val formats: Format[ComplianceLabour] = Json.format[ComplianceLabour]
