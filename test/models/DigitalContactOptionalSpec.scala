@@ -56,8 +56,6 @@ class ContactSpec extends BaseSpec with JsonFormatValidation {
              |{}
         """.stripMargin)
 
-        val result = Json.fromJson[Contact](json)
-
         Json.fromJson[Contact](json) mustBe JsSuccess(Contact())
       }
     }

@@ -18,9 +18,9 @@ package models.api.vatapplication
 
 import play.api.libs.json.{Format, Json}
 
-case class OverseasCompliance(goodsToOverseas: Boolean,
+case class OverseasCompliance(goodsToOverseas: Option[Boolean],
                               goodsToEu: Option[Boolean],
-                              storingGoodsForDispatch: StoringGoodsForDispatch,
+                              storingGoodsForDispatch: Option[StoringGoodsForDispatch],
                               usingWarehouse: Option[Boolean],
                               fulfilmentWarehouseNumber: Option[String],
                               fulfilmentWarehouseName: Option[String])

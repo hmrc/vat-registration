@@ -32,7 +32,7 @@ class ComplianceAuditBlockBuilder {
         jsonObject(
           optional("numOfWorkersSupplied" -> labourCompliance.numOfWorkersSupplied),
           optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
-          "supplyWorkers" -> labourCompliance.supplyWorkers
+          optional("supplyWorkers" -> labourCompliance.supplyWorkers)
         ))
       case None => throw new InternalServerException("[ComplianceBlockBuilder] Couldn't build audit compliance block due to missing business data")
     }

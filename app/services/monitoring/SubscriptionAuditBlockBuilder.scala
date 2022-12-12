@@ -51,9 +51,9 @@ class SubscriptionAuditBlockBuilder {
             optional("mainCode3" -> business.otherBusinessActivities.lift(1).map(_.id)),
             optional("mainCode4" -> business.otherBusinessActivities.lift(2).map(_.id))
           ),
-          optional("goodsToOverseas" -> vatApplication.overseasCompliance.map(_.goodsToOverseas)),
+          optional("goodsToOverseas" -> vatApplication.overseasCompliance.flatMap(_.goodsToOverseas)),
           optional("goodsToCustomerEU" -> vatApplication.overseasCompliance.flatMap(_.goodsToEu)),
-          optional("storingGoodsForDispatch" -> vatApplication.overseasCompliance.map(_.storingGoodsForDispatch)),
+          optional("storingGoodsForDispatch" -> vatApplication.overseasCompliance.flatMap(_.storingGoodsForDispatch)),
           optional("fulfilmentWarehouse" -> vatApplication.overseasCompliance.flatMap(_.usingWarehouse)),
           optional("FHDDSWarehouseNumber" -> vatApplication.overseasCompliance.flatMap(_.fulfilmentWarehouseNumber)),
           optional("nameOfWarehouse" -> vatApplication.overseasCompliance.flatMap(_.fulfilmentWarehouseName))
@@ -63,10 +63,16 @@ class SubscriptionAuditBlockBuilder {
           "zeroRatedSupplies" -> vatApplication.zeroRatedSupplies,
           "vatRepaymentExpected" -> vatApplication.claimVatRefunds
         ) ++ {
-          vatApplication.northernIrelandProtocol match {
-            case Some(NIPCompliance(goodsToEU, goodsFromEU)) => jsonObject(
-              conditional(goodsFromEU.answer)("goodsFromOtherEU" -> goodsFromEU.value),
-              conditional(goodsToEU.answer)("goodsSoldToOtherEU" -> goodsToEU.value)
+          vatApplication.northernIrelandProtocol.flatMap(_.goodsFromEU) match {
+            case Some(conditionalValue) => jsonObject(
+              conditional(conditionalValue.answer)("goodsFromOtherEU" -> conditionalValue.value)
+            )
+            case None => jsonObject()
+          }
+        } ++ {
+          vatApplication.northernIrelandProtocol.flatMap(_.goodsToEU) match {
+            case Some(conditionalValue) => jsonObject(
+              conditional(conditionalValue.answer)("goodsSoldToOtherEU" -> conditionalValue.value)
             )
             case None => jsonObject()
           }
