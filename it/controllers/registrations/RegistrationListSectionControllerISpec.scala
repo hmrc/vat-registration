@@ -62,11 +62,11 @@ class RegistrationListSectionControllerISpec extends IntegrationStubbing {
         insertIntoDb(testVatScheme.copy(otherBusinessInvolvements = Some(List(testOtherBusinessInvolvement))))
 
         val res = await(client(url(testSectionId, testValidIndex)).put(
-          Json.toJson(testOtherBusinessInvolvement.copy(stillTrading = false))
+          Json.toJson(testOtherBusinessInvolvement.copy(stillTrading = Some(false)))
         ))
 
         res.status mustBe OK
-        res.json mustBe Json.toJson(testOtherBusinessInvolvement.copy(stillTrading = false))
+        res.json mustBe Json.toJson(testOtherBusinessInvolvement.copy(stillTrading = Some(false)))
       }
       "add a new index to the section using a full model and return OK with the JSON" in new SetupHelper {
         given.user.isAuthorised
@@ -109,7 +109,7 @@ class RegistrationListSectionControllerISpec extends IntegrationStubbing {
       "return NO CONTENT" in new SetupHelper {
         given.user.isAuthorised
         insertIntoDb(testVatScheme.copy(otherBusinessInvolvements = Some(List(
-          testOtherBusinessInvolvement.copy(stillTrading = false), testOtherBusinessInvolvement
+          testOtherBusinessInvolvement.copy(stillTrading = Some(false)), testOtherBusinessInvolvement
         ))))
 
         val res = await(client(url(testSectionId, testValidIndex)).delete())

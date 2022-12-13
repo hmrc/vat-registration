@@ -298,8 +298,8 @@ class RegistrationServiceSpec extends VatRegSpec
   "upsertSectionIndex" must {
     "return the stored json after updating an existing index in the section" in {
       val sectionJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement))
-      val updateJson = Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = false))
-      val updateJsonArr = Json.arr(Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = false)))
+      val updateJson = Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false)))
+      val updateJsonArr = Json.arr(Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false))))
       mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJson)))
       mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJsonArr)(Some(updateJsonArr))
 
@@ -330,8 +330,8 @@ class RegistrationServiceSpec extends VatRegSpec
 
   "deleteSectionIndex" must {
     "return the array without the deleted index" in {
-      val sectionJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement), Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = false)))
-      val updateJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = false)))
+      val sectionJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement), Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false))))
+      val updateJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false))))
       mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJson)))
       mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJson)(Some(updateJson))
 
