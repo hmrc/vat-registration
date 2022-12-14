@@ -122,10 +122,10 @@ class SubscriptionBlockBuilder @Inject()() {
         conditional(business.otherBusinessInvolvement.contains(true) && otherBusinessInvolvements.nonEmpty)(
           "otherBusinessActivities" -> otherBusinessInvolvements.map { involvement =>
             jsonObject(
-              "businessName" -> involvement.businessName,
+              required("businessName" -> involvement.businessName),
               optional("idType" -> involvement.optIdType),
               optional("idValue" -> involvement.optIdValue),
-              "stillTrading" -> involvement.stillTrading
+              required("stillTrading" -> involvement.stillTrading)
             )
           }
         )

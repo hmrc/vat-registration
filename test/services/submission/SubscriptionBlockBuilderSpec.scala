@@ -328,28 +328,28 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
         otherBusinessInvolvements = Some(
           List(
             OtherBusinessInvolvement(
-              businessName = testCompanyName,
-              hasVrn = true,
+              businessName = Some(testCompanyName),
+              hasVrn = Some(true),
               vrn = Some(testVrn),
               hasUtr = None,
               utr = None,
-              stillTrading = true
+              stillTrading = Some(true)
             ),
             OtherBusinessInvolvement(
-              businessName = testCompanyName,
-              hasVrn = false,
+              businessName = Some(testCompanyName),
+              hasVrn = Some(false),
               vrn = None,
               hasUtr = Some(true),
               utr = Some(testUtr),
-              stillTrading = true
+              stillTrading = Some(true)
             ),
             OtherBusinessInvolvement(
-              businessName = testCompanyName,
-              hasVrn = false,
+              businessName = Some(testCompanyName),
+              hasVrn = Some(false),
               vrn = None,
               hasUtr = Some(false),
               utr = None,
-              stillTrading = false
+              stillTrading = Some(false)
             )
           )
         )

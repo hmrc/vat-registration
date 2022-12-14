@@ -116,10 +116,10 @@ class SectionValidationServiceSpec extends VatRegSpec
       }
 
       "throw InternalServerError when the data is invalid" in {
-        val data = Json.toJson(validFullBusinessDetails)
+        val data = Json.toJson("hasVrn" -> "notBoolean")
         val res = await(Service.validateIndex(OtherBusinessInvolvementsSectionId, data))
 
-        res mustBe Left(InvalidSection(Seq("/businessName", "/hasVrn", "/stillTrading")))
+        res mustBe Left(InvalidSection(List("")))
       }
     }
   }

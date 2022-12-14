@@ -19,13 +19,13 @@ package models.api
 import models.submission.{IdType, UtrIdType, VrnIdType}
 import play.api.libs.json.{Json, OFormat}
 
-case class OtherBusinessInvolvement(businessName: String,
-                                    hasVrn: Boolean,
+case class OtherBusinessInvolvement(businessName: Option[String],
+                                    hasVrn: Option[Boolean],
                                     vrn: Option[String],
                                     hasUtr: Option[Boolean],
                                     utr: Option[String],
-                                    stillTrading: Boolean) {
-  val optIdType: Option[IdType] = if (hasVrn) {
+                                    stillTrading: Option[Boolean]) {
+  val optIdType: Option[IdType] = if (hasVrn.contains(true)) {
     Some(VrnIdType)
   } else if (hasUtr.contains(true)) {
     Some(UtrIdType)

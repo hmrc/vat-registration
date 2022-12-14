@@ -677,12 +677,12 @@ trait ITFixtures {
   )
 
   lazy val testOtherBusinessInvolvement = OtherBusinessInvolvement(
-    businessName = testCompanyName,
-    hasVrn = true,
+    businessName = Some(testCompanyName),
+    hasVrn = Some(true),
     vrn = Some(testVrn),
     hasUtr = Some(true),
     utr = Some(testUtr),
-    stillTrading = true
+    stillTrading = Some(true)
   )
 
   val testReference = "testReference"

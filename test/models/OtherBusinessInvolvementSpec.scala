@@ -23,9 +23,9 @@ import play.api.libs.json._
 
 class OtherBusinessInvolvementSpec extends BaseSpec with VatRegistrationFixture with JsonFormatValidation {
 
-  val testFullObiModel: OtherBusinessInvolvement = OtherBusinessInvolvement(testCompanyName, hasVrn = true, Some(testVrn), Some(true), Some(testUtr), stillTrading = true)
-  val testNoUtrModel: OtherBusinessInvolvement = OtherBusinessInvolvement(testCompanyName, hasVrn = true, Some(testVrn), Some(false), None, stillTrading = true)
-  val testEmptyObiModel: OtherBusinessInvolvement = OtherBusinessInvolvement(testCompanyName, hasVrn = false, None, Some(false), None, stillTrading = false)
+  val testFullObiModel: OtherBusinessInvolvement = OtherBusinessInvolvement(Some(testCompanyName), hasVrn = Some(true), Some(testVrn), Some(true), Some(testUtr), stillTrading = Some(true))
+  val testNoUtrModel: OtherBusinessInvolvement = OtherBusinessInvolvement(Some(testCompanyName), hasVrn = Some(true), Some(testVrn), Some(false), None, stillTrading = Some(true))
+  val testEmptyObiModel: OtherBusinessInvolvement = OtherBusinessInvolvement(Some(testCompanyName), hasVrn = Some(false), None, Some(false), None, stillTrading = Some(false))
 
   val fullObiJson: JsValue = Json.obj(
     "businessName" -> s"$testCompanyName",

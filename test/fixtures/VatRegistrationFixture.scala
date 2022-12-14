@@ -313,7 +313,14 @@ trait VatRegistrationFixture {
     contactPreference = None, welshLanguage = None, hasLandAndProperty = None, businessDescription = None, businessActivities = None,
     mainBusinessActivity = None, labourCompliance = None, otherBusinessInvolvement = None)
 
-  lazy val validFullOtherBusinessInvolvement: OtherBusinessInvolvement = OtherBusinessInvolvement(businessName = testCompanyName, hasVrn = true, vrn = Some(testVrn), hasUtr = Some(true), utr = Some(testUtr), stillTrading = true)
+  lazy val validFullOtherBusinessInvolvement: OtherBusinessInvolvement = OtherBusinessInvolvement(
+    businessName = Some(testCompanyName),
+    hasVrn = Some(true),
+    vrn = Some(testVrn),
+    hasUtr = Some(true),
+    utr = Some(testUtr),
+    stillTrading = Some(true)
+  )
 
   object AuthTestData {
 

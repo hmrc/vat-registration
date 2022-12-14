@@ -25,15 +25,15 @@ class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with Submissi
         utr = None
       ),
       testOtherBusinessInvolvement.copy(
-        hasVrn = false,
+        hasVrn = Some(false),
         vrn = None
       ),
       testOtherBusinessInvolvement.copy(
-        hasVrn = false,
+        hasVrn = Some(false),
         vrn = None,
         hasUtr = Some(false),
         utr = None,
-        stillTrading = false
+        stillTrading = Some(false)
       )
     )),
     business = Some(testBusiness.copy(otherBusinessInvolvement = Some(true)))
