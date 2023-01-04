@@ -29,7 +29,8 @@ case class ApplicantDetails(personalDetails: Option[PersonalDetails] = None,
                             previousAddress: Option[Address] = None,
                             contact: Contact = Contact(),
                             changeOfName: FormerName = FormerName(),
-                            roleInTheBusiness: Option[RoleInTheBusiness] = None)
+                            roleInTheBusiness: Option[RoleInTheBusiness] = None,
+                            otherRoleInTheBusiness: Option[String] = None)
 
 object ApplicantDetails extends JsonUtilities {
 
@@ -41,7 +42,8 @@ object ApplicantDetails extends JsonUtilities {
       (__ \ "previousAddress").readNullable[Address] and
       (__ \ "contact").readWithDefault[Contact](Contact()) and
       (__ \ "changeOfName").readWithDefault[FormerName](FormerName()) and
-      (__ \ "roleInTheBusiness").readNullable[RoleInTheBusiness]
+      (__ \ "roleInTheBusiness").readNullable[RoleInTheBusiness] and
+      (__ \ "otherRoleInTheBusiness").readNullable[String]
     ) (ApplicantDetails.apply _)
 
   implicit val writes: Writes[ApplicantDetails] = (
@@ -52,7 +54,8 @@ object ApplicantDetails extends JsonUtilities {
       (__ \ "previousAddress").writeNullable[Address] and
       (__ \ "contact").write[Contact] and
       (__ \ "changeOfName").write[FormerName] and
-      (__ \ "roleInTheBusiness").writeNullable[RoleInTheBusiness]
+      (__ \ "roleInTheBusiness").writeNullable[RoleInTheBusiness] and
+      (__ \ "otherRoleInTheBusiness").writeNullable[String]
     ) (unlift(ApplicantDetails.unapply))
 
 }
