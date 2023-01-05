@@ -17,7 +17,7 @@
 package services.submission
 
 import models.api.{Address, FormerName, Name, VatScheme}
-import models.submission.CustomerId
+import models.submission.{CustomerId, Other}
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
@@ -41,10 +41,22 @@ class DeclarationBlockBuilder @Inject()() {
                 applicantDetails.roleInTheBusiness.map(_.toDeclarationCapacity)
               }
             }),
-            optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.flatMap(_.otherRole)))
+            optionalRequiredIf(optTransactorDetails.exists(_.declarationCapacity.exists(_.role.equals(Other))) ||
+              (optTransactorDetails.isEmpty && applicantDetails.roleInTheBusiness.contains(Other)))(
+              "capacityOther" -> {
+                if (optTransactorDetails.isDefined) {
+                  optTransactorDetails.flatMap(_.declarationCapacity.flatMap(_.otherRole))
+                } else {
+                  applicantDetails.otherRoleInTheBusiness
+                }
+              }
+            )
           ),
           "applicantDetails" -> jsonObject(
             required("roleInBusiness" -> applicantDetails.roleInTheBusiness),
+            optionalRequiredIf(applicantDetails.roleInTheBusiness.contains(Other))(
+              "otherRole" -> applicantDetails.otherRoleInTheBusiness
+            ),
             required("name" -> applicantDetails.personalDetails.map(details => formatName(details.name))),
             optionalRequiredIf(applicantDetails.changeOfName.hasFormerName.contains(true))(
               "prevName" -> formatFormerName(applicantDetails.changeOfName)

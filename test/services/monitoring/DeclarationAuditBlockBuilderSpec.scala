@@ -20,7 +20,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api._
-import models.submission.AccountantAgent
+import models.submission.{AccountantAgent, Other}
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
@@ -235,6 +235,52 @@ class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
             |  },
             |  "applicant": {
             |    "roleInBusiness": "Director",
+            |    "name": {
+            |      "firstName": "Forename",
+            |      "lastName": "Surname"
+            |    },
+            |    "currentAddress": {
+            |      "line1": "line1",
+            |      "line2": "line2",
+            |      "postcode": "ZZ1 1ZZ",
+            |      "countryCode": "GB"
+            |    },
+            |    "dateOfBirth": "2018-01-01",
+            |    "communicationDetails": {
+            |      "emailAddress": "skylake@vilikariet.com",
+            |      "telephone": "1234"
+            |    },
+            |    "identifiers": {
+            |      "nationalInsuranceNumber": "AB123456A"
+            |    }
+            |  }
+            |}""".stripMargin
+        )
+      }
+      "the user provides all contact details and their role is 'Other'" in {
+        val contactDetails = Contact(
+          email = Some("skylake@vilikariet.com"),
+          tel = Some("1234"),
+          emailVerified = Some(true)
+        )
+        val applicantDetails = testApplicantDetails.copy(
+          contact = contactDetails,
+          roleInTheBusiness = Some(Other),
+          otherRoleInTheBusiness = Some("testRole")
+        )
+
+        val res = TestBuilder.buildDeclarationBlock(declarationVatScheme.copy(applicantDetails = Some(applicantDetails)))
+
+        res mustBe Json.parse(
+          """{
+            |  "declarationSigning": {
+            |    "confirmInformationDeclaration": true,
+            |    "declarationCapacity": "Other",
+            |    "capacityOther": "testRole"
+            |  },
+            |  "applicant": {
+            |    "roleInBusiness": "Other",
+            |    "otherRole": "testRole",
             |    "name": {
             |      "firstName": "Forename",
             |      "lastName": "Surname"

@@ -17,6 +17,7 @@
 package services.monitoring
 
 import models.api.{Address, FormerName, Name, VatScheme}
+import models.submission.Other
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{jsonObject, _}
@@ -40,10 +41,22 @@ class DeclarationAuditBlockBuilder {
                 applicantDetails.roleInTheBusiness.map(_.toDeclarationCapacity)
               }
             }.map(_.toString)),
-            optional("capacityOther" -> optTransactorDetails.flatMap(_.declarationCapacity.flatMap(_.otherRole)))
+            optionalRequiredIf(optTransactorDetails.exists(_.declarationCapacity.exists(_.role.equals(Other))) ||
+              (optTransactorDetails.isEmpty && applicantDetails.roleInTheBusiness.contains(Other)))(
+              "capacityOther" -> {
+                if (optTransactorDetails.isDefined) {
+                  optTransactorDetails.flatMap(_.declarationCapacity.flatMap(_.otherRole))
+                } else {
+                  applicantDetails.otherRoleInTheBusiness
+                }
+              }
+            )
           ),
           "applicant" -> jsonObject(
-            "roleInBusiness" -> applicantDetails.roleInTheBusiness.map(_.toString),
+            required("roleInBusiness" -> applicantDetails.roleInTheBusiness.map(_.toString)),
+            optionalRequiredIf(applicantDetails.roleInTheBusiness.contains(Other))(
+              "otherRole" -> applicantDetails.otherRoleInTheBusiness
+            ),
             required("name" -> applicantDetails.personalDetails.map(details => formatName(details.name))),
             optionalRequiredIf(applicantDetails.changeOfName.hasFormerName.contains(true))(
               "previousName" -> formatFormerName(applicantDetails.changeOfName)

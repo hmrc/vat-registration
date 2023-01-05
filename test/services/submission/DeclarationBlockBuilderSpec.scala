@@ -20,6 +20,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api.{Contact, FormerName}
+import models.submission.Other
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.InternalServerException
 
@@ -184,6 +185,59 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             |  },
             |  "applicantDetails": {
             |    "roleInBusiness": "03",
+            |    "name": {
+            |      "firstName": "Forename",
+            |      "lastName": "Surname"
+            |    },
+            |    "dateOfBirth": "2018-01-01",
+            |    "currAddress": {
+            |      "line1": "line1",
+            |      "line2": "line2",
+            |      "postCode": "ZZ1 1ZZ",
+            |      "countryCode": "GB",
+            |      "addressValidated": true
+            |    },
+            |    "commDetails": {
+            |      "email": "skylake@vilikariet.com",
+            |      "telephone": "1234"
+            |    },
+            |    "identifiers": [
+            |      {
+            |        "idValue": "AB123456A",
+            |        "idType": "NINO",
+            |        "IDsVerificationStatus": "1",
+            |        "date": "2018-01-01"
+            |      }
+            |    ]
+            |  }
+            |}""".stripMargin
+        )
+      }
+      "the user provides all contact details and their role is 'Other'" in {
+        val contactDetails = Contact(
+          email = Some("skylake@vilikariet.com"),
+          tel = Some("1234"),
+          emailVerified = Some(true)
+        )
+        val applicantDetails = testApplicantDetails.copy(
+          contact = contactDetails,
+          roleInTheBusiness = Some(Other),
+          otherRoleInTheBusiness = Some("testRole")
+        )
+        val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
+
+        val res = TestBuilder.buildDeclarationBlock(vatScheme)
+
+        res mustBe Json.parse(
+          """{
+            |  "declarationSigning": {
+            |    "confirmInformationDeclaration": true,
+            |    "declarationCapacity": "10",
+            |    "capacityOther": "testRole"
+            |  },
+            |  "applicantDetails": {
+            |    "roleInBusiness": "08",
+            |    "otherRole": "testRole",
             |    "name": {
             |      "firstName": "Forename",
             |      "lastName": "Surname"
