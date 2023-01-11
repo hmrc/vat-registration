@@ -281,7 +281,8 @@ trait ITFixtures {
     appliedForException = None,
     partyType = UkCompany,
     registrationReason = ForwardLook,
-    isTransactor = false
+    isTransactor = false,
+    fixedEstablishmentInManOrUk = true
   )
 
   val testEligibilitySubmissionDataSoleTrader: EligibilitySubmissionData = EligibilitySubmissionData(
@@ -289,7 +290,8 @@ trait ITFixtures {
     appliedForException = None,
     partyType = Individual,
     registrationReason = ForwardLook,
-    isTransactor = false
+    isTransactor = false,
+    fixedEstablishmentInManOrUk = true
   )
 
   val testNrsSubmissionPayload = "testNrsSubmissionPayload"
@@ -599,7 +601,8 @@ trait ITFixtures {
     appliedForException = None,
     partyType = NETP,
     registrationReason = NonUk,
-    isTransactor = false
+    isTransactor = false,
+    fixedEstablishmentInManOrUk = false
   )
 
   val testNetpTransactorDetails: PersonalDetails = PersonalDetails(

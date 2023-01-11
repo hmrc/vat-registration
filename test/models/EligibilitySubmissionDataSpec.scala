@@ -52,6 +52,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         Json.obj("questionId" -> "keepOldVrn", "question" -> "testQuestion", "answer" -> "testQuestion",
           "answerValue" -> true),
         Json.obj("questionId" -> "termsAndConditions", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> true),
+        Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
           "answerValue" -> true)
       )
       val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
@@ -79,7 +81,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           agreedWithTermsForKeepingVat = Some(true)
         )),
         isTransactor = false,
-        calculatedDate = Some(LocalDate.now())
+        calculatedDate = Some(LocalDate.now()),
+        fixedEstablishmentInManOrUk = true
       ))
 
       result mustBe expected
@@ -102,6 +105,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "keepOldVrn", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> true),
           Json.obj("questionId" -> "termsAndConditions", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
             "answerValue" -> true)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(togcColeBlock))
@@ -126,7 +131,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
             agreedWithTermsForKeepingVat = Some(true)
           )),
           isTransactor = false,
-          calculatedDate = Some(LocalDate.now())
+          calculatedDate = Some(LocalDate.now()),
+          fixedEstablishmentInManOrUk = true
         ))
 
         result mustBe expected
@@ -140,7 +146,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "50")
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> false)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdOverseasBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -158,7 +166,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           partyType = UkCompany,
           registrationReason = NonUk,
           isTransactor = false,
-          calculatedDate = Some(LocalDate.now())
+          calculatedDate = Some(LocalDate.now()),
+          fixedEstablishmentInManOrUk = false
         ))
 
         result mustBe expected
@@ -172,7 +181,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "50")
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdPrevThirtyDaysBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -190,7 +201,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
-          calculatedDate = Some(LocalDate.now())
+          calculatedDate = Some(LocalDate.now()),
+          fixedEstablishmentInManOrUk = true
         ))
 
         result mustBe expected
@@ -204,7 +216,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "50")
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdNextThirtyDaysBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -222,7 +236,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
-          calculatedDate = Some(LocalDate.now())
+          calculatedDate = Some(LocalDate.now()),
+          fixedEstablishmentInManOrUk = true
         ))
 
         result mustBe expected
@@ -236,7 +251,9 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
             "answerValue" -> "own"),
           Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
-            "answerValue" -> "50")
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true)
         )
         val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdNextTwelveMonthsBlock))
         val testEligibilityJson: JsObject = Json.obj("sections" -> section)
@@ -254,7 +271,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           partyType = UkCompany,
           registrationReason = BackwardLook,
           isTransactor = false,
-          calculatedDate = Some(LocalDate.now.plusMonths(2).withDayOfMonth(1))
+          calculatedDate = Some(LocalDate.now.plusMonths(2).withDayOfMonth(1)),
+          fixedEstablishmentInManOrUk = true
         ))
 
         result mustBe expected
@@ -275,7 +293,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         "appliedForException" -> false,
         "partyType" -> "50",
         "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook),
-        "calculatedDate" -> LocalDate.now()
+        "calculatedDate" -> LocalDate.now(),
+        "fixedEstablishmentInManOrUk" -> true
       )
 
       val expected = JsSuccess(EligibilitySubmissionData(
@@ -289,7 +308,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false,
-        calculatedDate = Some(LocalDate.now())
+        calculatedDate = Some(LocalDate.now()),
+        fixedEstablishmentInManOrUk = true
       ))
 
       EligibilitySubmissionData.format.reads(json) mustBe expected
@@ -309,7 +329,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         partyType = UkCompany,
         registrationReason = ForwardLook,
         isTransactor = false,
-        calculatedDate = Some(LocalDate.now())
+        calculatedDate = Some(LocalDate.now()),
+        fixedEstablishmentInManOrUk = true
       )
 
       val expected = Json.obj(
@@ -323,7 +344,8 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
         "partyType" -> "50",
         "registrationReason" -> Json.toJson[RegistrationReason](ForwardLook),
         "isTransactor" -> false,
-        "calculatedDate" -> LocalDate.now()
+        "calculatedDate" -> LocalDate.now(),
+        "fixedEstablishmentInManOrUk" -> true
       )
 
       EligibilitySubmissionData.format.writes(model) mustBe expected

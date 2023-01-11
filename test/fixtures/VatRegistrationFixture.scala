@@ -93,7 +93,8 @@ trait VatRegistrationFixture {
     partyType = UkCompany,
     registrationReason = ForwardLook,
     isTransactor = false,
-    calculatedDate = testMandatoryThreshold.thresholdInTwelveMonths
+    calculatedDate = testMandatoryThreshold.thresholdInTwelveMonths,
+    fixedEstablishmentInManOrUk = true
   )
 
   val testLtdCoEntity = IncorporatedEntity(

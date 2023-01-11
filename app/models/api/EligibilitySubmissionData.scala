@@ -17,7 +17,7 @@
 package models.api
 
 import models._
-import models.submission.PartyType
+import models.submission.{NETP, NonUkNonEstablished, PartyType}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -29,7 +29,8 @@ case class EligibilitySubmissionData(threshold: Threshold,
                                      registrationReason: RegistrationReason,
                                      togcCole: Option[TogcCole] = None,
                                      isTransactor: Boolean,
-                                     calculatedDate: Option[LocalDate] = None)
+                                     calculatedDate: Option[LocalDate] = None,
+                                     fixedEstablishmentInManOrUk: Boolean)
 
 object EligibilitySubmissionData {
   val sellingGoodsAndServices = "selling-goods-and-services"
@@ -48,8 +49,9 @@ object EligibilitySubmissionData {
         (json \ "businessEntity").validate[PartyType] and
         (json \ "registrationReason").validateOpt[String] and
         (json \ "registeringBusiness").validate[String] and
-        json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None))
-      ) ((threshold, exception, businessEntity, registrationReason, registeringBusiness, optTogcCole) =>
+        json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None)) and
+        (json \ "fixedEstablishment").validate[Boolean]
+      ) ((threshold, exception, businessEntity, registrationReason, registeringBusiness, optTogcCole, fixedEstablishmentInManOrUk) =>
       EligibilitySubmissionData(
         threshold,
         exception,
@@ -85,7 +87,8 @@ object EligibilitySubmissionData {
             Some(threshold.earliestDate)
           case _ =>
             None
-        }
+        },
+        fixedEstablishmentInManOrUk
       )
     )
   }
@@ -97,7 +100,11 @@ object EligibilitySubmissionData {
       (__ \ "registrationReason").format[RegistrationReason] and
       (__ \ "togcBlock").formatNullable[TogcCole] and
       (__ \ "isTransactor").formatWithDefault[Boolean](false) and
-      (__ \ "calculatedDate").formatNullable[LocalDate]
+      (__ \ "calculatedDate").formatNullable[LocalDate] and
+      OFormat(
+        (__ \ "fixedEstablishmentInManOrUk").read[Boolean].orElse((__ \ "partyType").read[PartyType].map(partyType => !Seq(NonUkNonEstablished, NETP).contains(partyType))),
+        (__ \ "fixedEstablishmentInManOrUk").write[Boolean]
+      ) // TODO replace this explicit format with (__ \ "fixedEstablishmentInManOrUk").format[Boolean] 28 days after this is deployed, this ensures that users with old data are not impacted
     ) (EligibilitySubmissionData.apply, unlift(EligibilitySubmissionData.unapply))
 
 }

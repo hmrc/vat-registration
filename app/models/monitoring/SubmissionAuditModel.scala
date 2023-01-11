@@ -52,7 +52,7 @@ case class SubmissionAuditModel(userAnswers: JsValue,
           "messageType" -> messageType,
           "customerStatus" -> MTDfB,
           conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
-            "overseasTrader" -> true
+            "overseasTrader" -> !eligibilityData.fixedEstablishmentInManOrUk
           ),
           "eoriRequested" -> vatApplication.eoriRequested,
           "registrationReason" -> {

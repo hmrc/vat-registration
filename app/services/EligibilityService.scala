@@ -72,7 +72,8 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
     registrationRepository.getRegistration(internalId, regId).flatMap {
       case Some(vatScheme) =>
         oldEligibilityData match {
-          case EligibilitySubmissionData(_, _, oldPartyType, _, _, _, _) if !oldPartyType.equals(eligibilityData.partyType) =>
+          case EligibilitySubmissionData(_, _, oldPartyType, _, _, _, _, oldFixedEstablishment)
+            if !oldPartyType.equals(eligibilityData.partyType) || !oldFixedEstablishment.equals(eligibilityData.fixedEstablishmentInManOrUk) =>
             registrationRepository.upsertRegistration(internalId, regId, vatScheme.copy(
               bankAccount = None,
               flatRateScheme = None,
@@ -88,7 +89,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               vatApplication = None
             ))
 
-          case EligibilitySubmissionData(_, _, _, _, _, oldTransactorFlag, _)
+          case EligibilitySubmissionData(_, _, _, _, _, oldTransactorFlag, _, _)
             if !oldTransactorFlag.equals(eligibilityData.isTransactor) || eligibilityData.appliedForException.contains(true) =>
 
             val vatApplicationWithClearedExemption = if (eligibilityData.appliedForException.contains(true)) {
