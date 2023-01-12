@@ -20,7 +20,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockAttachmentsService
 import models.api._
-import models.submission.NETP
+import models.submission.{NETP, NonUkNonEstablished}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.libs.json.{JsObject, Json}
@@ -66,6 +66,18 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       "additionalInformation" -> Json.obj(
         "customerStatus" -> "2",
         "overseasTrader" -> true
+      ),
+      "attachments" -> Json.obj(
+        "EORIrequested" -> true,
+        "identityEvidence" -> Json.toJson[AttachmentMethod](Post)
+      )
+    )
+
+  val expectedOverseasWithEstablishmentJson: JsObject =
+    Json.obj(
+      "additionalInformation" -> Json.obj(
+        "customerStatus" -> "2",
+        "overseasTrader" -> false
       ),
       "attachments" -> Json.obj(
         "EORIrequested" -> true,
@@ -125,7 +137,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
       "both NETP eligibility and vat application details data are in the database" in {
         val vatScheme = testVatScheme.copy(
-          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP)),
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP, fixedEstablishmentInManOrUk = false)),
           vatApplication = Some(testVatApplicationDetails),
           attachments = Some(Attachments(Some(Post)))
         )
@@ -140,9 +152,9 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         result mustBe expectedNetpJson
       }
 
-      "NETP the attachment method is Email" in {
+      "user is Overseas with fixed establishment in UK/Man and Email attachment" in {
         val vatScheme = testVatScheme.copy(
-          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP)),
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NonUkNonEstablished, fixedEstablishmentInManOrUk = true)),
           vatApplication = Some(testVatApplicationDetails),
           attachments = Some(Attachments(Some(EmailMethod)))
         )
@@ -154,7 +166,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
         val result = TestBuilder.buildAdminBlock(vatScheme)
 
-        result mustBe expectedNetpJson
+        result mustBe expectedOverseasWithEstablishmentJson
       }
     }
 

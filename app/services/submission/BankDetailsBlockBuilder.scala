@@ -30,7 +30,7 @@ class BankDetailsBlockBuilder @Inject()() {
 
   def buildBankDetailsBlock(vatScheme: VatScheme): Option[JsObject] =
     (vatScheme.bankAccount, vatScheme.partyType) match {
-      case (Some(BankAccount(true, Some(details), _)), Some(partyType)) if !List(NETP, NonUkNonEstablished).contains(partyType) =>
+      case (Some(BankAccount(true, Some(details), _)), Some(partyType)) =>
         Some(jsonObject(
           "UK" -> jsonObject(
             "accountName" -> details.name,

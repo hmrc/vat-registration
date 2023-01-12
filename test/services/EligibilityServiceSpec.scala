@@ -37,17 +37,16 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
     )
   }
 
-  val json: JsObject = Json.obj("test" -> "value test")
-
   "updateEligibilityData" should {
     val questions = Seq(
-      Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "Some Question 12", "answer" -> "Some Answer 12", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdPreviousThirtyDays),
-      Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "Some Question 12", "answer" -> "Some Answer 12", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdInTwelveMonths),
-      Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "Some Question 12", "answer" -> "Some Answer 12", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdNextThirtyDays),
-      Json.obj("questionId" -> "registeringBusiness", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "own"),
-      Json.obj("questionId" -> "businessEntity", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "50")
+      Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdPreviousThirtyDays),
+      Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdInTwelveMonths),
+      Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdNextThirtyDays),
+      Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "own"),
+      Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "50"),
+      Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> true)
     )
-    val section = Json.obj("title" -> "test TITLE 2", "data" -> JsArray(questions))
+    val section = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
     val sections = JsArray(Seq(section))
     val eligibilityData = Json.obj("sections" -> sections)
 
@@ -102,14 +101,15 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
     "return eligibility data and clear user's exemption answer if the exception answer is true" in new Setup {
       val questions = Seq(
-        Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "Some Question 12", "answer" -> "Some Answer 12", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdPreviousThirtyDays),
-        Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "Some Question 12", "answer" -> "Some Answer 12", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdInTwelveMonths),
-        Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "Some Question 12", "answer" -> "Some Answer 12", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdNextThirtyDays),
-        Json.obj("questionId" -> "registeringBusiness", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "own"),
-        Json.obj("questionId" -> "businessEntity", "question" -> "Some Question 23", "answer" -> "Some Answer 22", "answerValue" -> "50"),
-        Json.obj("questionId" -> "vatRegistrationException", "question" -> "Some Question", "answer" -> "Some Answer", "answerValue" -> true)
+        Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdPreviousThirtyDays),
+        Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdInTwelveMonths),
+        Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdNextThirtyDays),
+        Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "own"),
+        Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "50"),
+        Json.obj("questionId" -> "vatRegistrationException", "question" -> "testQuestion", "answer" -> "StestAnswer", "answerValue" -> true),
+        Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> true)
       )
-      val section: JsObject = Json.obj("title" -> "test TITLE 2", "data" -> JsArray(questions))
+      val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
       val sections: JsArray = JsArray(Seq(section))
       val eligibilityData: JsObject = Json.obj("sections" -> sections)
 
@@ -153,8 +153,8 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
     }
 
     "encounter a JsResultException if json provided is incorrect" in new Setup {
-      val incorrectQuestionValue: JsObject = Json.obj("sections" -> JsArray(Seq(Json.obj("title" -> "test TITLE 1", "data" -> JsArray(Seq(Json.obj(
-        "questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "Some Question 12", "answer" -> "Some Answer 12", "answerValue" -> "234324"
+      val incorrectQuestionValue: JsObject = Json.obj("sections" -> JsArray(Seq(Json.obj("title" -> "testTitle", "data" -> JsArray(Seq(Json.obj(
+        "questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "234324"
       )))))))
       val incorrectEligibilityData: JsObject = eligibilityData.deepMerge(incorrectQuestionValue)
 

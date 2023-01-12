@@ -13,26 +13,15 @@ class EligibilityControllerISpec extends IntegrationStubbing {
     def writeAudit: StubMapping = stubPost("/write/audit/merged", OK, "")
   }
 
-  val completionCapacity: JsObject = Json.obj("role" -> "director", "name" -> Json.obj(
-    "forename" -> "First Name Test",
-    "other_forenames" -> "Middle Name Test",
-    "surname" -> "Last Name Test"
-  ))
-  val questions1 = Seq(
-    Json.obj("questionId" -> "completionCapacity", "question" -> "Some Question 11", "answer" -> "Some Answer 11", "answerValue" -> completionCapacity),
-    Json.obj("questionId" -> "testQId12", "question" -> "Some Question 12", "answer" -> "Some Answer 12", "answerValue" -> "val12")
-  )
   val questions2 = Seq(
-    Json.obj("questionId" -> "voluntaryRegistration", "question" -> "Some Question", "answer" -> "Some Answer", "answerValue" -> true),
-    Json.obj("questionId" -> "applicantUKNino-optionalData", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "JW778877A"),
-    Json.obj("questionId" -> "testQId22", "question" -> "Some Question 22", "answer" -> "Some Answer 22", "answerValue" -> "val22"),
-    Json.obj("questionId" -> "registeringBusiness", "question" -> "Some Question 23", "answer" -> "Some Answer 23", "answerValue" -> "own"),
-    Json.obj("questionId" -> "businessEntity", "question" -> "Some Question 23", "answer" -> "Some Answer 23", "answerValue" -> "50"),
-    Json.obj("questionId" -> "currentlyTrading", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> false)
+    Json.obj("questionId" -> "voluntaryRegistration", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> true),
+    Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "own"),
+    Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "50"),
+    Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> true),
+    Json.obj("questionId" -> "registrationReason", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "selling-goods-and-services")
   )
-  val section1: JsObject = Json.obj("title" -> "test TITLE 1", "data" -> JsArray(questions1))
-  val section2: JsObject = Json.obj("title" -> "test TITLE 2", "data" -> JsArray(questions2))
-  val sections: JsArray = JsArray(Seq(section1, section2))
+  val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions2))
+  val sections: JsArray = JsArray(Seq(section))
   val validEligibilityJson: JsObject = Json.obj("sections" -> sections)
 
   val invalidEligibilityJson: JsValue = Json.obj("invalid" -> "json")

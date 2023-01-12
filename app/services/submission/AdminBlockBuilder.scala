@@ -38,7 +38,7 @@ class AdminBlockBuilder @Inject()(attachmentsService: AttachmentsService) {
           "additionalInformation" -> jsonObject(
             "customerStatus" -> MTDfB,
             conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
-              "overseasTrader" -> true
+              "overseasTrader" -> !eligibilityData.fixedEstablishmentInManOrUk
             ),
             conditional(vatScheme.business.exists(_.welshLanguage.exists(_ == true)))("welshLanguage" -> true)
           ),
