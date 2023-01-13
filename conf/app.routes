@@ -1,7 +1,5 @@
 # microservice specific routes
 
-GET          /threshold/:date                       controllers.VatThresholdController.getThresholdForDate(date: String)
-
 PUT          /:regID/submit-registration            controllers.VatRegistrationController.submitVATRegistration(regID : String)
 
 PATCH       /:regId/eligibility-data                controllers.EligibilityController.updateEligibilityData(regId: String)

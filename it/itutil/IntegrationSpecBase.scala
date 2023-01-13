@@ -54,7 +54,6 @@ trait IntegrationSpecBase extends PlaySpec
     "microservice.services.incorporation-information.host" -> mockHost,
     "microservice.services.incorporation-information.port" -> mockPort,
     "microservice.services.incorporation-information.uri" -> "/incorporation-information",
-    "microservice.services.ThresholdsJsonLocation" -> "conf/thresholds.json",
     "microservice.services.vat-registration.host" -> mockHost,
     "microservice.services.vat-registration.port" -> mockPort,
     "microservice.services.non-repudiation.host" -> mockHost,
