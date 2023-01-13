@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext
 class AttachmentsController @Inject()(controllerComponents: ControllerComponents,
                                       val authConnector: AuthConnector,
                                       attachmentsService: AttachmentsService
-                                     )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
+                                     )(implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
 
   def getAttachmentList(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>

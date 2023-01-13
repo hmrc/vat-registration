@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext
 class SdesController @Inject()(sdesService: SdesService,
                                val authConnector: AuthConnector,
                                controllerComponents: ControllerComponents)
-                              (implicit executionContext: ExecutionContext)
+                              (implicit val executionContext: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation {
 
   def sdesCallback: Action[SdesCallback] = Action.async(parse.json[SdesCallback]) { implicit request =>

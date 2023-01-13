@@ -23,16 +23,18 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.internalId
 import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait AuthorisationResult
+
 case object NotLoggedInOrAuthorised extends AuthorisationResult
 case class NotAuthorised(intId: String) extends AuthorisationResult
 case class Authorised(intId: String) extends AuthorisationResult
 case class AuthResourceNotFound(intId: String) extends AuthorisationResult
 
 trait Authorisation extends AuthorisedFunctions with Logging {
+
+  implicit val executionContext: ExecutionContext
 
   def isAuthenticated(f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     authorised().retrieve(internalId) { id =>

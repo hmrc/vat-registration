@@ -24,13 +24,13 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class EligibilityController @Inject()(val eligibilityService: EligibilityService,
                                       val authConnector: AuthConnector,
-                                      controllerComponents: ControllerComponents
-                                     ) extends BackendController(controllerComponents) with Authorisation {
+                                      controllerComponents: ControllerComponents)
+                                     (implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
 
   def updateEligibilityData(regId: String): Action[JsValue] = Action.async[JsValue](parse.json) {
     implicit request =>
