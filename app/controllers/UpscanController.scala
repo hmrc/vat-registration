@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext
 class UpscanController @Inject()(controllerComponents: ControllerComponents,
                                  upscanService: UpscanService,
                                  val authConnector: AuthConnector
-                                )(implicit ec: ExecutionContext)
+                                )(implicit val executionContext: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation {
 
   def createUpscanDetails(regId: String): Action[UpscanCreate] = Action.async(parse.json[UpscanCreate]) { implicit request =>

@@ -29,7 +29,8 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class DeleteAllRegistrationsController @Inject()(val authConnector: AuthConnector,
                                                  vatSchemeRepository: VatSchemeRepository)
-                                                (implicit ec: ExecutionContext, cc: ControllerComponents) extends BackendController(cc) with Authorisation {
+                                                (implicit val executionContext: ExecutionContext,
+                                                 cc: ControllerComponents) extends BackendController(cc) with Authorisation {
 
   def deleteAllRegistrations(): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { intId =>

@@ -35,7 +35,7 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
                                           val submissionService: SubmissionService,
                                           val authConnector: AuthConnector,
                                           controllerComponents: ControllerComponents
-                                         )(implicit executionContext: ExecutionContext)
+                                         )(implicit val executionContext: ExecutionContext)
   extends BackendController(controllerComponents) with Authorisation with FutureInstances {
 
   def submitVATRegistration(regId: String): Action[JsValue] = Action.async(parse.json) {

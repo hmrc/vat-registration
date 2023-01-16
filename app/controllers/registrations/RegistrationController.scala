@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class RegistrationController @Inject()(val authConnector: AuthConnector,
                                        val registrationService: RegistrationService,
                                        controllerComponents: ControllerComponents
-                                      )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
+                                      )(implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
 
   /** GET /registrations
    * ===Purpose===

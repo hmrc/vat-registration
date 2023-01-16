@@ -32,7 +32,7 @@ class RegistrationListSectionController @Inject()(val authConnector: AuthConnect
                                                   val registrationService: RegistrationService,
                                                   val sectionValidationService: SectionValidationService,
                                                   controllerComponents: ControllerComponents
-                                                 )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
+                                                 )(implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
 
   def getSectionIndex(regId: String, section: CollectionSectionId, index: Int): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>

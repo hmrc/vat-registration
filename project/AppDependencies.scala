@@ -15,7 +15,6 @@
  */
 
 import sbt._
-import play.core.PlayVersion
 
 object AppDependencies {
   def apply(): Seq[ModuleID] = CompileDependencies() ++ UnitTestDependencies() ++ IntegrationTestDependencies()
@@ -23,11 +22,10 @@ object AppDependencies {
 
 object CompileDependencies {
   val domainVersion = "8.1.0-play-28"
-  val bootstrapVersion = "7.8.0"
-  val hmrcMongoVersion = "0.73.0"
+  val bootstrapVersion = "7.12.0"
+  val hmrcMongoVersion = "0.74.0"
   val catsVersion = "2.8.0"
 
-  private val playJsonVersion = "2.9.3"
   val flexmarkVersion = "0.36.8"
 
   val compile = Seq(
@@ -36,8 +34,7 @@ object CompileDependencies {
     "uk.gov.hmrc" %% "domain" % domainVersion,
     "org.typelevel" %% "cats-core" % catsVersion,
     "org.openapi4j" % "openapi-operation-validator" % "1.0.7",
-    "org.openapi4j" % "openapi-parser" % "1.0.7",
-    "com.vladsch.flexmark" % "flexmark-all" % flexmarkVersion
+    "org.openapi4j" % "openapi-parser" % "1.0.7"
   )
 
   def apply(): Seq[ModuleID] = compile
@@ -46,7 +43,7 @@ object CompileDependencies {
 object UnitTestDependencies extends CommonTestDependencies {
   override val scope: Configuration = Test
 
-  val mockitoVersion = "4.8.0"
+  val mockitoVersion = "4.8.1"
 
   override val testDependencies: Seq[ModuleID] = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,

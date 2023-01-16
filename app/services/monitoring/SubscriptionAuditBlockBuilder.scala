@@ -17,7 +17,6 @@
 package services.monitoring
 
 import models.api.VatScheme
-import models.api.vatapplication.NIPCompliance
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._

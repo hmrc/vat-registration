@@ -33,7 +33,7 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
                                               val sectionValidationService: SectionValidationService,
                                               controllerComponents: ControllerComponents,
                                               cipherService: CipherService
-                                             )(implicit executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
+                                             )(implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
 
   /** GET /registrations/:regId/sections/:sectionId
    * ===Purpose===

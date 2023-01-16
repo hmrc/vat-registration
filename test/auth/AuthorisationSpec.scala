@@ -24,13 +24,14 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class AuthorisationSpec extends VatRegSpec {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   val authorisation: Authorisation = new Authorisation {
+    implicit val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
     val authConnector: AuthConnector = mockAuthConnector
   }
 

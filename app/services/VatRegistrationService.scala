@@ -49,7 +49,7 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
         }
       case None =>
         logger.warn(s"[getStatus] - No VAT registration document found for $regId")
-        throw new InternalServerException("[VatRegistrationService] No VAT registration document found for $regId")
+        throw new InternalServerException(s"[VatRegistrationService] No VAT registration document found for $regId")
     }
   }
 }
