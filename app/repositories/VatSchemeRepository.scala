@@ -29,7 +29,7 @@ import org.mongodb.scala.model.Updates.{combine, set, unset}
 import org.mongodb.scala.model.{FindOneAndReplaceOptions, IndexModel, IndexOptions, UpdateOptions}
 import play.api.Logging
 import play.api.libs.json._
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
+import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import utils.{JsonErrorUtil, TimeMachine}
@@ -77,7 +77,7 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
   private val timestampKey = "timestamp"
   private val internalIdKey = "internalId"
 
-  def getInternalId(id: String)(implicit hc: HeaderCarrier): Future[Option[String]] =
+  def getInternalId(id: String): Future[Option[String]] =
     collection
       .find(registrationSelector(id))
       .first()

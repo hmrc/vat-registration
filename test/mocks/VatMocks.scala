@@ -66,7 +66,7 @@ trait VatMocks {
       when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any()))
         .thenReturn(Future.successful(Some(internalId)))
 
-      when(mockRegistrationMongoRepository.getInternalId(Matchers.eq[String](regId))(any[HeaderCarrier]()))
+      when(mockRegistrationMongoRepository.getInternalId(Matchers.eq[String](regId)))
         .thenReturn(Future.successful(Some(internalId)))
     }
 
@@ -74,7 +74,7 @@ trait VatMocks {
       when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any()))
         .thenReturn(Future.successful(Some(internalId)))
 
-      when(mockRegistrationMongoRepository.getInternalId(Matchers.eq(regId))(any[HeaderCarrier]()))
+      when(mockRegistrationMongoRepository.getInternalId(Matchers.eq(regId)))
         .thenReturn(Future.successful(Some(internalId + "xxx")))
     }
 
@@ -83,7 +83,7 @@ trait VatMocks {
       when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any()))
         .thenReturn(Future.successful(Some(internalId)))
 
-      when(mockRegistrationMongoRepository.getInternalId(Matchers.eq(regId))(any[HeaderCarrier]()))
+      when(mockRegistrationMongoRepository.getInternalId(Matchers.eq(regId)))
         .thenReturn(Future.successful(None))
     }
 
@@ -91,7 +91,7 @@ trait VatMocks {
       when(mockAuthConnector.authorise[Option[String]](any(), any())(any(), any()))
         .thenReturn(Future.successful(None))
 
-      when(mockRegistrationMongoRepository.getInternalId(Matchers.eq(regId))(any[HeaderCarrier]()))
+      when(mockRegistrationMongoRepository.getInternalId(Matchers.eq(regId)))
         .thenReturn(Future.successful(Some("SomeInternalId")))
     }
 

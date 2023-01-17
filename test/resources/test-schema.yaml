@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: VAT Subscription Create
+  version: 2.0.0
+servers:
+  - url: 'http://hostname:port'
+paths:
+  /test:
+    post:
+      summary: 'Test schema (for unit testing)'
+      operationId: test
+      requestBody:
+        required: true
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: '#/components/schemas/request'
+      responses:
+        '200':
+          description: OK
+    parameters: []
+components:
+  schemas:
+    request:
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: '^[A-Za-z0-9 ,.&''\/-]{1,35}$'
+        date:
+          $ref: '#/components/schemas/dateString'
+        hasCar:
+          type: boolean
+    dateString:
+      type: string
+      pattern: '^\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$'
