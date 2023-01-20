@@ -20,8 +20,8 @@ import cats.instances.FutureInstances
 import connectors.VatSubmissionConnector
 import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
-import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
+import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
 import models.api.schemas.API1364
 import models.api.vatapplication.Annual
 import models.api.{Attached, PersonalDetails, VatScheme}
@@ -37,7 +37,7 @@ import services.monitoring.{AuditService, SubmissionAuditBlockBuilder}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.http.{BadRequestException, ConflictException, HeaderCarrier, InternalServerException}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException}
 import utils.JsonUtils.{conditional, jsonObject, optional}
 import utils.{IdGenerator, TimeMachine}
 
@@ -126,6 +126,9 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                        correlationId: String,
                                        internalId: String)
                                       (implicit hc: HeaderCarrier, request: Request[_]): Future[Option[String]] = {
+    val suppressedKey = "suppressedErrors"
+    val unknownKey = "unknownErrors"
+
     vatSubmissionResponse match {
       case Left(VatSubmissionFailure(CONFLICT, _)) =>
         registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.duplicateSubmission)
@@ -133,9 +136,18 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       case Left(VatSubmissionFailure(BAD_REQUEST, _)) =>
         for {
           _ <- registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failed)
-          errors = parseApiErrors(regId, submissionPayload)
-          _ = auditService.audit(SubmissionFailureErrorsAuditModel(regId, correlationId, errors))
+          errors = schemaValidationService.validate(apiSchema, submissionPayload)
+         _ = auditService.audit(SubmissionFailureErrorsAuditModel(regId, correlationId, errors))
         } yield {
+          errors.get(suppressedKey).foreach { errors =>
+            logger.error(s"[Suppressed submission errors] Submission for reg id '$regId' failed with suppressed " +
+              s"errors for the following fields:\n${errors.mkString(", ")}\n")
+          }
+          errors.get(unknownKey).map { errors =>
+            logger.error(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
+            throw new BadRequestException(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
+          }
+
           None
         }
       case Left(VatSubmissionFailure(_, _)) =>
@@ -145,23 +157,6 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
         registrationRepository.finishRegistrationSubmission(regId, VatRegStatus.submitted, formBundleId)
           .map(_ => Some(formBundleId))
     }
-  }
-
-  private def parseApiErrors(regId: String, body: String): Map[String, List[String]] = {
-    val suppressedKey = "suppressedErrors"
-    val unknownKey = "unknownErrors"
-    val results = schemaValidationService.validate(apiSchema, body)
-
-    results.get(suppressedKey).map { errors =>
-      logger.error(s"[Suppressed submission errors] Submission for reg id '$regId' failed with suppressed errors for the following fields:\n${errors.mkString(", ")}\n")
-    }
-
-    results.get(unknownKey).map { errors =>
-      logger.error(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
-      throw new BadRequestException(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
-    }
-
-    results
   }
 
   private[services] def submitToNrs(formBundleId: String,
