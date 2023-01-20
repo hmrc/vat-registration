@@ -19,12 +19,14 @@ package controllers
 import auth.Authorisation
 import cats.instances.FutureInstances
 import enums.VatRegStatus._
+import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
+import models.monitoring.SubmissionFailureErrorsAuditModel
 import play.api.libs.json._
 import play.api.mvc._
 import services._
+import services.monitoring.AuditService
 import services.submission.SubmissionService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.ConflictException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
@@ -49,13 +51,19 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
           case `submitted` => Future.successful(Ok)
           case `duplicateSubmission` => Future.successful(Conflict)
           case `contact` => Future.successful(UnprocessableEntity)
-          case _ => submissionService.submitVatRegistration(internalId, regId, userHeaders, lang).map { _ =>
-            Ok
-          }.recover {
-            case _: ConflictException => Conflict
-            case ex: Throwable => throw ex
+          case _ => submissionService.submitVatRegistration(internalId, regId, userHeaders, lang).map {
+            case Right(VatSubmissionSuccess(_)) =>
+              Ok
+            case Left(VatSubmissionFailure(BAD_REQUEST, _)) =>
+              BadRequest
+            case Left(VatSubmissionFailure(CONFLICT, _)) =>
+              Conflict
+            case _ =>
+              InternalServerError
           }
         }
       }
   }
+
+
 }

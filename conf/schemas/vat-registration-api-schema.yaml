@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: VAT Subscription Create
-  version: 2.0.0
+  version: 2.2.0
 servers:
   - url: 'http://hostname:port'
 paths:
@@ -105,12 +105,12 @@ components:
             additionalProperties: false
         primeBPSafeID:
           $ref: '#/components/schemas/safeIDType'
-        shortOrgName:
-          type: string
-          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         organisationName:
           type: string
-          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{\}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
+        shortOrgName:
+          type: string
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{\}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         name:
           $ref: '#/components/schemas/nameType'
         dateOfBirth:
@@ -628,7 +628,7 @@ components:
           $ref: '#/components/schemas/nameType'
         organisationName:
           type: string
-          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{\}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
         identification:
           type: array
           minItems: 1
@@ -689,18 +689,7 @@ components:
           type: boolean
         detailsOfPartialExemption:
           type: string
-          pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,100}$'
-        reasonsForFairTaxDeduction:
-          type: string
           pattern: '^[0-9a-zA-Z &`\-\''\.^]{1,500}$'
-        partialExemptionSplMethod:
-          type: boolean
-        capAssetsIn3Years:
-          type: boolean
-        capitalGoodsScheme:
-          type: boolean
-        prePayments:
-          type: boolean
         meetsControlConditions:
           type: boolean
         controlConditionDetails:
@@ -918,7 +907,7 @@ components:
           $ref: '#/components/schemas/entityCustomerIdentificationType'
         tradingName:
           type: string
-          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{\}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
         businessContactDetails:
           $ref: '#/components/schemas/contactType'
         groupRelevant:
@@ -956,9 +945,12 @@ components:
             additionalProperties: false
         primeBPSafeID:
           $ref: '#/components/schemas/safeIDType'
+        organisationName:
+          type: string
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]\{\}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
         shortOrgName:
           type: string
-          pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
+          pattern: '^[A-Za-z0-9 ''’‘()\[\]{\}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,105}$'
         name:
           $ref: '#/components/schemas/nameType'
         dateOfBirth:
@@ -1024,7 +1016,7 @@ components:
               $ref: '#/components/schemas/controllingBodyIdentifiersType'
             organisationName:
               type: string
-              pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
+              pattern: '^[A-Za-z0-9 ''’‘()\[\]{\}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,160}$'
             name:
               $ref: '#/components/schemas/nameType'
             dateOfBirth:

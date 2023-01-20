@@ -20,9 +20,12 @@ import cats.instances.FutureInstances
 import connectors.VatSubmissionConnector
 import enums.VatRegStatus
 import featureswitch.core.config.FeatureSwitching
+import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
+import models.api.schemas.API1364
 import models.api.vatapplication.Annual
 import models.api.{Attached, PersonalDetails, VatScheme}
+import models.monitoring.SubmissionFailureErrorsAuditModel
 import models.{IntendingTrader, Voluntary}
 import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
@@ -54,38 +57,38 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   auditService: AuditService,
                                   idGenerator: IdGenerator,
                                   emailService: EmailService,
+                                  schemaValidationService: SchemaValidationService,
+                                  apiSchema: API1364,
                                   val authConnector: AuthConnector
                                  )(implicit executionContext: ExecutionContext) extends FutureInstances with AuthorisedFunctions with Logging with FeatureSwitching {
 
   def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String], lang: String)
                            (implicit hc: HeaderCarrier,
-                            request: Request[_]): Future[String] = {
-    {
-      for {
-        _ <- registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.locked)
-        vatScheme <- registrationRepository.getRegistration(internalId, regId)
-          .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
-        submission = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
-        correlationId = idGenerator.createId
-        submissionResponse <- submit(submission, regId, correlationId)
-        _ <- logSubmission(vatScheme, submissionResponse)
-        formBundleId <- handleResponse(submissionResponse, regId)
-      } yield {
-        postSubmissionTasks(vatScheme, formBundleId, lang, userHeaders) //Non blocking async post submission tasks
-        formBundleId
+                            request: Request[_]): Future[VatSubmissionResponse] =
+    (for {
+      _ <- registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.locked)
+      vatScheme <- registrationRepository.getRegistration(internalId, regId)
+        .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
+      submission = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
+      correlationId = idGenerator.createId
+      submissionResponse <- submit(submission, regId, correlationId)
+      _ <- logSubmission(vatScheme, submissionResponse)
+      optFormBundle <- handleResponse(submissionResponse, submission.toString(), regId, correlationId, internalId)
+    } yield {
+      optFormBundle match {
+        case Some(formBundleId) =>
+          postSubmissionTasks(vatScheme, formBundleId, lang, userHeaders) // Non blocking async post submission tasks
+          submissionResponse
+        case None =>
+          submissionResponse
       }
-    } recover {
-      case exception: ConflictException =>
-        registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.duplicateSubmission)
-        throw exception
+    }).recover {
       case exception: BadRequestException =>
-        registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failed)
         throw exception
       case exception =>
         registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failedRetryable)
         throw exception
     }
-  }
 
   // Non blocking tasks to be done after a successful submission.
   // To be called on a separate async thread to allow the user to proceed.
@@ -117,22 +120,48 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     }
   }
 
-  private[services] def handleResponse(vatSubmissionStatus: VatSubmissionResponse,
-                                       regId: String)
-                                      (implicit hc: HeaderCarrier,
-                                       request: Request[_]): Future[String] = {
-    vatSubmissionStatus.fold(
-      failure =>
-        failure.status match {
-          case CONFLICT => throw new ConflictException(failure.body)
-          case BAD_REQUEST => throw new BadRequestException(failure.body)
-          case _ => throw new InternalServerException(failure.body)
-        },
-      success =>
-        registrationRepository
-          .finishRegistrationSubmission(regId, VatRegStatus.submitted, success.formBundleId)
-          .map(_ => success.formBundleId)
-    )
+  private[services] def handleResponse(vatSubmissionResponse: VatSubmissionResponse,
+                                       submissionPayload: String,
+                                       regId: String,
+                                       correlationId: String,
+                                       internalId: String)
+                                      (implicit hc: HeaderCarrier, request: Request[_]): Future[Option[String]] = {
+    vatSubmissionResponse match {
+      case Left(VatSubmissionFailure(CONFLICT, _)) =>
+        registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.duplicateSubmission)
+          .map(_ => None)
+      case Left(VatSubmissionFailure(BAD_REQUEST, _)) =>
+        for {
+          _ <- registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failed)
+          errors = parseApiErrors(regId, submissionPayload)
+          _ = auditService.audit(SubmissionFailureErrorsAuditModel(regId, correlationId, errors))
+        } yield {
+          None
+        }
+      case Left(VatSubmissionFailure(_, _)) =>
+        registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failedRetryable)
+          .map(_ => None)
+      case Right(VatSubmissionSuccess(formBundleId)) =>
+        registrationRepository.finishRegistrationSubmission(regId, VatRegStatus.submitted, formBundleId)
+          .map(_ => Some(formBundleId))
+    }
+  }
+
+  private def parseApiErrors(regId: String, body: String): Map[String, List[String]] = {
+    val suppressedKey = "suppressedErrors"
+    val unknownKey = "unknownErrors"
+    val results = schemaValidationService.validate(apiSchema, body)
+
+    results.get(suppressedKey).map { errors =>
+      logger.error(s"[Suppressed submission errors] Submission for reg id '$regId' failed with suppressed errors for the following fields:\n${errors.mkString(", ")}\n")
+    }
+
+    results.get(unknownKey).map { errors =>
+      logger.error(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
+      throw new BadRequestException(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
+    }
+
+    results
   }
 
   private[services] def submitToNrs(formBundleId: String,

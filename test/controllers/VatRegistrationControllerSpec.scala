@@ -19,7 +19,9 @@ package controllers
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
+import httpparsers.VatSubmissionSuccess
 import mocks.MockRegistrationService
+import mocks.monitoring.MockAuditService
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -31,7 +33,10 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import scala.concurrent.Future
 
-class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixture with MockRegistrationService {
+class VatRegistrationControllerSpec extends VatRegSpec
+  with VatRegistrationFixture
+  with MockRegistrationService
+  with MockAuditService {
 
   import play.api.test.Helpers._
 
@@ -115,7 +120,7 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
         ArgumentMatchers.eq(testUserHeaders),
         ArgumentMatchers.eq("en")
       )(any[HeaderCarrier], any[Request[_]]))
-        .thenReturn(Future.successful("VRS00000000001"))
+        .thenReturn(Future.successful(Right(VatSubmissionSuccess("VRS00000000001"))))
 
       val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
         Json.obj("userHeaders" -> testUserHeaders)
@@ -132,7 +137,7 @@ class VatRegistrationControllerSpec extends VatRegSpec with VatRegistrationFixtu
         ArgumentMatchers.eq(testUserHeaders),
         ArgumentMatchers.eq("en")
       )(any[HeaderCarrier], any[Request[_]]))
-        .thenReturn(Future.successful("VRS00000000001"))
+        .thenReturn(Future.successful(Right(VatSubmissionSuccess("VRS00000000001"))))
 
       val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
         Json.obj("userHeaders" -> testUserHeaders)

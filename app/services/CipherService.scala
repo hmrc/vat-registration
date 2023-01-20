@@ -23,10 +23,9 @@ import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
 
 @Singleton
-class CipherService @Inject()(crypto: CryptoSCRS)(implicit ec: ExecutionContext) {
+class CipherService @Inject()(crypto: CryptoSCRS) {
 
   def conditionallyEncrypt(section: RegistrationSectionId, json: JsValue): JsValue = {
     section match {
