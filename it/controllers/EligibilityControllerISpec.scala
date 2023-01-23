@@ -6,6 +6,7 @@ import itutil.IntegrationStubbing
 import play.api.libs.json.{JsArray, JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
+import utils.EligibilityDataJsonUtils
 
 class EligibilityControllerISpec extends IntegrationStubbing {
 
@@ -36,7 +37,7 @@ class EligibilityControllerISpec extends IntegrationStubbing {
         .patch(validEligibilityJson))
 
       response.status mustBe OK
-      response.json mustBe validEligibilityJson
+      response.json mustBe EligibilityDataJsonUtils.toJsObject(validEligibilityJson, "regId")
     }
 
     "return BAD_REQUEST if an invalid json body is posted" in new Setup {
