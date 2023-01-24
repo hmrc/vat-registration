@@ -3,10 +3,9 @@ package controllers
 
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import itutil.IntegrationStubbing
-import play.api.libs.json.{JsArray, JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.libs.ws.WSResponse
 import play.api.test.Helpers._
-import utils.EligibilityDataJsonUtils
 
 class EligibilityControllerISpec extends IntegrationStubbing {
 
@@ -14,16 +13,22 @@ class EligibilityControllerISpec extends IntegrationStubbing {
     def writeAudit: StubMapping = stubPost("/write/audit/merged", OK, "")
   }
 
-  val questions2 = Seq(
-    Json.obj("questionId" -> "voluntaryRegistration", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> true),
-    Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "own"),
-    Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "50"),
-    Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> true),
-    Json.obj("questionId" -> "registrationReason", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "selling-goods-and-services")
+  val validEligibilityJson: JsObject = Json.obj(
+    "fixedEstablishment" -> true,
+    "businessEntity" -> "50",
+    "agriculturalFlatRateScheme" -> false,
+    "internationalActivities" -> false,
+    "registeringBusiness" -> "own",
+    "registrationReason" -> "selling-goods-and-services",
+    "thresholdPreviousThirtyDays" -> Json.obj(
+      "value" -> false
+    ),
+    "thresholdInTwelveMonths" -> Json.obj(
+      "value" -> false
+    ),
+    "voluntaryRegistration" -> true,
+    "vatRegistrationException" -> false
   )
-  val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions2))
-  val sections: JsArray = JsArray(Seq(section))
-  val validEligibilityJson: JsObject = Json.obj("sections" -> sections)
 
   val invalidEligibilityJson: JsValue = Json.obj("invalid" -> "json")
 
@@ -37,7 +42,7 @@ class EligibilityControllerISpec extends IntegrationStubbing {
         .patch(validEligibilityJson))
 
       response.status mustBe OK
-      response.json mustBe EligibilityDataJsonUtils.toJsObject(validEligibilityJson, "regId")
+      response.json mustBe validEligibilityJson
     }
 
     "return BAD_REQUEST if an invalid json body is posted" in new Setup {
