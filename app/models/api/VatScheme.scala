@@ -24,7 +24,6 @@ import models.submission.PartyType
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
-import utils.EligibilityDataJsonUtils
 
 import java.time.LocalDate
 
@@ -37,7 +36,6 @@ case class VatScheme(registrationId: String,
                      acknowledgementReference: Option[String] = None,
                      nrsSubmissionPayload: Option[String] = None,
                      eligibilityJson: Option[JsObject] = None,
-                     eligibilityData: Option[JsObject] = None,
                      eligibilitySubmissionData: Option[EligibilitySubmissionData] = None,
                      transactorDetails: Option[TransactorDetails] = None,
                      applicantDetails: Option[ApplicantDetails] = None,
@@ -82,7 +80,6 @@ object VatScheme {
         (__ \ AcknowledgementReferenceSectionId.repoKey).readNullable[String] and
         (__ \ NrsSubmissionPayloadSectionId.repoKey).readNullable[String] and
         (__ \ EligibilityJsonSectionId.repoKey).readNullable[JsObject] and
-        (__ \ OldEligibilityJsonSectionId.repoKey).readNullable[JsObject] and
         (__ \ EligibilitySectionId.repoKey).readNullable[EligibilitySubmissionData] and
         (__ \ TransactorSectionId.repoKey).readNullable[TransactorDetails] and
         (__ \ ApplicantSectionId.repoKey).readNullable[ApplicantDetails](ApplicantDetails.reads(partyType)) and
@@ -104,7 +101,6 @@ object VatScheme {
         (__ \ AcknowledgementReferenceSectionId.repoKey).readNullable[String] and
         (__ \ NrsSubmissionPayloadSectionId.repoKey).readNullable[String] and
         (__ \ EligibilityJsonSectionId.repoKey).readNullable[JsObject] and
-        (__ \ OldEligibilityJsonSectionId.repoKey).readNullable[JsObject] and
         (__ \ EligibilitySectionId.repoKey).readNullable[EligibilitySubmissionData] and
         (__ \ TransactorSectionId.repoKey).readNullable[TransactorDetails] and
         Reads.pure(None) and
@@ -128,7 +124,6 @@ object VatScheme {
     (__ \ AcknowledgementReferenceSectionId.repoKey).writeNullable[String] and
     (__ \ NrsSubmissionPayloadSectionId.repoKey).writeNullable[String] and
     (__ \ EligibilityJsonSectionId.repoKey).writeNullable[JsObject] and
-    (__ \ OldEligibilityJsonSectionId.repoKey).writeNullable[JsObject] and
     (__ \ EligibilitySectionId.repoKey).writeNullable[EligibilitySubmissionData] and
     (__ \ TransactorSectionId.repoKey).writeNullable[TransactorDetails] and
     (__ \ ApplicantSectionId.repoKey).writeNullable[ApplicantDetails] and
