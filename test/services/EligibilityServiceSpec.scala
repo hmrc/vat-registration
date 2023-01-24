@@ -20,12 +20,13 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api.{EligibilitySubmissionData, VatScheme}
-import models.registration.{EligibilityJsonSectionId, EligibilitySectionId}
+import models.registration.{EligibilityJsonSectionId, EligibilitySectionId, OldEligibilityJsonSectionId}
 import models.submission.RegSociety
 import org.mockito.Mockito._
 import org.mockito.{ArgumentMatchers, Mockito}
 import play.api.libs.json.{JsArray, JsObject, JsResultException, Json}
 import play.api.test.Helpers._
+import utils.EligibilityDataJsonUtils
 
 import scala.concurrent.Future
 
@@ -39,8 +40,11 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
   "updateEligibilityData" should {
     val questions = Seq(
+      Json.obj("questionId" -> "thresholdPreviousThirtyDays", "question" -> "testQuestion", "answer" -> "true", "answerValue" -> true),
       Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdPreviousThirtyDays),
+      Json.obj("questionId" -> "thresholdInTwelveMonths", "question" -> "testQuestion", "answer" -> "true", "answerValue" -> true),
       Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdInTwelveMonths),
+      Json.obj("questionId" -> "thresholdNextThirtyDays", "question" -> "testQuestion", "answer" -> "true", "answerValue" -> true),
       Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdNextThirtyDays),
       Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "own"),
       Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "50"),
@@ -49,15 +53,17 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
     val section = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
     val sections = JsArray(Seq(section))
     val eligibilityData = Json.obj("sections" -> sections)
+    val newEligibilityData = EligibilityDataJsonUtils.toJsObject(eligibilityData, testRegId)
 
     "return the data that is being provided" in new Setup {
       mockUpsertSection(testInternalId, testRegId, EligibilitySectionId.repoKey, testEligibilitySubmissionData)(Some(testEligibilitySubmissionData))
-      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, OldEligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, newEligibilityData)(Some(newEligibilityData))
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(None))
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 
-      result mustBe Some(eligibilityData)
+      result mustBe Some(newEligibilityData)
     }
 
     "return eligibility data and clear user's vat scheme if the partytype is changed" in new Setup {
@@ -66,7 +72,8 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
       )
 
       mockUpsertSection(testInternalId, testRegId, EligibilitySectionId.repoKey, testEligibilitySubmissionData)(Some(testEligibilitySubmissionData))
-      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, OldEligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, newEligibilityData)(Some(newEligibilityData))
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(
         Some(testEligibilitySubmissionData.copy(partyType = RegSociety))
       ))
@@ -75,7 +82,7 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 
-      result mustBe Some(eligibilityData)
+      result mustBe Some(newEligibilityData)
       verify(mockVatSchemeRepository, Mockito.times(1))
         .upsertRegistration(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(testClearedVatScheme))
     }
@@ -85,7 +92,8 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
       val vatSchemeWithoutTransactor: VatScheme = testFullVatScheme.copy(transactorDetails = None)
 
       mockUpsertSection(testInternalId, testRegId, EligibilitySectionId.repoKey, testEligibilitySubmissionData)(Some(testEligibilitySubmissionData))
-      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, OldEligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, newEligibilityData)(Some(newEligibilityData))
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(
         Some(testEligibilitySubmissionData.copy(isTransactor = true))
       ))
@@ -94,15 +102,18 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 
-      result mustBe Some(eligibilityData)
+      result mustBe Some(newEligibilityData)
       verify(mockVatSchemeRepository, Mockito.times(1))
         .upsertRegistration(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(vatSchemeWithoutTransactor))
     }
 
     "return eligibility data and clear user's exemption answer if the exception answer is true" in new Setup {
       val questions = Seq(
+        Json.obj("questionId" -> "thresholdPreviousThirtyDays", "question" -> "testQuestion", "answer" -> "true", "answerValue" -> true),
         Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdPreviousThirtyDays),
+        Json.obj("questionId" -> "thresholdInTwelveMonths", "question" -> "testQuestion", "answer" -> "true", "answerValue" -> true),
         Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdInTwelveMonths),
+        Json.obj("questionId" -> "thresholdNextThirtyDays", "question" -> "testQuestion", "answer" -> "true", "answerValue" -> true),
         Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> testEligibilitySubmissionData.threshold.thresholdNextThirtyDays),
         Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "own"),
         Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testAnswer", "answerValue" -> "50"),
@@ -112,6 +123,7 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
       val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
       val sections: JsArray = JsArray(Seq(section))
       val eligibilityData: JsObject = Json.obj("sections" -> sections)
+      val newEligibilityData = EligibilityDataJsonUtils.toJsObject(eligibilityData, testRegId)
 
       val vatSchemeWithExemption: VatScheme = testFullVatScheme
         .copy(
@@ -125,7 +137,8 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
       val exceptionEligibilitySubmissionData: EligibilitySubmissionData = testEligibilitySubmissionData.copy(appliedForException = Some(true))
 
       mockUpsertSection(testInternalId, testRegId, EligibilitySectionId.repoKey, exceptionEligibilitySubmissionData)(Some(exceptionEligibilitySubmissionData))
-      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, OldEligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, newEligibilityData)(Some(newEligibilityData))
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(
         Some(testEligibilitySubmissionData)
       ))
@@ -134,14 +147,15 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 
-      result mustBe Some(eligibilityData)
+      result mustBe Some(newEligibilityData)
       verify(mockVatSchemeRepository, Mockito.times(1))
         .upsertRegistration(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(vatSchemeWithoutExemption))
     }
 
     "return eligibility data and not clear any vatscheme fields where eligibility data is unchanged" in new Setup {
       mockUpsertSection(testInternalId, testRegId, EligibilitySectionId.repoKey, testEligibilitySubmissionData)(Some(testEligibilitySubmissionData))
-      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, OldEligibilityJsonSectionId.repoKey, eligibilityData)(Some(eligibilityData))
+      mockUpsertSection(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, newEligibilityData)(Some(newEligibilityData))
       mockGetSection[EligibilitySubmissionData](testInternalId, testRegId, EligibilitySectionId.repoKey)(Future.successful(Some(testEligibilitySubmissionData)))
       mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
         testFullVatScheme.copy(eligibilitySubmissionData = Some(testEligibilitySubmissionData))
@@ -149,7 +163,7 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
       val result: Option[JsObject] = await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData))
 
-      result mustBe Some(eligibilityData)
+      result mustBe Some(newEligibilityData)
     }
 
     "encounter a JsResultException if json provided is incorrect" in new Setup {
@@ -169,7 +183,8 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
     "encounter an exception if an error occurs" in new Setup {
       mockUpsertSection(testInternalId, testRegId, EligibilitySectionId.repoKey, testEligibilitySubmissionData)(Some(testEligibilitySubmissionData))
-      mockUpsertSectionFail(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, eligibilityData)(new Exception(""))
+      mockUpsertSectionFail(testInternalId, testRegId, OldEligibilityJsonSectionId.repoKey, eligibilityData)(new Exception(""))
+      mockUpsertSectionFail(testInternalId, testRegId, EligibilityJsonSectionId.repoKey, newEligibilityData)(new Exception(""))
 
       intercept[Exception](await(service.updateEligibilityData(testInternalId, testRegId, eligibilityData)))
     }

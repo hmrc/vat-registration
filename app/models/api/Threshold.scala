@@ -40,10 +40,10 @@ object Threshold {
   val eligibilityDataJsonReads: Reads[Threshold] = Reads { json =>
     (
       (json \ "voluntaryRegistration").validateOpt[Boolean],
-      (json \ "thresholdPreviousThirtyDays-optionalData").validateOpt[LocalDate],
-      (json \ "thresholdInTwelveMonths-optionalData").validateOpt[LocalDate],
-      (json \ "thresholdNextThirtyDays-optionalData").validateOpt[LocalDate],
-      (json \ "thresholdTaxableSupplies").validateOpt[LocalDate]
+      (json \ "thresholdPreviousThirtyDays" \ "optionalData").validateOpt[LocalDate],
+      (json \ "thresholdInTwelveMonths" \ "optionalData").validateOpt[LocalDate],
+      (json \ "thresholdNextThirtyDays" \ "optionalData").validateOpt[LocalDate],
+      (json \ "thresholdTaxableSupplies" \ "date").validateOpt[LocalDate]
     ) match {
       case (JsSuccess(voluntaryRegistration, _), JsSuccess(thresholdPreviousThirtyDays, _),
       JsSuccess(thresholdInTwelveMonths, _), JsSuccess(thresholdNextThirtyDays, _), JsSuccess(thresholdOverseas, _)) =>

@@ -43,9 +43,14 @@ case object EligibilitySectionId extends RegistrationSectionId {
   val repoKey = "eligibilitySubmissionData"
 }
 
-case object EligibilityJsonSectionId extends RegistrationSectionId {
+case object OldEligibilityJsonSectionId extends RegistrationSectionId {
   val key = "eligibilityData"
   val repoKey = "eligibilityData"
+}
+
+case object EligibilityJsonSectionId extends RegistrationSectionId {
+  val key = "eligibilityJson"
+  val repoKey = "eligibilityJson"
 }
 
 case object FlatRateSchemeSectionId extends RegistrationSectionId {
@@ -105,6 +110,7 @@ object RegistrationSectionId {
             case ("section", AttachmentsSectionId.key) => Right(AttachmentsSectionId)
             case ("section", BankAccountSectionId.key) => Right(BankAccountSectionId)
             case ("section", EligibilitySectionId.key) => Right(EligibilitySectionId)
+            case ("section", EligibilityJsonSectionId.key) => Right(EligibilityJsonSectionId)
             case ("section", FlatRateSchemeSectionId.key) => Right(FlatRateSchemeSectionId)
             case ("section", EntitiesSectionId.key) => Right(EntitiesSectionId)
             case ("section", TransactorSectionId.key) => Right(TransactorSectionId)

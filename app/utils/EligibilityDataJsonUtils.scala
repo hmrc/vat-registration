@@ -17,14 +17,62 @@
 package utils
 
 import play.api.libs.json._
+import utils.JsonUtils._
 
 object EligibilityDataJsonUtils {
-  def toJsObject(json: JsValue): JsObject = {
-    val list = (json \\ "data").foldLeft(Seq.empty[JsValue])((l, v) => l ++ v.as[Seq[JsValue]])
-    list.foldLeft(Json.obj())((o, v) => o + ((v \ "questionId").as[String] -> (v \ "answerValue").as[JsValue]))
-  }
-
-  def mongoReads[T](implicit r: Reads[T]): Reads[T] = new Reads[T] {
-    override def reads(json: JsValue): JsResult[T] = toJsObject(json).validate[T]
+  def toJsObject(json: JsValue, regId: String): JsObject = {
+    (json \\ "data") match {
+      case Nil => json.as[JsObject]
+      case oldList =>
+        val list = oldList.foldLeft(Seq.empty[JsValue])((l, v) => l ++ v.as[Seq[JsValue]])
+        val cleanedUp = list.foldLeft(Map[String, JsValue]())((o, v) => o + ((v \ "questionId").as[String] -> (v \ "answerValue").as[JsValue]))
+        val jsonList = cleanedUp.map {
+          case ("thresholdInTwelveMonths", json) =>
+            jsonObject(
+              "thresholdInTwelveMonths" -> jsonObject(
+                "value" -> json,
+                optional("optionalData" -> cleanedUp.get("thresholdInTwelveMonths-optionalData"))
+              )
+            )
+          case ("thresholdPreviousThirtyDays", json) =>
+            jsonObject(
+              "thresholdPreviousThirtyDays" -> jsonObject(
+                "value" -> json,
+                optional("optionalData" -> cleanedUp.get("thresholdPreviousThirtyDays-optionalData"))
+              )
+            )
+          case ("thresholdNextThirtyDays", json) =>
+            jsonObject(
+              "thresholdNextThirtyDays" -> jsonObject(
+                "value" -> json,
+                optional("optionalData" -> cleanedUp.get("thresholdNextThirtyDays-optionalData"))
+              )
+            )
+          case ("thresholdTaxableSupplies", json) =>
+            jsonObject(
+              "thresholdTaxableSupplies" -> jsonObject(
+                "date" -> json
+              )
+            )
+          case ("dateOfBusinessTransfer", json) =>
+            jsonObject(
+              "dateOfBusinessTransfer" -> jsonObject(
+                "date" -> json
+              )
+            )
+          case ("thresholdInTwelveMonths-optionalData", _) |
+            ("thresholdPreviousThirtyDays-optionalData", _) |
+            ("thresholdNextThirtyDays-optionalData", _) => jsonObject()
+          case (field, json) =>
+            jsonObject(
+              field -> json
+            )
+        }
+        jsonList.foldLeft(Json.obj())((o , v) => o ++ v) ++ Json.obj(
+          "CurrentProfile" -> Json.obj(
+            "registrationID" -> regId
+          )
+        )
+    }
   }
 }

@@ -43,6 +43,7 @@ class EligibilityDataJsonUtilsSpec extends JsonFormatValidation {
           |   }
           |]
         """.stripMargin)
+      val regId = "1234567890"
 
       val expectedResult = Json.obj(
         "fooVatDetails1" -> true,
@@ -50,9 +51,13 @@ class EligibilityDataJsonUtilsSpec extends JsonFormatValidation {
         "fooVatDetails3" -> "2018-06-20",
         "fooDirectorDetails1" -> 1000,
         "fooDirectorDetails2" -> true,
-        "fooDirectorDetails3" -> true)
+        "fooDirectorDetails3" -> true,
+        "CurrentProfile" -> Json.obj(
+          "registrationID" -> regId
+        )
+      )
 
-      EligibilityDataJsonUtils.toJsObject(json) mustBe expectedResult
+      EligibilityDataJsonUtils.toJsObject(json, regId) mustBe expectedResult
     }
   }
 }

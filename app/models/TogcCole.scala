@@ -30,7 +30,7 @@ case class TogcCole(dateOfTransfer: LocalDate,
 object TogcCole {
   implicit val format: Format[TogcCole] = Json.format[TogcCole]
   val eligibilityDataJsonReads: Reads[TogcCole] = (
-    (__ \ "dateOfBusinessTransfer").read[LocalDate] and
+    (__ \ "dateOfBusinessTransfer" \ "date").read[LocalDate] and
     (__ \ "previousBusinessName").read[String] and
     (__ \ "vatNumber").read[String] and
     (__ \ "keepOldVrn").read[Boolean] and

@@ -32,7 +32,7 @@ import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-import utils.{JsonErrorUtil, TimeMachine}
+import utils.{EligibilityDataJsonUtils, JsonErrorUtil, TimeMachine}
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
@@ -76,6 +76,19 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
   private val acknowledgementRefPrefix = "VRS"
   private val timestampKey = "timestamp"
   private val internalIdKey = "internalId"
+
+  private def runOnce(): Unit =
+    collection
+      .find
+      .subscribe {
+        scheme =>
+          if (scheme.eligibilityJson.isEmpty) {
+            val updatedScheme = scheme.copy(eligibilityJson = scheme.eligibilityData.map(json => EligibilityDataJsonUtils.toJsObject(json, scheme.registrationId)))
+            upsertRegistration(scheme.internalId, scheme.registrationId, updatedScheme)
+          }
+      }
+
+  runOnce()
 
   def getInternalId(id: String): Future[Option[String]] =
     collection
