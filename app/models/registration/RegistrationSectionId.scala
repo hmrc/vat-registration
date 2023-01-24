@@ -43,6 +43,11 @@ case object EligibilitySectionId extends RegistrationSectionId {
   val repoKey = "eligibilitySubmissionData"
 }
 
+case object OldEligibilityJsonSectionId extends RegistrationSectionId {
+  val key = "eligibilityData"
+  val repoKey = "eligibilityData"
+}
+
 case object EligibilityJsonSectionId extends RegistrationSectionId {
   val key = "eligibilityJson"
   val repoKey = "eligibilityJson"

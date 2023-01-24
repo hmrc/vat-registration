@@ -20,7 +20,7 @@ import auth.CryptoSCRS
 import config.BackendConfig
 import enums.VatRegStatus
 import models.api._
-import models.registration.{AcknowledgementReferenceSectionId, StatusSectionId}
+import models.registration.{AcknowledgementReferenceSectionId, EligibilityJsonSectionId, StatusSectionId}
 import org.mongodb.scala.Document
 import org.mongodb.scala.model.Filters.{and, equal}
 import org.mongodb.scala.model.Indexes.ascending
@@ -32,11 +32,12 @@ import play.api.libs.json._
 import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-import utils.{JsonErrorUtil, TimeMachine}
+import utils.{EligibilityDataJsonUtils, JsonErrorUtil, TimeMachine}
 
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 // scalastyle:off
 @Singleton
@@ -76,6 +77,40 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
   private val acknowledgementRefPrefix = "VRS"
   private val timestampKey = "timestamp"
   private val internalIdKey = "internalId"
+
+  collection
+    .find[Document]
+    .subscribe { doc =>
+      Try {
+        val scheme = Json.parse(doc.toJson())
+        val registrationId = (scheme \ "registrationId").as[String]
+        val internalId = (scheme \ "internalId").as[String]
+
+        val oldJson = (scheme \ "eligibilityData").asOpt[JsObject]
+        val updatedJson = (scheme \ "eligibilityJson").asOpt[JsObject]
+
+        (updatedJson, oldJson) match {
+          case (None, Some(json)) =>
+            upsertSection[JsObject](
+              internalId,
+              registrationId,
+              EligibilityJsonSectionId.repoKey,
+              EligibilityDataJsonUtils.toJsObject(json, registrationId)
+            ).map(response =>
+              if (response.isDefined) logger.info(s"[EligibilityJsonRunOnce] stored new json for regId: $registrationId")
+              else logger.warn(s"[EligibilityJsonRunOnce] no document modified for regId: $registrationId")
+            ) recover {
+              case ex: Exception => logger.error(s"[EligibilityJsonRunOnce] failed when saving new json for regId: $registrationId")
+            }
+          case (Some(_), _) =>
+            logger.info(s"[EligibilityJsonRunOnce] new json already exists for regId: $registrationId")
+          case (_, None) =>
+            logger.info(s"[EligibilityJsonRunOnce] old json does not exist for regId: $registrationId")
+        }
+      } recover {
+        case ex: Exception => logger.error("[EligibilityJsonRunOnce] failed with unknown error")
+      }
+    }
 
   def getInternalId(id: String): Future[Option[String]] =
     collection

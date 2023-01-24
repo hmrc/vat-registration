@@ -17,10 +17,11 @@
 package services
 
 import models.api.{EligibilitySubmissionData, VatScheme}
-import models.registration.{EligibilityJsonSectionId, EligibilitySectionId}
+import models.registration.{EligibilityJsonSectionId, EligibilitySectionId, OldEligibilityJsonSectionId}
 import play.api.Logging
 import play.api.libs.json.{JsObject, JsResultException}
 import repositories.VatSchemeRepository
+import utils.EligibilityDataJsonUtils
 import utils.JsonUtils.jsonObject
 
 import javax.inject.{Inject, Singleton}
@@ -30,7 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) extends Logging {
 
   def updateEligibilityData(internalId: String, regId: String, eligibilityData: JsObject)(implicit ex: ExecutionContext): Future[Option[JsObject]] = {
-    eligibilityData.validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads).fold(
+    val remadeJson = EligibilityDataJsonUtils.toJsObject(eligibilityData, regId)
+    remadeJson.validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads).fold(
       invalid => throw JsResultException(invalid),
       eligibilitySubmissionData => for {
         _ <- registrationRepository.getSection[EligibilitySubmissionData](internalId, regId, EligibilitySectionId.repoKey).flatMap {
@@ -41,7 +43,8 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
         }
         _ <- registrationRepository.upsertSection[EligibilitySubmissionData](internalId, regId, EligibilitySectionId.repoKey, eligibilitySubmissionData)
         _ <- logEligibilityPayload(regId, eligibilitySubmissionData)
-        result <- registrationRepository.upsertSection[JsObject](internalId, regId, EligibilityJsonSectionId.repoKey, eligibilityData)
+        _ <- registrationRepository.upsertSection[JsObject](internalId, regId, OldEligibilityJsonSectionId.repoKey, eligibilityData)
+        result <- registrationRepository.upsertSection[JsObject](internalId, regId, EligibilityJsonSectionId.repoKey, remadeJson)
       } yield result
     )
   }
@@ -75,7 +78,7 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
             registrationRepository.upsertRegistration(internalId, regId, vatScheme.copy(
               bankAccount = None,
               flatRateScheme = None,
-              eligibilityJson = None,
+              eligibilityData = None,
               eligibilitySubmissionData = None,
               applicantDetails = None,
               transactorDetails = None,

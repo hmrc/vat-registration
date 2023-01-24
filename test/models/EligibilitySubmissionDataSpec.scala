@@ -18,7 +18,8 @@ package models
 
 import models.api.{EligibilitySubmissionData, Threshold}
 import models.submission.UkCompany
-import play.api.libs.json.{JsObject, JsSuccess, Json}
+import play.api.libs.json.{JsArray, JsObject, JsSuccess, Json}
+import utils.EligibilityDataJsonUtils
 
 import java.time.LocalDate
 
@@ -29,29 +30,42 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
 
   "eligibilityReads" when {
     "return EligibilitySubmissionData from a valid eligibility json" in {
-      val testEligibilityJson = Json.obj(
-        "fixedEstablishment" -> true,
-        "businessEntity" -> "50",
-        "agriculturalFlatRateScheme" -> false,
-        "internationalActivities" -> false,
-        "registeringBusiness" -> "own",
-        "registrationReason" -> "selling-goods-and-services",
-        "thresholdPreviousThirtyDays" -> Json.obj(
-          "value" -> true,
-          "optionalData" -> LocalDate.now()
-        ),
-        "thresholdInTwelveMonths" -> Json.obj(
-          "value" -> true,
-          "optionalData" -> LocalDate.now()
-        ),
-        "thresholdNextThirtyDays" -> Json.obj(
-          "value" -> true,
-          "optionalData" -> LocalDate.now()
-        ),
-        "vatRegistrationException" -> false
+      val questions = Seq(
+        Json.obj("questionId" -> "voluntaryRegistration", "question" -> "testQuestion", "answer" -> "testAnswer",
+          "answerValue" -> false),
+        Json.obj("questionId" -> "thresholdPreviousThirtyDays", "question" -> "testQuestion", "answer" -> "true",
+          "answerValue" -> true),
+        Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
+          "answerValue" -> LocalDate.now().toString),
+        Json.obj("questionId" -> "thresholdInTwelveMonths", "question" -> "testQuestion", "answer" -> "true",
+          "answerValue" -> true),
+        Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> LocalDate.now().toString),
+        Json.obj("questionId" -> "thresholdNextThirtyDays", "question" -> "testQuestion", "answer" -> "true",
+          "answerValue" -> true),
+        Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> LocalDate.now().toString),
+        Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> "own"),
+        Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> "50"),
+        Json.obj("questionId" -> "dateOfBusinessTransfer", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> LocalDate.now()),
+        Json.obj("questionId" -> "previousBusinessName", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> testName),
+        Json.obj("questionId" -> "vatNumber", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> testVrn),
+        Json.obj("questionId" -> "keepOldVrn", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> true),
+        Json.obj("questionId" -> "termsAndConditions", "question" -> "testQuestion", "answer" -> "testQuestion",
+          "answerValue" -> true),
+        Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+          "answerValue" -> true)
       )
+      val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(questions))
+      val testEligibilityJson: JsObject = Json.obj("sections" -> section)
 
-      val result = Json.fromJson(testEligibilityJson)(EligibilitySubmissionData.eligibilityReads)
+      val result = Json.fromJson(EligibilityDataJsonUtils.toJsObject(testEligibilityJson, "regId"))(EligibilitySubmissionData.eligibilityReads)
 
       val expected = JsSuccess(EligibilitySubmissionData(
         threshold = Threshold(
@@ -60,9 +74,16 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
           thresholdNextThirtyDays = Some(LocalDate.now()),
           thresholdPreviousThirtyDays = Some(LocalDate.now())
         ),
-        appliedForException = Some(false),
+        appliedForException = None,
         partyType = UkCompany,
         registrationReason = ForwardLook,
+        togcCole = Some(TogcCole(
+          dateOfTransfer = LocalDate.now(),
+          previousBusinessName = testName,
+          vatRegistrationNumber = testVrn,
+          wantToKeepVatNumber = true,
+          agreedWithTermsForKeepingVat = Some(true)
+        )),
         isTransactor = false,
         calculatedDate = Some(LocalDate.now()),
         fixedEstablishmentInManOrUk = true
@@ -72,30 +93,36 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     }
     "registration reason is TogcCole" must {
       "set calculatedDate as dateOfTransfer in EligibilitySubmissionData" in {
-        val testEligibilityJson: JsObject = Json.obj(
-          "fixedEstablishment" -> true,
-          "businessEntity" -> "50",
-          "agriculturalFlatRateScheme" -> false,
-          "internationalActivities" -> false,
-          "registeringBusiness" -> "own",
-          "registrationReason" -> EligibilitySubmissionData.takingOverBusiness,
-          "dateOfBusinessTransfer" -> Json.obj(
-            "date" -> LocalDate.now()
-          ),
-          "previousBusinessName" -> testName,
-          "vatNumber" -> testVrn,
-          "keepOldVrn" -> true,
-          "termsAndConditions" -> true,
-          "vatRegistrationException" -> false
+        val togcColeBlock = Seq(
+          Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "registrationReason", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> EligibilitySubmissionData.takingOverBusiness),
+          Json.obj("questionId" -> "dateOfBusinessTransfer", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> LocalDate.now()),
+          Json.obj("questionId" -> "previousBusinessName", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> testName),
+          Json.obj("questionId" -> "vatNumber", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> testVrn),
+          Json.obj("questionId" -> "keepOldVrn", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "termsAndConditions", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true)
         )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(togcColeBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
 
-        val result = Json.fromJson(testEligibilityJson)(EligibilitySubmissionData.eligibilityReads)
+        val result = Json.fromJson(EligibilityDataJsonUtils.toJsObject(testEligibilityJson, "regId"))(EligibilitySubmissionData.eligibilityReads)
 
         val expected = JsSuccess(EligibilitySubmissionData(
           threshold = Threshold(
             mandatoryRegistration = false
           ),
-          appliedForException = Some(false),
+          appliedForException = None,
           partyType = UkCompany,
           registrationReason = TransferOfAGoingConcern,
           togcCole = Some(TogcCole(
@@ -115,27 +142,27 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     }
     "registration reason is sellingGoodsAndServices with threshold overseas" must {
       "set calculatedDate as thresholdOverseas in EligibilitySubmissionData" in {
-        val testEligibilityJson: JsObject = Json.obj(
-          "fixedEstablishment" -> false,
-          "businessEntity" -> "50",
-          "agriculturalFlatRateScheme" -> false,
-          "internationalActivities" -> false,
-          "registeringBusiness" -> "own",
-          "registrationReason" -> EligibilitySubmissionData.sellingGoodsAndServices,
-          "thresholdTaxableSupplies" -> Json.obj(
-            "date" -> LocalDate.now()
-          ),
-          "vatRegistrationException" -> false
+        val thresholdOverseasBlock = Seq(
+          Json.obj("questionId" -> "thresholdTaxableSupplies", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> LocalDate.now().toString),
+          Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> false)
         )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdOverseasBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
 
-        val result = Json.fromJson(testEligibilityJson)(EligibilitySubmissionData.eligibilityReads)
+        val result = Json.fromJson(EligibilityDataJsonUtils.toJsObject(testEligibilityJson, "regId"))(EligibilitySubmissionData.eligibilityReads)
 
         val expected = JsSuccess(EligibilitySubmissionData(
           threshold = Threshold(
             mandatoryRegistration = true,
             thresholdOverseas = Some(LocalDate.now)
           ),
-          appliedForException = Some(false),
+          appliedForException = None,
           partyType = UkCompany,
           registrationReason = NonUk,
           isTransactor = false,
@@ -148,28 +175,29 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     }
     "registration reason is sellingGoodsAndServices with thresholdPreviousThirtyDays" must {
       "set calculatedDate as thresholdPreviousThirtyDays in EligibilitySubmissionData" in {
-        val testEligibilityJson: JsObject = Json.obj(
-          "fixedEstablishment" -> true,
-          "businessEntity" -> "50",
-          "agriculturalFlatRateScheme" -> false,
-          "internationalActivities" -> false,
-          "registeringBusiness" -> "own",
-          "registrationReason" -> EligibilitySubmissionData.sellingGoodsAndServices,
-          "thresholdPreviousThirtyDays" -> Json.obj(
-            "value" -> true,
-            "optionalData" -> LocalDate.now()
-          ),
-          "vatRegistrationException" -> false
+        val thresholdPrevThirtyDaysBlock = Seq(
+          Json.obj("questionId" -> "thresholdPreviousThirtyDays", "question" -> "testQuestion", "answer" -> "true",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "thresholdPreviousThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> LocalDate.now().toString),
+          Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true)
         )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdPrevThirtyDaysBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
 
-        val result = Json.fromJson(testEligibilityJson)(EligibilitySubmissionData.eligibilityReads)
+        val result = Json.fromJson(EligibilityDataJsonUtils.toJsObject(testEligibilityJson, "regId"))(EligibilitySubmissionData.eligibilityReads)
 
         val expected = JsSuccess(EligibilitySubmissionData(
           threshold = Threshold(
             mandatoryRegistration = true,
             thresholdPreviousThirtyDays = Some(LocalDate.now)
           ),
-          appliedForException = Some(false),
+          appliedForException = None,
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
@@ -182,28 +210,29 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
     }
     "registration reason is sellingGoodsAndServices with thresholdNextThirtyDays" must {
       "set calculatedDate as thresholdNextThirtyDays in EligibilitySubmissionData" in {
-        val testEligibilityJson: JsObject = Json.obj(
-          "fixedEstablishment" -> true,
-          "businessEntity" -> "50",
-          "agriculturalFlatRateScheme" -> false,
-          "internationalActivities" -> false,
-          "registeringBusiness" -> "own",
-          "registrationReason" -> EligibilitySubmissionData.sellingGoodsAndServices,
-          "thresholdNextThirtyDays" -> Json.obj(
-            "value" -> true,
-            "optionalData" -> LocalDate.now()
-          ),
-          "vatRegistrationException" -> false
+        val thresholdNextThirtyDaysBlock = Seq(
+          Json.obj("questionId" -> "thresholdNextThirtyDays", "question" -> "testQuestion", "answer" -> "true",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "thresholdNextThirtyDays-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> LocalDate.now().toString),
+          Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true)
         )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdNextThirtyDaysBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
 
-        val result = Json.fromJson(testEligibilityJson)(EligibilitySubmissionData.eligibilityReads)
+        val result = Json.fromJson(EligibilityDataJsonUtils.toJsObject(testEligibilityJson, "regId"))(EligibilitySubmissionData.eligibilityReads)
 
         val expected = JsSuccess(EligibilitySubmissionData(
           threshold = Threshold(
             mandatoryRegistration = true,
             thresholdNextThirtyDays = Some(LocalDate.now)
           ),
-          appliedForException = Some(false),
+          appliedForException = None,
           partyType = UkCompany,
           registrationReason = ForwardLook,
           isTransactor = false,
@@ -215,29 +244,30 @@ class EligibilitySubmissionDataSpec extends JsonFormatValidation {
       }
     }
     "registration reason is sellingGoodsAndServices with thresholdNextTwelveMonths" must {
-      "set calculatedDate as thresholdInTwelveMonths in EligibilitySubmissionData" in {
-        val testEligibilityJson: JsObject = Json.obj(
-          "fixedEstablishment" -> true,
-          "businessEntity" -> "50",
-          "agriculturalFlatRateScheme" -> false,
-          "internationalActivities" -> false,
-          "registeringBusiness" -> "own",
-          "registrationReason" -> EligibilitySubmissionData.sellingGoodsAndServices,
-          "thresholdInTwelveMonths" -> Json.obj(
-            "value" -> true,
-            "optionalData" -> LocalDate.now()
-          ),
-          "vatRegistrationException" -> false
+      "set calculatedDate as thresholdNextTwelveMonths in EligibilitySubmissionData" in {
+        val thresholdNextTwelveMonthsBlock = Seq(
+          Json.obj("questionId" -> "thresholdInTwelveMonths", "question" -> "testQuestion", "answer" -> "true",
+            "answerValue" -> true),
+          Json.obj("questionId" -> "thresholdInTwelveMonths-optionalData", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> LocalDate.now().toString),
+          Json.obj("questionId" -> "registeringBusiness", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "own"),
+          Json.obj("questionId" -> "businessEntity", "question" -> "testQuestion", "answer" -> "testQuestion",
+            "answerValue" -> "50"),
+          Json.obj("questionId" -> "fixedEstablishment", "question" -> "testQuestion", "answer" -> "testAnswer",
+            "answerValue" -> true)
         )
+        val section: JsObject = Json.obj("title" -> "testTitle", "data" -> JsArray(thresholdNextTwelveMonthsBlock))
+        val testEligibilityJson: JsObject = Json.obj("sections" -> section)
 
-        val result = Json.fromJson(testEligibilityJson)(EligibilitySubmissionData.eligibilityReads)
+        val result = Json.fromJson(EligibilityDataJsonUtils.toJsObject(testEligibilityJson, "regId"))(EligibilitySubmissionData.eligibilityReads)
 
         val expected = JsSuccess(EligibilitySubmissionData(
           threshold = Threshold(
             mandatoryRegistration = true,
             thresholdInTwelveMonths = Some(LocalDate.now)
           ),
-          appliedForException = Some(false),
+          appliedForException = None,
           partyType = UkCompany,
           registrationReason = BackwardLook,
           isTransactor = false,
