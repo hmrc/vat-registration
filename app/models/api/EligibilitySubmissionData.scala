@@ -47,7 +47,7 @@ object EligibilitySubmissionData {
       json.validate[Threshold](Threshold.eligibilityDataJsonReads) and
         (json \ "vatRegistrationException").validateOpt[Boolean] and
         (json \ "businessEntity").validate[PartyType] and
-        (json \ "registrationReason").validateOpt[String] and
+        (json \ "registrationReason").validate[String] and
         (json \ "registeringBusiness").validate[String] and
         json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None)) and
         (json \ "fixedEstablishment").validate[Boolean]
@@ -57,7 +57,7 @@ object EligibilitySubmissionData {
         exception,
         businessEntity,
         registrationReason match {
-          case Some(`sellingGoodsAndServices`) | None => threshold match {
+          case `sellingGoodsAndServices` => threshold match {
             case Threshold(true, _, _, _, Some(_)) =>
               NonUk
             case Threshold(false, _, _, _, _) =>
@@ -68,9 +68,9 @@ object EligibilitySubmissionData {
             case _ =>
               BackwardLook
           }
-          case Some(`takingOverBusiness`) | Some(`changingLegalEntityOfBusiness`) => TransferOfAGoingConcern
-          case Some(`settingUpVatGroup`) => GroupRegistration
-          case Some(`ukEstablishedOverseasExporter`) => SuppliesOutsideUk
+          case `takingOverBusiness` | `changingLegalEntityOfBusiness` => TransferOfAGoingConcern
+          case `settingUpVatGroup` => GroupRegistration
+          case `ukEstablishedOverseasExporter` => SuppliesOutsideUk
         },
         optTogcCole,
         registeringBusiness match {

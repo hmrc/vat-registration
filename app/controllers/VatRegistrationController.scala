@@ -20,11 +20,9 @@ import auth.Authorisation
 import cats.instances.FutureInstances
 import enums.VatRegStatus._
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
-import models.monitoring.SubmissionFailureErrorsAuditModel
 import play.api.libs.json._
 import play.api.mvc._
 import services._
-import services.monitoring.AuditService
 import services.submission.SubmissionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
