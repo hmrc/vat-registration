@@ -64,6 +64,6 @@ lazy val microservice = Project(appName, file("."))
     retrieveManaged := true,
     Global / cancelable := true
   )
-  .settings(majorVersion := 0)
+  .settings(majorVersion := 1)
 
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427

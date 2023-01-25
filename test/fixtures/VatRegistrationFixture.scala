@@ -89,7 +89,7 @@ trait VatRegistrationFixture {
 
   lazy val testEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = testMandatoryThreshold,
-    None,
+    appliedForException = Some(false),
     partyType = UkCompany,
     registrationReason = ForwardLook,
     isTransactor = false,
