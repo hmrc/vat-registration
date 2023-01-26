@@ -10,7 +10,7 @@ This code is open source software licensed under the [Apache 2.0 License]("http:
 ```
 sbt clean coverage test it:test scalastyle coverageReport
 ```
-alternatively, create an alias for the above line, and get in the habit of running it before checking in:
+Alternatively, create an alias for the above line, and get in the habit of running it before checking in:
 
 ```bash
 alias precommit="sbt clean coverage test it:test scalastyle coverageReport" 
@@ -26,17 +26,11 @@ sm --start VAT_REG_ALL -f
 ```
 Note this will start the VAT registration backend itself too, as it's included in the profile.
 
-alternatively, create an alias for starting the services required for the backend:
+Alternatively, to run the service with local changes, `cd` to cloned directory and execute following:
 
-```bash
-alias vatreg='docker start graphite && sm --start AUTH AUTH_LOGIN_STUB AUTHENTICATOR BUS_REG CA_FRONTEND GG GG_STUBS USER_DETAILS KEYSTORE SAVE4LATER DATASTREAM ASSETS_FRONTEND -f'```
-```
+- `sm --stop VAT_REG`
+- `/run.sh`
 
-To run the service, just `cd` to cloned directory and execute:
-
-```
-sbt run
-```
 The service will come to life  @
 http://localhost:9896/
 
