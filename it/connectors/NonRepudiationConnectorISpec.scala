@@ -16,6 +16,7 @@
 
 package connectors
 
+import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMatching, verify}
 import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
 import connectors.stubs.NonRepudiationStub._
 import itutil.IntegrationStubbing
@@ -66,8 +67,46 @@ class NonRepudiationConnectorISpec extends IntegrationStubbing {
         val res = connector.submitNonRepudiation(testEncodedPayload, testNonRepudiationMetadata, Seq(testAttachmentId))
 
         await(res) mustBe NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)
+        verify(1, postRequestedFor(urlMatching("/submission")))
+      }
+    }
 
+    "the non-repudiation service returns a failure" should {
+      s"retry and return $NonRepudiationSubmissionAccepted" in {
+        stubAudit(OK)
+        stubMergedAudit(OK)
+        val testEncodedPayload = "testEncodedPayload"
+        val testPayloadChecksum = "testPayloadChecksum"
+        val testAuthToken = "testAuthToken"
+        val headerData = Map("testHeaderKey" -> "testHeaderValue")
+        val testPostcode = "testPostcode"
+        val testAttachmentId = "testAttachmentId"
 
+        val testNonRepudiationMetadata = NonRepudiationMetadata(
+          businessId = "vrs",
+          notableEvent = "vat-registration",
+          payloadContentType = "application/json",
+          payloadSha256Checksum = testPayloadChecksum,
+          userSubmissionTimestamp = testDateTime,
+          identityData = testNonRepudiationIdentityData,
+          userAuthToken = testAuthToken,
+          headerData = headerData,
+          searchKeys = Map("postCode" -> testPostcode)
+        )
+
+        val expectedRequestJson: JsObject = Json.obj(
+          "payload" -> testEncodedPayload,
+          "metadata" -> (Json.toJson(testNonRepudiationMetadata).as[JsObject] ++ Json.obj("attachmentIds" -> Seq(testAttachmentId)))
+        )
+
+        val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+        stubNonRepudiationSubmission(expectedRequestJson, testNonRepudiationApiKey)(INTERNAL_SERVER_ERROR)
+        stubNonRepudiationSubmission(expectedRequestJson, testNonRepudiationApiKey)(ACCEPTED, Json.obj("nrSubmissionId" -> testNonRepudiationSubmissionId))
+
+        val res = connector.submitNonRepudiation(testEncodedPayload, testNonRepudiationMetadata, Seq(testAttachmentId))
+
+        await(res) mustBe NonRepudiationSubmissionAccepted(testNonRepudiationSubmissionId)
+        verify(2, postRequestedFor(urlMatching("/submission")))
       }
     }
   }
@@ -103,6 +142,46 @@ class NonRepudiationConnectorISpec extends IntegrationStubbing {
         val res = connector.submitAttachmentNonRepudiation(testPayload)
 
         await(res) mustBe NonRepudiationAttachmentAccepted(testNonRepudiationSubmissionId)
+        verify(1, postRequestedFor(urlMatching("/attachment")))
+      }
+    }
+
+    "the non-repudiation service returns a failure" should {
+      s"retry and return $NonRepudiationAttachmentAccepted" in {
+        stubAudit(OK)
+        stubMergedAudit(OK)
+        val testUrl = "testUrl"
+        val testAttachmentId = "testAttachmentId"
+        val testChecksum = "testChecksum"
+        val testMimeType = "testMimeType"
+        val testNrSubmissionId = "testNrSubmissionId"
+
+        val testPayload = NonRepudiationAttachment(
+          attachmentUrl = testUrl,
+          attachmentId = testAttachmentId,
+          attachmentSha256Checksum = testChecksum,
+          attachmentContentType = testMimeType,
+          nrSubmissionId = testNrSubmissionId
+        )
+
+        val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+
+        stubAttachmentNonRepudiationSubmission(
+          Json.toJson(testPayload),
+          testNonRepudiationApiKey)(
+          INTERNAL_SERVER_ERROR
+        )
+        stubAttachmentNonRepudiationSubmission(
+          Json.toJson(testPayload),
+          testNonRepudiationApiKey)(
+          ACCEPTED,
+          Json.obj("attachmentId" -> testNonRepudiationSubmissionId)
+        )
+
+        val res = connector.submitAttachmentNonRepudiation(testPayload)
+
+        await(res) mustBe NonRepudiationAttachmentAccepted(testNonRepudiationSubmissionId)
+        verify(2, postRequestedFor(urlMatching("/attachment")))
       }
     }
   }

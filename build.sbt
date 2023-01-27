@@ -23,9 +23,9 @@ val appName = "vat-registration"
 val testThreads = 12
 
 lazy val scoverageSettings = Seq(
-  ScoverageKeys.coverageExcludedPackages  := "<empty>;Reverse.*;config.*;.*(AuthService|BuildInfo|Routes).*",
-  ScoverageKeys.coverageMinimum           := 100,
-  ScoverageKeys.coverageFailOnMinimum     := false,
+  ScoverageKeys.coverageExcludedPackages  := "<empty>;Reverse.*;config.*;.*(AuthService|BuildInfo|Routes).*;featureswitch.*;controllers.test.*",
+  ScoverageKeys.coverageMinimumStmtTotal  := 90,
+  ScoverageKeys.coverageFailOnMinimum     := true,
   ScoverageKeys.coverageHighlighting      := true
 )
 

@@ -16,7 +16,7 @@ Alternatively, create an alias for the above line, and get in the habit of runni
 alias precommit="sbt clean coverage test it:test scalastyle coverageReport" 
 ```
 
-### NOTE: Only commit if test coverage report is above or equal to 95%, scalastyle warnings are corrected and tests green.
+### NOTE: Only commit if test coverage report is above or equal to 90%, scalastyle warnings are corrected and tests green.
 
 ## Running locally
 User service manager to run all services required by VAT Registration backend:

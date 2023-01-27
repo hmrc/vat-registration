@@ -53,6 +53,18 @@ class RegistrationListSectionControllerISpec extends IntegrationStubbing {
         res.status mustBe NOT_FOUND
       }
     }
+    "the index in the call is out of bounds for section" must {
+      "return OK with the json for the first section" in new SetupHelper {
+        given.user.isAuthorised
+
+        insertIntoDb(testVatScheme.copy(otherBusinessInvolvements = Some(List(testOtherBusinessInvolvement))))
+
+        val res = await(client(url(testSectionId, testInvalidIndex)).get())
+
+        res.status mustBe BAD_REQUEST
+        res.body mustBe s"[RegistrationListSectionController] Index out of bounds for ${OtherBusinessInvolvementsSectionId.toString}"
+      }
+    }
   }
 
   "PUT /registrations/:regId/sections/:sectionId/:index" when {
@@ -89,6 +101,27 @@ class RegistrationListSectionControllerISpec extends IntegrationStubbing {
 
         res.status mustBe OK
         res.json mustBe Json.toJson(testOtherBusinessInvolvement)
+      }
+
+      "return BAD_REQUEST with JSON for the new section for an invalid answer" in new SetupHelper {
+        given.user.isAuthorised
+        insertIntoDb(testVatScheme)
+
+        val res = await(client(url(testSectionId, testValidIndex)).put(Json.obj(
+          "hasVrn" -> "not a boolean"
+        )))
+
+        res.status mustBe BAD_REQUEST
+      }
+    }
+    "the registration doesn't exist" must {
+      "return an exception" in new SetupHelper {
+        given.user.isAuthorised
+
+        val res = await(client(url(testSectionId, testValidIndex)).put(Json.toJson(testOtherBusinessInvolvement)))
+
+        res.status mustBe INTERNAL_SERVER_ERROR
+        res.body mustBe s"[RegistrationListSectionController] Unable to upsert section '${OtherBusinessInvolvementsSectionId.key}' for regId '$testRegId'"
       }
     }
   }

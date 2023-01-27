@@ -59,37 +59,6 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
     }
   }
 
-  /** PATCH /registrations/:regId/sections/:sectionId
-   * ===Purpose===
-   * merge the given JSON with the stored JSON
-   * ===Detail===
-   *
-   * @param regId
-   * @param sectionKey
-   * @return OK - Json representation of the updated section<br>
-   *         BAD_REQUEST - The request json was not valid for the given section
-   */
-  def upsertSection(regId: String, section: RegistrationSectionId): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    isAuthenticated { internalId =>
-      for {
-        existingSection <- registrationService.getSection[JsObject](internalId, regId, section)
-          .map(_.getOrElse(Json.obj()))
-        validationResponse <- sectionValidationService.validate(internalId, regId, section, existingSection.deepMerge(request.body.as[JsObject]))
-        validatedData = validationResponse.map(_.validatedModel).getOrElse(Json.obj())
-        encryptedData = cipherService.conditionallyEncrypt(section, validatedData)
-        update <- registrationService.upsertSection(internalId, regId, section, encryptedData)
-      } yield (validationResponse, update) match {
-        case (Right(ValidSection(_)), Some(updatedSection)) =>
-          Ok(updatedSection)
-        case (_, None) =>
-          InternalServerError(s"[RegistrationSectionController][upsertSection] Unable to update section ${section.key}")
-        case (Left(response@InvalidSection(_)), _) =>
-          logger.debug(s"[RegistrationSectionController][upsertSection] Invalid keys: ${response.asString}")
-          BadRequest(response.asString)
-      }
-    }
-  }
-
   /** PUT /registrations/:regId/sections/:sectionId
    * ===Purpose===
    * Replaces the named section in the given registration with the given JSON
