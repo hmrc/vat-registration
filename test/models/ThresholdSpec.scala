@@ -18,6 +18,7 @@ package models
 
 import models.api.Threshold
 import play.api.libs.json.{JsPath, JsSuccess, Json, JsonValidationError}
+import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
@@ -188,6 +189,20 @@ class ThresholdSpec extends JsonFormatValidation {
 
       val result = Json.fromJson[Threshold](json)(Threshold.eligibilityDataJsonReads)
       result.isError mustBe true
+    }
+
+    "eligibilityDataJsonReads fails when json contains overseas and other thresholds together" in {
+      val json = Json.obj(
+        "thresholdPreviousThirtyDays" -> Json.obj(
+          "value" -> true,
+          "optionalData" -> LocalDate.now()
+        ),
+        "thresholdTaxableSupplies" -> Json.obj(
+          "date" -> LocalDate.now()
+        )
+      )
+
+      intercept[InternalServerException](Json.fromJson[Threshold](json)(Threshold.eligibilityDataJsonReads))
     }
   }
 }
