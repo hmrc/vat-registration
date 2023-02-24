@@ -18,18 +18,23 @@ package services
 
 import models.api.{InProgress, UpscanCreate, UpscanDetails}
 import repositories.UpscanMongoRepository
+import play.api.Logging
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) {
+class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) extends Logging {
 
-  def getUpscanDetails(reference: String): Future[Option[UpscanDetails]] =
+  def getUpscanDetails(reference: String): Future[Option[UpscanDetails]] = {
+    logger.info(s"[UpscanService][getUpscanDetails] attempting to get upscan details from mongo for reference: $reference")
     upscanMongoRepository.getUpscanDetails(reference)
+  }
 
-  def getAllUpscanDetails(registrationId: String): Future[Seq[UpscanDetails]] =
+  def getAllUpscanDetails(registrationId: String): Future[Seq[UpscanDetails]] = {
+    logger.info(s"[UpscanService][getAllUpscanDetails] attempting to get all upscan details from mongo for regId: $registrationId")
     upscanMongoRepository.getAllUpscanDetails(registrationId)
+  }
 
   def createUpscanDetails(registrationId: String, details: UpscanCreate): Future[UpscanDetails] = {
     val newUpscanDetails = UpscanDetails(
@@ -39,15 +44,34 @@ class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) {
       fileStatus = InProgress
     )
 
+    logger.info(s"[UpscanService][createUpscanDetails] attempting to create upscan details record in mongo:" +
+      s"\n regId: $registrationId" +
+      s"\n reference: ${details.reference}" +
+      s"\n attachmentType: ${details.attachmentType}" +
+      s"\n fileStatus: ${newUpscanDetails.fileStatus}"
+    )
+
     upscanMongoRepository.upsertUpscanDetails(newUpscanDetails)
   }
 
-  def upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] =
+  def upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] = {
+    logger.info(s"[UpscanService][createUpscanDetails] attempting to create upscan details record in mongo:" +
+      s"\n regId: ${upscanDetails.registrationId}" +
+      s"\n reference: ${upscanDetails.reference}" +
+      s"\n attachmentType: ${upscanDetails.attachmentType}" +
+      s"\n fileStatus: ${upscanDetails.fileStatus}"
+    )
+
     upscanMongoRepository.upsertUpscanDetails(upscanDetails)
+  }
 
-  def deleteUpscanDetails(reference: String): Future[Boolean] =
+  def deleteUpscanDetails(reference: String): Future[Boolean] = {
+    logger.info(s"[UpscanService][deleteUpscanDetails] attempting to delete upscan details with reference $reference")
     upscanMongoRepository.deleteUpscanDetails(reference)
+  }
 
-  def deleteAllUpscanDetails(registrationId: String): Future[Boolean] =
+  def deleteAllUpscanDetails(registrationId: String): Future[Boolean] = {
+    logger.info(s"[UpscanService][deleteAllUpscanDetails] attempting to delete all upscan details for regId $registrationId")
     upscanMongoRepository.deleteAllUpscanDetails(registrationId)
+  }
 }
