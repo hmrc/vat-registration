@@ -22,9 +22,10 @@ import models.nonrepudiation._
 import play.api.http.Status
 import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReadsHttpResponse, HttpResponse, StringContextOps}
-import utils.{Delayer, Retrying}
+import utils.{Delayer, Retrying, LoggingUtils}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,13 +33,14 @@ import scala.util.control.NonFatal
 import scala.util.{Success, Try}
 
 @Singleton
-class NonRepudiationConnector @Inject()(httpClient: HttpClientV2, config: BackendConfig)(implicit val scheduler: Scheduler, val ec: ExecutionContext)
-  extends HttpReadsHttpResponse with Retrying with Delayer {
+class NonRepudiationConnector @Inject()(httpClient: HttpClientV2, config: BackendConfig)
+                                       (implicit val scheduler: Scheduler, val ec: ExecutionContext)
+  extends HttpReadsHttpResponse with Retrying with Delayer with LoggingUtils {
 
   def submitNonRepudiation(encodedPayloadString: String,
                            nonRepudiationMetadata: NonRepudiationMetadata,
                            digitalAttachmentIds: Seq[String])
-                          (implicit hc: HeaderCarrier): Future[NonRepudiationSubmissionResult] = {
+                          (implicit hc: HeaderCarrier, request: Request[_]): Future[NonRepudiationSubmissionResult] = {
     val attachmentJson = if (digitalAttachmentIds.nonEmpty) Json.obj("attachmentIds" -> digitalAttachmentIds) else Json.obj()
     val jsonBody = Json.obj(
       "payload" -> encodedPayloadString,
@@ -65,12 +67,13 @@ class NonRepudiationConnector @Inject()(httpClient: HttpClientV2, config: Backen
                 NonRepudiationSubmissionFailed(response.body, response.status)
             }
         }.recover { case NonFatal(e) =>
+          errorLog(s"[NonRepudiationConnector][submitNonRepudiation] errored with ${e.getMessage}")
           NonRepudiationSubmissionFailed(e.getMessage, INTERNAL_SERVER_ERROR)
         }
     }
   }
 
-  def submitAttachmentNonRepudiation(payload: NonRepudiationAttachment)(implicit hc: HeaderCarrier): Future[NonRepudiationAttachmentResult] = {
+  def submitAttachmentNonRepudiation(payload: NonRepudiationAttachment)(implicit hc: HeaderCarrier, request: Request[_]): Future[NonRepudiationAttachmentResult] = {
 
     val retryCondition: Try[NonRepudiationAttachmentResult] => Boolean = {
       case Success(value: NonRepudiationAttachmentFailed) if Status.isServerError(value.status) => true
@@ -91,6 +94,7 @@ class NonRepudiationConnector @Inject()(httpClient: HttpClientV2, config: Backen
                 NonRepudiationAttachmentFailed(response.body, response.status)
             }
         }.recover { case NonFatal(e) =>
+          errorLog(s"[NonRepudiationConnector][submitNonRepudiation] errored with ${e.getMessage}")
           NonRepudiationAttachmentFailed(e.getMessage, INTERNAL_SERVER_ERROR)
         }
     }

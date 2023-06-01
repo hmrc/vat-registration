@@ -19,16 +19,18 @@ package services.submission
 import models.api.{Address, FormerName, Name, VatScheme}
 import models.submission.{CustomerId, Other}
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 
 // scalastyle:off
 @Singleton
-class DeclarationBlockBuilder @Inject()() {
+class DeclarationBlockBuilder @Inject()() extends LoggingUtils{
 
-  def buildDeclarationBlock(vatScheme: VatScheme): JsObject =
+  def buildDeclarationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     (vatScheme.applicantDetails, vatScheme.confirmInformationDeclaration, vatScheme.transactorDetails) match {
       case (Some(applicantDetails), Some(declaration), optTransactorDetails) =>
         jsonObject(
@@ -99,6 +101,7 @@ class DeclarationBlockBuilder @Inject()() {
         val appDetailsMissing = vatScheme.applicantDetails.fold(Option("applicantDetails"))(_ => None)
         val declarationMissing = vatScheme.confirmInformationDeclaration.fold(Option("declaration"))(_ => None)
         val message = Seq(appDetailsMissing, declarationMissing).flatten.mkString(", ")
+        errorLog(s"[DeclarationBlockBuilder][buildDeclarationBlock] - Could not construct declaration block because the following are missing: $message")
         throw new InternalServerException(s"Could not construct declaration block because the following are missing: $message")
     }
 

@@ -22,6 +22,8 @@ import mocks.MockVatSchemeRepository
 import models.api.{Contact, FormerName}
 import models.submission.Other
 import play.api.libs.json.Json
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
@@ -30,6 +32,8 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
   val testApplicantDetails = validApplicantDetails.copy(changeOfName = FormerName())
   val declarationVatScheme = testVatScheme.copy(applicantDetails = Some(testApplicantDetails), confirmInformationDeclaration = Some(true))
+
+  implicit val request: Request[_] = FakeRequest()
 
   "The declaration block builder" must {
     "return valid json" when {

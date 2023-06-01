@@ -21,11 +21,15 @@ import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api.vatapplication._
 import play.api.libs.json.Json
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository with VatRegistrationFixture {
 
   object TestBuilder extends PeriodsBlockBuilder
+
+  implicit val request: Request[_] = FakeRequest()
 
   "the periods block builder" should {
     "write the correct json for the monthly stagger" in {

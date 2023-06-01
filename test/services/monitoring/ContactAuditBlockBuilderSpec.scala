@@ -20,9 +20,13 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api._
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
+
+  implicit val request: Request[_] = FakeRequest()
 
   object TestService extends ContactAuditBlockBuilder
 

@@ -22,6 +22,7 @@ import org.mockito.Mockito.when
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.mvc.Request
 import services.AttachmentsService
 
 import scala.concurrent.Future
@@ -33,7 +34,7 @@ trait MockAttachmentsService extends MockitoSugar {
 
   def mockGetAttachmentList(internalId: String, regId: String)
                            (response: Future[List[AttachmentType]]): OngoingStubbing[Future[List[AttachmentType]]] =
-    when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(internalId), ArgumentMatchers.eq(regId)))
+    when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(internalId), ArgumentMatchers.eq(regId))(ArgumentMatchers.any[Request[_]]))
       .thenReturn(response)
 
   def mockAttachmentList(vatScheme: VatScheme)

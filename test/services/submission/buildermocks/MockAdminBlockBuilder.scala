@@ -23,6 +23,7 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import services.submission.AdminBlockBuilder
 
 trait MockAdminBlockBuilder extends MockitoSugar {
@@ -32,7 +33,7 @@ trait MockAdminBlockBuilder extends MockitoSugar {
 
   def mockBuildAdminBlock(vatScheme: VatScheme)
                          (response: JsObject): OngoingStubbing[JsObject] =
-    when(mockAdminBlockBuilder.buildAdminBlock(ArgumentMatchers.eq(vatScheme)))
+    when(mockAdminBlockBuilder.buildAdminBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]]))
       .thenReturn(response)
 
 }

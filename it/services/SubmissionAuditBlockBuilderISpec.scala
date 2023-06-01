@@ -4,12 +4,16 @@ package services
 import itutil.{IntegrationStubbing, SubmissionAuditFixture}
 import models.api.{BankAccount, VatScheme}
 import models.monitoring.SubmissionAuditModel
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import services.monitoring.SubmissionAuditBlockBuilder
 import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 
 class SubmissionAuditBlockBuilderISpec extends IntegrationStubbing with SubmissionAuditFixture {
 
   val service = app.injector.instanceOf[SubmissionAuditBlockBuilder]
+
+  implicit val request: Request[_] = FakeRequest()
 
   override lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
     bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),

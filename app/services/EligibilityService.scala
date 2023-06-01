@@ -18,18 +18,19 @@ package services
 
 import models.api.{EligibilitySubmissionData, VatScheme}
 import models.registration.{EligibilityJsonSectionId, EligibilitySectionId}
-import play.api.Logging
 import play.api.libs.json.{JsObject, JsResultException}
+import play.api.mvc.Request
 import repositories.VatSchemeRepository
 import utils.JsonUtils.jsonObject
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) extends Logging {
+class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) extends LoggingUtils {
 
-  def updateEligibilityData(internalId: String, regId: String, eligibilityData: JsObject)(implicit ex: ExecutionContext): Future[Option[JsObject]] = {
+  def updateEligibilityData(internalId: String, regId: String, eligibilityData: JsObject)(implicit ex: ExecutionContext, request: Request[_]): Future[Option[JsObject]] = {
     eligibilityData.validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads).fold(
       invalid => throw JsResultException(invalid),
       eligibilitySubmissionData => for {
@@ -47,9 +48,9 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
   }
 
   private def logEligibilityPayload(regId: String,
-                                    eligibilitySubmissionData: EligibilitySubmissionData): Future[Unit] = {
+                                    eligibilitySubmissionData: EligibilitySubmissionData)(implicit request: Request[_]): Future[Unit] = {
 
-    logger.info(jsonObject(
+    infoLog(jsonObject(
       "logInfo" -> "EligibilityPayloadLog",
       "regId" -> regId,
       "partyType" -> eligibilitySubmissionData.partyType.toString,

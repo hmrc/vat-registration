@@ -19,6 +19,8 @@ package services
 import helpers.VatRegSpec
 import mocks.MockUpscanMongoRepository
 import models.api.{InProgress, PrimaryIdentityEvidence, UpscanCreate, UpscanDetails}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
@@ -37,6 +39,8 @@ class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
   )
 
   object TestService extends UpscanService(mockUpscanMongoRepository)
+
+  implicit val request: Request[_] = FakeRequest()
 
   "getUpscanDetails" must {
     "return UpscanDetails if they are found" in {

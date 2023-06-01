@@ -20,6 +20,8 @@ import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import models.submission.{EntitiesArrayType, Individual, PartnerEntity, PartyType}
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import services.submission.buildermocks._
 
 class SubmissionPayloadBuilderSpec extends VatRegSpec
@@ -35,6 +37,8 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
   with MockDeclarationBlockBuilder
   with MockAnnualAccountingBlockBuilder
   with MockEntitiesBlockBuilder {
+
+  implicit val request: Request[_] = FakeRequest()
 
   object TestBuilder extends SubmissionPayloadBuilder(
     mockAdminBlockBuilder,

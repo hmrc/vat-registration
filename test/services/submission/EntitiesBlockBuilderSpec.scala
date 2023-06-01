@@ -22,10 +22,14 @@ import models.GroupRegistration
 import models.api._
 import models.submission._
 import play.api.libs.json.Json
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 
 class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   object Builder extends EntitiesBlockBuilder
+
+  implicit val request: Request[_] = FakeRequest()
 
   val testEntity = testSoleTraderEntity.copy(bpSafeId = Some(testBpSafeId))
   val testEntityNoSafeId = testSoleTraderEntity.copy(bpSafeId = None)

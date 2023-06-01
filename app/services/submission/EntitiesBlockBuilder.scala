@@ -20,25 +20,32 @@ import models._
 import models.api.{Address, Entity, VatScheme}
 import models.submission._
 import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{jsonObject, optional, required}
-import utils.StringNormaliser
+import utils.{LoggingUtils, StringNormaliser}
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class EntitiesBlockBuilder @Inject()() {
+class EntitiesBlockBuilder @Inject()() extends LoggingUtils{
 
   private val addPartnerAction = "1"
 
   // scalastyle:off
-  def buildEntitiesBlock(vatScheme: VatScheme): Option[JsValue] = {
-    val business = vatScheme.business
-      .getOrElse(throw new InternalServerException("Attempted to build entities block without business"))
-    val applicantDetails = vatScheme.applicantDetails
-      .getOrElse(throw new InternalServerException("Attempted to build entities block without applicant details"))
-    val regReason = vatScheme.eligibilitySubmissionData.map(_.registrationReason)
-      .getOrElse(throw new InternalServerException("Attempted to build entities block without reg reason"))
+  def buildEntitiesBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsValue] = {
+    val business = vatScheme.business.getOrElse{
+      errorLog("[EntitiesBlockBuilder][buildEntitiesBlock] - Attempted to build entities block without business")
+      throw new InternalServerException("Attempted to build entities block without business")
+    }
+    val applicantDetails = vatScheme.applicantDetails.getOrElse{
+      errorLog("[EntitiesBlockBuilder][buildEntitiesBlock] - Attempted to build entities block without applicant details")
+      throw new InternalServerException("Attempted to build entities block without applicant details")
+    }
+    val regReason = vatScheme.eligibilitySubmissionData.map(_.registrationReason).getOrElse{
+      errorLog("[EntitiesBlockBuilder][buildEntitiesBlock] - Attempted to build entities block without reg reason")
+      throw new InternalServerException("Attempted to build entities block without reg reason")
+    }
 
     val entities = vatScheme.entities match {
       case Some(entityList) => entityList.filter(entity => entity.details.isDefined)
@@ -139,7 +146,7 @@ class EntitiesBlockBuilder @Inject()() {
     optional("countryCode" -> address.country.flatMap(_.code))
   )
 
-  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String]): JsObject =
+  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String])(implicit request: Request[_]): JsObject =
     (orgName.map(StringNormaliser.normaliseString), optShortOrgName.map(StringNormaliser.normaliseString)) match {
       case (Some(orgName), Some(shortOrgName)) => jsonObject(
         "shortOrgName" -> shortOrgName,
@@ -149,7 +156,9 @@ class EntitiesBlockBuilder @Inject()() {
         "shortOrgName" -> orgName,
         "organisationName" -> orgName
       )
-      case _ => throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
+      case _ =>
+        errorLog("[EntitiesBlockBuilder][orgNameJson] - missing organisation name for a partyType that requires it")
+        throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
     }
 
 }

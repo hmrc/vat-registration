@@ -18,15 +18,17 @@ package services.submission
 
 import models.api.VatScheme
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class ComplianceBlockBuilder @Inject()() {
+class ComplianceBlockBuilder @Inject()() extends LoggingUtils{
 
-  def buildComplianceBlock(vatScheme: VatScheme): Option[JsObject] =
+  def buildComplianceBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
     vatScheme.business match {
       case Some(business) => business.labourCompliance map (labourCompliance =>
         jsonObject(
@@ -35,6 +37,7 @@ class ComplianceBlockBuilder @Inject()() {
           optional("supplyWorkers" -> labourCompliance.supplyWorkers)
         ))
       case _ =>
+        errorLog("[ComplianceBlockBuilder][buildComplianceBlock] - Couldn't build compliance block due to missing business data")
         throw new InternalServerException("Couldn't build compliance block due to missing business data")
     }
 

@@ -20,6 +20,8 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api.{BankAccountDetails, ValidStatus}
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class BankAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
@@ -41,6 +43,8 @@ class BankAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       |""".stripMargin).as[JsObject]
 
   object TestBuilder extends BankAuditBlockBuilder
+
+  implicit val request: Request[_] = FakeRequest()
 
   "buildBankAuditBlock" should {
     "return the correct json" when {

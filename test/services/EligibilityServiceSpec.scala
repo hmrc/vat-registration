@@ -25,6 +25,8 @@ import models.submission.RegSociety
 import org.mockito.Mockito._
 import org.mockito.{ArgumentMatchers, Mockito}
 import play.api.libs.json.{JsObject, JsResultException, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
@@ -36,6 +38,8 @@ class EligibilityServiceSpec extends VatRegSpec with VatRegistrationFixture with
       registrationRepository = mockVatSchemeRepository
     )
   }
+
+  implicit val request: Request[_] = FakeRequest()
 
   "updateEligibilityData" should {
     val eligibilityData = Json.obj(

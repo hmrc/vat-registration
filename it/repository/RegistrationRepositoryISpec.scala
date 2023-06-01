@@ -9,6 +9,8 @@ import org.mongodb.scala.model.Filters.{and, equal => mongoEqual}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers.{await, _}
 import repositories.VatSchemeRepository
 import services.RegistrationIdService
@@ -17,6 +19,8 @@ import utils.TimeMachine
 class RegistrationRepositoryISpec extends MongoBaseSpec
   with FutureAssertions
   with ITFixtures {
+
+  implicit val request: Request[_] = FakeRequest()
 
   val fakeRegIdService = new FakeRegistrationIdService
   val fakeTimeMachine = new FakeTimeMachine

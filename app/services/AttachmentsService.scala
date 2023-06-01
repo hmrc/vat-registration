@@ -20,6 +20,7 @@ import models.GroupRegistration
 import models.api._
 import models.registration.AttachmentsSectionId
 import models.submission._
+import play.api.mvc.Request
 import repositories.{UpscanMongoRepository, VatSchemeRepository}
 
 import javax.inject.{Inject, Singleton}
@@ -30,7 +31,7 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
                                    upscanMongoRepository: UpscanMongoRepository
                                   )(implicit executionContext: ExecutionContext) {
 
-  def getAttachmentList(internalId: String, regId: String): Future[List[AttachmentType]] =
+  def getAttachmentList(internalId: String, regId: String)(implicit request: Request[_]): Future[List[AttachmentType]] =
     registrationRepository.getRegistration(internalId, regId).map {
       case Some(vatScheme) =>
         mandatoryAttachmentList(vatScheme) match {
@@ -51,7 +52,7 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
         List.empty[AttachmentType]
     }
 
-  def getIncompleteAttachments(internalId: String, regId: String): Future[List[AttachmentType]] = {
+  def getIncompleteAttachments(internalId: String, regId: String)(implicit request: Request[_]): Future[List[AttachmentType]] = {
     for {
       attachmentList <- getAttachmentList(internalId, regId)
       requiredAttachments = attachmentList.flatMap {

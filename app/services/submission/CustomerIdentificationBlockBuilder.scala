@@ -20,20 +20,24 @@ import models._
 import models.api.{EligibilitySubmissionData, VatScheme}
 import models.submission.{Individual, NETP, TaxGroups}
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
-import utils.StringNormaliser
+import utils.{LoggingUtils, StringNormaliser}
 
 import javax.inject.{Inject, Singleton}
 
 // scalastyle:off
 @Singleton
-class CustomerIdentificationBlockBuilder @Inject()() {
+class CustomerIdentificationBlockBuilder @Inject()() extends LoggingUtils{
 
-  def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsObject =
+  def buildCustomerIdentificationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     (vatScheme.eligibilitySubmissionData, vatScheme.applicantDetails, vatScheme.business) match {
       case (Some(eligibilityData), Some(applicantDetails), Some(business)) =>
-        val entity = applicantDetails.entity.getOrElse(throw new InternalServerException("[CustomerIdentificationBlockBuilder] missing applicant entity"))
+        val entity = applicantDetails.entity.getOrElse{
+          errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - missing applicant entity")
+          throw new InternalServerException("[CustomerIdentificationBlockBuilder] missing applicant entity")
+        }
 
         jsonObject(
           "tradersPartyType" -> {
@@ -76,16 +80,20 @@ class CustomerIdentificationBlockBuilder @Inject()() {
           }
         }
       case (None, _, _) =>
+        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not retrieve VAT scheme")
         throw new InternalServerException("Could not retrieve VAT scheme")
       case (_, None, _) =>
+        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing applicant details data")
         throw new InternalServerException("Could not build customer identification block for submission due to missing applicant details data")
       case (_, _, None) =>
+        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing business details data")
         throw new InternalServerException("Could not build customer identification block for submission due to missing business details data")
       case _ =>
+        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing data from applicant and trading details")
         throw new InternalServerException("Could not build customer identification block for submission due to missing data from applicant and trading details")
     }
 
-  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String]): JsObject =
+  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String])(implicit request: Request[_]): JsObject =
     (orgName.map(StringNormaliser.normaliseString), optShortOrgName.map(StringNormaliser.normaliseString)) match {
       case (Some(orgName), Some(shortOrgName)) => jsonObject(
         "shortOrgName" -> shortOrgName,
@@ -95,6 +103,8 @@ class CustomerIdentificationBlockBuilder @Inject()() {
         "shortOrgName" -> orgName,
         "organisationName" -> orgName
       )
-      case _ => throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
+      case _ =>
+        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - missing organisation name for a partyType that requires it")
+        throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
     }
 }

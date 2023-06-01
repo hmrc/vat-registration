@@ -23,6 +23,7 @@ import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.mvc.Request
 import services.monitoring.SubmissionAuditBlockBuilder
 import uk.gov.hmrc.auth.core.AffinityGroup
 
@@ -43,6 +44,6 @@ trait MockSubmissionAuditBlockBuilder extends MockitoSugar {
       ArgumentMatchers.eq(affinityGroup),
       ArgumentMatchers.eq(optAgentReferenceNumber),
       ArgumentMatchers.eq(formBundleId)
-    )) thenReturn response
+    )(ArgumentMatchers.any[Request[_]])) thenReturn response
 
 }

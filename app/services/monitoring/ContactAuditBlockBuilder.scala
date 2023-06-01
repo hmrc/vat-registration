@@ -18,15 +18,17 @@ package services.monitoring
 
 import models.api.{ContactPreference, Email, Letter, VatScheme}
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.Singleton
 
 @Singleton
-class ContactAuditBlockBuilder {
+class ContactAuditBlockBuilder extends LoggingUtils{
 
-  def buildContactBlock(vatScheme: VatScheme): JsObject =
+  def buildContactBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     (vatScheme.business, vatScheme.applicantDetails) match {
       case (Some(business), Some(applicantDetails)) =>
         jsonObject(
@@ -55,6 +57,7 @@ class ContactAuditBlockBuilder {
             })
           ))
       case _ =>
+        errorLog("[ContactAuditBlockBuilder][buildContactBlock] - Could not build contact block for submission due to missing data")
         throw new InternalServerException("[ContactAuditBlockBuilder]: Could not build contact block for submission due to missing data")
     }
 

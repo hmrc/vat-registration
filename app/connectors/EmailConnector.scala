@@ -17,21 +17,22 @@
 package connectors
 
 import config.BackendConfig
-import play.api.Logging
 import play.api.http.Status._
 import play.api.libs.json.Json
+import play.api.mvc.Request
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReadsHttpResponse, HttpResponse, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import utils.LoggingUtils
 
 @Singleton
 class EmailConnector @Inject()(httpClient: HttpClientV2)
-                              (implicit ec: ExecutionContext, appConfig: BackendConfig) extends HttpReadsHttpResponse with Logging {
+                              (implicit ec: ExecutionContext, appConfig: BackendConfig) extends HttpReadsHttpResponse with LoggingUtils {
 
   def sendEmail(email: String, template: String, params: Map[String, String], force: Boolean)
-               (implicit hc: HeaderCarrier): Future[EmailResponse] =
+               (implicit hc: HeaderCarrier, request: Request[_]): Future[EmailResponse] =
 
     httpClient.post(url"${appConfig.sendEmailUrl}")
       .withBody(
@@ -48,7 +49,7 @@ class EmailConnector @Inject()(httpClient: HttpClientV2)
           case ACCEPTED =>
             EmailSent
           case status =>
-            logger.warn(s"Unexpected status returned from Email service: $status")
+            warnLog(s"Unexpected status returned from Email service: $status")
             EmailFailedToSend
         }
       }

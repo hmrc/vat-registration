@@ -27,6 +27,8 @@ import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json._
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.VatSchemeRepository
 import utils.TimeMachine
@@ -35,6 +37,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing with FutureAssertions with ITFixtures {
+
+  implicit val request: Request[_] = FakeRequest()
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(config)

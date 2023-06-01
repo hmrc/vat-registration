@@ -22,11 +22,15 @@ import connectors.stubs.NonRepudiationStub._
 import itutil.IntegrationStubbing
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationMetadata, NonRepudiationSubmissionAccepted}
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 class NonRepudiationConnectorISpec extends IntegrationStubbing {
   val testNonRepudiationApiKey = "testNonRepudiationApiKey"
   override lazy val additionalConfig = Map("microservice.services.non-repudiation.api-key" -> testNonRepudiationApiKey)
+
+  implicit val request: Request[_] = FakeRequest()
 
   import AuthTestData._
 

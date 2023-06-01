@@ -22,6 +22,8 @@ import models.OverseasIdentifierDetails
 import models.api._
 import models.submission.{Individual, NETP}
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
@@ -29,6 +31,8 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
   class Setup {
     val service: CustomerIdentificationBlockBuilder = new CustomerIdentificationBlockBuilder
   }
+
+  implicit val request: Request[_] = FakeRequest()
 
   lazy val customerIdentificationBlockWithBPJson: JsObject = Json.parse(
     """

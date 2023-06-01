@@ -221,7 +221,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
 
       when(mockNonRepudiationConnector.submitAttachmentNonRepudiation(
         ArgumentMatchers.eq(testNrsPayload)
-      )(ArgumentMatchers.eq(hc))
+      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
       ).thenReturn(Future.successful(NonRepudiationAttachmentAccepted(testNrAttachmentId)))
 
       await(TestService.processCallback(testCallback(None)))
@@ -229,7 +229,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       eventually {
         verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
           ArgumentMatchers.eq(testNrsPayload)
-        )(ArgumentMatchers.eq(hc))
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
         verifyAudit(NonRepudiationAttachmentSuccessAudit(testCallback(None), testNrAttachmentId))
       }
     }
@@ -253,7 +253,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
 
       when(mockNonRepudiationConnector.submitAttachmentNonRepudiation(
         ArgumentMatchers.eq(testNrsPayload)
-      )(ArgumentMatchers.eq(hc))
+      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
       ).thenReturn(Future.successful(NonRepudiationAttachmentFailed("", BAD_REQUEST)))
 
       await(TestService.processCallback(testCallback(None)))
@@ -261,7 +261,7 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       eventually {
         verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
           ArgumentMatchers.eq(testNrsPayload)
-        )(ArgumentMatchers.eq(hc))
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
         verifyAudit(NonRepudiationAttachmentFailureAudit(testCallback(None), BAD_REQUEST))
       }
     }

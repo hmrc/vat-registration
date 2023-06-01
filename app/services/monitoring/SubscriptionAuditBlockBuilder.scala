@@ -18,16 +18,18 @@ package services.monitoring
 
 import models.api.VatScheme
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.Singleton
 
 // scalastyle:off
 @Singleton
-class SubscriptionAuditBlockBuilder {
+class SubscriptionAuditBlockBuilder extends LoggingUtils {
 
-  def buildSubscriptionBlock(vatScheme: VatScheme): JsObject =
+  def buildSubscriptionBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication, vatScheme.business, vatScheme.flatRateScheme, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
       case (Some(eligibilityData), Some(vatApplication), Some(business), optFlatRateScheme, otherBusinessInvolvements) => jsonObject(
         "overThresholdIn12MonthPeriod" -> eligibilityData.threshold.thresholdInTwelveMonths.isDefined,
@@ -113,6 +115,7 @@ class SubscriptionAuditBlockBuilder {
         )
       )
       case _ =>
+        errorLog("[SubscriptionAuditBlockBuilder][buildSubscriptionBlock] - Could not build subscription block for submission because some of the data is missing")
         throw new InternalServerException(
           "[SubscriptionBlockBuilder] Could not build subscription block for submission because some of the data is missing: " +
             s"EligibilitySubmissionData found - ${vatScheme.eligibilitySubmissionData.isDefined}, " +

@@ -18,15 +18,17 @@ package services.monitoring
 
 import models.api.VatScheme
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.Singleton
 
 @Singleton
-class ComplianceAuditBlockBuilder {
+class ComplianceAuditBlockBuilder extends LoggingUtils{
 
-  def buildComplianceBlock(vatScheme: VatScheme): Option[JsObject] = {
+  def buildComplianceBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] = {
     vatScheme.business match {
       case Some(business) => business.labourCompliance map (labourCompliance =>
         jsonObject(
@@ -34,7 +36,9 @@ class ComplianceAuditBlockBuilder {
           optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
           optional("supplyWorkers" -> labourCompliance.supplyWorkers)
         ))
-      case None => throw new InternalServerException("[ComplianceBlockBuilder] Couldn't build audit compliance block due to missing business data")
+      case None =>
+        errorLog("[ComplianceAuditBlockBuilder][buildComplianceBlock] - Couldn't build audit compliance block due to missing business data")
+        throw new InternalServerException("[ComplianceBlockBuilder] Couldn't build audit compliance block due to missing business data")
     }
   }
 

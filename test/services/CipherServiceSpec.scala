@@ -22,11 +22,15 @@ import helpers.VatRegSpec
 import models.api.BankAccountMongoFormat
 import models.registration.{BankAccountSectionId, BusinessSectionId}
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class CipherServiceSpec extends VatRegSpec with VatRegistrationFixture {
 
   val crypto = app.injector.instanceOf[CryptoSCRS]
+
+  implicit val request: Request[_] = FakeRequest()
 
   object Service extends CipherService(crypto)
 

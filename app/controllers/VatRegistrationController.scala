@@ -26,7 +26,6 @@ import services._
 import services.submission.SubmissionService
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -52,9 +51,11 @@ class VatRegistrationController @Inject()(val registrationService: VatRegistrati
           case _ => submissionService.submitVatRegistration(internalId, regId, userHeaders, lang).map {
             case Right(VatSubmissionSuccess(_)) =>
               Ok
-            case Left(VatSubmissionFailure(BAD_REQUEST, _)) =>
+            case Left(VatSubmissionFailure(BAD_REQUEST, e)) =>
+              errorLog(s"[VatRegistrationController][submitVATRegistration] errored with $e")
               BadRequest
-            case Left(VatSubmissionFailure(CONFLICT, _)) =>
+            case Left(VatSubmissionFailure(CONFLICT, e)) =>
+              errorLog(s"[VatRegistrationController][submitVATRegistration] errored with $e")
               Conflict
             case _ =>
               InternalServerError

@@ -19,19 +19,24 @@ package services.monitoring
 import models.api.VatScheme
 import models._
 import play.api.libs.json.JsValue
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.Singleton
 
 // scalastyle:off
 @Singleton
-class CustomerIdentificationAuditBlockBuilder {
+class CustomerIdentificationAuditBlockBuilder extends LoggingUtils{
 
-  def buildCustomerIdentificationBlock(vatScheme: VatScheme): JsValue = {
+  def buildCustomerIdentificationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsValue = {
     (vatScheme.applicantDetails, vatScheme.business) match {
       case (Some(applicantDetails), Some(business)) =>
-        val entity = applicantDetails.entity.getOrElse(throw new InternalServerException("[CustomerIdentificationBlockBuilder] missing applicant entity"))
+        val entity = applicantDetails.entity.getOrElse{
+          errorLog("[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - missing applicant entity")
+          throw new InternalServerException("[CustomerIdentificationBlockBuilder] missing applicant entity")
+        }
 
         jsonObject(
           "tradersPartyType" -> vatScheme.partyType,
@@ -74,8 +79,10 @@ class CustomerIdentificationAuditBlockBuilder {
           }
         }
       case (None, _) =>
+        errorLog("[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - Could not build customerIdentification block due to missing Applicant details data")
         throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Applicant details data")
       case (_, None) =>
+        errorLog("[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - Could not build customerIdentification block due to missing Business details data")
         throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Business details data")
     }
   }

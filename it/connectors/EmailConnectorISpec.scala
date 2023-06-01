@@ -4,9 +4,13 @@ package connectors
 import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
 import itutil.IntegrationStubbing
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 class EmailConnectorISpec extends IntegrationStubbing {
+
+  implicit val request: Request[_] = FakeRequest()
 
   val connector = app.injector.instanceOf[EmailConnector]
   val emptyBody = ""

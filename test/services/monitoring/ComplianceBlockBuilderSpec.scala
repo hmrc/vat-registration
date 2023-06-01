@@ -21,11 +21,15 @@ import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
 import models.api.ComplianceLabour
 import play.api.libs.json.Json
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository with VatRegistrationFixture {
 
   object TestBuilder extends ComplianceAuditBlockBuilder
+
+  implicit val request: Request[_] = FakeRequest()
 
   "The compliance block builder" must {
     "build the correct json when only the supplyWorkers flag is set" in {

@@ -25,6 +25,8 @@ import models.registration.AttachmentsSectionId
 import models.submission.{LtdLiabilityPartnership, Partnership}
 import org.mockito.Mockito.{reset, verify}
 import org.mockito.{ArgumentMatchers, Mockito}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
@@ -32,6 +34,8 @@ import scala.concurrent.Future
 class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository with MockUpscanMongoRepository {
 
   object Service extends AttachmentsService(mockVatSchemeRepository, mockUpscanMongoRepository)
+
+  implicit val request: Request[_] = FakeRequest()
 
   val attachmentsKey = "attachments"
   val testUnverifiedUserVatScheme = testFullVatScheme.copy(
@@ -153,7 +157,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         res mustBe Nil
         verify(mockVatSchemeRepository, Mockito.times(1))
-          .deleteSection(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(AttachmentsSectionId.repoKey))
+          .deleteSection(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(AttachmentsSectionId.repoKey))(ArgumentMatchers.any[Request[_]])
         verify(mockUpscanMongoRepository, Mockito.times(1))
           .deleteAllUpscanDetails(ArgumentMatchers.eq(testRegId))
       }
@@ -171,7 +175,7 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         res mustBe Nil
         verify(mockVatSchemeRepository, Mockito.times(1))
-          .upsertSection(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(AttachmentsSectionId.repoKey), ArgumentMatchers.eq(clearedAttachmentsInfo))(ArgumentMatchers.any())
+          .upsertSection(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(AttachmentsSectionId.repoKey), ArgumentMatchers.eq(clearedAttachmentsInfo))(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])
         verify(mockUpscanMongoRepository, Mockito.times(1))
           .deleteAllUpscanDetails(ArgumentMatchers.eq(testRegId))
       }

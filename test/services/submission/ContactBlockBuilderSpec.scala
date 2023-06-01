@@ -20,6 +20,8 @@ import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import models.api.Contact
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with VatSubmissionFixture {
@@ -27,6 +29,8 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
   class Setup {
     val service: ContactBlockBuilder = new ContactBlockBuilder
   }
+
+  implicit val request: Request[_] = FakeRequest()
 
   lazy val contactBlockJson: JsObject = Json.parse(
     """

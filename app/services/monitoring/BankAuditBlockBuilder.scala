@@ -19,15 +19,17 @@ package services.monitoring
 import models.api._
 import models.submission._
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.Singleton
 
 @Singleton
-class BankAuditBlockBuilder {
+class BankAuditBlockBuilder extends LoggingUtils{
 
-  def buildBankAuditBlock(vatScheme: VatScheme): JsObject = {
+  def buildBankAuditBlock(vatScheme: VatScheme)(implicit request:Request[_]): JsObject = {
     vatScheme.bankAccount match {
       case Some(bankAccount) =>
         if (bankAccount.isProvided) {
@@ -40,6 +42,7 @@ class BankAuditBlockBuilder {
                 conditional(bankAccountDetails.status.equals(IndeterminateStatus))("bankDetailsNotValid" -> true)
               )
             case None =>
+              errorLog("[BankAuditBlockBuilder][buildBankAuditBlock] - Could not build bank details block for audit due to missing bank account details")
               throw new InternalServerException("[BankAuditBlockBuilder]: Could not build bank details block for audit due to missing bank account details")
           }
         }
@@ -53,6 +56,7 @@ class BankAuditBlockBuilder {
           "reasonBankAccNotProvided" -> NoUKBankAccount.overseasAccount
         )
       case None =>
+        errorLog("[BankAuditBlockBuilder][buildBankAuditBlock] - Could not build bank details block for audit due to missing bank account")
         throw new InternalServerException("BankAuditBlockBuilder: Could not build bank details block for audit due to missing bank account")
     }
 

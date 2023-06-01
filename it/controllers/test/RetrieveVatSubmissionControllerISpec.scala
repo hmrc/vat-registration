@@ -2,11 +2,13 @@
 package controllers.test
 
 import itutil.{IntegrationSpecBase, IntegrationStubbing}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.submission.SubmissionPayloadBuilder
 
 class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with IntegrationStubbing {
-
+  implicit val request: Request[_] = FakeRequest()
   val url = s"/vatreg/test-only/submissions/$testRegId/submission-payload"
   val builder = app.injector.instanceOf[SubmissionPayloadBuilder]
 

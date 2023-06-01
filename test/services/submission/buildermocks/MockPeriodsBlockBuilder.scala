@@ -23,6 +23,7 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import services.submission.PeriodsBlockBuilder
 
 trait MockPeriodsBlockBuilder extends MockitoSugar {
@@ -32,7 +33,7 @@ trait MockPeriodsBlockBuilder extends MockitoSugar {
 
   def mockBuildPeriodsBlock(vatScheme: VatScheme)
                            (response: JsObject): OngoingStubbing[JsObject] =
-    when(mockPeriodsBlockBuilder.buildPeriodsBlock(ArgumentMatchers.eq(vatScheme)))
+    when(mockPeriodsBlockBuilder.buildPeriodsBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]]))
       .thenReturn(response)
 
 }
