@@ -27,7 +27,6 @@ import models.api.vatapplication.Annual
 import models.api.{Attached, PersonalDetails, VatScheme}
 import models.monitoring.SubmissionFailureErrorsAuditModel
 import models.{IntendingTrader, Voluntary}
-import play.api.Logging
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
@@ -39,7 +38,7 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException}
 import utils.JsonUtils.{conditional, jsonObject, optional}
-import utils.{IdGenerator, TimeMachine}
+import utils.{IdGenerator, LoggingUtils, TimeMachine}
 
 import java.util.Base64
 import javax.inject.{Inject, Singleton}
@@ -60,7 +59,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                                   schemaValidationService: SchemaValidationService,
                                   apiSchema: API1364,
                                   val authConnector: AuthConnector
-                                 )(implicit executionContext: ExecutionContext) extends FutureInstances with AuthorisedFunctions with Logging with FeatureSwitching {
+                                 )(implicit executionContext: ExecutionContext) extends FutureInstances with AuthorisedFunctions with LoggingUtils with FeatureSwitching {
 
   def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String], lang: String)
                            (implicit hc: HeaderCarrier,
@@ -84,9 +83,11 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       }
     }).recover {
       case exception: BadRequestException =>
+        errorLog(s"[SubmissionService][submitVatRegistration] - $exception")
         throw exception
       case exception =>
         registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failedRetryable)
+        errorLog(s"[SubmissionService][submitVatRegistration] - $exception")
         throw exception
     }
 
@@ -113,7 +114,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                               (implicit hc: HeaderCarrier,
                                request: Request[_]): Future[VatSubmissionResponse] = {
 
-    logger.info(s"VAT Submission API Correlation Id: $correlationId for the following regId: $regId")
+    infoLog(s"VAT Submission API Correlation Id: $correlationId for the following regId: $regId")
 
     authorised().retrieve(credentials) { case Some(credentials) =>
       vatSubmissionConnector.submit(submission, correlationId, credentials.providerId)
@@ -140,11 +141,11 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
          _ = auditService.audit(SubmissionFailureErrorsAuditModel(regId, correlationId, errors))
         } yield {
           errors.get(suppressedKey).foreach { errors =>
-            logger.error(s"[Suppressed submission errors] Submission for reg id '$regId' failed with suppressed " +
+            errorLog(s"[Suppressed submission errors] Submission for reg id '$regId' failed with suppressed " +
               s"errors for the following fields:\n${errors.mkString(", ")}\n")
           }
           errors.get(unknownKey).map { errors =>
-            logger.error(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
+            errorLog(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
             throw new BadRequestException(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
           }
 
@@ -172,7 +173,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     nonRepudiationService.submitNonRepudiation(vatScheme.registrationId, payloadString, timeMachine.timestamp, formBundleId, userHeaders, digitalAttachments)
       .recover {
         case _ =>
-          logger.error("[SubmissionService] NRS Returned an unexpected exception")
+          errorLog("[SubmissionService] NRS Returned an unexpected exception")
           None
       }
   }
@@ -183,6 +184,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       case Some(credentials) ~ Some(affinity) ~ optAgentCode =>
         Future.successful((credentials.providerId, affinity, optAgentCode))
       case _ =>
+        errorLog("[SubmissionService][retrieveIdentityDetails] - Couldn't retrieve auth details for user")
         Future.failed(throw new InternalServerException("[SubmissionService] Couldn't retrieve auth details for user"))
     }
 
@@ -206,7 +208,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
 
   // scalastyle:off
   private[services] def logSubmission(vatScheme: VatScheme,
-                                      vatSubmissionStatus: VatSubmissionResponse): Future[Unit] = {
+                                      vatSubmissionStatus: VatSubmissionResponse)(implicit request: Request[_]): Future[Unit] = {
 
     val agentOrTransactor = (vatScheme.transactorDetails.flatMap(_.personalDetails), vatScheme.eligibilitySubmissionData.map(_.isTransactor)) match {
       case (Some(PersonalDetails(_, _, _, Some(_), _, _, _)), Some(true)) => Some("AgentFlow")
@@ -239,7 +241,7 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       vatScheme.eligibilitySubmissionData.map(_.registrationReason.toString)
     }
 
-    Future.successful(logger.info(jsonObject(
+    Future.successful(infoLog(jsonObject(
       "logInfo" -> "SubmissionLog",
       "status" -> vatSubmissionStatus.fold(_ => "Failed", _ => "Successful"),
       "regId" -> vatScheme.registrationId,

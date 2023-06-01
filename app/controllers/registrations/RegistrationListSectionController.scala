@@ -23,6 +23,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import services.{InvalidSection, RegistrationService, SectionValidationService, ValidSection}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -61,9 +62,11 @@ class RegistrationListSectionController @Inject()(val authConnector: AuthConnect
               case Some(_) =>
                 Ok(validatedJson)
               case _ =>
+                errorLog(s"[RegistrationListSectionController][replaceSectionIndex] errored with Unable to upsert section '${section.key}' for regId '$regId'")
                 InternalServerError(s"[RegistrationListSectionController] Unable to upsert section '${section.key}' for regId '$regId'")
             }
           case Left(response@InvalidSection(_)) =>
+            errorLog(s"[RegistrationListSectionController][replaceSectionIndex] errored with ${response.asString}")
             Future.successful(BadRequest(response.asString))
         }
       }

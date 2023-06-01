@@ -19,6 +19,7 @@ package services
 import connectors.NonRepudiationConnector
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationSubmissionFailureAudit, NonRepudiationSubmissionSuccessAudit}
 import models.nonrepudiation.{IdentityData, NonRepudiationMetadata, NonRepudiationSubmissionAccepted, NonRepudiationSubmissionFailed}
+
 import java.time.LocalDate
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
@@ -29,6 +30,7 @@ import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, InternalServerException}
+import utils.LoggingUtils
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -41,7 +43,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationConnector,
                                       upscanMongoRepository: UpscanMongoRepository,
                                       auditService: AuditService,
-                                      val authConnector: AuthConnector)(implicit ec: ExecutionContext) extends AuthorisedFunctions {
+                                      val authConnector: AuthConnector)(implicit ec: ExecutionContext) extends AuthorisedFunctions with LoggingUtils{
 
   def submitNonRepudiation(registrationId: String,
                            payloadString: String,
@@ -56,7 +58,9 @@ class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationCon
       .map("%02x".format(_)).mkString
     userAuthToken = hc.authorization match {
       case Some(Authorization(authToken)) => authToken
-      case _ => throw new InternalServerException("No auth token available for NRS")
+      case _ =>
+        errorLog("[NonRepudiationService][submitNonRepudiation] - No auth token available for NRS")
+        throw new InternalServerException("No auth token available for NRS")
     }
     digitalAttachmentIds <- if (digitalAttachments) {
       upscanMongoRepository.getAllUpscanDetails(registrationId).map(_.map(_.reference))

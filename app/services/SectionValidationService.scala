@@ -22,25 +22,28 @@ import models.api.vatapplication.VatApplication
 import models.registration._
 import models.submission.PartyType
 import play.api.libs.json._
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SectionValidationService @Inject()(registrationService: RegistrationService)
-                                        (implicit ec: ExecutionContext) {
+                                        (implicit ec: ExecutionContext)  extends LoggingUtils{
 
   val partyTypeKey = "partyType"
 
   // scalastyle:off
-  def validate(internalId: String, regId: String, section: RegistrationSectionId, json: JsValue): Future[Either[InvalidSection, ValidSection]] =
+  def validate(internalId: String, regId: String, section: RegistrationSectionId, json: JsValue)(implicit request: Request[_]): Future[Either[InvalidSection, ValidSection]] =
     section match {
       case ApplicantSectionId =>
         registrationService.getAnswer[PartyType](internalId, regId, EligibilitySectionId, partyTypeKey).collect {
           case Some(partyType) =>
             validate[ApplicantDetails](json)(Format[ApplicantDetails](ApplicantDetails.reads(partyType), ApplicantDetails.writes))
           case _ =>
+            errorLog("[SectionValidationService][validate] - Couldn't parse Applicant section due to missing party type")
             throw new InternalServerException("[SectionValidationService] Couldn't parse Applicant section due to missing party type")
         }
       case AttachmentsSectionId => Future(validate[Attachments](json))
@@ -58,14 +61,18 @@ class SectionValidationService @Inject()(registrationService: RegistrationServic
       case ApplicationReferenceSectionId => Future(validate[String](json))
       case AcknowledgementReferenceSectionId => Future(validate[String](json))
       case NrsSubmissionPayloadSectionId => Future(validate[String](json))
-      case unknown => throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported section: ${unknown.toString}")
+      case unknown =>
+        errorLog(s"[SectionValidationService][validate] - Attempted to validate an unsupported section: ${unknown.toString}")
+        throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported section: ${unknown.toString}")
     }
 
-  def validateIndex(section: CollectionSectionId, json: JsValue): Future[Either[InvalidSection, ValidSection]] =
+  def validateIndex(section: CollectionSectionId, json: JsValue)(implicit request: Request[_]): Future[Either[InvalidSection, ValidSection]] =
     section match {
       case OtherBusinessInvolvementsSectionId => Future(validate[OtherBusinessInvolvement](json))
       case EntitiesSectionId => Future(validate[Entity](json))
-      case unknown => throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported collection section: ${unknown.toString}")
+      case unknown =>
+        errorLog(s"[SectionValidationService][validateIndex] - Attempted to validate an unsupported collection section: ${unknown.toString}")
+        throw new InternalServerException(s"[SectionValidationService] Attempted to validate an unsupported collection section: ${unknown.toString}")
     }
 
   private def validate[A](json: JsValue)(implicit format: Format[A]): Either[InvalidSection, ValidSection] =

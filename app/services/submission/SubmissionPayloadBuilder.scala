@@ -18,6 +18,7 @@ package services.submission
 
 import models.api.VatScheme
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
@@ -36,7 +37,7 @@ class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
                                          entitiesBlockBuilder: EntitiesBlockBuilder
                                         )(implicit ec: ExecutionContext) {
 
-  def buildSubmissionPayload(vatScheme: VatScheme): JsObject =
+  def buildSubmissionPayload(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     jsonObject(
       "messageType" -> "SubscriptionCreate",
       "admin" -> adminBlockBuilder.buildAdminBlock(vatScheme),

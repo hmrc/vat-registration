@@ -26,6 +26,8 @@ import models.api._
 import models.registration.{OtherBusinessInvolvementsSectionId, TransactorSectionId}
 import org.scalatest.BeforeAndAfterEach
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.HeaderCarrier
 import utils.FakeRegistrationIdService
@@ -56,6 +58,8 @@ class RegistrationServiceSpec extends VatRegSpec
   )
 
   val fakeRegIdService = new FakeRegistrationIdService
+
+  implicit val request: Request[_] = FakeRequest()
 
   object Service extends RegistrationService(
     vatSchemeRepository = mockVatSchemeRepository,

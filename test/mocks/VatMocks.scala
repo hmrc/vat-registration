@@ -100,7 +100,7 @@ trait VatMocks {
 
   object ServiceMocks {
     def mockGetDocumentStatus(status: VatRegStatus.Value): Unit = {
-      when(mockVatRegistrationService.getStatus(anyString(), anyString()))
+      when(mockVatRegistrationService.getStatus(anyString(), anyString())(any()))
         .thenReturn(Future.successful(status))
     }
   }

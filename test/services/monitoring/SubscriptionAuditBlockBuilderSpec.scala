@@ -21,6 +21,8 @@ import helpers.VatRegSpec
 import models.api._
 import models.api.vatapplication.{JanuaryStagger, Quarterly, VatApplication}
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
@@ -28,6 +30,8 @@ import java.time.LocalDate
 class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   object TestService extends SubscriptionAuditBlockBuilder
+
+  implicit val request: Request[_] = FakeRequest()
 
   val fullSubscriptionBlockJson: JsValue = Json.parse(
     s"""

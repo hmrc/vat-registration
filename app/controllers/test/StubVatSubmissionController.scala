@@ -17,11 +17,11 @@
 package controllers.test
 
 import models.api.schemas.API1364
-import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import services.SchemaValidationService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
@@ -29,16 +29,16 @@ import scala.concurrent.Future
 @Singleton
 class StubVatSubmissionController @Inject()(schemaValidationService: SchemaValidationService,
                                             apiSchema: API1364,
-                                            cc: ControllerComponents) extends BackendController(cc) with Logging {
+                                            cc: ControllerComponents) extends BackendController(cc) with LoggingUtils {
 
   val processSubmission: Action[JsValue] = Action.async(parse.json) { implicit request =>
-    logger.info(s"[StubVatSubmissionController][processSubmission] Received submission: ${Json.prettyPrint(request.body)}")
+    infoLog(s"[StubVatSubmissionController][processSubmission] Received submission: ${Json.prettyPrint(request.body)}")
 
     schemaValidationService.validate(apiSchema, request.body.toString()) match {
       case map if map.isEmpty =>
         Future.successful(Ok(Json.stringify(Json.obj("formBundle" -> "123412341234"))))
       case errorMap =>
-        logger.error(s"[StubVatSubmissionController][processSubmission] Bad request errors:\n ${Json.prettyPrint(Json.toJson(errorMap))}")
+        errorLog(s"[StubVatSubmissionController][processSubmission] Bad request errors:\n ${Json.prettyPrint(Json.toJson(errorMap))}")
         Future.successful(BadRequest(Json.obj("failures" -> Json.arr(Json.obj("code" -> "INVALID_PAYLOAD")))))
     }
   }

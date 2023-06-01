@@ -19,16 +19,18 @@ package services.monitoring
 import models.api.{Address, FormerName, Name, VatScheme}
 import models.submission.Other
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.{jsonObject, _}
+import utils.LoggingUtils
 
 import javax.inject.Singleton
 
 // scalastyle:off
 @Singleton
-class DeclarationAuditBlockBuilder {
+class DeclarationAuditBlockBuilder extends LoggingUtils{
 
-  def buildDeclarationBlock(vatScheme: VatScheme): JsObject = {
+  def buildDeclarationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject = {
     (vatScheme.applicantDetails, vatScheme.confirmInformationDeclaration, vatScheme.transactorDetails) match {
       case (Some(applicantDetails), Some(declaration), optTransactorDetails) =>
         jsonObject(
@@ -94,6 +96,7 @@ class DeclarationAuditBlockBuilder {
           })
         )
       case _ =>
+        errorLog("[DeclarationAuditBlockBuilder][buildDeclarationBlock] - Could not construct declaration block because the application details and declaration are missing")
         throw new InternalServerException(
           s"[DeclarationBlockBuilder] Could not construct declaration block because the following are missing:" +
             s"ApplicantDetails found - ${vatScheme.applicantDetails.isDefined}, " +

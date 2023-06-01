@@ -23,6 +23,7 @@ import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.mvc.Request
 import services.RegistrationService
 
 import scala.concurrent.Future
@@ -44,6 +45,6 @@ trait MockRegistrationService extends MockitoSugar {
       ArgumentMatchers.eq(regId),
       ArgumentMatchers.eq(section),
       ArgumentMatchers.eq(answer)
-    )(ArgumentMatchers.any())) thenReturn response
+    )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])) thenReturn response
 
 }

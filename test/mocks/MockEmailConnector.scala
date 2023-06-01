@@ -22,6 +22,7 @@ import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
+import play.api.mvc.Request
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
@@ -40,6 +41,6 @@ trait MockEmailConnector extends MockitoSugar {
       ArgumentMatchers.eq(template),
       ArgumentMatchers.eq(params),
       ArgumentMatchers.eq(force)
-    )(ArgumentMatchers.any[HeaderCarrier])) thenReturn response
+    )(ArgumentMatchers.any[HeaderCarrier], ArgumentMatchers.any[Request[_]])) thenReturn response
 
 }

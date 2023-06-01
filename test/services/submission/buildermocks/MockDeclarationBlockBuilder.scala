@@ -23,6 +23,7 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import services.submission.DeclarationBlockBuilder
 
 trait MockDeclarationBlockBuilder extends MockitoSugar {
@@ -31,6 +32,6 @@ trait MockDeclarationBlockBuilder extends MockitoSugar {
   val mockDeclarationBlockBuilder = mock[DeclarationBlockBuilder]
 
   def mockBuildDeclarationBlock(vatScheme: VatScheme)(response: JsObject): OngoingStubbing[JsObject] =
-    when(mockDeclarationBlockBuilder.buildDeclarationBlock(ArgumentMatchers.eq(vatScheme))) thenReturn response
+    when(mockDeclarationBlockBuilder.buildDeclarationBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]])) thenReturn response
 
 }

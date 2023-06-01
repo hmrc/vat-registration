@@ -22,6 +22,8 @@ import mocks.MockVatSchemeRepository
 import models.api._
 import models.submission.{AccountantAgent, Other}
 import play.api.libs.json.Json
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 import scala.concurrent.Future
@@ -29,6 +31,8 @@ import scala.concurrent.Future
 class DeclarationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
 
   object TestBuilder extends DeclarationAuditBlockBuilder
+
+  implicit val request: Request[_] = FakeRequest()
 
   val testApplicantDetails: ApplicantDetails = validApplicantDetails.copy(changeOfName = FormerName())
   val declarationVatScheme: VatScheme = testVatScheme.copy(

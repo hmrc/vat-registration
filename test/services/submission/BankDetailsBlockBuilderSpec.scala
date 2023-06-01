@@ -21,9 +21,13 @@ import helpers.VatRegSpec
 import models.api._
 import models.submission.NETP
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
+
+  implicit val request: Request[_] = FakeRequest()
 
   class Setup {
     val service: BankDetailsBlockBuilder = new BankDetailsBlockBuilder

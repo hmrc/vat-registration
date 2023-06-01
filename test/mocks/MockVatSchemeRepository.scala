@@ -23,6 +23,7 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsValue, Reads}
+import play.api.mvc.Request
 import repositories.VatSchemeRepository
 
 import scala.concurrent.Future
@@ -62,14 +63,14 @@ trait MockVatSchemeRepository extends MockitoSugar {
     when(mockVatSchemeRepository.deleteRegistration(
       ArgumentMatchers.eq(internalId),
       ArgumentMatchers.eq(regId)
-    )) thenReturn response
+    )(ArgumentMatchers.any[Request[_]])) thenReturn response
 
   def mockGetSection[T](internalId: String, regId: String, key: String)(response: Future[Option[T]]): OngoingStubbing[Future[Option[T]]] =
     when(mockVatSchemeRepository.getSection[T](
       ArgumentMatchers.eq(internalId),
       ArgumentMatchers.eq(regId),
       ArgumentMatchers.eq(key)
-    )(ArgumentMatchers.any[Reads[T]])).thenReturn(response)
+    )(ArgumentMatchers.any[Reads[T]], ArgumentMatchers.any[Request[_]])).thenReturn(response)
 
   def mockUpsertSection[T](internalId: String, regId: String, key: String, data: T)(response: Option[T]): OngoingStubbing[Future[Option[T]]] =
     when(mockVatSchemeRepository.upsertSection[T](
@@ -77,7 +78,7 @@ trait MockVatSchemeRepository extends MockitoSugar {
       ArgumentMatchers.eq(regId),
       ArgumentMatchers.eq(key),
       ArgumentMatchers.eq(data)
-    )(ArgumentMatchers.any())).thenReturn(Future.successful(response))
+    )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])).thenReturn(Future.successful(response))
 
   def mockUpsertSectionFail[T](internalId: String, regId: String, key: String, data: T)(response: Throwable): OngoingStubbing[Future[Option[T]]] =
     when(mockVatSchemeRepository.upsertSection[T](
@@ -85,12 +86,12 @@ trait MockVatSchemeRepository extends MockitoSugar {
       ArgumentMatchers.eq(regId),
       ArgumentMatchers.eq(key),
       ArgumentMatchers.eq(data)
-    )(ArgumentMatchers.any())).thenReturn(Future.failed(response))
+    )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])).thenReturn(Future.failed(response))
 
   def mockDeleteSection(internalId: String, regId: String, key: String)(response: Boolean): OngoingStubbing[Future[Boolean]] =
     when(mockVatSchemeRepository.deleteSection(
       ArgumentMatchers.eq(internalId),
       ArgumentMatchers.eq(regId),
       ArgumentMatchers.eq(key)
-    )).thenReturn(Future.successful(response))
+    )(ArgumentMatchers.any[Request[_]])).thenReturn(Future.successful(response))
 }

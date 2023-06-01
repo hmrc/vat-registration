@@ -23,6 +23,7 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import services.submission.SubmissionPayloadBuilder
 
 trait MockSubmissionPayloadBuilder extends MockitoSugar {
@@ -32,7 +33,7 @@ trait MockSubmissionPayloadBuilder extends MockitoSugar {
 
   def mockBuildSubmissionPayload(vatScheme: VatScheme)
                                 (response: JsObject): OngoingStubbing[JsObject] =
-    when(mockSubmissionPayloadBuilder.buildSubmissionPayload(ArgumentMatchers.eq(vatScheme)))
+    when(mockSubmissionPayloadBuilder.buildSubmissionPayload(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]]))
       .thenReturn(response)
 
 }

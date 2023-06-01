@@ -24,6 +24,8 @@ import models.submission.{NETP, NonUkNonEstablished}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.libs.json.{JsObject, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 import scala.concurrent.Future
@@ -31,6 +33,8 @@ import scala.concurrent.Future
 class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with MockAttachmentsService {
 
   object TestBuilder extends AdminBlockBuilder(mockAttachmentService)
+
+  implicit val request: Request[_] = FakeRequest()
 
   override def beforeEach(): Unit = {
     reset(mockAttachmentService)
@@ -172,7 +176,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
     "throw an exception" when {
       "the eligibility data is missing from the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(ArgumentMatchers.any[Request[_]]))
           .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
@@ -187,7 +191,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       }
 
       "the vat application details data is missing from the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(ArgumentMatchers.any[Request[_]]))
           .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
@@ -202,7 +206,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       }
 
       "there is no eligibility data or trading details data in the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId)))
+        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(ArgumentMatchers.any[Request[_]]))
           .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(

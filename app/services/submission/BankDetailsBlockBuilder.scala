@@ -20,15 +20,17 @@ import models.api.NoUKBankAccount.reasonId
 import models.api._
 import models.submission.{NETP, NonUkNonEstablished}
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class BankDetailsBlockBuilder @Inject()() {
+class BankDetailsBlockBuilder @Inject()() extends LoggingUtils{
 
-  def buildBankDetailsBlock(vatScheme: VatScheme): Option[JsObject] =
+  def buildBankDetailsBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
     (vatScheme.bankAccount, vatScheme.partyType) match {
       case (Some(BankAccount(true, Some(details), _)), Some(partyType)) =>
         Some(jsonObject(
@@ -49,6 +51,8 @@ class BankDetailsBlockBuilder @Inject()() {
         Some(jsonObject("UK" -> jsonObject(
           "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
         )))
-      case _ => throw new InternalServerException("Could not build bank details block for submission due to missing bank account")
+      case _ =>
+        errorLog("[BankDetailsBlockBuilder][buildBankDetailsBlock] - Could not build bank details block for submission due to missing bank account")
+        throw new InternalServerException("Could not build bank details block for submission due to missing bank account")
     }
 }

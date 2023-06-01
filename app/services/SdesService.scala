@@ -24,13 +24,12 @@ import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachment
 import models.sdes.PropertyExtractor._
 import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesFileSubmissionAudit}
 import models.sdes._
-import play.api.Logging
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
 import services.SdesService.fileReceived
 import services.monitoring.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.IdGenerator
+import utils.{IdGenerator, LoggingUtils}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,7 +41,7 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
                             upscanMongoRepository: UpscanMongoRepository,
                             auditService: AuditService,
                             idGenerator: IdGenerator)
-                           (implicit executionContext: ExecutionContext, appConfig: BackendConfig) extends Logging {
+                           (implicit executionContext: ExecutionContext, appConfig: BackendConfig) extends LoggingUtils{
 
   def notifySdes(regId: String,
                  formBundleId: String,
@@ -105,13 +104,13 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
 
             result match {
               case res: SdesNotificationSuccess =>
-                logger.info(s"[SdesService] SDES notification sent for $reference")
+                infoLog(s"[SdesService][notifySdes] SDES notification sent for $reference")
                 res
               case res@SdesNotificationFailure(body, status) =>
-                logger.error(s"[SdesService] SDES notification failed with status: $status and body: $body")
+                errorLog(s"[SdesService][notifySdes] SDES notification failed with status: $status and body: $body")
                 res
               case res@SdesNotificationUnexpectedFailure(status, body) =>
-                logger.error(s"[SdesService] SDES notification failed with an unexpected status: $status and body: $body")
+                errorLog(s"[SdesService][notifySdes] SDES notification failed with an unexpected status: $status and body: $body")
                 res
             }
           }
@@ -138,20 +137,20 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
         nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
           case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
             auditService.audit(NonRepudiationAttachmentSuccessAudit(sdesCallback, nrAttachmentId))
-            logger.info(s"[SdesService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId")
+            infoLog(s"[SdesService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId")
           case NonRepudiationAttachmentFailed(body, status) =>
             auditService.audit(NonRepudiationAttachmentFailureAudit(sdesCallback, status))
-            logger.error(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
+            errorLog(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
         }
       case (Some(_), Some(attachmentId), Some(_), Some(_), Some(_), None) =>
-        Future.successful(logger.info(s"[SdesService] Not sending attachment NRS payload for $attachmentId as SDES notification type was ${sdesCallback.notification}"))
+        Future.successful(infoLog(s"[SdesService] Not sending attachment NRS payload for $attachmentId as SDES notification type was ${sdesCallback.notification}"))
       case (_, Some(attachmentId), _, _, _, Some(failureReason)) =>
-        logger.warn(s"[SdesService] Not sending attachment NRS payload as callback for $attachmentId failed with reason: $failureReason")
+        warnLog(s"[SdesService] Not sending attachment NRS payload as callback for $attachmentId failed with reason: $failureReason")
         Future.successful(auditService.audit(SdesCallbackFailureAudit(sdesCallback)))
       case (Some(_), Some(_), Some(_), None, Some(_), _) =>
-        Future.successful(logger.warn("[SdesService] Not sending attachment NRS payload as NRS failed for the Registration Submission"))
+        Future.successful(warnLog("[SdesService] Not sending attachment NRS payload as NRS failed for the Registration Submission"))
       case _ =>
-        Future.successful(logger.error("[SdesService] Could not send attachment NRS payload due to missing data in the callback"))
+        Future.successful(warnLog("[SdesService] Could not send attachment NRS payload due to missing data in the callback"))
     }
   }
 

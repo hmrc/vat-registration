@@ -18,6 +18,7 @@ package services.monitoring
 
 import models.api.{AttachmentType, VatScheme}
 import models.monitoring.SubmissionAuditModel
+import play.api.mvc.Request
 import services.AttachmentsService
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.InternalServerException
@@ -43,7 +44,7 @@ class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: Subscripti
                      affinityGroup: AffinityGroup,
                      optAgentReferenceNumber: Option[String],
                      formBundleId: String
-                    ): SubmissionAuditModel = {
+                    )(implicit request: Request[_]): SubmissionAuditModel = {
     val mandatoryAttachmentList = attachmentsService.mandatoryAttachmentList(vatScheme)
     val details = jsonObject(
       "outsideEUSales" -> {

@@ -18,19 +18,22 @@ package services.submission
 
 import models.api.VatScheme
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.jsonObject
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class PeriodsBlockBuilder @Inject()() {
+class PeriodsBlockBuilder @Inject()() extends LoggingUtils{
 
-  def buildPeriodsBlock(vatScheme: VatScheme): JsObject =
+  def buildPeriodsBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     vatScheme.vatApplication match {
       case Some(vatApplication) =>
         jsonObject("customerPreferredPeriodicity" -> vatApplication.staggerStart)
       case None =>
+        errorLog("[PeriodsBlockBuilder][buildPeriodsBlock] - Couldn't build periods section due to missing vat application section in vat scheme")
         throw new InternalServerException("Couldn't build periods section due to missing vat application section in vat scheme")
     }
 

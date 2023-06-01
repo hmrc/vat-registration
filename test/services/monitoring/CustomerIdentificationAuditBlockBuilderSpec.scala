@@ -19,9 +19,13 @@ package services.monitoring
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import play.api.libs.json.Json
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 class CustomerIdentificationAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
+
+  implicit val request: Request[_] = FakeRequest()
 
   "buildCustomerIdentificationBlock" when {
     "all required sections are present in the VAT scheme" when {

@@ -23,6 +23,7 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,6 +35,7 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
                                               controllerComponents: ControllerComponents,
                                               cipherService: CipherService
                                              )(implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
+
 
   /** GET /registrations/:regId/sections/:sectionId
    * ===Purpose===
@@ -50,8 +52,11 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
       registrationService.getSection[JsValue](internalId, regId, section).flatMap {
         case Some(sectionData) =>
           sectionValidationService.validate(internalId, regId, section, cipherService.conditionallyDecrypt(section, sectionData)).map {
-            case Right(ValidSection(value)) => Ok(value)
-            case Left(response@InvalidSection(_)) => InternalServerError(response.asString)
+            case Right(ValidSection(value)) =>
+              Ok(value)
+            case Left(response@InvalidSection(_)) =>
+              errorLog(s"[RegistrationSectionController][getSection] errored with ${response.asString}")
+              InternalServerError(response.asString)
           }
         case _ =>
           Future.successful(NotFound)
@@ -78,10 +83,11 @@ class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
             case Some(updatedSectionJson) =>
               Ok(updatedSectionJson)
             case _ =>
+              errorLog(s"[RegistrationSectionController][replaceSection] errored with Unable to upsert section '${section.key}' for regId '$regId'")
               InternalServerError(s"[RegistrationSectionController][upsertSection] Unable to upsert section '${section.key}' for regId '$regId'")
           }
         case Left(response@InvalidSection(_)) =>
-          logger.debug(s"[RegistrationSectionController][upsertSection] Missing keys: ${response.asString}")
+          errorLog(s"[RegistrationSectionController][upsertSection] Missing keys: ${response.asString}")
           Future.successful(BadRequest(response.asString))
       }
     }

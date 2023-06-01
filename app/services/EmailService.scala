@@ -18,8 +18,10 @@ package services
 
 import connectors.{EmailConnector, EmailFailedToSend, EmailResponse}
 import models.api.{EmailMethod, Post, VatScheme}
+import play.api.mvc.Request
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EmailService @Inject()(emailConnector: EmailConnector,
                              registrationMongoRepository: VatSchemeRepository
-                            )(implicit ex: ExecutionContext) {
+                            )(implicit ex: ExecutionContext)  extends LoggingUtils{
 
   val basicTemplate = "mtdfb_vatreg_registration_received"
   val emailTemplate = s"${basicTemplate}_email"
@@ -40,11 +42,13 @@ class EmailService @Inject()(emailConnector: EmailConnector,
 
   // scalastyle:off
   def sendRegistrationReceivedEmail(internalId: String, regId: String, lang: String)
-                                   (implicit hc: HeaderCarrier): Future[EmailResponse] = {
+                                   (implicit hc: HeaderCarrier, request: Request[_]): Future[EmailResponse] = {
     def resolveEmail(vatScheme: VatScheme): String = {
       val transactorEmail = vatScheme.transactorDetails.flatMap(_.email)
-      val applicantEmail = vatScheme.applicantDetails.flatMap(_.contact.email)
-        .getOrElse(throw new InternalServerException(missingDataLog("applicant email address", regId)))
+      val applicantEmail = vatScheme.applicantDetails.flatMap(_.contact.email).getOrElse{
+        errorLog("[EmailService][sendRegistrationReceivedEmail] - applicant email address")
+        throw new InternalServerException(missingDataLog("applicant email address", regId))
+      }
 
       transactorEmail.getOrElse(applicantEmail)
     }
@@ -54,14 +58,23 @@ class EmailService @Inject()(emailConnector: EmailConnector,
       val applicantName = vatScheme.applicantDetails.flatMap(_.personalDetails.flatMap(_.name.first))
 
       Map(
-        "name" -> transactorName.getOrElse(applicantName.getOrElse(throw new InternalServerException(missingDataLog("applicant Name", regId)))),
-        "ref" -> vatScheme.acknowledgementReference.getOrElse(throw new InternalServerException(missingDataLog("acknowledgement Reference", regId)))
+        "name" -> transactorName.getOrElse(applicantName.getOrElse{
+          errorLog("[EmailService][sendRegistrationReceivedEmail][submissionParameters] - applicant Name")
+          throw new InternalServerException(missingDataLog("applicant Name", regId))
+        }),
+        "ref" -> vatScheme.acknowledgementReference.getOrElse{
+          errorLog("[EmailService][sendRegistrationReceivedEmail][submissionParameters] - acknowledgement Reference")
+          throw new InternalServerException(missingDataLog("acknowledgement Reference", regId))
+        }
       )
     }
 
     (for {
       optVatScheme <- registrationMongoRepository.getRegistration(internalId, regId)
-      vatScheme = optVatScheme.getOrElse(throw new InternalServerException(missingDataLog("VAT scheme", regId)))
+      vatScheme = optVatScheme.getOrElse{
+        errorLog("[EmailServiceEmailService][sendRegistrationReceivedEmail][submissionParameters] - VAT scheme")
+        throw new InternalServerException(missingDataLog("VAT scheme", regId))
+      }
       template = vatScheme.attachments.flatMap(_.method) match {
         case Some(EmailMethod) if lang.equals("cy") => emailCyTemplate
         case Some(EmailMethod) => emailTemplate

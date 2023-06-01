@@ -17,11 +17,13 @@
 package services.submission.buildermocks
 
 import models.api.VatScheme
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import services.submission.ComplianceBlockBuilder
 
 trait MockComplianceBlockBuilder extends MockitoSugar {
@@ -30,6 +32,6 @@ trait MockComplianceBlockBuilder extends MockitoSugar {
   val mockComplianceBlockBuilder = mock[ComplianceBlockBuilder]
 
   def mockBuildComplianceBlock(vatScheme: VatScheme)(response: Option[JsObject]): OngoingStubbing[Option[JsObject]] =
-    when(mockComplianceBlockBuilder.buildComplianceBlock(vatScheme)).thenReturn(response)
+    when(mockComplianceBlockBuilder.buildComplianceBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]])).thenReturn(response)
 
 }

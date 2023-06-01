@@ -24,6 +24,8 @@ import models.api._
 import models.api.vatapplication._
 import models.submission.{IdType, NETP, UtrIdType, VrnIdType}
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
@@ -33,6 +35,8 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
   object TestService extends SubscriptionBlockBuilder
 
   override lazy val testDate = LocalDate.of(2020, 2, 2)
+
+  implicit val request: Request[_] = FakeRequest()
 
   def fullSubscriptionBlockJson(reason: String = "0016"): JsValue = Json.parse(
     s"""

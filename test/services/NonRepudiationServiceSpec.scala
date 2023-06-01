@@ -81,7 +81,7 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
         ArgumentMatchers.eq(testEncodedPayload),
         ArgumentMatchers.eq(expectedMetadata),
         ArgumentMatchers.eq(Nil)
-      )(ArgumentMatchers.eq(hc)))
+      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request)))
         .thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testSubmissionId)))
 
       when(mockAuthConnector.authorise(
@@ -135,7 +135,7 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
         ArgumentMatchers.eq(testEncodedPayload),
         ArgumentMatchers.eq(expectedMetadata),
         ArgumentMatchers.eq(Nil)
-      )(ArgumentMatchers.eq(hc)))
+      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request)))
         .thenReturn(Future.successful(NonRepudiationSubmissionFailed(testExceptionMessage, NOT_FOUND)))
 
       mockGetAllUpscanDetails(testRegistrationId)(Future.successful(Nil))

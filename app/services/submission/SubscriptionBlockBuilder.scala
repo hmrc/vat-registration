@@ -19,16 +19,18 @@ package services.submission
 import models._
 import models.api.VatScheme
 import play.api.libs.json.JsObject
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 
 // scalastyle:off
 @Singleton
-class SubscriptionBlockBuilder @Inject()() {
+class SubscriptionBlockBuilder @Inject()() extends LoggingUtils{
 
-  def buildSubscriptionBlock(vatScheme: VatScheme): JsObject =
+  def buildSubscriptionBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication, vatScheme.applicantDetails, vatScheme.business, vatScheme.otherBusinessInvolvements.getOrElse(Nil)) match {
       case (Some(eligibilityData), Some(vatApplication), Some(applicantDetails), Some(business), otherBusinessInvolvements) => jsonObject(
         "reasonForSubscription" -> jsonObject(
@@ -103,7 +105,9 @@ class SubscriptionBlockBuilder @Inject()() {
                 "limitedCostTrader" -> limitedCostTrader
               ))
             case (Some(false), _, _, _, _) => None
-            case _ => throw new InternalServerException("[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true")
+            case _ =>
+              errorLog("[SubscriptionBlockBuilder][buildSubscriptionBlock] - FRS scheme data missing when joinFrs is true")
+              throw new InternalServerException("[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true")
           }
         }),
         optional("takingOver" -> eligibilityData.togcCole.map { togcData =>
@@ -112,7 +116,10 @@ class SubscriptionBlockBuilder @Inject()() {
             "prevOwnerVATNumber" -> togcData.vatRegistrationNumber,
             "keepPrevOwnerVATNo" -> togcData.wantToKeepVatNumber,
             "acceptTsAndCsForTOGCOrCOLE" -> (if (togcData.wantToKeepVatNumber) {
-              togcData.agreedWithTermsForKeepingVat.getOrElse(throw new InternalServerException("TOGC user wants to keep VRN but did not answer T&C"))
+              togcData.agreedWithTermsForKeepingVat.getOrElse{
+                errorLog("[SubscriptionBlockBuilder][buildSubscriptionBlock] - TOGC user wants to keep VRN but did not answer T&C")
+                throw new InternalServerException("TOGC user wants to keep VRN but did not answer T&C")
+              }
             } else {
               false
             })
@@ -130,6 +137,7 @@ class SubscriptionBlockBuilder @Inject()() {
         )
       )
       case _ =>
+        errorLog("[SubscriptionBlockBuilder][buildSubscriptionBlock] - Could not build subscription block for submission because some of the data is missing")
         throw new InternalServerException(
           "[SubscriptionBlockBuilder] Could not build subscription block for submission because some of the data is missing: " +
             s"ApplicantDetails found - ${vatScheme.applicantDetails.isDefined}, " +

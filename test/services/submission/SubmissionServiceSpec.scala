@@ -35,7 +35,7 @@ import org.mockito.Mockito._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Seconds, Span}
 import play.api.libs.json.JsObject
-import play.api.mvc.AnyContentAsEmpty
+import play.api.mvc.{AnyContentAsEmpty, Request}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import services.monitoring.buildermocks.MockSubmissionAuditBlockBuilder
@@ -96,7 +96,7 @@ class SubmissionServiceSpec extends VatRegSpec
     "successfully submit and return an acknowledgment reference" in new Setup {
       when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
-      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]()))
+      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(ArgumentMatchers.any[Request[_]]))
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
@@ -158,7 +158,7 @@ class SubmissionServiceSpec extends VatRegSpec
     "fail the submission on BAD_REQUEST and validate the failures" in new Setup {
       when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
-      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]()))
+      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(ArgumentMatchers.any[Request[_]]))
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Left(VatSubmissionFailure(BAD_REQUEST, ""))))
@@ -176,7 +176,7 @@ class SubmissionServiceSpec extends VatRegSpec
     "throw a bad request exception BAD_REQUEST if the schema validator returns an unknown error" in new Setup {
       when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
-      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]()))
+      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(ArgumentMatchers.any[Request[_]]))
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Left(VatSubmissionFailure(BAD_REQUEST, ""))))

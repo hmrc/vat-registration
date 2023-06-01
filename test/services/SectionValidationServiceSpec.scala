@@ -24,6 +24,8 @@ import models.api.{ApplicantDetails, Attachments, EmailMethod, Entity}
 import models.registration._
 import models.submission.{Individual, PartyType, UkCompany}
 import play.api.libs.json.{Format, Json}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import scala.concurrent.Future
@@ -33,6 +35,7 @@ class SectionValidationServiceSpec extends VatRegSpec
   with VatRegistrationFixture {
 
   object Service extends SectionValidationService(mockRegistrationService)
+  implicit val request: Request[_] = FakeRequest()
 
   "validate" when {
     "the section is Applicant" must {

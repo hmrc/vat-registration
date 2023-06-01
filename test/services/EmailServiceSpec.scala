@@ -21,6 +21,8 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.{MockAttachmentsService, MockEmailConnector, MockVatSchemeRepository}
 import models.api.{Attachments, EmailMethod}
+import play.api.mvc.Request
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{GatewayTimeoutException, HeaderCarrier}
 
@@ -32,6 +34,7 @@ class EmailServiceSpec extends VatRegSpec with VatRegistrationFixture
   with MockEmailConnector {
 
   implicit val hc = HeaderCarrier()
+  implicit val request: Request[_] = FakeRequest()
 
   val testEmailVatScheme = testVatScheme.copy(
     applicantDetails = Some(validApplicantDetails),

@@ -20,28 +20,36 @@ import auth.CryptoSCRS
 import models.api._
 import models.registration._
 import play.api.libs.json._
+import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
+import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class CipherService @Inject()(crypto: CryptoSCRS) {
+class CipherService @Inject()(crypto: CryptoSCRS) extends LoggingUtils{
 
-  def conditionallyEncrypt(section: RegistrationSectionId, json: JsValue): JsValue = {
+  def conditionallyEncrypt(section: RegistrationSectionId, json: JsValue)(implicit request: Request[_]): JsValue = {
     section match {
       case BankAccountSectionId =>
         val bankAccount = json.validate[BankAccount]
-          .getOrElse(throw new InternalServerException("BankAccount format is invalid for encryption."))
+          .getOrElse{
+            errorLog("[CipherService][conditionallyEncrypt] - BankAccount format is invalid for encryption")
+            throw new InternalServerException("BankAccount format is invalid for encryption.")
+          }
         Json.toJson(bankAccount)(BankAccountMongoFormat.encryptedFormat(crypto))
       case _ => json
     }
   }
 
-  def conditionallyDecrypt(section: RegistrationSectionId, json: JsValue): JsValue = {
+  def conditionallyDecrypt(section: RegistrationSectionId, json: JsValue)(implicit request: Request[_]): JsValue = {
     section match {
       case BankAccountSectionId =>
         val bankAccount = json.validate[BankAccount](BankAccountMongoFormat.encryptedFormat(crypto))
-          .getOrElse(throw new InternalServerException("BankAccount format is invalid for decryption."))
+          .getOrElse{
+            errorLog("[CipherService][conditionallyDecrypt] - BankAccount format is invalid for decryption")
+            throw new InternalServerException("BankAccount format is invalid for decryption.")
+          }
         Json.toJson(bankAccount)
       case _ => json
     }

@@ -33,7 +33,7 @@ class RetrieveVatSubmissionController @Inject()(cc: ControllerComponents,
                                                 submissionPayloadBuilder: SubmissionPayloadBuilder,
                                                 val authConnector: AuthConnector,
                                                 val resourceConn: VatSchemeRepository
-                                               )(implicit val executionContext: ExecutionContext) extends BackendController(cc) with Logging with Authorisation {
+                                               )(implicit val executionContext: ExecutionContext) extends BackendController(cc) with Authorisation {
 
   def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>

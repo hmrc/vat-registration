@@ -19,7 +19,8 @@ package auth
 import helpers.VatRegSpec
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
-import play.api.mvc.Results
+import play.api.mvc.{Request, Results}
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
@@ -29,6 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AuthorisationSpec extends VatRegSpec {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val request: Request[_] = FakeRequest()
 
   val authorisation: Authorisation = new Authorisation {
     implicit val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]

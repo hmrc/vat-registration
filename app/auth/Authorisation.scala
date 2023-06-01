@@ -16,12 +16,12 @@
 
 package auth
 
-import play.api.Logging
-import play.api.mvc.Result
+import play.api.mvc.{Request, Result}
 import play.api.mvc.Results._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.internalId
 import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions}
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.LoggingUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,19 +32,19 @@ case class NotAuthorised(intId: String) extends AuthorisationResult
 case class Authorised(intId: String) extends AuthorisationResult
 case class AuthResourceNotFound(intId: String) extends AuthorisationResult
 
-trait Authorisation extends AuthorisedFunctions with Logging {
+trait Authorisation extends AuthorisedFunctions with LoggingUtils {
 
   implicit val executionContext: ExecutionContext
 
-  def isAuthenticated(f: String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
+  def isAuthenticated(f: String => Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] = {
     authorised().retrieve(internalId) { id =>
       id.fold {
-        logger.warn("[Authorisation] - [isAuthenticated] : No internalId present; FORBIDDEN")
+        warnLog("[Authorisation] - [isAuthenticated] : No internalId present; FORBIDDEN")
         Future.successful(Forbidden("Missing internalId for the logged in user"))
       }(f)
     }.recoverWith {
       case e: AuthorisationException =>
-        logger.warn("[Authorisation] - [isAuthenticated]: AuthorisationException (auth returned a 401")
+        warnLog("[Authorisation] - [isAuthenticated]: AuthorisationException (auth returned a 401")
         Future.successful(Forbidden)
       case ex: Exception => Future.failed(throw ex)
     }

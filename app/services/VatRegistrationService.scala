@@ -20,20 +20,21 @@ import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
 import config.BackendConfig
 import enums.VatRegStatus
-import play.api.Logging
 import repositories.VatSchemeRepository
 import uk.gov.hmrc.http.InternalServerException
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import utils.LoggingUtils
+import play.api.mvc.Request
+
 
 @Singleton
 class VatRegistrationService @Inject()(registrationRepository: VatSchemeRepository,
                                        val backendConfig: BackendConfig)
                                       (implicit executionContext: ExecutionContext)
-  extends ApplicativeSyntax with FutureInstances with Logging {
+  extends ApplicativeSyntax with FutureInstances with LoggingUtils {
 
-  def getStatus(internalId: String, regId: String): Future[VatRegStatus.Value] = {
+  def getStatus(internalId: String, regId: String)(implicit request: Request[_]): Future[VatRegStatus.Value] = {
     registrationRepository.getRegistration(internalId, regId) map {
       case Some(registration) =>
         List(
@@ -48,7 +49,7 @@ class VatRegistrationService @Inject()(registrationRepository: VatSchemeReposito
           case _ => registration.status
         }
       case None =>
-        logger.warn(s"[getStatus] - No VAT registration document found for $regId")
+        warnLog(s"[VatRegistrationService][getStatus] - No VAT registration document found for $regId")
         throw new InternalServerException(s"[VatRegistrationService] No VAT registration document found for $regId")
     }
   }

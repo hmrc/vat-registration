@@ -23,6 +23,7 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsValue
+import play.api.mvc.Request
 import services.submission.EntitiesBlockBuilder
 
 trait MockEntitiesBlockBuilder extends MockitoSugar {
@@ -33,6 +34,6 @@ trait MockEntitiesBlockBuilder extends MockitoSugar {
   def mockBuildEntitiesBlock(vatScheme: VatScheme)(response: Option[JsValue]): OngoingStubbing[Option[JsValue]] =
     when(mockEntitiesBlockBuilder.buildEntitiesBlock(
       ArgumentMatchers.eq(vatScheme)
-    )).thenReturn(response)
+    )(ArgumentMatchers.any[Request[_]])).thenReturn(response)
 
 }
