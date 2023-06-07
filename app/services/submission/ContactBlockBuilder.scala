@@ -33,11 +33,11 @@ class ContactBlockBuilder @Inject()() extends LoggingUtils {
       case (Some(business), Some(applicantDetails)) =>
         Json.obj(
           "address" -> jsonObject(
-            required("line1" -> business.ppobAddress.map(_.line1)),
-            optional("line2" -> business.ppobAddress.flatMap(_.line2)),
-            optional("line3" -> business.ppobAddress.flatMap(_.line3)),
-            optional("line4" -> business.ppobAddress.flatMap(_.line4)),
-            optional("line5" -> business.ppobAddress.flatMap(_.line5)),
+            required("line1" -> business.ppobAddress.map(_.line1.replaceAll(",", " ").replaceAll("\\s+", " "))),
+            optional("line2" -> business.ppobAddress.flatMap(_.line2.map(_.replaceAll(",", " ").replaceAll("\\s+", " ")))),
+            optional("line3" -> business.ppobAddress.flatMap(_.line3.map(_.replaceAll(",", " ").replaceAll("\\s+", " ")))),
+            optional("line4" -> business.ppobAddress.flatMap(_.line4.map(_.replaceAll(",", " ").replaceAll("\\s+", " ")))),
+            optional("line5" -> business.ppobAddress.flatMap(_.line5.map(_.replaceAll(",", " ").replaceAll("\\s+", " ")))),
             optional("postCode" -> business.ppobAddress.flatMap(_.postcode)),
             optional("countryCode" -> business.ppobAddress.flatMap(_.country.flatMap(_.code))),
             optional("addressValidated" -> business.ppobAddress.flatMap(_.addressValidated))

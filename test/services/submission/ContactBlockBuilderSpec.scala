@@ -18,7 +18,7 @@ package services.submission
 
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
-import models.api.Contact
+import models.api.{Address, Contact, Country}
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
 import play.api.test.FakeRequest
@@ -52,6 +52,29 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
       |}
       |""".stripMargin).as[JsObject]
 
+  lazy val contactBlockWithoutCommasJson: JsObject = Json.parse(
+    """
+      |{
+      |    "commDetails": {
+      |      "telephone": "1234567890",
+      |      "email": "test@test.com",
+      |      "emailVerified": true,
+      |      "webAddress": "www.foo.com",
+      |      "commsPreference": "ZEL"
+      |    },
+      |    "address": {
+      |      "line1": "line1 line1",
+      |      "line2": "line2 line2",
+      |      "line3": "line3 line3",
+      |      "line4": "line4 line4",
+      |      "line5": "line5 line5",
+      |      "postCode": "ZZ1 1ZZ",
+      |      "countryCode": "GB",
+      |      "addressValidated": true
+      |    }
+      |}
+      |""".stripMargin).as[JsObject]
+
   "ContactBlockBuilder" should {
     "return the built contact block" when {
       "business details are available" in new Setup {
@@ -67,6 +90,23 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
 
         val result: JsObject = service.buildContactBlock(vatScheme)
         result mustBe contactBlockJson
+      }
+
+      "business details are available with commas" in new Setup {
+        lazy val testAddress = Address("line1, line1", Some("line2, line2"), Some("line3, line3"), Some("line4, line4"), Some("line5, line5"), Some("ZZ1 1ZZ"), Some(Country(Some("GB"), Some("UK"))), addressValidated = Some(true))
+
+        val vatScheme = testVatScheme.copy(
+          business = Some(testBusiness.copy(ppobAddress = Some(testAddress))),
+          applicantDetails = Some(validApplicantDetails.copy(
+            contact = Contact(
+              email = testBusiness.email,
+              emailVerified = Some(true)
+            )
+          ))
+        )
+
+        val result: JsObject = service.buildContactBlock(vatScheme)
+        result mustBe contactBlockWithoutCommasJson
       }
     }
 
