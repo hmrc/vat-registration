@@ -33,11 +33,11 @@ class ContactAuditBlockBuilder extends LoggingUtils{
       case (Some(business), Some(applicantDetails)) =>
         jsonObject(
           "address" -> jsonObject(
-            required("line1" -> business.ppobAddress.map(_.line1)),
-            optional("line2" -> business.ppobAddress.flatMap(_.line2)),
-            optional("line3" -> business.ppobAddress.flatMap(_.line3)),
-            optional("line4" -> business.ppobAddress.flatMap(_.line4)),
-            optional("line5" -> business.ppobAddress.flatMap(_.line5)),
+            required("line1" -> business.ppobAddress.map(_.line1.replace(",", " "))),
+            optional("line2" -> business.ppobAddress.flatMap(_.line2.map(_.replace(",", " ")))),
+            optional("line3" -> business.ppobAddress.flatMap(_.line3.map(_.replace(",", " ")))),
+            optional("line4" -> business.ppobAddress.flatMap(_.line4.map(_.replace(",", " ")))),
+            optional("line5" -> business.ppobAddress.flatMap(_.line5.map(_.replace(",", " ")))),
             optional("postcode" -> business.ppobAddress.flatMap(_.postcode)),
             optional("countryCode" -> business.ppobAddress.flatMap(_.country.flatMap(_.code)))
           ),
