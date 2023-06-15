@@ -10,3 +10,5 @@ POST        /attachment                                            controllers.t
 GET         /submissions/:regId/submission-payload                 controllers.test.RetrieveVatSubmissionController.retrieveSubmissionJson(regId)
 
 POST        /notification/fileready                                controllers.test.StubSdesController.notificationStub
+
+POST        /setup-data/:regId                          controllers.test.SetupDataController.setUpData(regId: String)
