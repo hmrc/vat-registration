@@ -63,11 +63,12 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
 
   def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String], lang: String)
                            (implicit hc: HeaderCarrier,
-                            request: Request[_]): Future[VatSubmissionResponse] =
+                            request: Request[_]): Future[VatSubmissionResponse] = {
+    infoLog(s"[SubmissionService][submitVatRegistration] attempting to submit registration", regId)
     (for {
       _ <- registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.locked)
       vatScheme <- registrationRepository.getRegistration(internalId, regId)
-        .map(_.getOrElse(throw new InternalServerException("[SubmissionService][submitVatRegistration] Missing VatScheme")))
+        .map(_.getOrElse(throw new InternalServerException(s"[SubmissionService][submitVatRegistration] Missing VatScheme. regId: $regId")))
       submission = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
       correlationId = idGenerator.createId
       submissionResponse <- submit(submission, regId, correlationId)
@@ -83,13 +84,15 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
       }
     }).recover {
       case exception: BadRequestException =>
-        errorLog(s"[SubmissionService][submitVatRegistration] - $exception")
+        errorLog(s"[SubmissionService][submitVatRegistration] - $exception", regId)
         throw exception
       case exception =>
         registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failedRetryable)
-        errorLog(s"[SubmissionService][submitVatRegistration] - $exception")
+        errorLog(s"[SubmissionService][submitVatRegistration] - $exception", regId)
         throw exception
+
     }
+  }
 
   // Non blocking tasks to be done after a successful submission.
   // To be called on a separate async thread to allow the user to proceed.
@@ -114,9 +117,9 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
                               (implicit hc: HeaderCarrier,
                                request: Request[_]): Future[VatSubmissionResponse] = {
 
-    infoLog(s"VAT Submission API Correlation Id: $correlationId for the following regId: $regId")
-
+    infoLog(s"[SubmissionService][submit] attempting to submit. VAT Submission API Correlation Id: $correlationId", regId)
     authorised().retrieve(credentials) { case Some(credentials) =>
+      infoLog(s"[SubmissionService][submit] credentials retrieved from auth", regId)
       vatSubmissionConnector.submit(submission, correlationId, credentials.providerId)
     }
   }
@@ -132,31 +135,37 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
 
     vatSubmissionResponse match {
       case Left(VatSubmissionFailure(CONFLICT, _)) =>
+        errorLog(s"[SubmissionService][handleResponse] submission failed due to CONFLICT", regId)
         registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.duplicateSubmission)
           .map(_ => None)
       case Left(VatSubmissionFailure(BAD_REQUEST, _)) =>
+        errorLog(s"[SubmissionService][handleResponse] submission failed due to BAD_REQUEST", regId)
         for {
           _ <- registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failed)
           errors = schemaValidationService.validate(apiSchema, submissionPayload)
-         _ = auditService.audit(SubmissionFailureErrorsAuditModel(regId, correlationId, errors))
+          _ = auditService.audit(SubmissionFailureErrorsAuditModel(regId, correlationId, errors))
         } yield {
           errors.get(suppressedKey).foreach { errors =>
-            errorLog(s"[Suppressed submission errors] Submission for reg id '$regId' failed with suppressed " +
+            errorLog(s"[SubmissionService][handleResponse][Suppressed submission errors] Submission for reg id '$regId' failed with suppressed " +
               s"errors for the following fields:\n${errors.mkString(", ")}\n")
           }
           errors.get(unknownKey).map { errors =>
-            errorLog(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
+            errorLog(s"[SubmissionService][handleResponse][Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
             throw new BadRequestException(s"[Unknown submission errors] Submission for reg id '$regId' failed with new or unfiltered errors for the following fields:\n${errors.mkString(", ")}\n")
           }
 
           None
         }
-      case Left(VatSubmissionFailure(_, _)) =>
+      case Left(VatSubmissionFailure(status, reason)) => {
+        errorLog(s"[SubmissionService][handleResponse] submission failed status $status, reason: $reason", regId)
         registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failedRetryable)
           .map(_ => None)
-      case Right(VatSubmissionSuccess(formBundleId)) =>
+      }
+      case Right(VatSubmissionSuccess(formBundleId)) => {
+        infoLog(s"[SubmissionService][handleResponse] submission successful. Attempting to update mongo", regId)
         registrationRepository.finishRegistrationSubmission(regId, VatRegStatus.submitted, formBundleId)
           .map(_ => Some(formBundleId))
+      }
     }
   }
 
@@ -244,6 +253,11 @@ class SubmissionService @Inject()(registrationRepository: VatSchemeRepository,
     Future.successful(infoLog(jsonObject(
       "logInfo" -> "SubmissionLog",
       "status" -> vatSubmissionStatus.fold(_ => "Failed", _ => "Successful"),
+      optional("failureReason" ->
+        vatSubmissionStatus.fold(
+          failure => Some(s"status: ${failure.status}, reason: ${failure.body}"),
+          _ => None)
+      ),
       "regId" -> vatScheme.registrationId,
       "partyType" -> vatScheme.partyType.map(_.toString),
       "regReason" -> regReason,

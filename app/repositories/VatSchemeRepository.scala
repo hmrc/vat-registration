@@ -108,11 +108,12 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .toFuture()
       .map(_.toList.map(scheme => Json.toJson(scheme)(VatScheme.format())))
 
-  def getRegistration(internalId: String, regId: String): Future[Option[VatScheme]] =
+  def getRegistration(internalId: String, regId: String): Future[Option[VatScheme]] = {
     collection
       .find(registrationSelector(regId, Some(internalId)))
       .first()
       .toFutureOption()
+  }
 
   def upsertRegistration(internalId: String, regId: String, scheme: VatScheme): Future[Option[VatScheme]] = {
     collection
@@ -195,8 +196,10 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
         throw new InternalServerException(s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}")
     }
 
-  def updateSubmissionStatus(internalId: String, regId: String, status: VatRegStatus.Value)(implicit request: Request[_]): Future[Option[VatRegStatus.Value]] =
+  def updateSubmissionStatus(internalId: String, regId: String, status: VatRegStatus.Value)(implicit request: Request[_]): Future[Option[VatRegStatus.Value]] = {
+    infoLog("[VatSchemeRepository][updateSubmissionStatus] attempting to update submission status", regId)
     upsertSection(internalId, regId, StatusSectionId.repoKey, status)
+  }
 
   def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value, formBundleId: String): Future[VatRegStatus.Value] =
     collection.updateOne(registrationSelector(regId), combine(
