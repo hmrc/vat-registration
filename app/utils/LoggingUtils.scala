@@ -33,20 +33,17 @@ trait LoggingUtils extends LoggerLike {
 
   lazy val identifiers: Request[_] => String =
     request => Seq(trueClientIp(request), sessionId(request)).flatten.foldLeft("")(_ + _)
+    
+  lazy val handleRegId: String => String =
+    regId => if (regId.nonEmpty) s"(regId: $regId)" else ""
 
-  def infoLog(message: => String)(implicit mc: MarkerContext, request: Request[_]): Unit =
-    logger.info(s"$message (${identifiers(request)})")
+  def infoLog(message: => String, regId: String = "")(implicit mc: MarkerContext, request: Request[_]): Unit =
+    logger.info(s"$message ${handleRegId(regId)} (${identifiers(request)})")
 
-  def warnLog(message: => String)(implicit mc: MarkerContext, request: Request[_]): Unit =
-    logger.warn(s"$message (${identifiers(request)})")
+  def warnLog(message: => String, regId: String = "")(implicit mc: MarkerContext, request: Request[_]): Unit =
+    logger.warn(s"$message ${handleRegId(regId)} (${identifiers(request)})")
 
-  def warnLog(message: => String, throwable: Throwable)(implicit mc: MarkerContext, request: Request[_]): Unit =
-    logger.warn(s"$message (${identifiers(request)})", throwable)
-
-  def errorLog(message: => String, error: Throwable)(implicit mc: MarkerContext, request: Request[_]): Unit =
-    logger.error(s"$message (${identifiers(request)})", error)
-
-  def errorLog(message: => String)(implicit mc: MarkerContext, request: Request[_]): Unit =
-    logger.error(s"$message (${identifiers(request)})")
+  def errorLog(message: => String, regId: String = "")(implicit mc: MarkerContext, request: Request[_]): Unit =
+    logger.error(s"$message ${handleRegId(regId)} (${identifiers(request)})")
 
 }
