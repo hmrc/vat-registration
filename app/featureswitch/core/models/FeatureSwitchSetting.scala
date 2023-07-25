@@ -19,8 +19,8 @@ package featureswitch.core.models
 import play.api.libs.json.{Json, OFormat}
 
 
-case class FeatureSwitchSetting(configName: String,
-                                displayName: String,
+case class FeatureSwitchSetting(name: String,
+                                displayText: String,
                                 isEnabled: Boolean)
 
 object FeatureSwitchSetting {
