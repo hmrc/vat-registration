@@ -37,7 +37,7 @@ class FeatureSwitchService @Inject()(featureSwitchRegistry: FeatureSwitchRegistr
   def updateFeatureSwitches(updatedFeatureSwitches: Seq[FeatureSwitchSetting]): Seq[FeatureSwitchSetting] = {
     updatedFeatureSwitches.foreach(
       featureSwitchSetting =>
-        featureSwitchRegistry.get(featureSwitchSetting.configName) match {
+        featureSwitchRegistry.get(featureSwitchSetting.name) match {
           case Some(featureSwitch) =>
             if (featureSwitchSetting.isEnabled) enable(featureSwitch) else disable(featureSwitch)
         }
