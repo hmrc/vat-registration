@@ -30,7 +30,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) extends LoggingUtils {
 
-  def updateEligibilityData(internalId: String, regId: String, eligibilityData: JsObject)(implicit ex: ExecutionContext, request: Request[_]): Future[Option[JsObject]] = {
+  def updateEligibilityData(internalId: String, regId: String, eligibilityData: JsObject)
+                           (implicit ex: ExecutionContext, request: Request[_]): Future[Option[JsObject]] = {
     eligibilityData.validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads).fold(
       invalid => throw JsResultException(invalid),
       eligibilitySubmissionData => for {
