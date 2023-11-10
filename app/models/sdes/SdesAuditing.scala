@@ -69,4 +69,22 @@ object SdesAuditing {
     )
   }
 
+  case class SdesCallbackNotSentToNrsAudit(callback: SdesCallback) extends AuditModel {
+    override val auditType: String = "SDESCallbackNotSentToNRS"
+    override val transactionName: String = "sdes-callback-not-sent-to-nrs"
+    override val detail: JsValue = jsonObject(
+      "notification" -> callback.notification,
+      "filename" -> callback.filename,
+      "checksumAlgorithm" -> callback.checksumAlgorithm,
+      "checksum" -> callback.checksum,
+      "correlationID" -> callback.correlationID,
+      "availableUntil" -> callback.availableUntil,
+      "failureReason" -> callback.failureReason,
+      "dateTime" -> callback.dateTime,
+      optional("nrSubmissionId" -> callback.getPropertyValue(nrsSubmissionKey)),
+      "attachmentId" -> callback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId" -> callback.getPropertyValue(formBundleKey)
+    )
+  }
+
 }
