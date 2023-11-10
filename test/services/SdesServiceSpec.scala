@@ -25,7 +25,7 @@ import models.api.{PrimaryIdentityEvidence, Ready, UploadDetails, UpscanDetails}
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.sdes.PropertyExtractor._
-import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesFileSubmissionAudit}
+import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentToNrsAudit, SdesFileSubmissionAudit}
 import models.sdes._
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{verify, verifyNoInteractions, when}
@@ -240,6 +240,20 @@ class SdesServiceSpec extends VatRegSpec with VatRegistrationFixture with MockUp
       await(TestService.processCallback(testCallback(optFailureReason = None, notificationType = fileProcessed)))
 
       eventually(verifyNoInteractions(mockNonRepudiationConnector))
+    }
+
+    "audit FileProcessed callbacks which are not sent to NRS" in {
+
+      val fileProcessed = "FileProcessed"
+
+      val testFileProcessedCallback = testCallback(optFailureReason = None, notificationType = fileProcessed)
+
+      await(TestService.processCallback(testFileProcessedCallback))
+
+      eventually {
+        verifyNoInteractions(mockNonRepudiationConnector)
+        verifyAudit(SdesCallbackNotSentToNrsAudit(testFileProcessedCallback))
+      }
     }
 
     "call and audit NRS failure if callback is successful" in {

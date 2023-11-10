@@ -22,7 +22,7 @@ import models.api.{Ready, UploadDetails, UpscanDetails}
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.sdes.PropertyExtractor._
-import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesFileSubmissionAudit}
+import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentToNrsAudit, SdesFileSubmissionAudit}
 import models.sdes._
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
@@ -124,6 +124,11 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
     val optMimeType = sdesCallback.getPropertyValue(mimeTypeKey)
     val optNrSubmissionId = sdesCallback.getPropertyValue(nrsSubmissionKey)
 
+    infoLog(s"[SdesService][processCallback] Attempting to process callback" +
+      s"\n optAttachmentId: $optAttachmentId" +
+      s"\n optNrSubmissionId: $optNrSubmissionId" +
+      s"\n SDES notification status: ${sdesCallback.notification}")
+
     (optUrl, optAttachmentId, optMimeType, optNrSubmissionId, sdesCallback.checksum, sdesCallback.failureReason) match {
       case (Some(url), Some(attachmentId), Some(mimeType), Some(nrSubmissionId), Some(checksum), None) if sdesCallback.notification == fileReceived =>
         val payload = NonRepudiationAttachment(
@@ -143,7 +148,8 @@ class SdesService @Inject()(sdesConnector: SdesConnector,
             errorLog(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
         }
       case (Some(_), Some(attachmentId), Some(_), Some(_), Some(_), None) =>
-        Future.successful(infoLog(s"[SdesService] Not sending attachment NRS payload for $attachmentId as SDES notification type was ${sdesCallback.notification}"))
+        infoLog(s"[SdesService] Not sending attachment NRS payload for $attachmentId as SDES notification type was ${sdesCallback.notification}")
+        Future.successful(auditService.audit(SdesCallbackNotSentToNrsAudit(sdesCallback)))
       case (_, Some(attachmentId), _, _, _, Some(failureReason)) =>
         warnLog(s"[SdesService] Not sending attachment NRS payload as callback for $attachmentId failed with reason: $failureReason")
         Future.successful(auditService.audit(SdesCallbackFailureAudit(sdesCallback)))
