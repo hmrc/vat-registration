@@ -71,10 +71,11 @@ class UpscanMongoRepository @Inject()(mongo: MongoComponent,
       .toFuture().map(_.headOption)
   }
 
-  def getAllUpscanDetails(registrationId: String): Future[Seq[UpscanDetails]] =
+  def getAllUpscanDetails(registrationId: String): Future[Seq[UpscanDetails]] = {
     collection
       .find(filter = equal(registrationIdKey, registrationId))
       .toFuture()
+  }
 
   def deleteUpscanDetails(reference: String): Future[Boolean] = {
     collection
@@ -87,12 +88,11 @@ class UpscanMongoRepository @Inject()(mongo: MongoComponent,
       .deleteMany(filter = equal(registrationIdKey, registrationId))
       .toFuture().map(_.wasAcknowledged())
 
-  def upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] = {
+  def  upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] = {
     val upscanList = Seq(
       Updates.set("timestamp", timeMachine.timestamp)
     ) ++ Json.toJson(upscanDetails).as[JsObject]
       .fields.map { case (key, value) => Updates.set(key, Codecs.toBson(value)) }
-
     collection.updateOne(
       filter = equal(referenceKey, upscanDetails.reference),
       update = Updates.combine(upscanList: _*),

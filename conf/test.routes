@@ -12,3 +12,5 @@ GET         /submissions/:regId/submission-payload                 controllers.t
 POST        /notification/fileready                                controllers.test.StubSdesController.notificationStub
 
 POST        /setup-data/:regId                          controllers.test.SetupDataController.setUpData(regId: String)
+
+POST       /setup-upscan/:regId                         controllers.test.SetupDataController.setUpUpscan(regId: String)

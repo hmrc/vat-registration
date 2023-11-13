@@ -43,11 +43,15 @@ class SchemaValidationService {
       case Success(_) =>
         output.results()
           .items().asScala
-          .map(_.dataJsonPointer())
+          .map(x => {
+            x.dataJsonPointer()
+          })
           .toList
-          .map {
-            case e if api.suppressedErrors.exists(regex => e.matches(regex)) => "suppressedErrors" -> e
-            case e => "unknownErrors" -> e
+          .map {x =>
+                x match {
+                  case e if api.suppressedErrors.exists(regex => e.matches(regex)) => "suppressedErrors" -> e
+                  case e => "unknownErrors" -> e
+                }
           }
           .groupBy(_._1)
           .mapValues(_.map(_._2))

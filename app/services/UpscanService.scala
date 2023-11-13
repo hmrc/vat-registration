@@ -56,7 +56,7 @@ class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) exte
   }
 
   def upsertUpscanDetails(upscanDetails: UpscanDetails)(implicit request: Request[_]): Future[UpscanDetails] = {
-    infoLog(s"[UpscanService][createUpscanDetails] attempting to create upscan details record in mongo:" +
+    infoLog(s"[UpscanService][upsertUpscanDetails] attempting to create upscan details record in mongo:" +
       s"\n regId: ${upscanDetails.registrationId}" +
       s"\n reference: ${upscanDetails.reference}" +
       s"\n attachmentType: ${upscanDetails.attachmentType}" +

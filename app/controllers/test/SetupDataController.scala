@@ -17,11 +17,12 @@
 package controllers.test
 
 import auth.Authorisation
-import models.api.VatScheme
+import models.api.{UpscanDetails, VatScheme}
+import play.api.libs.json.JsError.toJson
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import repositories.VatSchemeRepository
-import services.RegistrationService
+import services.{RegistrationService, UpscanService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -31,6 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SetupDataController @Inject()(val authConnector: AuthConnector,
                                     registrationService: RegistrationService,
+                                    upscanService: UpscanService,
                                     vatSchemeRepository: VatSchemeRepository)
                                    (implicit val executionContext: ExecutionContext,
                                                  cc: ControllerComponents) extends BackendController(cc) with Authorisation {
@@ -53,5 +55,17 @@ class SetupDataController @Inject()(val authConnector: AuthConnector,
             }
           }
     }
+
+  def setUpUpscan(regId: String): Action[AnyContent] = Action.async { implicit request =>
+    isAuthenticated { _ =>
+      Json.toJson(request.body.asJson).validate[Seq[UpscanDetails]] match {
+        case JsSuccess(value, _) =>
+          val data = value.map(_.copy(registrationId = Some(regId)))
+          Future.sequence(data.map(upscanService.upsertUpscanDetails(_))).map(_ => Created(Json.toJson(value)))
+        case error: JsError =>
+          Future.successful(NotFound(Json.toJson("error")))
+      }
+    }
+  }
 
 }
