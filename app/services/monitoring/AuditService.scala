@@ -28,18 +28,19 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class AuditService @Inject()(appConfig: BackendConfig,
-                             auditConnector: AuditConnector) {
+class AuditService @Inject() (appConfig: BackendConfig, auditConnector: AuditConnector) {
 
   private lazy val appName: String = appConfig.loadConfig("appName")
 
   def audit(dataSource: AuditModel)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Unit =
     auditConnector.sendExtendedEvent(toDataEvent(appName, dataSource, request.path))
 
-  def toDataEvent(appName: String, auditModel: AuditModel, path: String)(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    val auditType: String = auditModel.auditType
-    val transactionName: String = auditModel.transactionName
-    val detail: JsValue = auditModel.detail
+  def toDataEvent(appName: String, auditModel: AuditModel, path: String)(implicit
+    hc: HeaderCarrier
+  ): ExtendedDataEvent = {
+    val auditType: String         = auditModel.auditType
+    val transactionName: String   = auditModel.transactionName
+    val detail: JsValue           = auditModel.detail
     val tags: Map[String, String] = Map.empty[String, String]
 
     ExtendedDataEvent(

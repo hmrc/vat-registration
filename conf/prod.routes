@@ -2,5 +2,3 @@
 ->         /vatreg               app.Routes
 ->         /                     health.Routes
 ->         /vatreg/registrations registrations.Routes
-
-GET        /admin/metrics        @com.kenshoo.play.metrics.MetricsController.metrics

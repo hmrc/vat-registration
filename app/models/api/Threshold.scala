@@ -21,11 +21,13 @@ import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
-case class Threshold(mandatoryRegistration: Boolean,
-                     thresholdPreviousThirtyDays: Option[LocalDate] = None,
-                     thresholdInTwelveMonths: Option[LocalDate] = None,
-                     thresholdNextThirtyDays: Option[LocalDate] = None,
-                     thresholdOverseas: Option[LocalDate] = None) {
+case class Threshold(
+  mandatoryRegistration: Boolean,
+  thresholdPreviousThirtyDays: Option[LocalDate] = None,
+  thresholdInTwelveMonths: Option[LocalDate] = None,
+  thresholdNextThirtyDays: Option[LocalDate] = None,
+  thresholdOverseas: Option[LocalDate] = None
+) {
 
   def earliestDate: LocalDate = Seq(
     thresholdPreviousThirtyDays,
@@ -45,29 +47,56 @@ object Threshold {
       (json \ "thresholdNextThirtyDays" \ "optionalData").validateOpt[LocalDate],
       (json \ "thresholdTaxableSupplies" \ "date").validateOpt[LocalDate]
     ) match {
-      case (JsSuccess(voluntaryRegistration, _), JsSuccess(thresholdPreviousThirtyDays, _),
-      JsSuccess(thresholdInTwelveMonths, _), JsSuccess(thresholdNextThirtyDays, _), JsSuccess(thresholdOverseas, _)) =>
+      case (
+            JsSuccess(voluntaryRegistration, _),
+            JsSuccess(thresholdPreviousThirtyDays, _),
+            JsSuccess(thresholdInTwelveMonths, _),
+            JsSuccess(thresholdNextThirtyDays, _),
+            JsSuccess(thresholdOverseas, _)
+          ) =>
         val isMandatory = voluntaryRegistration match {
-          case None if Seq(thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdPreviousThirtyDays, thresholdOverseas).flatten.isEmpty =>
+          case None
+              if Seq(
+                thresholdInTwelveMonths,
+                thresholdNextThirtyDays,
+                thresholdPreviousThirtyDays,
+                thresholdOverseas
+              ).flatten.isEmpty =>
             false // SuppliesOutsideUk journey
-          case None =>
+          case None              =>
             true // Mandatory journey
           case Some(isVoluntary) =>
             !isVoluntary // Will only ever come back as false in this case as otherwise voluntary answer not provided
         }
 
-        if (thresholdOverseas.nonEmpty & Seq(thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdPreviousThirtyDays).flatten.nonEmpty) {
-          throw new InternalServerException("[Threshold][eligibilityDataJsonReads] overseas user has more than one threshold date")
+        if (
+          thresholdOverseas.nonEmpty & Seq(
+            thresholdInTwelveMonths,
+            thresholdNextThirtyDays,
+            thresholdPreviousThirtyDays
+          ).flatten.nonEmpty
+        ) {
+          throw new InternalServerException(
+            "[Threshold][eligibilityDataJsonReads] overseas user has more than one threshold date"
+          )
         }
 
-        JsSuccess(Threshold(
-          isMandatory,
-          thresholdPreviousThirtyDays,
-          thresholdInTwelveMonths,
-          thresholdNextThirtyDays,
-          thresholdOverseas
-        ))
-      case (voluntaryRegistration, thresholdPreviousThirtyDays, thresholdInTwelveMonths, thresholdNextThirtyDays, thresholdOverseas) =>
+        JsSuccess(
+          Threshold(
+            isMandatory,
+            thresholdPreviousThirtyDays,
+            thresholdInTwelveMonths,
+            thresholdNextThirtyDays,
+            thresholdOverseas
+          )
+        )
+      case (
+            voluntaryRegistration,
+            thresholdPreviousThirtyDays,
+            thresholdInTwelveMonths,
+            thresholdNextThirtyDays,
+            thresholdOverseas
+          ) =>
         val seqErrors = voluntaryRegistration.fold(identity, _ => Seq.empty) ++
           thresholdPreviousThirtyDays.fold(identity, _ => Seq.empty) ++
           thresholdInTwelveMonths.fold(identity, _ => Seq.empty) ++

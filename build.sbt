@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import sbt.Keys.scalacOptions
 import scoverage.ScoverageKeys
-import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
+import uk.gov.hmrc.DefaultBuildSettings
+import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings}
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "vat-registration"
@@ -37,14 +38,11 @@ lazy val testSettings = Seq(
   Test / fork                            := true,
   Test / testForkedParallel              := false,
   Test / parallelExecution               := true,
-  Test / logBuffered                     := false,
-  IntegrationTest / fork                 := false,
-  IntegrationTest / testForkedParallel   := false,
-  IntegrationTest / parallelExecution    := false,
-  IntegrationTest / logBuffered          := false,
-  IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
-  addTestReportOption(IntegrationTest, "int-test-reports")
+  Test / logBuffered                     := false
 )
+
+ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / majorVersion := 1
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(Seq(PlayScala, SbtGitVersioning, SbtDistributablesPlugin): _*)
@@ -52,18 +50,21 @@ lazy val microservice = Project(appName, file("."))
   .settings(PlayKeys.playDefaultPort := 9896)
   .settings(scalaSettings: _*)
   .settings(scoverageSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
-  .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
   .settings(testSettings: _*)
   .settings(aliases: _*)
   .settings(
-    scalaVersion := "2.12.12",
     libraryDependencies ++= AppDependencies(),
     retrieveManaged := true,
-    Global / cancelable := true
-  )
-  .settings(majorVersion := 1)
+    Global / cancelable := true,
+    scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s",
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+)
 
-  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
+.disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
+
+lazy val it = project.in(file("it"))
+  .enablePlugins(PlayScala)
+  .dependsOn(microservice % "test->test") // the "test->test" allows reusing test code and test dependencies
+  .settings(DefaultBuildSettings.itSettings())
+  .settings(libraryDependencies ++= AppDependencies.it)

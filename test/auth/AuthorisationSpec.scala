@@ -29,23 +29,23 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class AuthorisationSpec extends VatRegSpec {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier   = HeaderCarrier()
   implicit val request: Request[_] = FakeRequest()
 
   val authorisation: Authorisation = new Authorisation {
     implicit val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
-    val authConnector: AuthConnector = mockAuthConnector
+    val authConnector: AuthConnector                = mockAuthConnector
   }
 
-  val regId = "xxx"
+  val regId          = "xxx"
   val testInternalId = "foo"
 
   "isAuthenticated" should {
     "provided a logged in auth result when there is a valid bearer token" in {
       AuthorisationMocks.mockAuthenticated(testInternalId)
 
-      val result = authorisation.isAuthenticated {
-        _ => Future.successful(Results.Ok)
+      val result   = authorisation.isAuthenticated { _ =>
+        Future.successful(Results.Ok)
       }
       val response = await(result)
       response.header.status mustBe OK
@@ -54,19 +54,23 @@ class AuthorisationSpec extends VatRegSpec {
     "indicate there's no logged in user where there isn't a valid bearer token" in {
       AuthorisationMocks.mockNotLoggedInOrAuthenticated()
 
-      val result = authorisation.isAuthenticated {
-        _ => Future.successful(Results.Ok)
+      val result = authorisation.isAuthenticated { _ =>
+        Future.successful(Results.Ok)
       }
 
       val response = await(result)
       response.header.status mustBe FORBIDDEN
     }
     "throw an exception if an exception occurs whilst calling auth" in {
-      when(mockAuthConnector.authorise[Option[String]](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(),
-        ArgumentMatchers.any())).thenReturn(Future.failed(new Exception))
+      when(
+        mockAuthConnector.authorise[Option[String]](ArgumentMatchers.any(), ArgumentMatchers.any())(
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()
+        )
+      ).thenReturn(Future.failed(new Exception))
 
-      val result = authorisation.isAuthenticated {
-        _ => Future.successful(Results.Ok)
+      val result = authorisation.isAuthenticated { _ =>
+        Future.successful(Results.Ok)
       }
       an[Exception] mustBe thrownBy(await(result))
     }

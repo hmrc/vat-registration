@@ -27,16 +27,18 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class DeleteAllRegistrationsController @Inject()(val authConnector: AuthConnector,
-                                                 vatSchemeRepository: VatSchemeRepository)
-                                                (implicit val executionContext: ExecutionContext,
-                                                 cc: ControllerComponents) extends BackendController(cc) with Authorisation {
+class DeleteAllRegistrationsController @Inject() (
+  val authConnector: AuthConnector,
+  vatSchemeRepository: VatSchemeRepository
+)(implicit val executionContext: ExecutionContext, cc: ControllerComponents)
+    extends BackendController(cc)
+    with Authorisation {
 
   def deleteAllRegistrations(): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { intId =>
       vatSchemeRepository.collection.deleteMany(equal("internalId", intId)).toFuture().map {
         case wr if wr.getDeletedCount > 0 => NoContent
-        case _ => InternalServerError
+        case _                            => InternalServerError
       }
     }
   }

@@ -40,68 +40,77 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationConnector,
-                                      upscanMongoRepository: UpscanMongoRepository,
-                                      auditService: AuditService,
-                                      val authConnector: AuthConnector)(implicit ec: ExecutionContext) extends AuthorisedFunctions with LoggingUtils{
+class NonRepudiationService @Inject() (
+  nonRepudiationConnector: NonRepudiationConnector,
+  upscanMongoRepository: UpscanMongoRepository,
+  auditService: AuditService,
+  val authConnector: AuthConnector
+)(implicit ec: ExecutionContext)
+    extends AuthorisedFunctions
+    with LoggingUtils {
 
-  def submitNonRepudiation(registrationId: String,
-                           payloadString: String,
-                           submissionTimestamp: LocalDateTime,
-                           formBundleId: String,
-                           userHeaders: Map[String, String],
-                           digitalAttachments: Boolean = false
-                          )(implicit hc: HeaderCarrier, request: Request[_]): Future[Option[String]] = for {
-    identityData <- retrieveIdentityData()
-    payloadChecksum = MessageDigest.getInstance("SHA-256")
-      .digest(payloadString.getBytes(StandardCharsets.UTF_8))
-      .map("%02x".format(_)).mkString
-    userAuthToken = hc.authorization match {
-      case Some(Authorization(authToken)) => authToken
-      case _ =>
-        errorLog("[NonRepudiationService][submitNonRepudiation] - No auth token available for NRS")
-        throw new InternalServerException("No auth token available for NRS")
-    }
-    digitalAttachmentIds <- if (digitalAttachments) {
-      upscanMongoRepository.getAllUpscanDetails(registrationId).map(_.map(_.reference))
-    } else {
-      Future.successful(Nil)
-    }
-    nonRepudiationMetadata = NonRepudiationMetadata(
-      "vrs",
-      "vat-registration",
-      "application/json",
-      payloadChecksum,
-      submissionTimestamp,
-      identityData,
-      userAuthToken,
-      userHeaders,
-      Map("formBundleId" -> formBundleId)
-    )
-    encodedPayloadString = Base64.getEncoder.encodeToString(payloadString.getBytes(StandardCharsets.UTF_8))
-    nonRepudiationSubmissionResponse <- nonRepudiationConnector.submitNonRepudiation(encodedPayloadString, nonRepudiationMetadata, digitalAttachmentIds).map {
-      case NonRepudiationSubmissionAccepted(submissionId) =>
-        auditService.audit(NonRepudiationSubmissionSuccessAudit(registrationId, submissionId))
-        Some(submissionId)
-      case NonRepudiationSubmissionFailed(body, status) =>
-        auditService.audit(NonRepudiationSubmissionFailureAudit(registrationId, status, body))
-        None
-    }
+  def submitNonRepudiation(
+    registrationId: String,
+    payloadString: String,
+    submissionTimestamp: LocalDateTime,
+    formBundleId: String,
+    userHeaders: Map[String, String],
+    digitalAttachments: Boolean = false
+  )(implicit hc: HeaderCarrier, request: Request[_]): Future[Option[String]] = for {
+    identityData                     <- retrieveIdentityData()
+    payloadChecksum                   = MessageDigest
+                                          .getInstance("SHA-256")
+                                          .digest(payloadString.getBytes(StandardCharsets.UTF_8))
+                                          .map("%02x".format(_))
+                                          .mkString
+    userAuthToken                     = hc.authorization match {
+                                          case Some(Authorization(authToken)) => authToken
+                                          case _                              =>
+                                            errorLog("[NonRepudiationService][submitNonRepudiation] - No auth token available for NRS")
+                                            throw new InternalServerException("No auth token available for NRS")
+                                        }
+    digitalAttachmentIds             <- if (digitalAttachments) {
+                                          upscanMongoRepository.getAllUpscanDetails(registrationId).map(_.map(_.reference))
+                                        } else {
+                                          Future.successful(Nil)
+                                        }
+    nonRepudiationMetadata            = NonRepudiationMetadata(
+                                          "vrs",
+                                          "vat-registration",
+                                          "application/json",
+                                          payloadChecksum,
+                                          submissionTimestamp,
+                                          identityData,
+                                          userAuthToken,
+                                          userHeaders,
+                                          Map("formBundleId" -> formBundleId)
+                                        )
+    encodedPayloadString              = Base64.getEncoder.encodeToString(payloadString.getBytes(StandardCharsets.UTF_8))
+    nonRepudiationSubmissionResponse <-
+      nonRepudiationConnector
+        .submitNonRepudiation(encodedPayloadString, nonRepudiationMetadata, digitalAttachmentIds)
+        .map {
+          case NonRepudiationSubmissionAccepted(submissionId) =>
+            auditService.audit(NonRepudiationSubmissionSuccessAudit(registrationId, submissionId))
+            Some(submissionId)
+          case NonRepudiationSubmissionFailed(body, status)   =>
+            auditService.audit(NonRepudiationSubmissionFailureAudit(registrationId, status, body))
+            None
+        }
   } yield nonRepudiationSubmissionResponse
 
-  private def retrieveIdentityData()(implicit headerCarrier: HeaderCarrier): Future[IdentityData] = {
+  private def retrieveIdentityData()(implicit headerCarrier: HeaderCarrier): Future[IdentityData] =
     authConnector.authorise(EmptyPredicate, nonRepudiationIdentityRetrievals).map {
       case affinityGroup ~ internalId ~
-        externalId ~ agentCode ~
-        credentials ~ confidenceLevel ~
-        nino ~ saUtr ~
-        name ~ dateOfBirth ~
-        email ~ agentInfo ~
-        groupId ~ credentialRole ~
-        mdtpInfo ~ itmpName ~
-        itmpDateOfBirth ~ itmpAddress ~
-        credentialStrength ~ loginTimes =>
-
+          externalId ~ agentCode ~
+          credentials ~ confidenceLevel ~
+          nino ~ saUtr ~
+          name ~ dateOfBirth ~
+          email ~ agentInfo ~
+          groupId ~ credentialRole ~
+          mdtpInfo ~ itmpName ~
+          itmpDateOfBirth ~ itmpAddress ~
+          credentialStrength ~ loginTimes =>
         IdentityData(
           internalId = internalId,
           externalId = externalId,
@@ -125,7 +134,6 @@ class NonRepudiationService @Inject()(nonRepudiationConnector: NonRepudiationCon
           loginTimes = loginTimes
         )
     }
-  }
 }
 
 object NonRepudiationService {
@@ -140,7 +148,6 @@ object NonRepudiationService {
       ~ Option[MdtpInformation] ~ Option[ItmpName]
       ~ Option[LocalDate] ~ Option[ItmpAddress]
       ~ Option[String] ~ LoginTimes)
-
 
   val nonRepudiationIdentityRetrievals: Retrieval[NonRepudiationIdentityRetrievals] =
     (Retrievals.affinityGroup and Retrievals.internalId and

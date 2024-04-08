@@ -33,7 +33,7 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
     lazy val service: VatRegistrationService = new VatRegistrationService(mockVatSchemeRepository, backendConfig)
   }
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier   = HeaderCarrier()
   implicit val request: Request[_] = FakeRequest()
 
   override def beforeEach(): Unit = {
@@ -49,52 +49,78 @@ class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture 
     }
 
     "return correct status when if applicant details cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-        testVatScheme.copy(applicantDetails = Some(validApplicantDetails.copy(personalDetails = Some(testPersonalDetails))))
-      )))
+      mockGetRegistration(testInternalId, testRegId)(
+        Future.successful(
+          Some(
+            testVatScheme.copy(applicantDetails =
+              Some(validApplicantDetails.copy(personalDetails = Some(testPersonalDetails)))
+            )
+          )
+        )
+      )
 
       await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
       verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
     }
 
     "return correct status when if transactor details cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-        testVatScheme.copy(transactorDetails = Some(validTransactorDetails.copy(personalDetails = Some(testPersonalDetails))))
-      )))
+      mockGetRegistration(testInternalId, testRegId)(
+        Future.successful(
+          Some(
+            testVatScheme.copy(transactorDetails =
+              Some(validTransactorDetails.copy(personalDetails = Some(testPersonalDetails)))
+            )
+          )
+        )
+      )
 
       await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
       verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
     }
 
     "return correct status when if either transactor/applicant details cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-        testVatScheme.copy(
-          transactorDetails = Some(validTransactorDetails.copy(personalDetails = Some(testPersonalDetails))),
-          applicantDetails = Some(validApplicantDetails.copy(personalDetails = Some(testPersonalDetails.copy(score = Some(0)))))
+      mockGetRegistration(testInternalId, testRegId)(
+        Future.successful(
+          Some(
+            testVatScheme.copy(
+              transactorDetails = Some(validTransactorDetails.copy(personalDetails = Some(testPersonalDetails))),
+              applicantDetails =
+                Some(validApplicantDetails.copy(personalDetails = Some(testPersonalDetails.copy(score = Some(0)))))
+            )
+          )
         )
-      )))
+      )
 
       await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
       verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
     }
 
     "return correct status when transactor email cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-        testVatScheme.copy(
-          transactorDetails = Some(validTransactorDetails.copy(email = Some("email@fake.contact.me")))
+      mockGetRegistration(testInternalId, testRegId)(
+        Future.successful(
+          Some(
+            testVatScheme.copy(
+              transactorDetails = Some(validTransactorDetails.copy(email = Some("email@fake.contact.me")))
+            )
+          )
         )
-      )))
+      )
 
       await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
       verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
     }
 
     "return correct status when applicant email cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-        testVatScheme.copy(
-          applicantDetails = Some(validApplicantDetails.copy(contact = testContact.copy(email = Some("email@fake2.contact.me"))))
+      mockGetRegistration(testInternalId, testRegId)(
+        Future.successful(
+          Some(
+            testVatScheme.copy(
+              applicantDetails =
+                Some(validApplicantDetails.copy(contact = testContact.copy(email = Some("email@fake2.contact.me"))))
+            )
+          )
         )
-      )))
+      )
 
       await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
       verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)

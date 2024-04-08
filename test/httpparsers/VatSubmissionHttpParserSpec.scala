@@ -24,18 +24,22 @@ import uk.gov.hmrc.http._
 
 class VatSubmissionHttpParserSpec extends PlaySpec {
 
-  val testHttpVerb = "POST"
-  val testUri = "/"
+  val testHttpVerb     = "POST"
+  val testUri          = "/"
   val testFormBundleId = "testFormBundleId"
-  val testResponse = Json.obj("formBundle" -> testFormBundleId)
+  val testResponse     = Json.obj("formBundle" -> testFormBundleId)
 
   "VatSubmissionHttpParser" should {
     "successfully parse the formBundleId with status OK" in {
-      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, Json.stringify(testResponse))) mustBe Right(VatSubmissionSuccess(testFormBundleId))
+      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, Json.stringify(testResponse))) mustBe Right(
+        VatSubmissionSuccess(testFormBundleId)
+      )
     }
 
     "fail when status OK does not contain a formBundleId" in {
-      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, "{}")) mustBe Left(VatSubmissionFailure(OK, "VAT submission API - no form bundle ID in response"))
+      VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(OK, "{}")) mustBe Left(
+        VatSubmissionFailure(OK, "VAT submission API - no form bundle ID in response")
+      )
     }
 
     "fail when parsing the response with status BAD_REQUEST" when {
@@ -68,26 +72,34 @@ class VatSubmissionHttpParserSpec extends PlaySpec {
       }
 
       "there are multiple codes" in {
-        val jsonBody = Json.obj(failuresKey -> Json.arr(
-          Json.obj(codeKey -> invalidPayloadKey),
-          Json.obj(codeKey -> invalidCredentialIdKey),
-          Json.obj(codeKey -> invalidSessionIdKey),
-          Json.obj(codeKey -> invalidCorrelationIdKey),
-          Json.obj(codeKey -> "error")
-        )).toString()
+        val jsonBody = Json
+          .obj(
+            failuresKey -> Json.arr(
+              Json.obj(codeKey -> invalidPayloadKey),
+              Json.obj(codeKey -> invalidCredentialIdKey),
+              Json.obj(codeKey -> invalidSessionIdKey),
+              Json.obj(codeKey -> invalidCorrelationIdKey),
+              Json.obj(codeKey -> "error")
+            )
+          )
+          .toString()
 
         VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(BAD_REQUEST, jsonBody)) mustBe
-          Left(VatSubmissionFailure(
-            BAD_REQUEST,
-            "VAT Submission API - errors: Invalid Payload, Invalid Credential ID, Invalid Session ID," +
-              " Invalid Correlation ID, Unexpected Bad Request error reason"
-          ))
+          Left(
+            VatSubmissionFailure(
+              BAD_REQUEST,
+              "VAT Submission API - errors: Invalid Payload, Invalid Credential ID, Invalid Session ID," +
+                " Invalid Correlation ID, Unexpected Bad Request error reason"
+            )
+          )
       }
     }
 
     "throw an INTERNAL SERVER EXCEPTION" when {
       "the VAT Submission API returns an unexpected response" in {
-        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(INTERNAL_SERVER_ERROR, "{}")) mustBe Left(VatSubmissionFailure(INTERNAL_SERVER_ERROR, "Unexpected response from VAT Submission API - status = 500"))
+        VatSubmissionHttpReads.read(testHttpVerb, testUri, HttpResponse(INTERNAL_SERVER_ERROR, "{}")) mustBe Left(
+          VatSubmissionFailure(INTERNAL_SERVER_ERROR, "Unexpected response from VAT Submission API - status = 500")
+        )
       }
     }
 

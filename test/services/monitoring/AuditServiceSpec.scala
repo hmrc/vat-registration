@@ -32,17 +32,17 @@ import scala.concurrent.ExecutionContext
 class AuditServiceSpec extends VatRegSpec with VatRegistrationFixture {
 
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
-  val mockAppConfig: BackendConfig = mock[BackendConfig]
-  val testAppName = "app"
-  val testUrl = "testUrl"
+  val mockAppConfig: BackendConfig       = mock[BackendConfig]
+  val testAppName                        = "app"
+  val testUrl                            = "testUrl"
 
   val testAuditService = new AuditService(mockAppConfig, mockAuditConnector)
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  private implicit val hc: HeaderCarrier                    = HeaderCarrier()
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "testUrl")
 
-  val testAuditModel: AuditModel = new AuditModel{
-    override val auditType = "testAuditType"
+  val testAuditModel: AuditModel = new AuditModel {
+    override val auditType       = "testAuditType"
     override val transactionName = "testTransactionName"
     override val detail: JsValue = Json.obj()
   }

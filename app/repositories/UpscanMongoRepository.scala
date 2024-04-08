@@ -32,74 +32,78 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UpscanMongoRepository @Inject()(mongo: MongoComponent,
-                                      timeMachine: TimeMachine,
-                                      backendConfig: BackendConfig)(implicit ec: ExecutionContext)
-  extends PlayMongoRepository(
-    mongoComponent = mongo,
-    collectionName = "upscan",
-    domainFormat = UpscanDetails.format,
-    replaceIndexes = true,
-    indexes = Seq(
-      model.IndexModel(
-        keys = ascending("reference"),
-        indexOptions = IndexOptions()
-          .name("reference")
-          .unique(true)
-      ),
-      model.IndexModel(
-        keys = ascending("reference", "registrationId"),
-        indexOptions = IndexOptions()
-          .name("referenceAndRegistrationId")
-          .unique(true)
-      ),
-      model.IndexModel(
-        keys = ascending("timestamp"),
-        indexOptions = IndexOptions()
-          .name("TTL")
-          .expireAfter(backendConfig.upscanRepositoryExpiryInSeconds, TimeUnit.SECONDS)
+class UpscanMongoRepository @Inject() (mongo: MongoComponent, timeMachine: TimeMachine, backendConfig: BackendConfig)(
+  implicit ec: ExecutionContext
+) extends PlayMongoRepository(
+      mongoComponent = mongo,
+      collectionName = "upscan",
+      domainFormat = UpscanDetails.format,
+      replaceIndexes = true,
+      indexes = Seq(
+        model.IndexModel(
+          keys = ascending("reference"),
+          indexOptions = IndexOptions()
+            .name("reference")
+            .unique(true)
+        ),
+        model.IndexModel(
+          keys = ascending("reference", "registrationId"),
+          indexOptions = IndexOptions()
+            .name("referenceAndRegistrationId")
+            .unique(true)
+        ),
+        model.IndexModel(
+          keys = ascending("timestamp"),
+          indexOptions = IndexOptions()
+            .name("TTL")
+            .expireAfter(backendConfig.upscanRepositoryExpiryInSeconds, TimeUnit.SECONDS)
+        )
       )
-    )
-  ) {
+    ) {
 
-  val referenceKey = "reference"
+  val referenceKey      = "reference"
   val registrationIdKey = "registrationId"
 
-  def getUpscanDetails(reference: String): Future[Option[UpscanDetails]] = {
+  def getUpscanDetails(reference: String): Future[Option[UpscanDetails]] =
     collection
       .find(filter = equal(referenceKey, reference))
-      .toFuture().map(_.headOption)
-  }
+      .toFuture()
+      .map(_.headOption)
 
-  def getAllUpscanDetails(registrationId: String): Future[Seq[UpscanDetails]] = {
+  def getAllUpscanDetails(registrationId: String): Future[Seq[UpscanDetails]] =
     collection
       .find(filter = equal(registrationIdKey, registrationId))
       .toFuture()
-  }
 
-  def deleteUpscanDetails(reference: String): Future[Boolean] = {
+  def deleteUpscanDetails(reference: String): Future[Boolean] =
     collection
       .deleteOne(filter = equal(referenceKey, reference))
-      .toFuture().map(_.wasAcknowledged())
-  }
+      .toFuture()
+      .map(_.wasAcknowledged())
 
   def deleteAllUpscanDetails(registrationId: String): Future[Boolean] =
     collection
       .deleteMany(filter = equal(registrationIdKey, registrationId))
-      .toFuture().map(_.wasAcknowledged())
+      .toFuture()
+      .map(_.wasAcknowledged())
 
-  def  upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] = {
+  def upsertUpscanDetails(upscanDetails: UpscanDetails): Future[UpscanDetails] = {
     val upscanList = Seq(
       Updates.set("timestamp", timeMachine.timestamp)
-    ) ++ Json.toJson(upscanDetails).as[JsObject]
-      .fields.map { case (key, value) => Updates.set(key, Codecs.toBson(value)) }
-    collection.updateOne(
-      filter = equal(referenceKey, upscanDetails.reference),
-      update = Updates.combine(upscanList: _*),
-      options = UpdateOptions().upsert(true)
-    ).toFuture().map(_ => upscanDetails).recover { case _ =>
-      throw new Exception("Unexpected error when inserting upscan details")
+    ) ++ Json.toJson(upscanDetails).as[JsObject].fields.map { case (key, value) =>
+      Updates.set(key, Codecs.toBson(value))
     }
+    collection
+      .updateOne(
+        filter = equal(referenceKey, upscanDetails.reference),
+        update = Updates.combine(upscanList: _*),
+        options = UpdateOptions().upsert(true)
+      )
+      .toFuture()
+      .map(_ => upscanDetails)
+      .recover { case _ =>
+        throw new Exception("Unexpected error when inserting upscan details")
+      }
   }
 
 }

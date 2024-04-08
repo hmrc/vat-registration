@@ -29,11 +29,15 @@ import services.submission.CustomerIdentificationBlockBuilder
 trait MockCustomerIdentificationBlockBuilder extends MockitoSugar {
   self: Suite =>
 
-  val mockCustomerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder = mock[CustomerIdentificationBlockBuilder]
+  val mockCustomerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder =
+    mock[CustomerIdentificationBlockBuilder]
 
-  def mockBuildCustomerIdentificationBlock(vatScheme: VatScheme)
-                                          (response: JsObject): OngoingStubbing[JsObject] =
-    when(mockCustomerIdentificationBlockBuilder.buildCustomerIdentificationBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]]))
+  def mockBuildCustomerIdentificationBlock(vatScheme: VatScheme)(response: JsObject): OngoingStubbing[JsObject] =
+    when(
+      mockCustomerIdentificationBlockBuilder.buildCustomerIdentificationBlock(ArgumentMatchers.eq(vatScheme))(
+        ArgumentMatchers.any[Request[_]]
+      )
+    )
       .thenReturn(response)
 
 }

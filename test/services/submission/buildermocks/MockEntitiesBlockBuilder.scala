@@ -32,8 +32,10 @@ trait MockEntitiesBlockBuilder extends MockitoSugar {
   val mockEntitiesBlockBuilder = mock[EntitiesBlockBuilder]
 
   def mockBuildEntitiesBlock(vatScheme: VatScheme)(response: Option[JsValue]): OngoingStubbing[Option[JsValue]] =
-    when(mockEntitiesBlockBuilder.buildEntitiesBlock(
-      ArgumentMatchers.eq(vatScheme)
-    )(ArgumentMatchers.any[Request[_]])).thenReturn(response)
+    when(
+      mockEntitiesBlockBuilder.buildEntitiesBlock(
+        ArgumentMatchers.eq(vatScheme)
+      )(ArgumentMatchers.any[Request[_]])
+    ).thenReturn(response)
 
 }

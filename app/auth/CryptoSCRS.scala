@@ -23,7 +23,7 @@ import uk.gov.hmrc.crypto.{ApplicationCrypto, Crypted, PlainText}
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class CryptoSCRS @Inject()(config: Configuration) {
+class CryptoSCRS @Inject() (config: Configuration) {
 
   lazy val crypto = new ApplicationCrypto(config.underlying).JsonCrypto
 

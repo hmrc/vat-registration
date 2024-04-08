@@ -24,59 +24,59 @@ sealed trait RegistrationReason {
 }
 
 object RegistrationReason {
-  val mapping = Map(
-    ForwardLook.key -> ForwardLook,
-    BackwardLook.key -> BackwardLook,
-    Voluntary.key -> Voluntary,
-    NonUk.key -> NonUk,
+  val mapping                                         = Map(
+    ForwardLook.key             -> ForwardLook,
+    BackwardLook.key            -> BackwardLook,
+    Voluntary.key               -> Voluntary,
+    NonUk.key                   -> NonUk,
     TransferOfAGoingConcern.key -> TransferOfAGoingConcern,
-    GroupRegistration.key -> GroupRegistration,
-    SuppliesOutsideUk.key -> SuppliesOutsideUk,
-    IntendingTrader.key -> IntendingTrader
+    GroupRegistration.key       -> GroupRegistration,
+    SuppliesOutsideUk.key       -> SuppliesOutsideUk,
+    IntendingTrader.key         -> IntendingTrader
   )
   val inverseMapping: Map[RegistrationReason, String] = mapping.map(_.swap)
 
-  val reads: Reads[RegistrationReason] = Reads { json => json.validate[String].map(mapping) }
-  val writes: Writes[RegistrationReason] = Writes { registrationReason => JsString(registrationReason.key) }
+  val reads: Reads[RegistrationReason]            = Reads(json => json.validate[String].map(mapping))
+  val writes: Writes[RegistrationReason]          = Writes(registrationReason => JsString(registrationReason.key))
   implicit val format: Format[RegistrationReason] = Format(reads, writes)
 }
 
 case object ForwardLook extends RegistrationReason {
-  val key = "0016"
+  val key              = "0016"
   val humanReadableKey = "Forward Look"
 }
 
 case object BackwardLook extends RegistrationReason {
-  val key = "0015"
+  val key              = "0015"
   val humanReadableKey = "Backward Look"
 }
 
 case object Voluntary extends RegistrationReason {
-  val key = "0018"
+  val key              = "0018"
   val humanReadableKey = "Voluntary"
 }
 
 case object NonUk extends RegistrationReason {
-  val key = "0003"
+  val key              = "0003"
   val humanReadableKey = "Non-UK"
 }
 
 case object SuppliesOutsideUk extends RegistrationReason {
-  val key = "0017"
+  val key              = "0017"
   val humanReadableKey = "Supplies outside the UK"
 }
 
 case object GroupRegistration extends RegistrationReason {
-  val key = "0011"
+  val key              = "0011"
   val humanReadableKey = "Group Registration"
 }
 
 case object TransferOfAGoingConcern extends RegistrationReason {
-  val key = "0014"
+  val key              = "0014"
   val humanReadableKey = "Transfer of a Going Concern"
 }
 
 case object IntendingTrader extends RegistrationReason {
-  val key = "0013"
+  val key              = "0013"
   val humanReadableKey = "Intending Trader"
 }

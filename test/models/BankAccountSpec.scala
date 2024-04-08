@@ -28,16 +28,17 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
 
   val fullBankAccountModel: BankAccount = BankAccount(
     isProvided = true,
-    details = Some(BankAccountDetails(
-      name = "Test Account name",
-      sortCode = "00-99-22",
-      number = "12345678",
-      status = ValidStatus
-    )),
+    details = Some(
+      BankAccountDetails(
+        name = "Test Account name",
+        sortCode = "00-99-22",
+        number = "12345678",
+        status = ValidStatus
+      )
+    ),
     reason = None
   )
-  val fullBankAccountJson: JsValue = Json.parse(
-    s"""
+  val fullBankAccountJson: JsValue      = Json.parse(s"""
        |{
        |  "isProvided":true,
        |  "details":{
@@ -50,14 +51,12 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
         """.stripMargin)
 
   val noDetailsBankAccountModel: BankAccount = BankAccount(isProvided = false, None, Some(BeingSetup))
-  val noDetailsBankAccountJson: JsValue = Json.parse(
-    s"""
+  val noDetailsBankAccountJson: JsValue      = Json.parse(s"""
        |{
        |  "isProvided":false,
        |  "reason":"BeingSetup"
        |}
         """.stripMargin)
-
 
   "Creating a BankAccount model from Json" should {
     implicit val format: Format[BankAccount] = BankAccount.format
@@ -72,7 +71,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
 
     "fail" when {
       "from Json with missing isProvided" in {
-        val json = Json.parse(
+        val json   = Json.parse(
           s"""
              {
              |  "details":{
@@ -89,8 +88,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       }
 
       "from Json with missing name" in {
-        val json = Json.parse(
-          s"""
+        val json = Json.parse(s"""
              |{
              |  "isProvided":true,
              |  "details":{
@@ -106,8 +104,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       }
 
       "from Json with missing number" in {
-        val json = Json.parse(
-          s"""
+        val json = Json.parse(s"""
              |{
              |  "isProvided":true,
              |  "details":{
@@ -123,8 +120,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       }
 
       "from Json with missing sort code" in {
-        val json = Json.parse(
-          s"""
+        val json = Json.parse(s"""
              |{
              |  "isProvided":true,
              |  "details":{
@@ -157,9 +153,8 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
     val testEncryptionKey = "YWJjZGVmZ2hpamtsbW5vcA=="
 
     val mockConfig = mock[Configuration]
-    val crypto = new CryptoSCRS(mockConfig)
-    when(mockConfig.underlying).thenReturn(ConfigFactory.parseString(
-      s"""
+    val crypto     = new CryptoSCRS(mockConfig)
+    when(mockConfig.underlying).thenReturn(ConfigFactory.parseString(s"""
          |json {
          |  encryption.key:"$testEncryptionKey"
           }
@@ -169,17 +164,18 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
 
     val bankAccount = BankAccount(
       isProvided = true,
-      Some(BankAccountDetails(
-        name = "Test Account name",
-        sortCode = "00-99-22",
-        number = "12345678",
-        status = ValidStatus
-      )),
+      Some(
+        BankAccountDetails(
+          name = "Test Account name",
+          sortCode = "00-99-22",
+          number = "12345678",
+          status = ValidStatus
+        )
+      ),
       reason = None
     )
 
-    val encryptedJson = Json.parse(
-      s"""
+    val encryptedJson = Json.parse(s"""
          |{
          | "isProvided":true,
          | "details":{

@@ -25,15 +25,15 @@ case object Annual extends ReturnsFrequency
 
 object ReturnsFrequency {
 
-  val monthly: String = "monthly"
+  val monthly: String   = "monthly"
   val quarterly: String = "quarterly"
-  val annual: String = "annual"
+  val annual: String    = "annual"
 
   val reads: Reads[ReturnsFrequency] = Reads[ReturnsFrequency] {
-    case JsString(`monthly`) => JsSuccess(Monthly)
+    case JsString(`monthly`)   => JsSuccess(Monthly)
     case JsString(`quarterly`) => JsSuccess(Quarterly)
-    case JsString(`annual`) => JsSuccess(Annual)
-    case _ => JsError("Could not parse payment frequency")
+    case JsString(`annual`)    => JsSuccess(Annual)
+    case _                     => JsError("Could not parse payment frequency")
   }
 
   val writes: Writes[ReturnsFrequency] = Writes[ReturnsFrequency] { period =>
@@ -43,4 +43,3 @@ object ReturnsFrequency {
   implicit val format: Format[ReturnsFrequency] = Format(reads, writes)
 
 }
-

@@ -27,45 +27,50 @@ import utils.JsonUtils._
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class SubmissionAuditBlockBuilder @Inject()(subscriptionBlockBuilder: SubscriptionAuditBlockBuilder,
-                                            declarationBlockBuilder: DeclarationAuditBlockBuilder,
-                                            complianceBlockBuilder: ComplianceAuditBlockBuilder,
-                                            customerIdentificationBlockBuilder: CustomerIdentificationAuditBlockBuilder,
-                                            periodsAuditBlockBuilder: PeriodsAuditBlockBuilder,
-                                            bankAuditBlockBuilder: BankAuditBlockBuilder,
-                                            contactAuditBlockBuilder: ContactAuditBlockBuilder,
-                                            annualAccountingAuditBlockBuilder: AnnualAccountingAuditBlockBuilder,
-                                            attachmentsService: AttachmentsService,
-                                            entitiesAuditBlockBuilder: EntitiesAuditBlockBuilder) {
+class SubmissionAuditBlockBuilder @Inject() (
+  subscriptionBlockBuilder: SubscriptionAuditBlockBuilder,
+  declarationBlockBuilder: DeclarationAuditBlockBuilder,
+  complianceBlockBuilder: ComplianceAuditBlockBuilder,
+  customerIdentificationBlockBuilder: CustomerIdentificationAuditBlockBuilder,
+  periodsAuditBlockBuilder: PeriodsAuditBlockBuilder,
+  bankAuditBlockBuilder: BankAuditBlockBuilder,
+  contactAuditBlockBuilder: ContactAuditBlockBuilder,
+  annualAccountingAuditBlockBuilder: AnnualAccountingAuditBlockBuilder,
+  attachmentsService: AttachmentsService,
+  entitiesAuditBlockBuilder: EntitiesAuditBlockBuilder
+) {
 
-
-  def buildAuditJson(vatScheme: VatScheme,
-                     authProviderId: String,
-                     affinityGroup: AffinityGroup,
-                     optAgentReferenceNumber: Option[String],
-                     formBundleId: String
-                    )(implicit request: Request[_]): SubmissionAuditModel = {
+  def buildAuditJson(
+    vatScheme: VatScheme,
+    authProviderId: String,
+    affinityGroup: AffinityGroup,
+    optAgentReferenceNumber: Option[String],
+    formBundleId: String
+  )(implicit request: Request[_]): SubmissionAuditModel = {
     val mandatoryAttachmentList = attachmentsService.mandatoryAttachmentList(vatScheme)
-    val details = jsonObject(
-      "outsideEUSales" -> {
+    val details                 = jsonObject(
+      "outsideEUSales"         -> {
         vatScheme.vatApplication.map(_.eoriRequested) match {
           case Some(euGoods) => euGoods
-          case _ => throw new InternalServerException("Could not construct submission audit JSON due to missing EU goods answer")
+          case _             =>
+            throw new InternalServerException(
+              "Could not construct submission audit JSON due to missing EU goods answer"
+            )
         }
       },
-      "subscription" -> subscriptionBlockBuilder.buildSubscriptionBlock(vatScheme),
-      "declaration" -> declarationBlockBuilder.buildDeclarationBlock(vatScheme),
-      "compliance" -> complianceBlockBuilder.buildComplianceBlock(vatScheme),
+      "subscription"           -> subscriptionBlockBuilder.buildSubscriptionBlock(vatScheme),
+      "declaration"            -> declarationBlockBuilder.buildDeclarationBlock(vatScheme),
+      "compliance"             -> complianceBlockBuilder.buildComplianceBlock(vatScheme),
       "customerIdentification" -> customerIdentificationBlockBuilder.buildCustomerIdentificationBlock(vatScheme),
-      "businessContact" -> contactAuditBlockBuilder.buildContactBlock(vatScheme),
-      "bankDetails" -> bankAuditBlockBuilder.buildBankAuditBlock(vatScheme),
-      "periods" -> periodsAuditBlockBuilder.buildPeriodsBlock(vatScheme),
-      optional("joinAA" -> annualAccountingAuditBlockBuilder.buildAnnualAccountingAuditBlock(vatScheme)),
+      "businessContact"        -> contactAuditBlockBuilder.buildContactBlock(vatScheme),
+      "bankDetails"            -> bankAuditBlockBuilder.buildBankAuditBlock(vatScheme),
+      "periods"                -> periodsAuditBlockBuilder.buildPeriodsBlock(vatScheme),
+      optional("joinAA"                                                  -> annualAccountingAuditBlockBuilder.buildAnnualAccountingAuditBlock(vatScheme)),
       optionalRequiredIf(mandatoryAttachmentList.nonEmpty)("attachments" -> vatScheme.attachments.map { attachments =>
         val fullAttachmentList = mandatoryAttachmentList ++ attachmentsService.optionalAttachmentList(vatScheme)
         AttachmentType.submissionWrites(attachments.method).writes(fullAttachmentList)
       }),
-      optional("entities" -> entitiesAuditBlockBuilder.buildEntitiesAuditBlock(vatScheme))
+      optional("entities"                                                -> entitiesAuditBlockBuilder.buildEntitiesAuditBlock(vatScheme))
     )
 
     SubmissionAuditModel(

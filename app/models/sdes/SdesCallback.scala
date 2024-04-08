@@ -20,15 +20,17 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDateTime
 
-case class SdesCallback(notification: String,
-                        filename: String,
-                        correlationID: String,
-                        dateTime: LocalDateTime,
-                        checksumAlgorithm: Option[String] = None,
-                        checksum: Option[String] = None,
-                        availableUntil: Option[LocalDateTime] = None,
-                        properties: List[Property] = Nil,
-                        failureReason: Option[String] = None) extends PropertyExtractor
+case class SdesCallback(
+  notification: String,
+  filename: String,
+  correlationID: String,
+  dateTime: LocalDateTime,
+  checksumAlgorithm: Option[String] = None,
+  checksum: Option[String] = None,
+  availableUntil: Option[LocalDateTime] = None,
+  properties: List[Property] = Nil,
+  failureReason: Option[String] = None
+) extends PropertyExtractor
 
 object SdesCallback {
   implicit val format: OFormat[SdesCallback] = Json.format[SdesCallback]

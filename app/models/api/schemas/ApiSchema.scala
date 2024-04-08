@@ -21,10 +21,8 @@ import org.openapi4j.parser.OpenApi3Parser
 import org.openapi4j.parser.model.v3.OpenApi3
 
 abstract class ApiSchema(filename: String, defaultSchemaName: String) extends OpenApi3Parser {
-  val fullSchema: OpenApi3 = parse(getClass.getResource(filename), false)
+  val fullSchema: OpenApi3    = parse(getClass.getResource(filename), false)
   val defaultSchema: JsonNode = fullSchema.getComponents.getSchema(defaultSchemaName).toNode
 
   def suppressedErrors: List[String]
 }
-
-

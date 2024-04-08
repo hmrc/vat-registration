@@ -36,18 +36,19 @@ trait Authorisation extends AuthorisedFunctions with LoggingUtils {
 
   implicit val executionContext: ExecutionContext
 
-  def isAuthenticated(f: String => Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] = {
-    authorised().retrieve(internalId) { id =>
-      id.fold {
-        warnLog("[Authorisation] - [isAuthenticated] : No internalId present; FORBIDDEN")
-        Future.successful(Forbidden("Missing internalId for the logged in user"))
-      }(f)
-    }.recoverWith {
-      case e: AuthorisationException =>
-        warnLog("[Authorisation] - [isAuthenticated]: AuthorisationException (auth returned a 401")
-        Future.successful(Forbidden)
-      case ex: Exception => Future.failed(throw ex)
-    }
-  }
+  def isAuthenticated(f: String => Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
+    authorised()
+      .retrieve(internalId) { id =>
+        id.fold {
+          warnLog("[Authorisation] - [isAuthenticated] : No internalId present; FORBIDDEN")
+          Future.successful(Forbidden("Missing internalId for the logged in user"))
+        }(f)
+      }
+      .recoverWith {
+        case e: AuthorisationException =>
+          warnLog("[Authorisation] - [isAuthenticated]: AuthorisationException (auth returned a 401")
+          Future.successful(Forbidden)
+        case ex: Exception             => Future.failed(throw ex)
+      }
 
 }

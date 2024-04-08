@@ -35,22 +35,23 @@ import utils.FakeRegistrationIdService
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 import scala.concurrent.Future
 
-class RegistrationServiceSpec extends VatRegSpec
-  with MockVatSchemeRepository
-  with FeatureSwitching
-  with BeforeAndAfterEach
-  with VatRegistrationFixture {
+class RegistrationServiceSpec
+    extends VatRegSpec
+    with MockVatSchemeRepository
+    with FeatureSwitching
+    with BeforeAndAfterEach
+    with VatRegistrationFixture {
 
-  implicit val hc = HeaderCarrier()
-  implicit val config = app.injector.instanceOf[BackendConfig]
-  val testValidIndex = 1
-  val testSecondIndex = 2
-  override lazy val testRegId = "testRegId"
-  override lazy val testInternalId = "testInternalId"
-  override lazy val testDate = LocalDate.parse("2020-01-01")
+  implicit val hc: HeaderCarrier                = HeaderCarrier()
+  implicit val config: BackendConfig            = app.injector.instanceOf[BackendConfig]
+  val testValidIndex                            = 1
+  val testSecondIndex                           = 2
+  override lazy val testRegId                   = "testRegId"
+  override lazy val testInternalId              = "testInternalId"
+  override lazy val testDate: LocalDate         = LocalDate.parse("2020-01-01")
   override lazy val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.MIDNIGHT)
 
-  override lazy val testVatScheme = VatScheme(
+  override lazy val testVatScheme: VatScheme = VatScheme(
     registrationId = testRegId,
     internalId = testInternalId,
     status = VatRegStatus.draft,
@@ -61,10 +62,11 @@ class RegistrationServiceSpec extends VatRegSpec
 
   implicit val request: Request[_] = FakeRequest()
 
-  object Service extends RegistrationService(
-    vatSchemeRepository = mockVatSchemeRepository,
-    registrationIdService = fakeRegIdService
-  )
+  object Service
+      extends RegistrationService(
+        vatSchemeRepository = mockVatSchemeRepository,
+        registrationIdService = fakeRegIdService
+      )
 
   "newRegistration" should {
     "return a vat scheme" in {
@@ -88,7 +90,7 @@ class RegistrationServiceSpec extends VatRegSpec
           res mustBe List(testVatScheme)
         }
       }
-      "requested as JSON" must {
+      "requested as JSON"           must {
         "return a list of registrations in JSON format" in {
           val registrationsJson = Json.toJson(testVatScheme)(VatScheme.format())
           mockGetAllRegistrations(testInternalId)(Future.successful(List(registrationsJson)))
@@ -111,7 +113,7 @@ class RegistrationServiceSpec extends VatRegSpec
   }
 
   "getRegistration" when {
-    "the requested registration exists" must {
+    "the requested registration exists"        must {
       "return the registration as a VAT scheme" in {
         mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testVatScheme)))
 
@@ -156,17 +158,21 @@ class RegistrationServiceSpec extends VatRegSpec
     "the section exists" when {
       "requested parsed into the relevant model" must {
         "return the section as the relevant model" in {
-          mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(Future.successful(Some(Json.toJson(validTransactorDetails))))
+          mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(
+            Future.successful(Some(Json.toJson(validTransactorDetails)))
+          )
 
           val res = await(Service.getSection[TransactorDetails](testInternalId, testRegId, TransactorSectionId))
 
           res mustBe Some(validTransactorDetails)
         }
       }
-      "requested as JSON" must {
+      "requested as JSON"                        must {
         "return the section in JSON format" in {
           val sectionJson = Json.toJson(validTransactorDetails)
-          mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(Future.successful(Some(sectionJson)))
+          mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(
+            Future.successful(Some(sectionJson))
+          )
 
           val res = await(Service.getSection[JsValue](testInternalId, testRegId, TransactorSectionId))
 
@@ -215,44 +221,57 @@ class RegistrationServiceSpec extends VatRegSpec
   }
 
   "getAnswer" when {
-    "the answer exists" must {
+    "the answer exists"        must {
       "return the answer as the requested type if it will parse to it" in {
         val sectionJson = Json.toJson(validTransactorDetails)
-        mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(Future.successful(Some(sectionJson)))
+        mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(
+          Future.successful(Some(sectionJson))
+        )
 
-        val res = await(Service.getAnswer[PersonalDetails](testInternalId, testRegId, TransactorSectionId, "personalDetails"))
+        val res =
+          await(Service.getAnswer[PersonalDetails](testInternalId, testRegId, TransactorSectionId, "personalDetails"))
 
-        res mustBe Some(PersonalDetails(
-          name = testName,
-          nino = Some(testNino),
-          trn = None,
-          arn = None,
-          identifiersMatch = true,
-          dateOfBirth = Some(testDate),
-          score = None
-        ))
+        res mustBe Some(
+          PersonalDetails(
+            name = testName,
+            nino = Some(testNino),
+            trn = None,
+            arn = None,
+            identifiersMatch = true,
+            dateOfBirth = Some(testDate),
+            score = None
+          )
+        )
       }
       "return the answer in JSON format" in {
         val sectionJson = Json.toJson(validTransactorDetails)
-        mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(Future.successful(Some(sectionJson)))
+        mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(
+          Future.successful(Some(sectionJson))
+        )
 
         val res = await(Service.getAnswer[JsValue](testInternalId, testRegId, TransactorSectionId, "personalDetails"))
 
-        res mustBe Some(Json.toJson(PersonalDetails(
-          name = testName,
-          nino = Some(testNino),
-          trn = None,
-          arn = None,
-          identifiersMatch = true,
-          dateOfBirth = Some(testDate),
-          score = None
-        )))
+        res mustBe Some(
+          Json.toJson(
+            PersonalDetails(
+              name = testName,
+              nino = Some(testNino),
+              trn = None,
+              arn = None,
+              identifiersMatch = true,
+              dateOfBirth = Some(testDate),
+              score = None
+            )
+          )
+        )
       }
     }
     "the answer doesn't exist" must {
       "return None" in {
         val sectionJson = Json.toJson(validTransactorDetails)
-        mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(Future.successful(Some(sectionJson)))
+        mockGetSection[JsValue](testInternalId, testRegId, TransactorSectionId.repoKey)(
+          Future.successful(Some(sectionJson))
+        )
 
         val res = await(Service.getAnswer[JsValue](testInternalId, testRegId, TransactorSectionId, "trn"))
 
@@ -263,36 +282,48 @@ class RegistrationServiceSpec extends VatRegSpec
 
   "getSectionIndex" must {
     "return the index" in {
-      val sectionJson = Json.toJson(validFullOtherBusinessInvolvement)
+      val sectionJson    = Json.toJson(validFullOtherBusinessInvolvement)
       val sectionJsonArr = Json.arr(sectionJson)
-      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJsonArr)))
+      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+        Future.successful(Some(sectionJsonArr))
+      )
 
-      val res = await(Service.getSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testValidIndex))
+      val res =
+        await(Service.getSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testValidIndex))
 
       res mustBe Some(sectionJson)
     }
     "return the second index" in {
-      val sectionJson = Json.toJson(validFullOtherBusinessInvolvement)
+      val sectionJson    = Json.toJson(validFullOtherBusinessInvolvement)
       val sectionJsonArr = Json.arr(sectionJson, sectionJson)
-      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJsonArr)))
+      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+        Future.successful(Some(sectionJsonArr))
+      )
 
-      val res = await(Service.getSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testSecondIndex))
+      val res =
+        await(Service.getSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testSecondIndex))
 
       res mustBe Some(sectionJson)
     }
     "return None" when {
       "there are no sections" in {
-        mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
+        mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+          Future.successful(None)
+        )
 
-        val res = await(Service.getSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testValidIndex))
+        val res =
+          await(Service.getSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testValidIndex))
 
         res mustBe None
       }
       "the list does not contain that index" in {
         val sectionJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement))
-        mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJson)))
+        mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+          Future.successful(Some(sectionJson))
+        )
 
-        val res = await(Service.getSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testSecondIndex))
+        val res =
+          await(Service.getSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testSecondIndex))
 
         res mustBe None
       }
@@ -301,32 +332,64 @@ class RegistrationServiceSpec extends VatRegSpec
 
   "upsertSectionIndex" must {
     "return the stored json after updating an existing index in the section" in {
-      val sectionJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement))
-      val updateJson = Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false)))
+      val sectionJson   = Json.arr(Json.toJson(validFullOtherBusinessInvolvement))
+      val updateJson    = Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false)))
       val updateJsonArr = Json.arr(Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false))))
-      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJson)))
-      mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJsonArr)(Some(updateJsonArr))
+      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+        Future.successful(Some(sectionJson))
+      )
+      mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJsonArr)(
+        Some(updateJsonArr)
+      )
 
-      val res = await(Service.upsertSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, updateJson, testValidIndex))
+      val res = await(
+        Service
+          .upsertSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, updateJson, testValidIndex)
+      )
 
       res mustBe Some(updateJson)
     }
     "return the stored json after creating the section" in {
-      val updateJson = Json.arr(Json.toJson((validFullOtherBusinessInvolvement)))
-      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(None))
-      mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJson)(Some(updateJson))
+      val updateJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement))
+      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+        Future.successful(None)
+      )
+      mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJson)(
+        Some(updateJson)
+      )
 
-      val res = await(Service.upsertSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, Json.toJson(validFullOtherBusinessInvolvement), testValidIndex))
+      val res = await(
+        Service.upsertSectionIndex(
+          testInternalId,
+          testRegId,
+          OtherBusinessInvolvementsSectionId,
+          Json.toJson(validFullOtherBusinessInvolvement),
+          testValidIndex
+        )
+      )
 
       res mustBe Some(Json.toJson(validFullOtherBusinessInvolvement))
     }
     "return the stored json after adding a new index to an existing section" in {
       val sectionJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement))
-      val updateJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement), Json.toJson(validFullOtherBusinessInvolvement))
-      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJson)))
-      mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJson)(Some(updateJson))
+      val updateJson  =
+        Json.arr(Json.toJson(validFullOtherBusinessInvolvement), Json.toJson(validFullOtherBusinessInvolvement))
+      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+        Future.successful(Some(sectionJson))
+      )
+      mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJson)(
+        Some(updateJson)
+      )
 
-      val res = await(Service.upsertSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, Json.toJson(validFullOtherBusinessInvolvement), testSecondIndex))
+      val res = await(
+        Service.upsertSectionIndex(
+          testInternalId,
+          testRegId,
+          OtherBusinessInvolvementsSectionId,
+          Json.toJson(validFullOtherBusinessInvolvement),
+          testSecondIndex
+        )
+      )
 
       res mustBe Some(Json.toJson(validFullOtherBusinessInvolvement))
     }
@@ -334,21 +397,32 @@ class RegistrationServiceSpec extends VatRegSpec
 
   "deleteSectionIndex" must {
     "return the array without the deleted index" in {
-      val sectionJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement), Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false))))
-      val updateJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false))))
-      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJson)))
-      mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJson)(Some(updateJson))
+      val sectionJson = Json.arr(
+        Json.toJson(validFullOtherBusinessInvolvement),
+        Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false)))
+      )
+      val updateJson  = Json.arr(Json.toJson(validFullOtherBusinessInvolvement.copy(stillTrading = Some(false))))
+      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+        Future.successful(Some(sectionJson))
+      )
+      mockUpsertSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey, updateJson)(
+        Some(updateJson)
+      )
 
-      val res = await(Service.deleteSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testValidIndex))
+      val res =
+        await(Service.deleteSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testValidIndex))
 
       res mustBe Some(updateJson)
     }
     "return a None when deleting the last index" in {
       val sectionJson = Json.arr(Json.toJson(validFullOtherBusinessInvolvement))
-      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(Future.successful(Some(sectionJson)))
+      mockGetSection[JsValue](testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(
+        Future.successful(Some(sectionJson))
+      )
       mockDeleteSection(testInternalId, testRegId, OtherBusinessInvolvementsSectionId.repoKey)(response = true)
 
-      val res = await(Service.deleteSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testValidIndex))
+      val res =
+        await(Service.deleteSectionIndex(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, testValidIndex))
 
       res mustBe None
     }

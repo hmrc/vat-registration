@@ -26,17 +26,25 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class StubNrsController @Inject()(cc: ControllerComponents) extends BackendController(cc) with Logging {
+class StubNrsController @Inject() (cc: ControllerComponents) extends BackendController(cc) with Logging {
 
   val processSubmission: Action[AnyContent] = Action.async {
-    Future.successful(Accepted(Json.obj(
-      "nrSubmissionId" -> UUID.randomUUID()
-    )))
+    Future.successful(
+      Accepted(
+        Json.obj(
+          "nrSubmissionId" -> UUID.randomUUID()
+        )
+      )
+    )
   }
 
   val processAttachmentSubmission: Action[AnyContent] = Action.async {
-    Future.successful(Accepted(Json.obj(
-      "attachmentId" -> UUID.randomUUID()
-    )))
+    Future.successful(
+      Accepted(
+        Json.obj(
+          "attachmentId" -> UUID.randomUUID()
+        )
+      )
+    )
   }
 }

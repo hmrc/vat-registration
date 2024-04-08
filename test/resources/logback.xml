@@ -55,7 +55,7 @@
     <logger name="org.apache" level="OFF"/>
     <logger name="org.eclipse.jetty" level="OFF"/>
     <logger name="io.netty" level="OFF"/>
-    <logger name="akka.event.EventStream" level="OFF" />
+    <logger name="pekko.event.EventStream" level="OFF" />
     <logger name="play.api" level="OFF" />
     <logger name="org.jboss" level="OFF"/>
 

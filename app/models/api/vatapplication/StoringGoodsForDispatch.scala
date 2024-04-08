@@ -25,7 +25,7 @@ case object StoringWithinUk extends StoringGoodsForDispatch
 case object StoringOverseas extends StoringGoodsForDispatch
 
 object StoringGoodsForDispatch {
-  val statusMap: Map[StoringGoodsForDispatch, String] = Map(
+  val statusMap: Map[StoringGoodsForDispatch, String]  = Map(
     StoringWithinUk -> "UK",
     StoringOverseas -> "OVERSEAS"
   )
@@ -35,10 +35,10 @@ object StoringGoodsForDispatch {
 
   def toJsString(value: StoringGoodsForDispatch): JsString = JsString(statusMap(value))
 
-  val writes: Writes[StoringGoodsForDispatch] = Writes[StoringGoodsForDispatch] { storingGoods =>
+  val writes: Writes[StoringGoodsForDispatch]          = Writes[StoringGoodsForDispatch] { storingGoods =>
     toJsString(storingGoods)
   }
-  val reads: Reads[StoringGoodsForDispatch] = Reads[StoringGoodsForDispatch] { storingGoods =>
+  val reads: Reads[StoringGoodsForDispatch]            = Reads[StoringGoodsForDispatch] { storingGoods =>
     storingGoods.validate[String] map fromString
   }
   implicit val format: Format[StoringGoodsForDispatch] = Format(reads, writes)

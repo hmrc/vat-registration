@@ -23,51 +23,51 @@ class StringNormaliserSpec extends AnyWordSpec with Matchers {
 
   "normaliseString" should {
     Map(
-      "àáâãäåāăą" -> "a",
-      "çćĉċč" -> "c",
-      "þďð" -> "d",
-      "èéêëēĕėęě" -> "e",
-      "ĝģğġ" -> "g",
-      "ĥħ" -> "h",
-      "ìíîïĩīĭį" -> "i",
-      "ĵ" -> "j",
-      "ķ" -> "k",
-      "ĺļľŀł" -> "l",
-      "ñńņňŋ" -> "n",
+      "àáâãäåāăą"  -> "a",
+      "çćĉċč"      -> "c",
+      "þďð"        -> "d",
+      "èéêëēĕėęě"  -> "e",
+      "ĝģğġ"       -> "g",
+      "ĥħ"         -> "h",
+      "ìíîïĩīĭį"   -> "i",
+      "ĵ"          -> "j",
+      "ķ"          -> "k",
+      "ĺļľŀł"      -> "l",
+      "ñńņňŋ"      -> "n",
       "òóôõöøōŏőǿ" -> "o",
-      "ŕŗř" -> "r",
-      "śŝşš" -> "s",
-      "ţťŧ" -> "t",
+      "ŕŗř"        -> "r",
+      "śŝşš"       -> "s",
+      "ţťŧ"        -> "t",
       "ùúûüũūŭůűų" -> "u",
-      "ŵẁẃẅ" -> "w",
-      "ỳýŷÿ" -> "y",
-      "źżž" -> "z",
+      "ŵẁẃẅ"       -> "w",
+      "ỳýŷÿ"       -> "y",
+      "źżž"        -> "z",
       "ÀÁÂÃÄÅĀĂĄǺ" -> "A",
-      "ÇĆĈĊČ" -> "C",
-      "ÞĎÐ" -> "D",
-      "ÈÉÊËĒĔĖĘĚ" -> "E",
-      "ĜĞĠĢ" -> "G",
-      "ĤĦ" -> "H",
-      "ÌÍÎÏĨĪĬĮİ" -> "I",
-      "Ĵ" -> "J",
-      "Ķ" -> "K",
-      "ĹĻĽĿŁ" -> "L",
-      "ÑŃŅŇŊ" -> "N",
+      "ÇĆĈĊČ"      -> "C",
+      "ÞĎÐ"        -> "D",
+      "ÈÉÊËĒĔĖĘĚ"  -> "E",
+      "ĜĞĠĢ"       -> "G",
+      "ĤĦ"         -> "H",
+      "ÌÍÎÏĨĪĬĮİ"  -> "I",
+      "Ĵ"          -> "J",
+      "Ķ"          -> "K",
+      "ĹĻĽĿŁ"      -> "L",
+      "ÑŃŅŇŊ"      -> "N",
       "ÒÓÔÕÖØŌŎŐǾ" -> "O",
-      "ŔŖŘ" -> "R",
-      "ŚŜŞŠ" -> "S",
-      "ŢŤŦ" -> "T",
+      "ŔŖŘ"        -> "R",
+      "ŚŜŞŠ"       -> "S",
+      "ŢŤŦ"        -> "T",
       "ÙÚÛÜŨŪŬŮŰŲ" -> "U",
-      "ŴẀẂẄ" -> "W",
-      "ỲÝŶŸ" -> "Y",
-      "ŹŻŽ" -> "Z",
-      "æǽ" -> "ae",
-      "œ" -> "oe",
-      "ÆǼ" -> "AE",
-      "Œ" -> "OE"
-    ).foreach {
-      case (string, result) => s"correctly parse each character in '$string' to '$result'" when {
-        string.foreach{ character =>
+      "ŴẀẂẄ"       -> "W",
+      "ỲÝŶŸ"       -> "Y",
+      "ŹŻŽ"        -> "Z",
+      "æǽ"         -> "ae",
+      "œ"          -> "oe",
+      "ÆǼ"         -> "AE",
+      "Œ"          -> "OE"
+    ).foreach { case (string, result) =>
+      s"correctly parse each character in '$string' to '$result'" when {
+        string.foreach { character =>
           s"char is '$character'" in {
             StringNormaliser.normaliseString(character.toString) shouldBe result
           }
@@ -76,15 +76,15 @@ class StringNormaliserSpec extends AnyWordSpec with Matchers {
     }
 
     "leave anything matching the company name regex unchanged" in {
-      val numbers = "1234567890"
+      val numbers   = "1234567890"
       val lowerCase = "qwertyuiopasdfghjklzxcvbnm"
       val upperCase = "QWERTYUIOPASDFGHJKLZXCVBNM"
-      val other = " '’‘()[]{}<>!«»\"ʺ˝ˮ?/\\+=%#*&$€£_-@¥.,:;"
+      val other     = " '’‘()[]{}<>!«»\"ʺ˝ˮ?/\\+=%#*&$€£_-@¥.,:;"
 
-      StringNormaliser.normaliseString(numbers) shouldBe numbers
+      StringNormaliser.normaliseString(numbers)   shouldBe numbers
       StringNormaliser.normaliseString(lowerCase) shouldBe lowerCase
       StringNormaliser.normaliseString(upperCase) shouldBe upperCase
-      StringNormaliser.normaliseString(other) shouldBe other
+      StringNormaliser.normaliseString(other)     shouldBe other
     }
   }
 }

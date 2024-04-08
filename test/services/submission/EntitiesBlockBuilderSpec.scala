@@ -31,9 +31,9 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
   implicit val request: Request[_] = FakeRequest()
 
-  val testEntity = testSoleTraderEntity.copy(bpSafeId = Some(testBpSafeId))
-  val testEntityNoSafeId = testSoleTraderEntity.copy(bpSafeId = None)
-  val testPartner = Entity(
+  val testEntity           = testSoleTraderEntity.copy(bpSafeId = Some(testBpSafeId))
+  val testEntityNoSafeId   = testSoleTraderEntity.copy(bpSafeId = None)
+  val testPartner          = Entity(
     details = Some(testEntity),
     partyType = Individual,
     isLeadPartner = Some(true),
@@ -47,7 +47,7 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
   )
 
   "buildEntitiesBlock" when {
-    "the partner was successfully matched by the identity service" should {
+    "the partner was successfully matched by the identity service"     should {
       "return a JSON array containing a lead partner with a business partner safe ID" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -56,63 +56,76 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           applicantDetails = Some(validApplicantDetails)
         )
 
-        Builder.buildEntitiesBlock(vatScheme) mustBe Some(Json.arr(Json.obj(
-          "action" -> "1",
-          "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-          "tradersPartyType" -> Json.toJson[PartyType](Individual),
-          "customerIdentification" -> Json.obj(
-            "primeBPSafeID" -> testBpSafeId
-          ),
-          "businessContactDetails" -> Json.obj(
-            "address" -> Json.obj(
-              "line1" -> "line1",
-              "line2" -> "line2",
-              "postCode" -> "ZZ1 1ZZ",
-              "countryCode" -> "GB"
-            ),
-            "commDetails" -> Json.obj(
-              "telephone" -> testTelephone,
-              "email" -> testEmail
+        Builder.buildEntitiesBlock(vatScheme) mustBe Some(
+          Json.arr(
+            Json.obj(
+              "action"                 -> "1",
+              "entityType"             -> Json.toJson[EntitiesArrayType](PartnerEntity),
+              "tradersPartyType"       -> Json.toJson[PartyType](Individual),
+              "customerIdentification" -> Json.obj(
+                "primeBPSafeID" -> testBpSafeId
+              ),
+              "businessContactDetails" -> Json.obj(
+                "address"     -> Json.obj(
+                  "line1"       -> "line1",
+                  "line2"       -> "line2",
+                  "postCode"    -> "ZZ1 1ZZ",
+                  "countryCode" -> "GB"
+                ),
+                "commDetails" -> Json.obj(
+                  "telephone" -> testTelephone,
+                  "email"     -> testEmail
+                )
+              )
             )
           )
-        )))
+        )
       }
       "return a JSON array containing a non-lead partner with a business contact details" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
           business = Some(testBusiness.copy(ppobAddress = None, email = None, telephoneNumber = None)),
-          entities = Some(List(testPartner.copy(
-            isLeadPartner = Some(false),
-            address = Some(testAddress),
-            email = Some(testEmail),
-            telephoneNumber = Some(testTelephone)))),
+          entities = Some(
+            List(
+              testPartner.copy(
+                isLeadPartner = Some(false),
+                address = Some(testAddress),
+                email = Some(testEmail),
+                telephoneNumber = Some(testTelephone)
+              )
+            )
+          ),
           applicantDetails = Some(validApplicantDetails)
         )
 
-        Builder.buildEntitiesBlock(vatScheme) mustBe Some(Json.arr(Json.obj(
-          "action" -> "1",
-          "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-          "tradersPartyType" -> Json.toJson[PartyType](Individual),
-          "customerIdentification" -> Json.obj(
-            "primeBPSafeID" -> testBpSafeId
-          ),
-          "businessContactDetails" -> Json.obj(
-            "address" -> Json.obj(
-              "line1" -> "line1",
-              "line2" -> "line2",
-              "postCode" -> "ZZ1 1ZZ",
-              "countryCode" -> "GB"
-            ),
-            "commDetails" -> Json.obj(
-              "telephone" -> testTelephone,
-              "email" -> testEmail
+        Builder.buildEntitiesBlock(vatScheme) mustBe Some(
+          Json.arr(
+            Json.obj(
+              "action"                 -> "1",
+              "entityType"             -> Json.toJson[EntitiesArrayType](PartnerEntity),
+              "tradersPartyType"       -> Json.toJson[PartyType](Individual),
+              "customerIdentification" -> Json.obj(
+                "primeBPSafeID" -> testBpSafeId
+              ),
+              "businessContactDetails" -> Json.obj(
+                "address"     -> Json.obj(
+                  "line1"       -> "line1",
+                  "line2"       -> "line2",
+                  "postCode"    -> "ZZ1 1ZZ",
+                  "countryCode" -> "GB"
+                ),
+                "commDetails" -> Json.obj(
+                  "telephone" -> testTelephone,
+                  "email"     -> testEmail
+                )
+              )
             )
           )
-        )))
+        )
       }
     }
     "the partner was not matched" when {
-      "an SA UTR was provided" should {
+      "an SA UTR was provided"     should {
         "return a JSON array containing a single partner with a list of identifiers" in {
           val vatScheme = testVatScheme.copy(
             eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -121,38 +134,40 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
             applicantDetails = Some(validApplicantDetails)
           )
 
-          Builder.buildEntitiesBlock(vatScheme) mustBe Some(Json.arr(
-            Json.obj(
-              "action" -> "1",
-              "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-              "tradersPartyType" -> Json.toJson[PartyType](Individual),
-              "customerIdentification" -> Json.obj(
-                "customerID" -> Json.toJson(testEntity.identifiers),
-                "name" -> Json.obj(
-                  "firstName" -> testFirstName,
-                  "lastName" -> testLastName
+          Builder.buildEntitiesBlock(vatScheme) mustBe Some(
+            Json.arr(
+              Json.obj(
+                "action"                 -> "1",
+                "entityType"             -> Json.toJson[EntitiesArrayType](PartnerEntity),
+                "tradersPartyType"       -> Json.toJson[PartyType](Individual),
+                "customerIdentification" -> Json.obj(
+                  "customerID"  -> Json.toJson(testEntity.identifiers),
+                  "name"        -> Json.obj(
+                    "firstName" -> testFirstName,
+                    "lastName"  -> testLastName
+                  ),
+                  "dateOfBirth" -> testDate
                 ),
-                "dateOfBirth" -> testDate
-              ),
-              "businessContactDetails" -> Json.obj(
-                "address" -> Json.obj(
-                  "line1" -> "line1",
-                  "line2" -> "line2",
-                  "postCode" -> "ZZ1 1ZZ",
-                  "countryCode" -> "GB"
-                ),
-                "commDetails" -> Json.obj(
-                  "telephone" -> testTelephone,
-                  "email" -> testEmail
+                "businessContactDetails" -> Json.obj(
+                  "address"     -> Json.obj(
+                    "line1"       -> "line1",
+                    "line2"       -> "line2",
+                    "postCode"    -> "ZZ1 1ZZ",
+                    "countryCode" -> "GB"
+                  ),
+                  "commDetails" -> Json.obj(
+                    "telephone" -> testTelephone,
+                    "email"     -> testEmail
+                  )
                 )
               )
             )
-          ))
+          )
         }
       }
       "an SA UTR was not provided" should {
         "return a JSON array containing a single partner without identifiers" in {
-          val testEntity = testSoleTraderEntity.copy(bpSafeId = None, sautr = None)
+          val testEntity  = testSoleTraderEntity.copy(bpSafeId = None, sautr = None)
           val testPartner = Entity(
             details = Some(testEntity),
             partyType = Individual,
@@ -161,44 +176,46 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
             email = None,
             telephoneNumber = None
           )
-          val vatScheme = testVatScheme.copy(
+          val vatScheme   = testVatScheme.copy(
             eligibilitySubmissionData = Some(testEligibilitySubmissionData),
             business = Some(testBusiness),
             entities = Some(List(testPartner)),
             applicantDetails = Some(validApplicantDetails)
           )
 
-          Builder.buildEntitiesBlock(vatScheme) mustBe Some(Json.arr(
-            Json.obj(
-              "action" -> "1",
-              "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-              "tradersPartyType" -> Json.toJson[PartyType](Individual),
-              "customerIdentification" -> Json.obj(
-                "customerID" -> Json.toJson(testEntity.identifiers),
-                "name" -> Json.obj(
-                  "firstName" -> testFirstName,
-                  "lastName" -> testLastName
+          Builder.buildEntitiesBlock(vatScheme) mustBe Some(
+            Json.arr(
+              Json.obj(
+                "action"                 -> "1",
+                "entityType"             -> Json.toJson[EntitiesArrayType](PartnerEntity),
+                "tradersPartyType"       -> Json.toJson[PartyType](Individual),
+                "customerIdentification" -> Json.obj(
+                  "customerID"  -> Json.toJson(testEntity.identifiers),
+                  "name"        -> Json.obj(
+                    "firstName" -> testFirstName,
+                    "lastName"  -> testLastName
+                  ),
+                  "dateOfBirth" -> testDate
                 ),
-                "dateOfBirth" -> testDate
-              ),
-              "businessContactDetails" -> Json.obj(
-                "address" -> Json.obj(
-                  "line1" -> "line1",
-                  "line2" -> "line2",
-                  "postCode" -> "ZZ1 1ZZ",
-                  "countryCode" -> "GB"
-                ),
-                "commDetails" -> Json.obj(
-                  "telephone" -> testTelephone,
-                  "email" -> testEmail
+                "businessContactDetails" -> Json.obj(
+                  "address"     -> Json.obj(
+                    "line1"       -> "line1",
+                    "line2"       -> "line2",
+                    "postCode"    -> "ZZ1 1ZZ",
+                    "countryCode" -> "GB"
+                  ),
+                  "commDetails" -> Json.obj(
+                    "telephone" -> testTelephone,
+                    "email"     -> testEmail
+                  )
                 )
               )
             )
-          ))
+          )
         }
       }
     }
-    "there are no partner details" should {
+    "there are no partner details"                                     should {
       "return None" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -219,28 +236,32 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           applicantDetails = Some(validApplicantDetails.copy(contact = testApplicantContact))
         )
 
-        Builder.buildEntitiesBlock(vatScheme) mustBe Some(Json.arr(Json.obj(
-          "action" -> "1",
-          "entityType" -> Json.toJson[EntitiesArrayType](GroupRepMemberEntity),
-          "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
-          "customerIdentification" -> Json.obj(
-            "customerID" -> Json.toJson(testLtdCoEntity.identifiers),
-            "shortOrgName" -> testCompanyName,
-            "organisationName" -> testCompanyName
-          ),
-          "businessContactDetails" -> Json.obj(
-            "address" -> Json.obj(
-              "line1" -> "line1",
-              "line2" -> "line2",
-              "postCode" -> "ZZ1 1ZZ",
-              "countryCode" -> "GB"
-            ),
-            "commDetails" -> Json.obj(
-              "telephone" -> testTelephone,
-              "email" -> testEmail
+        Builder.buildEntitiesBlock(vatScheme) mustBe Some(
+          Json.arr(
+            Json.obj(
+              "action"                 -> "1",
+              "entityType"             -> Json.toJson[EntitiesArrayType](GroupRepMemberEntity),
+              "tradersPartyType"       -> Json.toJson[PartyType](UkCompany),
+              "customerIdentification" -> Json.obj(
+                "customerID"       -> Json.toJson(testLtdCoEntity.identifiers),
+                "shortOrgName"     -> testCompanyName,
+                "organisationName" -> testCompanyName
+              ),
+              "businessContactDetails" -> Json.obj(
+                "address"     -> Json.obj(
+                  "line1"       -> "line1",
+                  "line2"       -> "line2",
+                  "postCode"    -> "ZZ1 1ZZ",
+                  "countryCode" -> "GB"
+                ),
+                "commDetails" -> Json.obj(
+                  "telephone" -> testTelephone,
+                  "email"     -> testEmail
+                )
+              )
             )
           )
-        )))
+        )
       }
 
       "return a JSON array containing a single entity based on the applicants business entity with safeId" in {
@@ -248,32 +269,38 @@ class EntitiesBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)),
           business = Some(testBusiness),
           entities = None,
-          applicantDetails = Some(validApplicantDetails.copy(
-            entity = Some(testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId))),
-            contact = testApplicantContact
-          ))
-        )
-
-        Builder.buildEntitiesBlock(vatScheme) mustBe Some(Json.arr(Json.obj(
-          "action" -> "1",
-          "entityType" -> Json.toJson[EntitiesArrayType](GroupRepMemberEntity),
-          "tradersPartyType" -> Json.toJson[PartyType](UkCompany),
-          "customerIdentification" -> Json.obj(
-            "primeBPSafeID" -> testBpSafeId
-          ),
-          "businessContactDetails" -> Json.obj(
-            "address" -> Json.obj(
-              "line1" -> "line1",
-              "line2" -> "line2",
-              "postCode" -> "ZZ1 1ZZ",
-              "countryCode" -> "GB"
-            ),
-            "commDetails" -> Json.obj(
-              "telephone" -> testTelephone,
-              "email" -> testEmail
+          applicantDetails = Some(
+            validApplicantDetails.copy(
+              entity = Some(testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId))),
+              contact = testApplicantContact
             )
           )
-        )))
+        )
+
+        Builder.buildEntitiesBlock(vatScheme) mustBe Some(
+          Json.arr(
+            Json.obj(
+              "action"                 -> "1",
+              "entityType"             -> Json.toJson[EntitiesArrayType](GroupRepMemberEntity),
+              "tradersPartyType"       -> Json.toJson[PartyType](UkCompany),
+              "customerIdentification" -> Json.obj(
+                "primeBPSafeID" -> testBpSafeId
+              ),
+              "businessContactDetails" -> Json.obj(
+                "address"     -> Json.obj(
+                  "line1"       -> "line1",
+                  "line2"       -> "line2",
+                  "postCode"    -> "ZZ1 1ZZ",
+                  "countryCode" -> "GB"
+                ),
+                "commDetails" -> Json.obj(
+                  "telephone" -> testTelephone,
+                  "email"     -> testEmail
+                )
+              )
+            )
+          )
+        )
       }
     }
   }

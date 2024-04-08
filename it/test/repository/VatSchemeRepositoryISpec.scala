@@ -55,7 +55,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     def getRegistration: Option[VatScheme] = await(repository.collection.find(mongoEqual("registrationId", testRegId)).headOption())
 
     await(repository.collection.drop().toFuture())
-    await(repository.ensureIndexes)
+    await(repository.ensureIndexes())
   }
 
   val ACK_REF_NUM = "REF0000001"

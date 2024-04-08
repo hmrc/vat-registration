@@ -30,8 +30,8 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   object TestService extends ContactAuditBlockBuilder
 
-  lazy val contactBlockMinimalJson: JsObject = Json.parse(
-    """
+  lazy val contactBlockMinimalJson: JsObject = Json
+    .parse("""
       |{
       |     "address": {
       |      "line1": "line1",
@@ -44,10 +44,11 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       |      "preference": "ZEL"
       |    }
       |}
-      |""".stripMargin).as[JsObject]
+      |""".stripMargin)
+    .as[JsObject]
 
-  lazy val contactBlockFullJson: JsObject = Json.parse(
-    """
+  lazy val contactBlockFullJson: JsObject = Json
+    .parse("""
       |{
       |     "address": {
       |      "line1": "line1",
@@ -66,21 +67,24 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       |      "preference": "ZEL"
       |    }
       |}
-      |""".stripMargin).as[JsObject]
-
+      |""".stripMargin)
+    .as[JsObject]
 
   "buildContactBlock" should {
     "build a minimal contact json when all mandatory data is provided" in {
       val vatScheme = testVatScheme.copy(
-        business = Some(testBusiness.copy(
-          email = Some("email@email.com"),
-          telephoneNumber = Some("12345"),
-          website = None,
-          ppobAddress = Some(Address("line1", Some("line2"), None, None, None, None, None)),
-          contactPreference = Some(Email),
-          hasWebsite = Some(false)
-        )),
-        applicantDetails = Some(validApplicantDetails))
+        business = Some(
+          testBusiness.copy(
+            email = Some("email@email.com"),
+            telephoneNumber = Some("12345"),
+            website = None,
+            ppobAddress = Some(Address("line1", Some("line2"), None, None, None, None, None)),
+            contactPreference = Some(Email),
+            hasWebsite = Some(false)
+          )
+        ),
+        applicantDetails = Some(validApplicantDetails)
+      )
 
       val res = TestService.buildContactBlock(vatScheme)
 
@@ -89,18 +93,34 @@ class ContactAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
     "build a full contact json when all data is provided" in {
       val vatScheme = testVatScheme.copy(
-        business = Some(testBusiness.copy(
-          email = Some("email@email.com"),
-          telephoneNumber = Some("12345"),
-          website = Some("www.foo.com"),
-          ppobAddress = Some(Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some(testPostcode), Some(Country(Some("GB"), None)))),
-          contactPreference = Some(Email),
-          hasWebsite = Some(true)
-        )),
-        applicantDetails = Some(validApplicantDetails.copy(contact = Contact(
-          email = Some("email@email.com"),
-          emailVerified = Some(true)
-        )))
+        business = Some(
+          testBusiness.copy(
+            email = Some("email@email.com"),
+            telephoneNumber = Some("12345"),
+            website = Some("www.foo.com"),
+            ppobAddress = Some(
+              Address(
+                "line1",
+                Some("line2"),
+                Some("line3"),
+                Some("line4"),
+                Some("line5"),
+                Some(testPostcode),
+                Some(Country(Some("GB"), None))
+              )
+            ),
+            contactPreference = Some(Email),
+            hasWebsite = Some(true)
+          )
+        ),
+        applicantDetails = Some(
+          validApplicantDetails.copy(contact =
+            Contact(
+              email = Some("email@email.com"),
+              emailVerified = Some(true)
+            )
+          )
+        )
       )
 
       val res = TestService.buildContactBlock(vatScheme)

@@ -21,26 +21,26 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class CustomerId(idValue: String,
-                      idType: IdType,
-                      IDsVerificationStatus: IdVerificationStatus = IdVerified,
-                      countryOfIncorporation: Option[String] = None,
-                      date: Option[LocalDate] = None,
-                      safeIDBPFound: Option[String] = None,
-                      partyType: Option[PartyType] = None)
+case class CustomerId(
+  idValue: String,
+  idType: IdType,
+  IDsVerificationStatus: IdVerificationStatus = IdVerified,
+  countryOfIncorporation: Option[String] = None,
+  date: Option[LocalDate] = None,
+  safeIDBPFound: Option[String] = None,
+  partyType: Option[PartyType] = None
+)
 
 object CustomerId {
   implicit val format: OFormat[CustomerId] = Json.format[CustomerId]
   val transactorWrites: Writes[CustomerId] = (
     (__ \ "idValue").write[String] and
-    (__ \ "idType").write[IdType] and
-    (__ \ "IDsFailedOnlineVerification").write[IdVerificationStatus] and
-    (__ \ "countryOfIncorporation").writeNullable[String] and
-    (__ \ "date").writeNullable[LocalDate] and
-    (__ \ "safeIDBPFound").writeNullable[String] and
-    (__ \ "partyType").writeNullable[PartyType]
-  ) (unlift(CustomerId.unapply))
+      (__ \ "idType").write[IdType] and
+      (__ \ "IDsFailedOnlineVerification").write[IdVerificationStatus] and
+      (__ \ "countryOfIncorporation").writeNullable[String] and
+      (__ \ "date").writeNullable[LocalDate] and
+      (__ \ "safeIDBPFound").writeNullable[String] and
+      (__ \ "partyType").writeNullable[PartyType]
+  )(unlift(CustomerId.unapply))
 
 }
-
-

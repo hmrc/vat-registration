@@ -23,49 +23,51 @@ import play.api.libs.json.{JsObject, JsSuccess, Json}
 class BusinessSpec extends BaseSpec with VatRegistrationFixture {
 
   lazy val businessJson: JsObject = Json.obj(
-    "hasTradingName" -> true,
-    "tradingName" -> testTradingName,
-    "ppobAddress" -> Json.obj(
-      "line1" -> testAddress.line1,
-      "line2" -> testAddress.line2,
-      "postcode" -> testAddress.postcode,
-      "country" -> Json.obj(
+    "hasTradingName"           -> true,
+    "tradingName"              -> testTradingName,
+    "ppobAddress"              -> Json.obj(
+      "line1"            -> testAddress.line1,
+      "line2"            -> testAddress.line2,
+      "postcode"         -> testAddress.postcode,
+      "country"          -> Json.obj(
         "code" -> testAddress.country.flatMap(_.code),
         "name" -> testAddress.country.flatMap(_.name)
       ),
       "addressValidated" -> true
     ),
-    "email" -> testEmail,
-    "telephoneNumber" -> testTelephone,
-    "hasWebsite" -> true,
-    "website" -> testWebsite,
-    "welshLanguage" -> false,
-    "contactPreference" -> ContactPreference.email,
-    "hasLandAndProperty" -> false,
-    "businessDescription" -> testBusinessDescription,
-    "businessActivities" -> Json.arr(
+    "email"                    -> testEmail,
+    "telephoneNumber"          -> testTelephone,
+    "hasWebsite"               -> true,
+    "website"                  -> testWebsite,
+    "welshLanguage"            -> false,
+    "contactPreference"        -> ContactPreference.email,
+    "hasLandAndProperty"       -> false,
+    "businessDescription"      -> testBusinessDescription,
+    "businessActivities"       -> Json.arr(
       Json.obj(
-        "code" -> testSicCode1,
-        "desc" -> testSicDesc1,
+        "code"   -> testSicCode1,
+        "desc"   -> testSicDesc1,
         "descCy" -> testSicDesc1
-      ), Json.obj(
-        "code" -> testSicCode2,
-        "desc" -> testSicDesc2,
+      ),
+      Json.obj(
+        "code"   -> testSicCode2,
+        "desc"   -> testSicDesc2,
         "descCy" -> testSicDesc2
-      ), Json.obj(
-        "code" -> testSicCode3,
-        "desc" -> testSicDesc3,
+      ),
+      Json.obj(
+        "code"   -> testSicCode3,
+        "desc"   -> testSicDesc3,
         "descCy" -> testSicDesc3
       )
     ),
-    "mainBusinessActivity" -> Json.obj(
-      "code" -> testSicCode1,
-      "desc" -> testSicDesc1,
+    "mainBusinessActivity"     -> Json.obj(
+      "code"   -> testSicCode1,
+      "desc"   -> testSicDesc1,
       "descCy" -> testSicDesc1
     ),
-    "labourCompliance" -> Json.obj(
+    "labourCompliance"         -> Json.obj(
       "numOfWorkersSupplied" -> 1000,
-      "supplyWorkers" -> true
+      "supplyWorkers"        -> true
     ),
     "otherBusinessInvolvement" -> false
   )

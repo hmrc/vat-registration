@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 
 class SchemaValidationServiceSpec extends VatRegSpec {
 
-  val unknownErrorsKey = "unknownErrors"
+  val unknownErrorsKey    = "unknownErrors"
   val suppressedErrorsKey = "suppressedErrors"
 
   object Service extends SchemaValidationService
@@ -35,8 +35,8 @@ class SchemaValidationServiceSpec extends VatRegSpec {
         }
 
         val validBody = Json.obj(
-          "name" -> "Test",
-          "date" -> "2023-01-16",
+          "name"   -> "Test",
+          "date"   -> "2023-01-16",
           "hasCar" -> true
         )
 
@@ -53,8 +53,8 @@ class SchemaValidationServiceSpec extends VatRegSpec {
           }
 
           val invalidBody = Json.obj(
-            "name" -> "Test",
-            "date" -> "ABCD-EF-GH",
+            "name"   -> "Test",
+            "date"   -> "ABCD-EF-GH",
             "hasCar" -> 1
           )
 
@@ -63,22 +63,22 @@ class SchemaValidationServiceSpec extends VatRegSpec {
           result mustBe Map(unknownErrorsKey -> Seq("/date", "/hasCar"))
         }
       }
-      "the schema has suppressed errors" must {
+      "the schema has suppressed errors"    must {
         "return a map with the suppressed errors under the 'suppressedErrors' key and the rest under the 'unknownErrors' key" in {
           object FakeSchema extends ApiSchema("/test-schema.yaml", "request") {
             val suppressedErrors = List("/hasCar")
           }
 
           val invalidBody = Json.obj(
-            "name" -> "Test",
-            "date" -> "ABCD-EF-GH",
+            "name"   -> "Test",
+            "date"   -> "ABCD-EF-GH",
             "hasCar" -> 1
           )
 
           val result = Service.validate(FakeSchema, invalidBody.toString())
 
           result mustBe Map(
-            unknownErrorsKey -> Seq("/date"),
+            unknownErrorsKey    -> Seq("/date"),
             suppressedErrorsKey -> Seq("/hasCar")
           )
         }
@@ -88,15 +88,15 @@ class SchemaValidationServiceSpec extends VatRegSpec {
           }
 
           val invalidBody = Json.obj(
-            "name" -> "Test",
-            "date" -> "ABCD-EF-GH",
+            "name"   -> "Test",
+            "date"   -> "ABCD-EF-GH",
             "hasCar" -> 1
           )
 
           val result = Service.validate(FakeSchema, invalidBody.toString())
 
           result mustBe Map(
-            unknownErrorsKey -> Seq("/date"),
+            unknownErrorsKey    -> Seq("/date"),
             suppressedErrorsKey -> Seq("/hasCar")
           )
         }
@@ -106,15 +106,15 @@ class SchemaValidationServiceSpec extends VatRegSpec {
           }
 
           val invalidBody = Json.obj(
-            "name" -> true,
-            "date" -> "ABCD-EF-GH",
+            "name"   -> true,
+            "date"   -> "ABCD-EF-GH",
             "hasCar" -> 1
           )
 
           val result = Service.validate(FakeSchema, invalidBody.toString())
 
           result mustBe Map(
-            unknownErrorsKey -> Seq("/name"),
+            unknownErrorsKey    -> Seq("/name"),
             suppressedErrorsKey -> Seq("/date", "/hasCar")
           )
         }

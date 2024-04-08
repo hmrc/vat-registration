@@ -27,31 +27,31 @@ import utils.LoggingUtils
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class CipherService @Inject()(crypto: CryptoSCRS) extends LoggingUtils{
+class CipherService @Inject() (crypto: CryptoSCRS) extends LoggingUtils {
 
-  def conditionallyEncrypt(section: RegistrationSectionId, json: JsValue)(implicit request: Request[_]): JsValue = {
+  def conditionallyEncrypt(section: RegistrationSectionId, json: JsValue)(implicit request: Request[_]): JsValue =
     section match {
       case BankAccountSectionId =>
-        val bankAccount = json.validate[BankAccount]
-          .getOrElse{
+        val bankAccount = json
+          .validate[BankAccount]
+          .getOrElse {
             errorLog("[CipherService][conditionallyEncrypt] - BankAccount format is invalid for encryption")
             throw new InternalServerException("BankAccount format is invalid for encryption.")
           }
         Json.toJson(bankAccount)(BankAccountMongoFormat.encryptedFormat(crypto))
-      case _ => json
+      case _                    => json
     }
-  }
 
-  def conditionallyDecrypt(section: RegistrationSectionId, json: JsValue)(implicit request: Request[_]): JsValue = {
+  def conditionallyDecrypt(section: RegistrationSectionId, json: JsValue)(implicit request: Request[_]): JsValue =
     section match {
       case BankAccountSectionId =>
-        val bankAccount = json.validate[BankAccount](BankAccountMongoFormat.encryptedFormat(crypto))
-          .getOrElse{
+        val bankAccount = json
+          .validate[BankAccount](BankAccountMongoFormat.encryptedFormat(crypto))
+          .getOrElse {
             errorLog("[CipherService][conditionallyDecrypt] - BankAccount format is invalid for decryption")
             throw new InternalServerException("BankAccount format is invalid for decryption.")
           }
         Json.toJson(bankAccount)
-      case _ => json
+      case _                    => json
     }
-  }
 }

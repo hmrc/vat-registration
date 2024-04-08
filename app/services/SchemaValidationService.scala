@@ -23,7 +23,7 @@ import org.openapi4j.schema.validator.{ValidationContext, ValidationData}
 import uk.gov.hmrc.http.InternalServerException
 
 import javax.inject.Singleton
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 @Singleton
@@ -31,7 +31,7 @@ class SchemaValidationService {
 
   def validate(api: ApiSchema, body: String): Map[String, List[String]] = {
     val output = new ValidationData
-    val json = new ObjectMapper().readTree(body)
+    val json   = new ObjectMapper().readTree(body)
 
     // Setting the schemaNode as 'null' to avoid confusing prefix on jspaths. "Because Java"
     Try {
@@ -41,23 +41,21 @@ class SchemaValidationService {
       case Failure(_) =>
         throw new InternalServerException("Failed to validate request against schema for unknown reason")
       case Success(_) =>
-        output.results()
-          .items().asScala
-          .map(x => {
-            x.dataJsonPointer()
-          })
+        output
+          .results()
+          .items()
+          .asScala
+          .map(x => x.dataJsonPointer())
           .toList
-          .map {x =>
-                x match {
-                  case e if api.suppressedErrors.exists(regex => e.matches(regex)) => "suppressedErrors" -> e
-                  case e => "unknownErrors" -> e
-                }
+          .map {
+            case e if api.suppressedErrors.exists(regex => e.matches(regex)) => "suppressedErrors" -> e
+            case e                                                           => "unknownErrors"    -> e
           }
           .groupBy(_._1)
-          .mapValues(_.map(_._2))
+          .view
+          .mapValues(_.map(_._2).toList)
+          .toMap
     }
-
-
 
   }
 

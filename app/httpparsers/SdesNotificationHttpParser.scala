@@ -23,13 +23,12 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 object SdesNotificationHttpParser {
 
   implicit object SdesNotificationHttpReads extends HttpReads[SdesNotificationResult] {
-    override def read(method: String, url: String, response: HttpResponse): SdesNotificationResult = {
+    override def read(method: String, url: String, response: HttpResponse): SdesNotificationResult =
       response.status match {
-        case NO_CONTENT => SdesNotificationSuccess(NO_CONTENT, response.body)
+        case NO_CONTENT                          => SdesNotificationSuccess(NO_CONTENT, response.body)
         case BAD_REQUEST | INTERNAL_SERVER_ERROR => SdesNotificationFailure(response.status, response.body)
-        case _ => SdesNotificationUnexpectedFailure(response.status, response.body)
+        case _                                   => SdesNotificationUnexpectedFailure(response.status, response.body)
       }
-    }
   }
 
 }

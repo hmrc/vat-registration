@@ -25,7 +25,7 @@ case object GroupRepMemberEntity extends EntitiesArrayType
 case object PartnerEntity extends EntitiesArrayType
 
 object EntitiesArrayType {
-  implicit val format: Format[EntitiesArrayType] = Format[EntitiesArrayType] (
+  implicit val format: Format[EntitiesArrayType] = Format[EntitiesArrayType](
     Reads[EntitiesArrayType] {
       _.validate[String].map {
         case "1" => GroupMemberEntity
@@ -34,9 +34,9 @@ object EntitiesArrayType {
       }
     },
     Writes[EntitiesArrayType] {
-      case GroupMemberEntity =>  JsString("1")
+      case GroupMemberEntity    => JsString("1")
       case GroupRepMemberEntity => JsString("2")
-      case PartnerEntity => JsString("3")
+      case PartnerEntity        => JsString("3")
     }
   )
 }

@@ -24,15 +24,15 @@ import play.api.libs.json._
 class FlatRateSchemeSpec extends BaseSpec with JsonFormatValidation with VatRegistrationFixture {
 
   val completeFlatRateSchemeJson: JsObject = Json.obj(
-    "joinFrs" -> true,
-    "overBusinessGoods" -> true,
-    "estimateTotalSales" -> BigDecimal(1234567891),
+    "joinFrs"                  -> true,
+    "overBusinessGoods"        -> true,
+    "estimateTotalSales"       -> BigDecimal(1234567891),
     "overBusinessGoodsPercent" -> true,
-    "useThisRate" -> true,
-    "frsStart" -> testDate,
-    "categoryOfBusiness" -> "testCategory",
-    "percent" -> 15,
-    "limitedCostTrader" -> false
+    "useThisRate"              -> true,
+    "frsStart"                 -> testDate,
+    "categoryOfBusiness"       -> "testCategory",
+    "percent"                  -> 15,
+    "limitedCostTrader"        -> false
   )
 
   val incompleteFlatRateSchemeJson: JsObject = Json.obj(

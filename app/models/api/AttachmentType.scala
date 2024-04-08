@@ -27,7 +27,8 @@ case object Attachment1614h extends AttachmentType
 case object VAT5L extends AttachmentType
 case object LandPropertyOtherDocs extends AttachmentType
 case object IdentityEvidence extends AttachmentType
-case object TransactorIdentityEvidence extends AttachmentType //fake attachment type, gets filtered out in the submission
+case object TransactorIdentityEvidence
+    extends AttachmentType //fake attachment type, gets filtered out in the submission
 case object TaxRepresentativeAuthorisation extends AttachmentType
 case object TaxAgentAuthorisation extends AttachmentType
 case object OtherAttachments extends AttachmentType
@@ -39,23 +40,23 @@ case object PrimaryTransactorIdentityEvidence extends DetailedIdentityEvidence
 case object ExtraTransactorIdentityEvidence extends DetailedIdentityEvidence
 
 object AttachmentType {
-  val map: Map[AttachmentType, String] = Map(
-    LetterOfAuthority -> "letterOfAuthority",
-    VAT51 -> "VAT51",
-    VAT2 -> "VAT2",
-    Attachment1614a -> "attachment1614a",
-    Attachment1614h -> "attachment1614h",
-    VAT5L -> "VAT5L",
-    LandPropertyOtherDocs -> "landPropertyOtherDocs",
-    IdentityEvidence -> "identityEvidence",
-    TransactorIdentityEvidence -> "transactorIdentityEvidence",
-    TaxRepresentativeAuthorisation -> "taxRepresentativeAuthorisation",
-    TaxAgentAuthorisation -> "taxAgentAuthorisation",
-    OtherAttachments -> "otherAttachments",
-    PrimaryIdentityEvidence -> "primaryIdentityEvidence",
-    ExtraIdentityEvidence -> "extraIdentityEvidence",
+  val map: Map[AttachmentType, String]        = Map(
+    LetterOfAuthority                 -> "letterOfAuthority",
+    VAT51                             -> "VAT51",
+    VAT2                              -> "VAT2",
+    Attachment1614a                   -> "attachment1614a",
+    Attachment1614h                   -> "attachment1614h",
+    VAT5L                             -> "VAT5L",
+    LandPropertyOtherDocs             -> "landPropertyOtherDocs",
+    IdentityEvidence                  -> "identityEvidence",
+    TransactorIdentityEvidence        -> "transactorIdentityEvidence",
+    TaxRepresentativeAuthorisation    -> "taxRepresentativeAuthorisation",
+    TaxAgentAuthorisation             -> "taxAgentAuthorisation",
+    OtherAttachments                  -> "otherAttachments",
+    PrimaryIdentityEvidence           -> "primaryIdentityEvidence",
+    ExtraIdentityEvidence             -> "extraIdentityEvidence",
     PrimaryTransactorIdentityEvidence -> "primaryTransactorIdentityEvidence",
-    ExtraTransactorIdentityEvidence -> "extraTransactorIdentityEvidence"
+    ExtraTransactorIdentityEvidence   -> "extraTransactorIdentityEvidence"
   )
   val inverseMap: Map[String, AttachmentType] = map.map(_.swap)
 
@@ -64,23 +65,26 @@ object AttachmentType {
     Writes[AttachmentType](attachmentType => JsString(map(attachmentType)))
   )
 
-  def submissionWrites(attachmentOption: Option[AttachmentMethod]): Writes[List[AttachmentType]] = Writes { attachments =>
-    Json.toJson(
-      attachments
-        .map {
-          case TransactorIdentityEvidence | _: DetailedIdentityEvidence => IdentityEvidence
-          case attachment => attachment
-        }.distinct
-        .map { attachmentType =>
-          map(attachmentType) -> {
-            attachmentOption match {
-              case Some(EmailMethod) => Json.toJson[AttachmentMethod](Post)
-              case Some(method) => Json.toJson[AttachmentMethod](method)
-              case None => Json.obj()
+  def submissionWrites(attachmentOption: Option[AttachmentMethod]): Writes[List[AttachmentType]] = Writes {
+    attachments =>
+      Json.toJson(
+        attachments
+          .map {
+            case TransactorIdentityEvidence | _: DetailedIdentityEvidence => IdentityEvidence
+            case attachment                                               => attachment
+          }
+          .distinct
+          .map { attachmentType =>
+            map(attachmentType) -> {
+              attachmentOption match {
+                case Some(EmailMethod) => Json.toJson[AttachmentMethod](Post)
+                case Some(method)      => Json.toJson[AttachmentMethod](method)
+                case None              => Json.obj()
+              }
             }
           }
-        }.toMap
-    )
+          .toMap
+      )
   }
 }
 
@@ -91,10 +95,10 @@ case object Post extends AttachmentMethod
 case object EmailMethod extends AttachmentMethod
 
 object AttachmentMethod {
-  val map: Map[AttachmentMethod, String] = Map(
-    Other -> "1",
-    Attached -> "2",
-    Post -> "3",
+  val map: Map[AttachmentMethod, String]        = Map(
+    Other       -> "1",
+    Attached    -> "2",
+    Post        -> "3",
     EmailMethod -> "email"
   )
   val inverseMap: Map[String, AttachmentMethod] = map.map(_.swap)

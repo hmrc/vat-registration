@@ -27,23 +27,23 @@ case object CHAPS extends PaymentMethod
 object PaymentMethod {
 
   val standingOrder: String = "01"
-  val bankGIRO: String = "02"
-  val objectBACS: String = "03"
-  val objectCHAPS: String = "04"
+  val bankGIRO: String      = "02"
+  val objectBACS: String    = "03"
+  val objectCHAPS: String   = "04"
 
   val reads: Reads[PaymentMethod] = Reads[PaymentMethod] {
     case JsString(`standingOrder`) => JsSuccess(StandingOrder)
-    case JsString(`bankGIRO`) => JsSuccess(BankGIRO)
-    case JsString(`objectBACS`) => JsSuccess(BACS)
-    case JsString(`objectCHAPS`) => JsSuccess(CHAPS)
-    case _ => JsError("Could not parse payment method")
+    case JsString(`bankGIRO`)      => JsSuccess(BankGIRO)
+    case JsString(`objectBACS`)    => JsSuccess(BACS)
+    case JsString(`objectCHAPS`)   => JsSuccess(CHAPS)
+    case _                         => JsError("Could not parse payment method")
   }
 
   val writes: Writes[PaymentMethod] = Writes {
     case StandingOrder => JsString(standingOrder)
-    case BankGIRO => JsString(bankGIRO)
-    case BACS => JsString(objectBACS)
-    case CHAPS => JsString(objectCHAPS)
+    case BankGIRO      => JsString(bankGIRO)
+    case BACS          => JsString(objectBACS)
+    case CHAPS         => JsString(objectCHAPS)
   }
 
   implicit val format: Format[PaymentMethod] = Format(reads, writes)

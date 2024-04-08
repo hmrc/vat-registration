@@ -38,10 +38,10 @@ class ThresholdSpec extends JsonFormatValidation {
 
     "successfully read from full valid json" in {
       val json = Json.obj(
-        "mandatoryRegistration" -> false,
+        "mandatoryRegistration"       -> false,
         "thresholdPreviousThirtyDays" -> "2017-12-30",
-        "thresholdInTwelveMonths" -> "2017-06-15",
-        "thresholdNextThirtyDays" -> "2017-01-21"
+        "thresholdInTwelveMonths"     -> "2017-06-15",
+        "thresholdNextThirtyDays"     -> "2017-01-21"
       )
 
       val expectedResult = Threshold(
@@ -57,7 +57,7 @@ class ThresholdSpec extends JsonFormatValidation {
     "successfully read from full valid json for overseas" in {
       val json = Json.obj(
         "mandatoryRegistration" -> false,
-        "thresholdOverseas" -> "2017-01-21"
+        "thresholdOverseas"     -> "2017-01-21"
       )
 
       val expectedResult = Threshold(
@@ -70,8 +70,8 @@ class ThresholdSpec extends JsonFormatValidation {
 
     "fail read from json if mandatoryRegistration is missing" in {
       val json = Json.obj(
-        "voluntaryReason" -> "test reason",
-        "overThresholdDate" -> "2017-12-30",
+        "voluntaryReason"           -> "test reason",
+        "overThresholdDate"         -> "2017-12-30",
         "expectedOverThresholdDate" -> "2017-01-21"
       )
 
@@ -83,8 +83,8 @@ class ThresholdSpec extends JsonFormatValidation {
       "the registration is voluntary" in {
         val json = Json.obj(
           "voluntaryRegistration" -> true,
-          "fooDirectorDetails2" -> true,
-          "fooDirectorDetails3" -> true
+          "fooDirectorDetails2"   -> true,
+          "fooDirectorDetails3"   -> true
         )
 
         val expectedResult = Threshold(
@@ -97,18 +97,18 @@ class ThresholdSpec extends JsonFormatValidation {
 
       "the registration is mandatory" in {
         val thresholdPreviousThirtyDays = "2017-01-02"
-        val thresholdInTwelveMonths = "2017-01-04"
-        val json = Json.obj(
+        val thresholdInTwelveMonths     = "2017-01-04"
+        val json                        = Json.obj(
           "thresholdPreviousThirtyDays" -> Json.obj(
-            "value" -> true,
+            "value"        -> true,
             "optionalData" -> s"$thresholdPreviousThirtyDays"
           ),
-          "thresholdInTwelveMonths" -> Json.obj(
-            "value" -> true,
+          "thresholdInTwelveMonths"     -> Json.obj(
+            "value"        -> true,
             "optionalData" -> s"$thresholdInTwelveMonths"
           ),
-          "fooDirectorDetails2" -> true,
-          "fooDirectorDetails3" -> true
+          "fooDirectorDetails2"         -> true,
+          "fooDirectorDetails3"         -> true
         )
 
         val expectedResult = Threshold(
@@ -123,7 +123,7 @@ class ThresholdSpec extends JsonFormatValidation {
 
       "the registration is overseas" in {
         val thresholdOverseas = "2017-01-02"
-        val json = Json.obj(
+        val json              = Json.obj(
           "thresholdTaxableSupplies" -> Json.obj(
             "date" -> s"$thresholdOverseas"
           )
@@ -141,23 +141,23 @@ class ThresholdSpec extends JsonFormatValidation {
 
     "the threshold model has a value for next thirty days" in {
       val thresholdPreviousThirtyDays = "2017-01-02"
-      val thresholdInTwelveMonths = "2017-01-04"
-      val thresholdNextThirtyDays = "2017-01-10"
-      val json = Json.obj(
+      val thresholdInTwelveMonths     = "2017-01-04"
+      val thresholdNextThirtyDays     = "2017-01-10"
+      val json                        = Json.obj(
         "thresholdPreviousThirtyDays" -> Json.obj(
-          "value" -> true,
+          "value"        -> true,
           "optionalData" -> s"$thresholdPreviousThirtyDays"
         ),
-        "thresholdInTwelveMonths" -> Json.obj(
-          "value" -> true,
+        "thresholdInTwelveMonths"     -> Json.obj(
+          "value"        -> true,
           "optionalData" -> s"$thresholdInTwelveMonths"
         ),
-        "thresholdNextThirtyDays" -> Json.obj(
-          "value" -> true,
+        "thresholdNextThirtyDays"     -> Json.obj(
+          "value"        -> true,
           "optionalData" -> s"$thresholdNextThirtyDays"
         ),
-        "fooDirectorDetails2" -> true,
-        "fooDirectorDetails3" -> true
+        "fooDirectorDetails2"         -> true,
+        "fooDirectorDetails3"         -> true
       )
 
       val expectedResult = Threshold(
@@ -173,18 +173,18 @@ class ThresholdSpec extends JsonFormatValidation {
 
     "eligibilityDataJsonReads fails from incorrect json" in {
       val thresholdInTwelveMonths = "2017-01-04"
-      val json = Json.obj(
-        "thresholdNextThirtyDays" -> false,
+      val json                    = Json.obj(
+        "thresholdNextThirtyDays"     -> false,
         "thresholdPreviousThirtyDays" -> Json.obj(
-          "value" -> true,
+          "value"        -> true,
           "optionalData" -> "5345435"
         ),
-        "thresholdInTwelveMonths" -> Json.obj(
-          "value" -> true,
+        "thresholdInTwelveMonths"     -> Json.obj(
+          "value"        -> true,
           "optionalData" -> s"$thresholdInTwelveMonths"
         ),
-        "fooDirectorDetails2" -> true,
-        "fooDirectorDetails3" -> true
+        "fooDirectorDetails2"         -> true,
+        "fooDirectorDetails3"         -> true
       )
 
       val result = Json.fromJson[Threshold](json)(Threshold.eligibilityDataJsonReads)
@@ -194,10 +194,10 @@ class ThresholdSpec extends JsonFormatValidation {
     "eligibilityDataJsonReads fails when json contains overseas and other thresholds together" in {
       val json = Json.obj(
         "thresholdPreviousThirtyDays" -> Json.obj(
-          "value" -> true,
+          "value"        -> true,
           "optionalData" -> LocalDate.now()
         ),
-        "thresholdTaxableSupplies" -> Json.obj(
+        "thresholdTaxableSupplies"    -> Json.obj(
           "date" -> LocalDate.now()
         )
       )

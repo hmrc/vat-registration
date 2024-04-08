@@ -26,39 +26,47 @@ import utils.LoggingUtils
 import javax.inject.Singleton
 
 @Singleton
-class ContactAuditBlockBuilder extends LoggingUtils{
+class ContactAuditBlockBuilder extends LoggingUtils {
 
   def buildContactBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     (vatScheme.business, vatScheme.applicantDetails) match {
       case (Some(business), Some(applicantDetails)) =>
         jsonObject(
-          "address" -> jsonObject(
-            required("line1" -> business.ppobAddress.map(_.line1.replace(",", " "))),
-            optional("line2" -> business.ppobAddress.flatMap(_.line2.map(_.replace(",", " ")))),
-            optional("line3" -> business.ppobAddress.flatMap(_.line3.map(_.replace(",", " ")))),
-            optional("line4" -> business.ppobAddress.flatMap(_.line4.map(_.replace(",", " ")))),
-            optional("line5" -> business.ppobAddress.flatMap(_.line5.map(_.replace(",", " ")))),
-            optional("postcode" -> business.ppobAddress.flatMap(_.postcode)),
+          "address"                      -> jsonObject(
+            required("line1"       -> business.ppobAddress.map(_.line1.replace(",", " "))),
+            optional("line2"       -> business.ppobAddress.flatMap(_.line2.map(_.replace(",", " ")))),
+            optional("line3"       -> business.ppobAddress.flatMap(_.line3.map(_.replace(",", " ")))),
+            optional("line4"       -> business.ppobAddress.flatMap(_.line4.map(_.replace(",", " ")))),
+            optional("line5"       -> business.ppobAddress.flatMap(_.line5.map(_.replace(",", " ")))),
+            optional("postcode"    -> business.ppobAddress.flatMap(_.postcode)),
             optional("countryCode" -> business.ppobAddress.flatMap(_.country.flatMap(_.code)))
           ),
           "businessCommunicationDetails" -> jsonObject(
-            required("telephone" -> business.telephoneNumber),
-            required("emailAddress" -> business.email),
-            "emailVerified" -> (
-              if (applicantDetails.contact.email.exists(business.email.contains(_)) && applicantDetails.contact.emailVerified.contains(true)) {
-                true
-              } else {
-                false
-              }),
+            required("telephone"                                         -> business.telephoneNumber),
+            required("emailAddress"                                      -> business.email),
+            "emailVerified" -> (if (
+                                  applicantDetails.contact.email.exists(
+                                    business.email.contains(_)
+                                  ) && applicantDetails.contact.emailVerified.contains(true)
+                                ) {
+                                  true
+                                } else {
+                                  false
+                                }),
             conditional(business.hasWebsite.contains(true))("webAddress" -> business.website),
-            "preference" -> (business.contactPreference match {
-              case Some(Email) => ContactPreference.electronic
+            "preference"    -> (business.contactPreference match {
+              case Some(Email)  => ContactPreference.electronic
               case Some(Letter) => ContactPreference.paper
             })
-          ))
-      case _ =>
-        errorLog("[ContactAuditBlockBuilder][buildContactBlock] - Could not build contact block for submission due to missing data")
-        throw new InternalServerException("[ContactAuditBlockBuilder]: Could not build contact block for submission due to missing data")
+          )
+        )
+      case _                                        =>
+        errorLog(
+          "[ContactAuditBlockBuilder][buildContactBlock] - Could not build contact block for submission due to missing data"
+        )
+        throw new InternalServerException(
+          "[ContactAuditBlockBuilder]: Could not build contact block for submission due to missing data"
+        )
     }
 
 }

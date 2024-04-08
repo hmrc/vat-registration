@@ -32,15 +32,16 @@ trait MockEmailConnector extends MockitoSugar {
 
   val mockEmailConnector = mock[EmailConnector]
 
-  def mockSendSubmissionReceivedEmail(email: String,
-                                      template: String,
-                                      params: Map[String, String],
-                                      force: Boolean)(response: Future[EmailResponse]): OngoingStubbing[Future[EmailResponse]] =
-    when(mockEmailConnector.sendEmail(
-      ArgumentMatchers.eq(email),
-      ArgumentMatchers.eq(template),
-      ArgumentMatchers.eq(params),
-      ArgumentMatchers.eq(force)
-    )(ArgumentMatchers.any[HeaderCarrier], ArgumentMatchers.any[Request[_]])) thenReturn response
+  def mockSendSubmissionReceivedEmail(email: String, template: String, params: Map[String, String], force: Boolean)(
+    response: Future[EmailResponse]
+  ): OngoingStubbing[Future[EmailResponse]] =
+    when(
+      mockEmailConnector.sendEmail(
+        ArgumentMatchers.eq(email),
+        ArgumentMatchers.eq(template),
+        ArgumentMatchers.eq(params),
+        ArgumentMatchers.eq(force)
+      )(ArgumentMatchers.any[HeaderCarrier], ArgumentMatchers.any[Request[_]])
+    ) thenReturn response
 
 }

@@ -19,8 +19,10 @@ package models.monitoring
 import play.api.libs.json.{JsObject, JsValue, Json}
 import services.monitoring.AuditModel
 
-case class SubmissionFailureErrorsAuditModel(regId: String, correlationID: String, errors: Map[String, List[String]]) extends AuditModel {
-  override val auditType: String = "SubscriptionFailureErrors"
+case class SubmissionFailureErrorsAuditModel(regId: String, correlationID: String, errors: Map[String, List[String]])
+    extends AuditModel {
+  override val auditType: String       = "SubscriptionFailureErrors"
   override val transactionName: String = "subscription-failure-errors"
-  override val detail: JsValue = Json.obj("registrationId" -> regId, "correlationId" -> correlationID) ++ Json.toJson(errors).as[JsObject]
+  override val detail: JsValue         =
+    Json.obj("registrationId" -> regId, "correlationId" -> correlationID) ++ Json.toJson(errors).as[JsObject]
 }

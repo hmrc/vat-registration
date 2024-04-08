@@ -20,9 +20,11 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class FormerName(hasFormerName: Option[Boolean] = None,
-                      name: Option[Name] = None,
-                      change: Option[LocalDate] = None)
+case class FormerName(
+  hasFormerName: Option[Boolean] = None,
+  name: Option[Name] = None,
+  change: Option[LocalDate] = None
+)
 
 object FormerName {
   implicit val format: OFormat[FormerName] = Json.format[FormerName]

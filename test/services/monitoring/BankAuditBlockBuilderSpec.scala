@@ -26,21 +26,23 @@ import uk.gov.hmrc.http.InternalServerException
 
 class BankAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
-  val bankAuditBlockJson: JsObject = Json.parse(
-    """
+  val bankAuditBlockJson: JsObject = Json
+    .parse("""
       |{
       |    "accountName": "Test Bank Account",
       |    "sortCode": "01-02-03",
       |    "accountNumber": "01023456"
       |}
-      |""".stripMargin).as[JsObject]
+      |""".stripMargin)
+    .as[JsObject]
 
-  val bankDetailsNotProvidedBlockJson: JsObject = Json.parse(
-    """
+  val bankDetailsNotProvidedBlockJson: JsObject = Json
+    .parse("""
       |{
       |     "reasonBankAccNotProvided": "BeingSetup"
       |}
-      |""".stripMargin).as[JsObject]
+      |""".stripMargin)
+    .as[JsObject]
 
   object TestBuilder extends BankAuditBlockBuilder
 
@@ -57,8 +59,7 @@ class BankAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           status = ValidStatus
         )
 
-        val testScheme = testVatScheme.copy(bankAccount = Some(testBankAccount).map(_.copy(details = Some(testBank)))
-        )
+        val testScheme = testVatScheme.copy(bankAccount = Some(testBankAccount).map(_.copy(details = Some(testBank))))
 
         val res = TestBuilder.buildBankAuditBlock(testScheme)
 
@@ -66,8 +67,7 @@ class BankAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
       }
 
       "the applicant does not have a bank account" in {
-        val testScheme = testVatScheme.copy(bankAccount = Some(testBankAccountNotProvided)
-        )
+        val testScheme = testVatScheme.copy(bankAccount = Some(testBankAccountNotProvided))
 
         val result: JsObject = TestBuilder.buildBankAuditBlock(testScheme)
         result mustBe bankDetailsNotProvidedBlockJson

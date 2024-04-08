@@ -34,64 +34,96 @@ trait MockVatSchemeRepository extends MockitoSugar {
   lazy val mockVatSchemeRepository: VatSchemeRepository = mock[VatSchemeRepository]
 
   def mockNewVatScheme(regId: String, internalId: String)(response: VatScheme): OngoingStubbing[Future[VatScheme]] =
-    when(mockVatSchemeRepository.createNewVatScheme(
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(internalId)
-    )).thenReturn(Future.successful(response))
+    when(
+      mockVatSchemeRepository.createNewVatScheme(
+        ArgumentMatchers.eq(regId),
+        ArgumentMatchers.eq(internalId)
+      )
+    ).thenReturn(Future.successful(response))
 
-  def mockGetAllRegistrations(internalId: String)(response: Future[List[JsValue]]): OngoingStubbing[Future[List[JsValue]]] =
-    when(mockVatSchemeRepository.getAllRegistrations(
-      ArgumentMatchers.eq(internalId)
-    )) thenReturn response
+  def mockGetAllRegistrations(
+    internalId: String
+  )(response: Future[List[JsValue]]): OngoingStubbing[Future[List[JsValue]]] =
+    when(
+      mockVatSchemeRepository.getAllRegistrations(
+        ArgumentMatchers.eq(internalId)
+      )
+    ) thenReturn response
 
-  def mockGetRegistration(internalId: String, regId: String)(response: Future[Option[VatScheme]]): OngoingStubbing[Future[Option[VatScheme]]] =
-    when(mockVatSchemeRepository.getRegistration(
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId)
-    )) thenReturn response
+  def mockGetRegistration(internalId: String, regId: String)(
+    response: Future[Option[VatScheme]]
+  ): OngoingStubbing[Future[Option[VatScheme]]] =
+    when(
+      mockVatSchemeRepository.getRegistration(
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId)
+      )
+    ) thenReturn response
 
-  def mockUpsertRegistration(internalId: String, regId: String, data: VatScheme)
-                            (response: Future[Option[VatScheme]]): OngoingStubbing[Future[Option[VatScheme]]] =
-    when(mockVatSchemeRepository.upsertRegistration(
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(data)
-    )) thenReturn response
+  def mockUpsertRegistration(internalId: String, regId: String, data: VatScheme)(
+    response: Future[Option[VatScheme]]
+  ): OngoingStubbing[Future[Option[VatScheme]]] =
+    when(
+      mockVatSchemeRepository.upsertRegistration(
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId),
+        ArgumentMatchers.eq(data)
+      )
+    ) thenReturn response
 
-  def mockDeleteRegistration(internalId: String, regId: String)
-                            (response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
-    when(mockVatSchemeRepository.deleteRegistration(
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId)
-    )(ArgumentMatchers.any[Request[_]])) thenReturn response
+  def mockDeleteRegistration(internalId: String, regId: String)(
+    response: Future[Boolean]
+  ): OngoingStubbing[Future[Boolean]] =
+    when(
+      mockVatSchemeRepository.deleteRegistration(
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId)
+      )(ArgumentMatchers.any[Request[_]])
+    ) thenReturn response
 
-  def mockGetSection[T](internalId: String, regId: String, key: String)(response: Future[Option[T]]): OngoingStubbing[Future[Option[T]]] =
-    when(mockVatSchemeRepository.getSection[T](
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(key)
-    )(ArgumentMatchers.any[Reads[T]], ArgumentMatchers.any[Request[_]])).thenReturn(response)
+  def mockGetSection[T](internalId: String, regId: String, key: String)(
+    response: Future[Option[T]]
+  ): OngoingStubbing[Future[Option[T]]] =
+    when(
+      mockVatSchemeRepository.getSection[T](
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId),
+        ArgumentMatchers.eq(key)
+      )(ArgumentMatchers.any[Reads[T]], ArgumentMatchers.any[Request[_]])
+    ).thenReturn(response)
 
-  def mockUpsertSection[T](internalId: String, regId: String, key: String, data: T)(response: Option[T]): OngoingStubbing[Future[Option[T]]] =
-    when(mockVatSchemeRepository.upsertSection[T](
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(key),
-      ArgumentMatchers.eq(data)
-    )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])).thenReturn(Future.successful(response))
+  def mockUpsertSection[T](internalId: String, regId: String, key: String, data: T)(
+    response: Option[T]
+  ): OngoingStubbing[Future[Option[T]]] =
+    when(
+      mockVatSchemeRepository.upsertSection[T](
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId),
+        ArgumentMatchers.eq(key),
+        ArgumentMatchers.eq(data)
+      )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])
+    ).thenReturn(Future.successful(response))
 
-  def mockUpsertSectionFail[T](internalId: String, regId: String, key: String, data: T)(response: Throwable): OngoingStubbing[Future[Option[T]]] =
-    when(mockVatSchemeRepository.upsertSection[T](
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(key),
-      ArgumentMatchers.eq(data)
-    )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])).thenReturn(Future.failed(response))
+  def mockUpsertSectionFail[T](internalId: String, regId: String, key: String, data: T)(
+    response: Throwable
+  ): OngoingStubbing[Future[Option[T]]] =
+    when(
+      mockVatSchemeRepository.upsertSection[T](
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId),
+        ArgumentMatchers.eq(key),
+        ArgumentMatchers.eq(data)
+      )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])
+    ).thenReturn(Future.failed(response))
 
-  def mockDeleteSection(internalId: String, regId: String, key: String)(response: Boolean): OngoingStubbing[Future[Boolean]] =
-    when(mockVatSchemeRepository.deleteSection(
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(key)
-    )(ArgumentMatchers.any[Request[_]])).thenReturn(Future.successful(response))
+  def mockDeleteSection(internalId: String, regId: String, key: String)(
+    response: Boolean
+  ): OngoingStubbing[Future[Boolean]] =
+    when(
+      mockVatSchemeRepository.deleteSection(
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId),
+        ArgumentMatchers.eq(key)
+      )(ArgumentMatchers.any[Request[_]])
+    ).thenReturn(Future.successful(response))
 }

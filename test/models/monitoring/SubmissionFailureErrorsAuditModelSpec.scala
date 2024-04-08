@@ -22,18 +22,18 @@ import helpers.VatRegSpec
 class SubmissionFailureErrorsAuditModelSpec extends VatRegSpec with VatRegistrationFixture {
 
   val testCorrelationId = "testCorrelationId"
-  val regIdKey = "registrationId"
-  val correlationIdKey = "correlationId"
-  val suppressedKey = "suppressedErrors"
-  val unknownKey = "unknownErrors"
+  val regIdKey          = "registrationId"
+  val correlationIdKey  = "correlationId"
+  val suppressedKey     = "suppressedErrors"
+  val unknownKey        = "unknownErrors"
 
   val testField1 = "/test1"
   val testField2 = "/test2"
   val testField3 = "/test3"
 
   val testErrorMap = Map(
-     suppressedKey -> List(testField1),
-     unknownKey -> List(testField2, testField3)
+    suppressedKey -> List(testField1),
+    unknownKey    -> List(testField2, testField3)
   )
 
   "the Submission Failure audit model" must {

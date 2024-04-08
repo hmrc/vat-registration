@@ -30,8 +30,9 @@ trait MockAnnualAccountingBlockBuilder extends MockitoSugar {
 
   val mockAnnualAccountingBlockBuilder: AnnualAccountingBlockBuilder = mock[AnnualAccountingBlockBuilder]
 
-  def mockBuildAnnualAccountingBlock(vatScheme: VatScheme)
-                                    (response: Option[JsObject]): OngoingStubbing[Option[JsObject]] =
+  def mockBuildAnnualAccountingBlock(
+    vatScheme: VatScheme
+  )(response: Option[JsObject]): OngoingStubbing[Option[JsObject]] =
     when(mockAnnualAccountingBlockBuilder.buildAnnualAccountingBlock(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 

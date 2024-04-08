@@ -21,15 +21,17 @@ import play.api.libs.json._
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDateTime, ZoneId}
 
-case class NonRepudiationMetadata(businessId: String,
-                                  notableEvent: String,
-                                  payloadContentType: String,
-                                  payloadSha256Checksum: String,
-                                  userSubmissionTimestamp: LocalDateTime,
-                                  identityData: IdentityData,
-                                  userAuthToken: String,
-                                  headerData: Map[String, String],
-                                  searchKeys: Map[String, String])
+case class NonRepudiationMetadata(
+  businessId: String,
+  notableEvent: String,
+  payloadContentType: String,
+  payloadSha256Checksum: String,
+  userSubmissionTimestamp: LocalDateTime,
+  identityData: IdentityData,
+  userAuthToken: String,
+  headerData: Map[String, String],
+  searchKeys: Map[String, String]
+)
 
 object NonRepudiationMetadata {
   implicit val format: OFormat[NonRepudiationMetadata] = Json.format[NonRepudiationMetadata]

@@ -25,15 +25,16 @@ case object IndeterminateStatus extends BankAccountDetailsStatus
 
 object BankAccountDetailsStatus {
 
-  val map: Map[BankAccountDetailsStatus, String] = Map(
-    ValidStatus -> "yes",
-    InvalidStatus -> "no",
+  val map: Map[BankAccountDetailsStatus, String]        = Map(
+    ValidStatus         -> "yes",
+    InvalidStatus       -> "no",
     IndeterminateStatus -> "indeterminate"
   )
   val inverseMap: Map[String, BankAccountDetailsStatus] = map.map(_.swap)
 
-  def fromString(value: String): BankAccountDetailsStatus = inverseMap(value)
+  def fromString(value: String): BankAccountDetailsStatus   = inverseMap(value)
   def toJsString(value: BankAccountDetailsStatus): JsString = JsString(map(value))
 
-  implicit val format = Format[BankAccountDetailsStatus](_.validate[String] map fromString, toJsString)
+  implicit val format: Format[BankAccountDetailsStatus] =
+    Format[BankAccountDetailsStatus](_.validate[String] map fromString, toJsString)
 }

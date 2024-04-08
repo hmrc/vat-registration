@@ -40,42 +40,45 @@ import scala.concurrent.{ExecutionContext, Future}
 
 // scalastyle:off
 @Singleton
-class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
-                                    crypto: CryptoSCRS,
-                                    timeMachine: TimeMachine,
-                                    backendConfig: BackendConfig
-                                   )(implicit executionContext: ExecutionContext)
-  extends PlayMongoRepository[VatScheme](
-    collectionName = "registration-information",
-    mongoComponent = mongoComponent,
-    domainFormat = VatScheme.format(Some(crypto)),
-    replaceIndexes = true,
-    indexes = Seq(
-      IndexModel(
-        keys = ascending("registrationId"),
-        indexOptions = IndexOptions()
-          .name("RegId")
-          .unique(true)
-      ),
-      IndexModel(
-        keys = ascending("registrationId", "internalId"),
-        indexOptions = IndexOptions()
-          .name("RegIdAndInternalId")
-          .unique(true)
-      ),
-      IndexModel(
-        keys = ascending("timestamp"),
-        indexOptions = IndexOptions()
-          .name("TTL")
-          .unique(false)
-          .expireAfter(backendConfig.expiryInSeconds, TimeUnit.SECONDS)
+class VatSchemeRepository @Inject() (
+  mongoComponent: MongoComponent,
+  crypto: CryptoSCRS,
+  timeMachine: TimeMachine,
+  backendConfig: BackendConfig
+)(implicit executionContext: ExecutionContext)
+    extends PlayMongoRepository[VatScheme](
+      collectionName = "registration-information",
+      mongoComponent = mongoComponent,
+      domainFormat = VatScheme.format(Some(crypto)),
+      replaceIndexes = true,
+      indexes = Seq(
+        IndexModel(
+          keys = ascending("registrationId"),
+          indexOptions = IndexOptions()
+            .name("RegId")
+            .unique(true)
+        ),
+        IndexModel(
+          keys = ascending("registrationId", "internalId"),
+          indexOptions = IndexOptions()
+            .name("RegIdAndInternalId")
+            .unique(true)
+        ),
+        IndexModel(
+          keys = ascending("timestamp"),
+          indexOptions = IndexOptions()
+            .name("TTL")
+            .unique(false)
+            .expireAfter(backendConfig.expiryInSeconds, TimeUnit.SECONDS)
+        )
       )
     )
-  ) with JsonErrorUtil with LoggingUtils {
+    with JsonErrorUtil
+    with LoggingUtils {
 
   private val acknowledgementRefPrefix = "VRS"
-  private val timestampKey = "timestamp"
-  private val internalIdKey = "internalId"
+  private val timestampKey             = "timestamp"
+  private val internalIdKey            = "internalId"
 
   def getInternalId(id: String): Future[Option[String]] =
     collection
@@ -95,7 +98,8 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .insertOne(doc)
       .toFuture()
       .flatMap { _ =>
-        collection.updateOne(registrationSelector(regId, Some(intId)), set(timestampKey, timeMachine.timestamp))
+        collection
+          .updateOne(registrationSelector(regId, Some(intId)), set(timestampKey, timeMachine.timestamp))
           .toFuture()
           .map(_ => doc)
       }
@@ -108,26 +112,26 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .toFuture()
       .map(_.toList.map(scheme => Json.toJson(scheme)(VatScheme.format())))
 
-  def getRegistration(internalId: String, regId: String): Future[Option[VatScheme]] = {
+  def getRegistration(internalId: String, regId: String): Future[Option[VatScheme]] =
     collection
       .find(registrationSelector(regId, Some(internalId)))
       .first()
       .toFutureOption()
-  }
 
-  def upsertRegistration(internalId: String, regId: String, scheme: VatScheme): Future[Option[VatScheme]] = {
+  def upsertRegistration(internalId: String, regId: String, scheme: VatScheme): Future[Option[VatScheme]] =
     collection
       .findOneAndReplace(
         filter = registrationSelector(regId, Some(internalId)),
         replacement = scheme,
-        options = FindOneAndReplaceOptions().upsert(true))
+        options = FindOneAndReplaceOptions().upsert(true)
+      )
       .toFutureOption()
       .flatMap { _ =>
-        collection.updateOne(registrationSelector(regId, Some(internalId)), set(timestampKey, timeMachine.timestamp))
+        collection
+          .updateOne(registrationSelector(regId, Some(internalId)), set(timestampKey, timeMachine.timestamp))
           .toFutureOption()
           .map(_.map(_ => scheme))
       }
-  }
 
   def deleteRegistration(internalId: String, regId: String)(implicit request: Request[_]): Future[Boolean] =
     collection
@@ -142,7 +146,10 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
         }
       }
 
-  def getSection[T](internalId: String, regId: String, section: String)(implicit rds: Reads[T], request: Request[_]): Future[Option[T]] = {
+  def getSection[T](internalId: String, regId: String, section: String)(implicit
+    rds: Reads[T],
+    request: Request[_]
+  ): Future[Option[T]] =
     collection
       .find[Document](registrationSelector(regId, Some(internalId)))
       .projection(include(section))
@@ -150,13 +157,15 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .map {
         case Some(doc) =>
           (Json.parse(doc.toJson()) \ section).validate[T].asOpt
-        case _ =>
+        case _         =>
           warnLog(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
           None
       }
-  }
 
-  def upsertSection[T](internalId: String, regId: String, section: String = "", data: T)(implicit writes: Writes[T], request: Request[_]): Future[Option[T]] =
+  def upsertSection[T](internalId: String, regId: String, section: String = "", data: T)(implicit
+    writes: Writes[T],
+    request: Request[_]
+  ): Future[Option[T]] =
     collection
       .updateOne(
         filter = registrationSelector(regId, Some(internalId)),
@@ -166,17 +175,21 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .toFuture()
       .map { result =>
         if (result.getModifiedCount > 0) {
-          infoLog(s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${result.getModifiedCount}")
+          infoLog(
+            s"[${data.getClass.getSimpleName}] updating for regId : $regId - documents modified : ${result.getModifiedCount}"
+          )
           Some(data)
         } else {
           warnLog(s"[${data.getClass.getSimpleName}] updating for regId : $regId - No document found")
           None
         }
-      }.recover {
-      case e =>
+      }
+      .recover { case e =>
         warnLog(s"Unable to update $section for regId: $regId")
-        throw new InternalServerException(s"Unable to update section $section for regId: $regId, error: ${e.getMessage}")
-    }
+        throw new InternalServerException(
+          s"Unable to update section $section for regId: $regId, error: ${e.getMessage}"
+        )
+      }
 
   def deleteSection(internalId: String, regId: String, section: String)(implicit request: Request[_]): Future[Boolean] =
     collection
@@ -184,28 +197,42 @@ class VatSchemeRepository @Inject()(mongoComponent: MongoComponent,
       .toFuture()
       .map { result =>
         if (result.getModifiedCount > 0) {
-          infoLog(s"[RegistrationRepository] removing for regId : $regId - documents modified : ${result.getModifiedCount}")
+          infoLog(
+            s"[RegistrationRepository] removing for regId : $regId - documents modified : ${result.getModifiedCount}"
+          )
           true
         } else {
           warnLog(s"[RegistrationRepository] removing for regId : $regId - No document found")
           true
         }
-      }.recover {
-      case e =>
+      }
+      .recover { case e =>
         warnLog(s"[RegistrationRepository] Unable to remove for regId: $regId, Error: ${e.getMessage}")
-        throw new InternalServerException(s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}")
-    }
+        throw new InternalServerException(
+          s"Unable to delete section $section for regId: $regId, error: ${e.getMessage}"
+        )
+      }
 
-  def updateSubmissionStatus(internalId: String, regId: String, status: VatRegStatus.Value)(implicit request: Request[_]): Future[Option[VatRegStatus.Value]] = {
+  def updateSubmissionStatus(internalId: String, regId: String, status: VatRegStatus.Value)(implicit
+    request: Request[_]
+  ): Future[Option[VatRegStatus.Value]] = {
     infoLog("[VatSchemeRepository][updateSubmissionStatus] attempting to update submission status", regId)
     upsertSection(internalId, regId, StatusSectionId.repoKey, status)
   }
 
-  def finishRegistrationSubmission(regId: String, status: VatRegStatus.Value, formBundleId: String): Future[VatRegStatus.Value] =
-    collection.updateOne(registrationSelector(regId), combine(
-      set(StatusSectionId.repoKey, status.toString),
-      set(AcknowledgementReferenceSectionId.repoKey, s"$acknowledgementRefPrefix$formBundleId")
-    ))
+  def finishRegistrationSubmission(
+    regId: String,
+    status: VatRegStatus.Value,
+    formBundleId: String
+  ): Future[VatRegStatus.Value] =
+    collection
+      .updateOne(
+        registrationSelector(regId),
+        combine(
+          set(StatusSectionId.repoKey, status.toString),
+          set(AcknowledgementReferenceSectionId.repoKey, s"$acknowledgementRefPrefix$formBundleId")
+        )
+      )
       .toFuture()
       .map(_ => status)
 

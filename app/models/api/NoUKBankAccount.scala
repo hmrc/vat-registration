@@ -28,43 +28,42 @@ case object DontWantToProvide extends NoUKBankAccount
 
 object NoUKBankAccount {
 
-  val beingSetup: String = "BeingSetup"
-  val beingSetupId: String = "1"
-  val overseasAccount: String = "OverseasAccount"
-  val overseasAccountId: String = "3"
-  val nameChange: String = "NameChange"
-  val nameChangeId: String = "4"
-  val accountNotInBusinessName: String = "AccountNotInBusinessName"
+  val beingSetup: String                 = "BeingSetup"
+  val beingSetupId: String               = "1"
+  val overseasAccount: String            = "OverseasAccount"
+  val overseasAccountId: String          = "3"
+  val nameChange: String                 = "NameChange"
+  val nameChangeId: String               = "4"
+  val accountNotInBusinessName: String   = "AccountNotInBusinessName"
   val accountNotInBusinessNameId: String = "6"
-  val dontWantToProvide: String = "DontWantToProvide"
-  val dontWantToProvideId: String = "7"
+  val dontWantToProvide: String          = "DontWantToProvide"
+  val dontWantToProvideId: String        = "7"
 
   implicit val reads: Reads[NoUKBankAccount] = Reads[NoUKBankAccount] {
-    case JsString(`beingSetup`) => JsSuccess(BeingSetup)
-    case JsString(`overseasAccount`) => JsSuccess(OverseasAccount)
-    case JsString(`nameChange`) => JsSuccess(NameChange)
+    case JsString(`beingSetup`)               => JsSuccess(BeingSetup)
+    case JsString(`overseasAccount`)          => JsSuccess(OverseasAccount)
+    case JsString(`nameChange`)               => JsSuccess(NameChange)
     case JsString(`accountNotInBusinessName`) => JsSuccess(AccountNotInBusinessName)
-    case JsString(`dontWantToProvide`) => JsSuccess(DontWantToProvide)
-    case _ => JsError("Could not parse reason for no UK bank account")
+    case JsString(`dontWantToProvide`)        => JsSuccess(DontWantToProvide)
+    case _                                    => JsError("Could not parse reason for no UK bank account")
   }
 
   implicit val writes: Writes[NoUKBankAccount] = Writes[NoUKBankAccount] {
-    case BeingSetup => JsString(beingSetup)
-    case OverseasAccount => JsString(overseasAccount)
-    case NameChange => JsString(nameChange)
+    case BeingSetup               => JsString(beingSetup)
+    case OverseasAccount          => JsString(overseasAccount)
+    case NameChange               => JsString(nameChange)
     case AccountNotInBusinessName => JsString(accountNotInBusinessName)
-    case DontWantToProvide => JsString(dontWantToProvide)
+    case DontWantToProvide        => JsString(dontWantToProvide)
   }
 
   implicit val format: Format[NoUKBankAccount] = Format(reads, writes)
 
   def reasonId(reason: NoUKBankAccount): String = reason match {
-    case BeingSetup => beingSetupId
-    case OverseasAccount => overseasAccountId
-    case NameChange => nameChangeId
+    case BeingSetup               => beingSetupId
+    case OverseasAccount          => overseasAccountId
+    case NameChange               => nameChangeId
     case AccountNotInBusinessName => accountNotInBusinessNameId
-    case DontWantToProvide => dontWantToProvideId
+    case DontWantToProvide        => dontWantToProvideId
   }
-
 
 }

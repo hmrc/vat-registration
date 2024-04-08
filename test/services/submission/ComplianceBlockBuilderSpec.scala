@@ -39,32 +39,38 @@ class ComplianceBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository
 
   "The compliance block builder" must {
     "build the correct json when only the supplyWorkers flag is set" in {
-      val vatScheme = testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = Some(emptyLabourCompliance))))
+      val vatScheme =
+        testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = Some(emptyLabourCompliance))))
 
       val res = TestBuilder.buildComplianceBlock(vatScheme)
 
-      res mustBe Some(Json.obj(
-        "supplyWorkers" -> true
-      ))
+      res mustBe Some(
+        Json.obj(
+          "supplyWorkers" -> true
+        )
+      )
     }
     "build the correct json when the both the optional answers are provided" in {
       val fullLabourCompliance = emptyLabourCompliance.copy(
         numOfWorkersSupplied = Some(1),
         intermediaryArrangement = Some(true)
       )
-      val vatScheme = testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = Some(fullLabourCompliance))))
+      val vatScheme            =
+        testVatScheme.copy(business = Some(testBusiness.copy(labourCompliance = Some(fullLabourCompliance))))
 
       val res = TestBuilder.buildComplianceBlock(vatScheme)
 
-      res mustBe Some(Json.obj(
-        "numOfWorkersSupplied" -> 1,
-        "intermediaryArrangement" -> true,
-        "supplyWorkers" -> true
-      ))
+      res mustBe Some(
+        Json.obj(
+          "numOfWorkersSupplied"    -> 1,
+          "intermediaryArrangement" -> true,
+          "supplyWorkers"           -> true
+        )
+      )
     }
     "return None when the labourCompliance section is not defined" in {
       val noCompliance = testBusiness.copy(labourCompliance = None)
-      val vatScheme = testVatScheme.copy(business = Some(noCompliance))
+      val vatScheme    = testVatScheme.copy(business = Some(noCompliance))
 
       val res = TestBuilder.buildComplianceBlock(vatScheme)
 

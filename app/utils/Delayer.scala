@@ -16,7 +16,7 @@
 
 package utils
 
-import akka.actor.Scheduler
+import org.apache.pekko.actor.Scheduler
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -27,7 +27,7 @@ trait Delayer {
   implicit val ec: ExecutionContext
 
   def delay(delay: FiniteDuration): Future[Unit] = {
-    val promise = Promise[Unit]
+    val promise = Promise[Unit]()
 
     scheduler.scheduleOnce(delay)(promise.success(()))
 

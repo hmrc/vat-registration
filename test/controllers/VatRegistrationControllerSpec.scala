@@ -33,10 +33,11 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import scala.concurrent.Future
 
-class VatRegistrationControllerSpec extends VatRegSpec
-  with VatRegistrationFixture
-  with MockRegistrationService
-  with MockAuditService {
+class VatRegistrationControllerSpec
+    extends VatRegSpec
+    with VatRegistrationFixture
+    with MockRegistrationService
+    with MockAuditService {
 
   import play.api.test.Helpers._
 
@@ -61,9 +62,11 @@ class VatRegistrationControllerSpec extends VatRegSpec
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.duplicateSubmission)
 
-      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
-        Json.obj("userHeaders" -> testUserHeaders)
-      ))
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(
+        FakeRequest().withBody(
+          Json.obj("userHeaders" -> testUserHeaders)
+        )
+      )
 
       status(response) mustBe CONFLICT
     }
@@ -72,9 +75,11 @@ class VatRegistrationControllerSpec extends VatRegSpec
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.locked)
 
-      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
-        Json.obj("userHeaders" -> testUserHeaders)
-      ))
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(
+        FakeRequest().withBody(
+          Json.obj("userHeaders" -> testUserHeaders)
+        )
+      )
 
       status(response) mustBe TOO_MANY_REQUESTS
     }
@@ -83,9 +88,11 @@ class VatRegistrationControllerSpec extends VatRegSpec
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.submitted)
 
-      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
-        Json.obj("userHeaders" -> testUserHeaders)
-      ))
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(
+        FakeRequest().withBody(
+          Json.obj("userHeaders" -> testUserHeaders)
+        )
+      )
 
       status(response) mustBe OK
     }
@@ -94,18 +101,25 @@ class VatRegistrationControllerSpec extends VatRegSpec
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
-      when(mockSubmissionService.submitVatRegistration(
-        ArgumentMatchers.eq(testInternalId),
-        ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(testUserHeaders),
-        ArgumentMatchers.eq("en")
-
-      )(any[HeaderCarrier], any[Request[_]]))
+      when(
+        mockSubmissionService.submitVatRegistration(
+          ArgumentMatchers.eq(testInternalId),
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.eq("en")
+        )(any[HeaderCarrier], any[Request[_]])
+      )
         .thenReturn(Future.failed(UpstreamErrorResponse("message", 501)))
 
-      val response: UpstreamErrorResponse = intercept[UpstreamErrorResponse](await(controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
-        Json.obj("userHeaders" -> testUserHeaders)
-      ))))
+      val response: UpstreamErrorResponse = intercept[UpstreamErrorResponse](
+        await(
+          controller.submitVATRegistration(testRegId)(
+            FakeRequest().withBody(
+              Json.obj("userHeaders" -> testUserHeaders)
+            )
+          )
+        )
+      )
 
       response mustBe UpstreamErrorResponse("message", 501)
     }
@@ -114,34 +128,42 @@ class VatRegistrationControllerSpec extends VatRegSpec
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
-      when(mockSubmissionService.submitVatRegistration(
-        ArgumentMatchers.eq(testInternalId),
-        ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(testUserHeaders),
-        ArgumentMatchers.eq("en")
-      )(any[HeaderCarrier], any[Request[_]]))
+      when(
+        mockSubmissionService.submitVatRegistration(
+          ArgumentMatchers.eq(testInternalId),
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.eq("en")
+        )(any[HeaderCarrier], any[Request[_]])
+      )
         .thenReturn(Future.successful(Right(VatSubmissionSuccess("VRS00000000001"))))
 
-      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
-        Json.obj("userHeaders" -> testUserHeaders)
-      ))
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(
+        FakeRequest().withBody(
+          Json.obj("userHeaders" -> testUserHeaders)
+        )
+      )
       status(response) mustBe Status.OK
     }
     "return an Ok response for a valid submission with partners" in new Setup {
       AuthorisationMocks.mockAuthorised(testRegId, testInternalId)
       ServiceMocks.mockGetDocumentStatus(VatRegStatus.draft)
 
-      when(mockSubmissionService.submitVatRegistration(
-        ArgumentMatchers.eq(testInternalId),
-        ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(testUserHeaders),
-        ArgumentMatchers.eq("en")
-      )(any[HeaderCarrier], any[Request[_]]))
+      when(
+        mockSubmissionService.submitVatRegistration(
+          ArgumentMatchers.eq(testInternalId),
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.eq("en")
+        )(any[HeaderCarrier], any[Request[_]])
+      )
         .thenReturn(Future.successful(Right(VatSubmissionSuccess("VRS00000000001"))))
 
-      val response: Future[Result] = controller.submitVATRegistration(testRegId)(FakeRequest().withBody(
-        Json.obj("userHeaders" -> testUserHeaders)
-      ))
+      val response: Future[Result] = controller.submitVATRegistration(testRegId)(
+        FakeRequest().withBody(
+          Json.obj("userHeaders" -> testUserHeaders)
+        )
+      )
       status(response) mustBe Status.OK
     }
   }

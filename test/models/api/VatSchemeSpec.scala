@@ -25,13 +25,19 @@ class VatSchemeSpec extends VatRegSpec with VatRegistrationFixture {
   "exceptionOrExemption" must {
     "return exceptionKey" when {
       "eligibilitySubmissionData has appliedForException flag true" in {
-        val result = VatScheme.exceptionOrExemption(testEligibilitySubmissionData.copy(appliedForException = Some(true)), testVatApplicationDetails)
+        val result = VatScheme.exceptionOrExemption(
+          testEligibilitySubmissionData.copy(appliedForException = Some(true)),
+          testVatApplicationDetails
+        )
         result mustBe VatScheme.exceptionKey
       }
     }
     "return exemptionKey" when {
       "Returns has appliedForExemption flag true" in {
-        val result = VatScheme.exceptionOrExemption(testEligibilitySubmissionData, testVatApplicationDetails.copy(appliedForExemption = Some(true)))
+        val result = VatScheme.exceptionOrExemption(
+          testEligibilitySubmissionData,
+          testVatApplicationDetails.copy(appliedForExemption = Some(true))
+        )
         result mustBe VatScheme.exemptionKey
       }
     }
@@ -39,13 +45,15 @@ class VatSchemeSpec extends VatRegSpec with VatRegistrationFixture {
       "both exception and exemption flags are false" in {
         val result = VatScheme.exceptionOrExemption(
           testEligibilitySubmissionData.copy(appliedForException = Some(false)),
-          testVatApplicationDetails.copy(appliedForExemption = Some(false)))
+          testVatApplicationDetails.copy(appliedForExemption = Some(false))
+        )
         result mustBe VatScheme.nonExceptionOrExemptionKey
       }
       "both exception and exemption flags are not present" in {
         val result = VatScheme.exceptionOrExemption(
           testEligibilitySubmissionData.copy(appliedForException = None),
-          testVatApplicationDetails.copy(appliedForExemption = None))
+          testVatApplicationDetails.copy(appliedForExemption = None)
+        )
         result mustBe VatScheme.nonExceptionOrExemptionKey
       }
     }
@@ -54,7 +62,8 @@ class VatSchemeSpec extends VatRegSpec with VatRegistrationFixture {
         intercept[InternalServerException] {
           VatScheme.exceptionOrExemption(
             testEligibilitySubmissionData.copy(appliedForException = Some(true)),
-            testVatApplicationDetails.copy(appliedForExemption = Some(true)))
+            testVatApplicationDetails.copy(appliedForExemption = Some(true))
+          )
         }
       }
     }

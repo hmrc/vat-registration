@@ -32,8 +32,8 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
 
   implicit val request: Request[_] = FakeRequest()
 
-  lazy val contactBlockJson: JsObject = Json.parse(
-    """
+  lazy val contactBlockJson: JsObject = Json
+    .parse("""
       |{
       |    "commDetails": {
       |      "telephone": "1234567890",
@@ -50,10 +50,11 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
       |      "addressValidated": true
       |    }
       |}
-      |""".stripMargin).as[JsObject]
+      |""".stripMargin)
+    .as[JsObject]
 
-  lazy val contactBlockWithoutCommasJson: JsObject = Json.parse(
-    """
+  lazy val contactBlockWithoutCommasJson: JsObject = Json
+    .parse("""
       |{
       |    "commDetails": {
       |      "telephone": "1234567890",
@@ -73,19 +74,22 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
       |      "addressValidated": true
       |    }
       |}
-      |""".stripMargin).as[JsObject]
+      |""".stripMargin)
+    .as[JsObject]
 
   "ContactBlockBuilder" should {
     "return the built contact block" when {
       "business details are available" in new Setup {
         val vatScheme = testVatScheme.copy(
           business = Some(testBusiness),
-          applicantDetails = Some(validApplicantDetails.copy(
-            contact = Contact(
-              email = testBusiness.email,
-              emailVerified = Some(true)
+          applicantDetails = Some(
+            validApplicantDetails.copy(
+              contact = Contact(
+                email = testBusiness.email,
+                emailVerified = Some(true)
+              )
             )
-          ))
+          )
         )
 
         val result: JsObject = service.buildContactBlock(vatScheme)
@@ -93,16 +97,27 @@ class ContactBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture wit
       }
 
       "business details are available with commas" in new Setup {
-        lazy val testAddress = Address("line1, line1", Some("line2, line2"), Some("line3, line3"), Some("line4, line4"), Some("line5, line5"), Some("ZZ1 1ZZ"), Some(Country(Some("GB"), Some("UK"))), addressValidated = Some(true))
+        lazy val testAddress = Address(
+          "line1, line1",
+          Some("line2, line2"),
+          Some("line3, line3"),
+          Some("line4, line4"),
+          Some("line5, line5"),
+          Some("ZZ1 1ZZ"),
+          Some(Country(Some("GB"), Some("UK"))),
+          addressValidated = Some(true)
+        )
 
         val vatScheme = testVatScheme.copy(
           business = Some(testBusiness.copy(ppobAddress = Some(testAddress))),
-          applicantDetails = Some(validApplicantDetails.copy(
-            contact = Contact(
-              email = testBusiness.email,
-              emailVerified = Some(true)
+          applicantDetails = Some(
+            validApplicantDetails.copy(
+              contact = Contact(
+                email = testBusiness.email,
+                emailVerified = Some(true)
+              )
             )
-          ))
+          )
         )
 
         val result: JsObject = service.buildContactBlock(vatScheme)

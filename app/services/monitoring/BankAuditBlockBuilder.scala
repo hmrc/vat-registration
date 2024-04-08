@@ -27,38 +27,46 @@ import utils.LoggingUtils
 import javax.inject.Singleton
 
 @Singleton
-class BankAuditBlockBuilder extends LoggingUtils{
+class BankAuditBlockBuilder extends LoggingUtils {
 
-  def buildBankAuditBlock(vatScheme: VatScheme)(implicit request:Request[_]): JsObject = {
+  def buildBankAuditBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     vatScheme.bankAccount match {
       case Some(bankAccount) =>
         if (bankAccount.isProvided) {
           bankAccount.details match {
             case Some(bankAccountDetails: BankAccountDetails) =>
               jsonObject(
-                "accountName" -> bankAccountDetails.name,
-                "sortCode" -> bankAccountDetails.sortCode,
+                "accountName"   -> bankAccountDetails.name,
+                "sortCode"      -> bankAccountDetails.sortCode,
                 "accountNumber" -> bankAccountDetails.number,
                 conditional(bankAccountDetails.status.equals(IndeterminateStatus))("bankDetailsNotValid" -> true)
               )
-            case None =>
-              errorLog("[BankAuditBlockBuilder][buildBankAuditBlock] - Could not build bank details block for audit due to missing bank account details")
-              throw new InternalServerException("[BankAuditBlockBuilder]: Could not build bank details block for audit due to missing bank account details")
+            case None                                         =>
+              errorLog(
+                "[BankAuditBlockBuilder][buildBankAuditBlock] - Could not build bank details block for audit due to missing bank account details"
+              )
+              throw new InternalServerException(
+                "[BankAuditBlockBuilder]: Could not build bank details block for audit due to missing bank account details"
+              )
           }
-        }
-        else {
+        } else {
           jsonObject(
             "reasonBankAccNotProvided" -> bankAccount.reason
           )
         }
-      case None if vatScheme.eligibilitySubmissionData.exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType)) =>
+      case None
+          if vatScheme.eligibilitySubmissionData
+            .exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType)) =>
         jsonObject(
           "reasonBankAccNotProvided" -> NoUKBankAccount.overseasAccount
         )
-      case None =>
-        errorLog("[BankAuditBlockBuilder][buildBankAuditBlock] - Could not build bank details block for audit due to missing bank account")
-        throw new InternalServerException("BankAuditBlockBuilder: Could not build bank details block for audit due to missing bank account")
+      case None              =>
+        errorLog(
+          "[BankAuditBlockBuilder][buildBankAuditBlock] - Could not build bank details block for audit due to missing bank account"
+        )
+        throw new InternalServerException(
+          "BankAuditBlockBuilder: Could not build bank details block for audit due to missing bank account"
+        )
     }
 
-  }
 }

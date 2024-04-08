@@ -23,31 +23,52 @@ import play.api.libs.json._
 
 class OtherBusinessInvolvementSpec extends BaseSpec with VatRegistrationFixture with JsonFormatValidation {
 
-  val testFullObiModel: OtherBusinessInvolvement = OtherBusinessInvolvement(Some(testCompanyName), hasVrn = Some(true), Some(testVrn), Some(true), Some(testUtr), stillTrading = Some(true))
-  val testNoUtrModel: OtherBusinessInvolvement = OtherBusinessInvolvement(Some(testCompanyName), hasVrn = Some(true), Some(testVrn), Some(false), None, stillTrading = Some(true))
-  val testEmptyObiModel: OtherBusinessInvolvement = OtherBusinessInvolvement(Some(testCompanyName), hasVrn = Some(false), None, Some(false), None, stillTrading = Some(false))
+  val testFullObiModel: OtherBusinessInvolvement  = OtherBusinessInvolvement(
+    Some(testCompanyName),
+    hasVrn = Some(true),
+    Some(testVrn),
+    Some(true),
+    Some(testUtr),
+    stillTrading = Some(true)
+  )
+  val testNoUtrModel: OtherBusinessInvolvement    = OtherBusinessInvolvement(
+    Some(testCompanyName),
+    hasVrn = Some(true),
+    Some(testVrn),
+    Some(false),
+    None,
+    stillTrading = Some(true)
+  )
+  val testEmptyObiModel: OtherBusinessInvolvement = OtherBusinessInvolvement(
+    Some(testCompanyName),
+    hasVrn = Some(false),
+    None,
+    Some(false),
+    None,
+    stillTrading = Some(false)
+  )
 
   val fullObiJson: JsValue = Json.obj(
     "businessName" -> s"$testCompanyName",
-    "hasVrn" -> true,
-    "vrn" -> s"$testVrn",
-    "hasUtr" -> true,
-    "utr" -> s"$testUtr",
+    "hasVrn"       -> true,
+    "vrn"          -> s"$testVrn",
+    "hasUtr"       -> true,
+    "utr"          -> s"$testUtr",
     "stillTrading" -> true
   )
 
   val noUtrJson: JsValue = Json.obj(
     "businessName" -> s"$testCompanyName",
-    "hasVrn" -> true,
-    "vrn" -> s"$testVrn",
-    "hasUtr" -> false,
+    "hasVrn"       -> true,
+    "vrn"          -> s"$testVrn",
+    "hasUtr"       -> false,
     "stillTrading" -> true
   )
 
   val emptyObiJson: JsValue = Json.obj(
     "businessName" -> s"$testCompanyName",
-    "hasVrn" -> false,
-    "hasUtr" -> false,
+    "hasVrn"       -> false,
+    "hasUtr"       -> false,
     "stillTrading" -> false
   )
 

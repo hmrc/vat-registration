@@ -24,57 +24,56 @@ import utils.JsonUtils._
 
 object NonRepudiationAuditing {
 
-  case class NonRepudiationSubmissionSuccessAudit(journeyid: String,
-                                                  nonRepudiationSubmissionId: String) extends AuditModel {
-    override val auditType: String = "SubmitVATRegistrationToNrs"
+  case class NonRepudiationSubmissionSuccessAudit(journeyid: String, nonRepudiationSubmissionId: String)
+      extends AuditModel {
+    override val auditType: String       = "SubmitVATRegistrationToNrs"
     override val transactionName: String = "submit-vat-registration-to-nrs"
-    override val detail: JsValue = Json.obj(
-      "journeyId" -> journeyid,
+    override val detail: JsValue         = Json.obj(
+      "journeyId"      -> journeyid,
       "nrSubmissionId" -> nonRepudiationSubmissionId
     )
   }
 
-  case class NonRepudiationSubmissionFailureAudit(journeyId: String,
-                                                  statusCode: Int,
-                                                  body: String) extends AuditModel {
-    override val auditType: String = "SubmitVATRegistrationToNRSError"
+  case class NonRepudiationSubmissionFailureAudit(journeyId: String, statusCode: Int, body: String) extends AuditModel {
+    override val auditType: String       = "SubmitVATRegistrationToNRSError"
     override val transactionName: String = "submit-vat-registration-to-nrs"
-    override val detail: JsValue = Json.obj(
-      "statusCode" -> statusCode.toString,
+    override val detail: JsValue         = Json.obj(
+      "statusCode"   -> statusCode.toString,
       "statusReason" -> body,
-      "journeyId" -> journeyId
+      "journeyId"    -> journeyId
     )
   }
 
-  case class NonRepudiationAttachmentSuccessAudit(sdesCallback: SdesCallback, nrAttachmentId: String) extends AuditModel {
-    override val auditType: String = "SubmitAttachmentToNrs"
+  case class NonRepudiationAttachmentSuccessAudit(sdesCallback: SdesCallback, nrAttachmentId: String)
+      extends AuditModel {
+    override val auditType: String       = "SubmitAttachmentToNrs"
     override val transactionName: String = "submit-attachment-to-nrs"
-    override val detail: JsValue = jsonObject(
-      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
-      "filename" -> sdesCallback.filename,
+    override val detail: JsValue         = jsonObject(
+      "nrSubmissionId"    -> sdesCallback.getPropertyValue(nrsSubmissionKey),
+      "filename"          -> sdesCallback.filename,
       "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
-      "checksum" -> sdesCallback.checksum,
-      "correlationID" -> sdesCallback.correlationID,
-      "availableUntil" -> sdesCallback.correlationID,
-      "nrAttachmentId" -> nrAttachmentId,
-      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
-      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey)
+      "checksum"          -> sdesCallback.checksum,
+      "correlationID"     -> sdesCallback.correlationID,
+      "availableUntil"    -> sdesCallback.correlationID,
+      "nrAttachmentId"    -> nrAttachmentId,
+      "attachmentId"      -> sdesCallback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId"      -> sdesCallback.getPropertyValue(formBundleKey)
     )
   }
 
   case class NonRepudiationAttachmentFailureAudit(sdesCallback: SdesCallback, status: Int) extends AuditModel {
-    override val auditType: String = "SubmitAttachmentToNRSError"
+    override val auditType: String       = "SubmitAttachmentToNRSError"
     override val transactionName: String = "submit-attachment-to-nrs"
-    override val detail: JsValue = jsonObject(
-      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
-      "filename" -> sdesCallback.filename,
+    override val detail: JsValue         = jsonObject(
+      "nrSubmissionId"    -> sdesCallback.getPropertyValue(nrsSubmissionKey),
+      "filename"          -> sdesCallback.filename,
       "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
-      "checksum" -> sdesCallback.checksum,
-      "correlationID" -> sdesCallback.correlationID,
-      "availableUntil" -> sdesCallback.correlationID,
-      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
-      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey),
-      "statusCode" -> status
+      "checksum"          -> sdesCallback.checksum,
+      "correlationID"     -> sdesCallback.correlationID,
+      "availableUntil"    -> sdesCallback.correlationID,
+      "attachmentId"      -> sdesCallback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId"      -> sdesCallback.getPropertyValue(formBundleKey),
+      "statusCode"        -> status
     )
   }
 }

@@ -33,13 +33,15 @@ trait MockEmailService extends MockitoSugar {
 
   val mockEmailService = mock[EmailService]
 
-  def mockSendRegistrationReceivedEmail(internalId: String, regId: String, lang: String)
-                                       (response: Future[EmailResponse]): OngoingStubbing[Future[EmailResponse]] =
-    when(mockEmailService.sendRegistrationReceivedEmail(
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(lang)
-    )(ArgumentMatchers.any[HeaderCarrier], ArgumentMatchers.any[Request[_]])
+  def mockSendRegistrationReceivedEmail(internalId: String, regId: String, lang: String)(
+    response: Future[EmailResponse]
+  ): OngoingStubbing[Future[EmailResponse]] =
+    when(
+      mockEmailService.sendRegistrationReceivedEmail(
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId),
+        ArgumentMatchers.eq(lang)
+      )(ArgumentMatchers.any[HeaderCarrier], ArgumentMatchers.any[Request[_]])
     ).thenReturn(response)
 
 }

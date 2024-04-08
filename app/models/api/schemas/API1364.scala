@@ -20,9 +20,8 @@ import config.BackendConfig
 
 import javax.inject.Inject
 
-class API1364 @Inject()(appConfig: BackendConfig) extends ApiSchema(
-  filename = "/schemas/vat-registration-api-schema.yaml",
-  defaultSchemaName = "request") {
+class API1364 @Inject() (appConfig: BackendConfig)
+    extends ApiSchema(filename = "/schemas/vat-registration-api-schema.yaml", defaultSchemaName = "request") {
 
   val suppressedErrors = appConfig.servicesConfig.getString("schemas.api1364.suppressedErrors").split(',').toList
 }

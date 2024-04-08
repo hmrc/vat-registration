@@ -27,14 +27,13 @@ class FeatureSwitchingModule extends Module with FeatureSwitchRegistry {
 
   val switches = Seq(StubSubmission)
 
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     Seq(
       bind[FeatureSwitchRegistry].to(this).eagerly()
     )
-  }
 }
 
 case object StubSubmission extends FeatureSwitch {
-  override val configName: String = "feature-switch.submission-stub"
+  override val configName: String  = "feature-switch.submission-stub"
   override val displayName: String = "Use stub for Submission to DES"
 }

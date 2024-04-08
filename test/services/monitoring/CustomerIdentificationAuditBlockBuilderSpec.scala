@@ -29,37 +29,37 @@ class CustomerIdentificationAuditBlockBuilderSpec extends VatRegSpec with VatReg
 
   "buildCustomerIdentificationBlock" when {
     "all required sections are present in the VAT scheme" when {
-      "a trading name is present" must {
+      "a trading name is present"     must {
         "return the correct JSON" in new CustomerIdentificationAuditBlockBuilder {
           val res = buildCustomerIdentificationBlock(testFullVatScheme)
 
           res mustBe Json.obj(
             "tradersPartyType" -> "50",
-            "identifiers" -> Json.obj(
+            "identifiers"      -> Json.obj(
               "companyRegistrationNumber" -> testCrn,
-              "ctUTR" -> testUtr
+              "ctUTR"                     -> testUtr
             ),
-            "shortOrgName" -> testCompanyName,
+            "shortOrgName"     -> testCompanyName,
             "organisationName" -> testCompanyName,
-            "dateOfBirth" -> testDateOfBirth,
-            "tradingName" -> testTradingName
+            "dateOfBirth"      -> testDateOfBirth,
+            "tradingName"      -> testTradingName
           )
         }
       }
       "a trading name is not present" must {
         "return the correct JSON" in new CustomerIdentificationAuditBlockBuilder {
           val businessDetails = testBusiness.copy(tradingName = None)
-          val res = buildCustomerIdentificationBlock(testFullVatScheme.copy(business = Some(businessDetails)))
+          val res             = buildCustomerIdentificationBlock(testFullVatScheme.copy(business = Some(businessDetails)))
 
           res mustBe Json.obj(
             "tradersPartyType" -> "50",
-            "identifiers" -> Json.obj(
+            "identifiers"      -> Json.obj(
               "companyRegistrationNumber" -> testCrn,
-              "ctUTR" -> testUtr
+              "ctUTR"                     -> testUtr
             ),
-            "shortOrgName" -> testCompanyName,
+            "shortOrgName"     -> testCompanyName,
             "organisationName" -> testCompanyName,
-            "dateOfBirth" -> testDateOfBirth
+            "dateOfBirth"      -> testDateOfBirth
           )
         }
       }

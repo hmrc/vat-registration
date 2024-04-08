@@ -33,8 +33,9 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
 
   "the periods block builder" should {
     "write the correct json for the monthly stagger" in {
-      val monthlyReturns = testVatApplicationDetails.copy(returnsFrequency = Some(Monthly), staggerStart = Some(MonthlyStagger))
-      val vatScheme = testVatScheme.copy(vatApplication = Some(monthlyReturns))
+      val monthlyReturns =
+        testVatApplicationDetails.copy(returnsFrequency = Some(Monthly), staggerStart = Some(MonthlyStagger))
+      val vatScheme      = testVatScheme.copy(vatApplication = Some(monthlyReturns))
 
       val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
@@ -44,7 +45,7 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
     }
     "write the correct json for stagger 1" in {
       val stagger1ApplicationDetails = testVatApplicationDetails.copy(staggerStart = Some(JanuaryStagger))
-      val vatScheme = testVatScheme.copy(vatApplication = Some(stagger1ApplicationDetails))
+      val vatScheme                  = testVatScheme.copy(vatApplication = Some(stagger1ApplicationDetails))
 
       val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
@@ -54,7 +55,7 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
     }
     "write the correct json for stagger 2" in {
       val stagger2ApplicationDetails = testVatApplicationDetails.copy(staggerStart = Some(FebruaryStagger))
-      val vatScheme = testVatScheme.copy(vatApplication = Some(stagger2ApplicationDetails))
+      val vatScheme                  = testVatScheme.copy(vatApplication = Some(stagger2ApplicationDetails))
 
       val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
@@ -64,7 +65,7 @@ class PeriodsBlockBuilderSpec extends VatRegSpec with MockVatSchemeRepository wi
     }
     "write the correct json for stagger 3" in {
       val stagger3ApplicationDetails = testVatApplicationDetails.copy(staggerStart = Some(MarchStagger))
-      val vatScheme = testVatScheme.copy(vatApplication = Some(stagger3ApplicationDetails))
+      val vatScheme                  = testVatScheme.copy(vatApplication = Some(stagger3ApplicationDetails))
 
       val res = TestBuilder.buildPeriodsBlock(vatScheme)
 
