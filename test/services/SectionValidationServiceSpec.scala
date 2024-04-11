@@ -30,88 +30,90 @@ import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
-class SectionValidationServiceSpec extends VatRegSpec
-  with MockRegistrationService
-  with VatRegistrationFixture {
+class SectionValidationServiceSpec extends VatRegSpec with MockRegistrationService with VatRegistrationFixture {
 
   object Service extends SectionValidationService(mockRegistrationService)
   implicit val request: Request[_] = FakeRequest()
 
   "validate" when {
-    "the section is Applicant" must {
+    "the section is Applicant"                 must {
       "return ValidSection when the data is valid" in {
-        mockGetAnswer[PartyType](testInternalId, testRegId, EligibilitySectionId, "partyType")(Future.successful(Some(UkCompany)))
-        val data = Json.toJson(validApplicantDetails)(Format[ApplicantDetails](ApplicantDetails.reads(UkCompany), ApplicantDetails.writes))
-        val res = await(Service.validate(testInternalId, testRegId, ApplicantSectionId, data))
+        mockGetAnswer[PartyType](testInternalId, testRegId, EligibilitySectionId, "partyType")(
+          Future.successful(Some(UkCompany))
+        )
+        val data = Json.toJson(validApplicantDetails)(
+          Format[ApplicantDetails](ApplicantDetails.reads(UkCompany), ApplicantDetails.writes)
+        )
+        val res  = await(Service.validate(testInternalId, testRegId, ApplicantSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is Attachments" must {
+    "the section is Attachments"               must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(Attachments(Some(EmailMethod)))
-        val res = await(Service.validate(testInternalId, testRegId, AttachmentsSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, AttachmentsSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is BankAccount" must {
+    "the section is BankAccount"               must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(testBankAccount)
-        val res = await(Service.validate(testInternalId, testRegId, BankAccountSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, BankAccountSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is Business" must {
+    "the section is Business"                  must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(testBusiness)
-        val res = await(Service.validate(testInternalId, testRegId, BusinessSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, BusinessSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is Eligibility Json" must {
+    "the section is Eligibility Json"          must {
       "return ValidSection for any valid json" in {
         val data = Json.obj()
-        val res = await(Service.validate(testInternalId, testRegId, EligibilityJsonSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, EligibilityJsonSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is Eligibility" must {
+    "the section is Eligibility"               must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(testEligibilitySubmissionData)
-        val res = await(Service.validate(testInternalId, testRegId, EligibilitySectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, EligibilitySectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
       "return InvalidSection when required fields is missing" in {
         val res = await(Service.validate(testInternalId, testRegId, EligibilitySectionId, Json.obj()))
 
-        res mustBe Left(InvalidSection(Seq("/partyType", "/threshold", "/registrationReason")))
+        res mustBe Left(InvalidSection(Seq("/registrationReason", "/threshold", "/partyType")))
       }
     }
-    "the section is FlatRateScheme" must {
+    "the section is FlatRateScheme"            must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(validFullFlatRateScheme)
-        val res = await(Service.validate(testInternalId, testRegId, FlatRateSchemeSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, FlatRateSchemeSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is VatApplication" must {
+    "the section is VatApplication"            must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(testVatApplicationDetails)
-        val res = await(Service.validate(testInternalId, testRegId, VatApplicationSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, VatApplicationSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
     }
-    "the section is Transactor" must {
+    "the section is Transactor"                must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(validTransactorDetails)
-        val res = await(Service.validate(testInternalId, testRegId, TransactorSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, TransactorSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
@@ -119,106 +121,110 @@ class SectionValidationServiceSpec extends VatRegSpec
     "the section is OtherBusinessInvolvements" must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(List(validFullOtherBusinessInvolvement))
-        val res = await(Service.validate(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
 
       "return InvalidSection when the data is invalid" in {
         val data = Json.toJson(List(Json.toJson("hasVrn" -> "notBoolean")))
-        val res = await(Service.validate(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, OtherBusinessInvolvementsSectionId, data))
 
         res mustBe Left(InvalidSection(List("(0)")))
       }
     }
-    "the section is Entities" must {
+    "the section is Entities"                  must {
       "return ValidSection when the data is valid" in {
-        val data = Json.toJson(List(Entity(
-          details = Some(testSoleTraderEntity),
-          partyType = Individual,
-          isLeadPartner = Some(true),
-          address = Some(testAddress),
-          email = Some(testEmail),
-          telephoneNumber = Some(testTelephone)
-        )))
-        val res = await(Service.validate(testInternalId, testRegId, EntitiesSectionId, data))
+        val data = Json.toJson(
+          List(
+            Entity(
+              details = Some(testSoleTraderEntity),
+              partyType = Individual,
+              isLeadPartner = Some(true),
+              address = Some(testAddress),
+              email = Some(testEmail),
+              telephoneNumber = Some(testTelephone)
+            )
+          )
+        )
+        val res  = await(Service.validate(testInternalId, testRegId, EntitiesSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
 
       "return InvalidSection when the data is invalid" in {
         val data = Json.toJson(List(Json.obj()))
-        val res = await(Service.validate(testInternalId, testRegId, EntitiesSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, EntitiesSectionId, data))
 
         res mustBe Left(InvalidSection(List("(0)/partyType")))
       }
     }
-    "the section is Status" must {
+    "the section is Status"                    must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(VatRegStatus.draft)
-        val res = await(Service.validate(testInternalId, testRegId, StatusSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, StatusSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
       "return InvalidSection when the data is invalid" in {
         val data = Json.obj()
-        val res = await(Service.validate(testInternalId, testRegId, StatusSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, StatusSectionId, data))
 
         res mustBe Left(InvalidSection(List("")))
       }
     }
-    "the section is InformationDeclaration" must {
+    "the section is InformationDeclaration"    must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(true)
-        val res = await(Service.validate(testInternalId, testRegId, InformationDeclarationSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, InformationDeclarationSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
       "return InvalidSection when the data is invalid" in {
         val data = Json.obj()
-        val res = await(Service.validate(testInternalId, testRegId, InformationDeclarationSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, InformationDeclarationSectionId, data))
 
         res mustBe Left(InvalidSection(List("")))
       }
     }
-    "the section is ApplicationReference" must {
+    "the section is ApplicationReference"      must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson("test")
-        val res = await(Service.validate(testInternalId, testRegId, ApplicationReferenceSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, ApplicationReferenceSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
       "return InvalidSection when the data is invalid" in {
         val data = Json.obj()
-        val res = await(Service.validate(testInternalId, testRegId, ApplicationReferenceSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, ApplicationReferenceSectionId, data))
 
         res mustBe Left(InvalidSection(List("")))
       }
     }
-    "the section is AcknowledgementReference" must {
+    "the section is AcknowledgementReference"  must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson("test")
-        val res = await(Service.validate(testInternalId, testRegId, AcknowledgementReferenceSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, AcknowledgementReferenceSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
       "return InvalidSection when the data is invalid" in {
         val data = Json.obj()
-        val res = await(Service.validate(testInternalId, testRegId, AcknowledgementReferenceSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, AcknowledgementReferenceSectionId, data))
 
         res mustBe Left(InvalidSection(List("")))
       }
     }
-    "the section is NrsSubmissionPayload" must {
+    "the section is NrsSubmissionPayload"      must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson("test")
-        val res = await(Service.validate(testInternalId, testRegId, NrsSubmissionPayloadSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, NrsSubmissionPayloadSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
       "return InvalidSection when the data is invalid" in {
         val data = Json.obj()
-        val res = await(Service.validate(testInternalId, testRegId, NrsSubmissionPayloadSectionId, data))
+        val res  = await(Service.validate(testInternalId, testRegId, NrsSubmissionPayloadSectionId, data))
 
         res mustBe Left(InvalidSection(List("")))
       }
@@ -229,36 +235,38 @@ class SectionValidationServiceSpec extends VatRegSpec
     "the section is OtherBusinessInvolvements" must {
       "return ValidSection when the data is valid" in {
         val data = Json.toJson(validFullOtherBusinessInvolvement)
-        val res = await(Service.validateIndex(OtherBusinessInvolvementsSectionId, data))
+        val res  = await(Service.validateIndex(OtherBusinessInvolvementsSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
 
       "return InvalidSection when the data is invalid" in {
         val data = Json.toJson("hasVrn" -> "notBoolean")
-        val res = await(Service.validateIndex(OtherBusinessInvolvementsSectionId, data))
+        val res  = await(Service.validateIndex(OtherBusinessInvolvementsSectionId, data))
 
         res mustBe Left(InvalidSection(List("")))
       }
     }
-    "the section is Entities" must {
+    "the section is Entities"                  must {
       "return ValidSection when the data is valid" in {
-        val data = Json.toJson(Entity(
-          details = Some(testSoleTraderEntity),
-          partyType = Individual,
-          isLeadPartner = Some(true),
-          address = Some(testAddress),
-          email = Some(testEmail),
-          telephoneNumber = Some(testTelephone)
-        ))
-        val res = await(Service.validateIndex(EntitiesSectionId, data))
+        val data = Json.toJson(
+          Entity(
+            details = Some(testSoleTraderEntity),
+            partyType = Individual,
+            isLeadPartner = Some(true),
+            address = Some(testAddress),
+            email = Some(testEmail),
+            telephoneNumber = Some(testTelephone)
+          )
+        )
+        val res  = await(Service.validateIndex(EntitiesSectionId, data))
 
         res mustBe Right(ValidSection(data))
       }
 
       "return InvalidSection when the data is invalid" in {
         val data = Json.obj()
-        val res = await(Service.validateIndex(EntitiesSectionId, data))
+        val res  = await(Service.validateIndex(EntitiesSectionId, data))
 
         res mustBe Left(InvalidSection(List("/partyType")))
       }

@@ -23,8 +23,7 @@ trait JsonUtilities {
   implicit class JsonUtilities(json: JsValue) {
 
     def getOptionalField[T](path: JsPath)(implicit r: Reads[T]): Option[T] =
-      path(json)
-        .headOption
+      path(json).headOption
         .map(_.result.as[T])
 
     def getField[T](path: JsPath)(implicit r: Reads[T]): T =
@@ -32,19 +31,21 @@ trait JsonUtilities {
         .getOrElse(throw new Exception(s"Could not parse JSON at path: ${path.toString()}"))
 
     def filterNullFields: JsValue = json match {
-      case JsObject(fieldSet) => JsObject(fieldSet.flatMap {
-        case (_, JsNull) => None
-        case (field, value) => Some((field, value.filterNullFields))
-      })
-      case obj => obj
+      case JsObject(fieldSet) =>
+        JsObject(fieldSet.flatMap {
+          case (_, JsNull)    => None
+          case (field, value) => Some((field, value.filterNullFields))
+        })
+      case obj                => obj
     }
 
     def filterEmptyArrays: JsValue = json match {
-      case JsObject(fieldSet) => JsObject(fieldSet.flatMap {
-        case (_, JsArray(array)) if array.isEmpty => None
-        case (field, value) => Some((field, value.filterEmptyArrays))
-      })
-      case obj => obj
+      case JsObject(fieldSet) =>
+        JsObject(fieldSet.flatMap {
+          case (_, JsArray(array)) if array.isEmpty => None
+          case (field, value)                       => Some((field, value.filterEmptyArrays))
+        })
+      case obj                => obj
     }
 
   }

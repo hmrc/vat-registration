@@ -22,13 +22,15 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class PersonalDetails(name: Name,
-                           nino: Option[String],
-                           trn: Option[String],
-                           arn: Option[String],
-                           identifiersMatch: Boolean,
-                           dateOfBirth: Option[LocalDate],
-                           score: Option[Int]) {
+case class PersonalDetails(
+  name: Name,
+  nino: Option[String],
+  trn: Option[String],
+  arn: Option[String],
+  identifiersMatch: Boolean,
+  dateOfBirth: Option[LocalDate],
+  score: Option[Int]
+) {
 
   def personalIdentifiers: List[CustomerId] =
     List(
@@ -38,14 +40,16 @@ case class PersonalDetails(name: Name,
           NinoIdType,
           if (identifiersMatch) IdVerified else IdVerificationFailed,
           date = dateOfBirth
-        )),
+        )
+      ),
       None,
       arn.map(arn =>
         CustomerId(
           arn,
           ArnIdType,
           IdVerified
-        ))
+        )
+      )
     ).flatten
 }
 
@@ -58,5 +62,5 @@ object PersonalDetails {
       (__ \ "identifiersMatch").formatWithDefault[Boolean](true) and
       (__ \ "dateOfBirth").formatNullable[LocalDate] and
       (__ \ "score").formatNullable[Int]
-    ) (PersonalDetails.apply, unlift(PersonalDetails.unapply))
+  )(PersonalDetails.apply, unlift(PersonalDetails.unapply))
 }

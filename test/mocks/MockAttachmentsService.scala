@@ -32,19 +32,23 @@ trait MockAttachmentsService extends MockitoSugar {
 
   val mockAttachmentService: AttachmentsService = mock[AttachmentsService]
 
-  def mockGetAttachmentList(internalId: String, regId: String)
-                           (response: Future[List[AttachmentType]]): OngoingStubbing[Future[List[AttachmentType]]] =
-    when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(internalId), ArgumentMatchers.eq(regId))(ArgumentMatchers.any[Request[_]]))
+  def mockGetAttachmentList(internalId: String, regId: String)(
+    response: Future[List[AttachmentType]]
+  ): OngoingStubbing[Future[List[AttachmentType]]] =
+    when(
+      mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(internalId), ArgumentMatchers.eq(regId))(
+        ArgumentMatchers.any[Request[_]]
+      )
+    )
       .thenReturn(response)
 
-  def mockAttachmentList(vatScheme: VatScheme)
-                        (response: List[AttachmentType]): OngoingStubbing[List[AttachmentType]] =
+  def mockAttachmentList(vatScheme: VatScheme)(response: List[AttachmentType]): OngoingStubbing[List[AttachmentType]] =
     when(mockAttachmentService.mandatoryAttachmentList(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 
-  def mockOptionalAttachmentList(vatScheme: VatScheme)
-                        (response: List[AttachmentType]): OngoingStubbing[List[AttachmentType]] =
+  def mockOptionalAttachmentList(
+    vatScheme: VatScheme
+  )(response: List[AttachmentType]): OngoingStubbing[List[AttachmentType]] =
     when(mockAttachmentService.optionalAttachmentList(ArgumentMatchers.eq(vatScheme)))
       .thenReturn(response)
 }
-

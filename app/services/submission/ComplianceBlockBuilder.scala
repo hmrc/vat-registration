@@ -26,18 +26,22 @@ import utils.LoggingUtils
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class ComplianceBlockBuilder @Inject()() extends LoggingUtils{
+class ComplianceBlockBuilder @Inject() () extends LoggingUtils {
 
   def buildComplianceBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
     vatScheme.business match {
-      case Some(business) => business.labourCompliance map (labourCompliance =>
-        jsonObject(
-          optional("numOfWorkersSupplied" -> labourCompliance.numOfWorkersSupplied),
-          optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
-          optional("supplyWorkers" -> labourCompliance.supplyWorkers)
-        ))
-      case _ =>
-        errorLog("[ComplianceBlockBuilder][buildComplianceBlock] - Couldn't build compliance block due to missing business data")
+      case Some(business) =>
+        business.labourCompliance map (labourCompliance =>
+          jsonObject(
+            optional("numOfWorkersSupplied"    -> labourCompliance.numOfWorkersSupplied),
+            optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
+            optional("supplyWorkers"           -> labourCompliance.supplyWorkers)
+          )
+        )
+      case _              =>
+        errorLog(
+          "[ComplianceBlockBuilder][buildComplianceBlock] - Couldn't build compliance block due to missing business data"
+        )
         throw new InternalServerException("Couldn't build compliance block due to missing business data")
     }
 

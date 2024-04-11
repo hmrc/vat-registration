@@ -46,7 +46,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       "additionalInformation" -> Json.obj(
         "customerStatus" -> "2"
       ),
-      "attachments" -> Json.obj(
+      "attachments"           -> Json.obj(
         "EORIrequested" -> true
       )
     )
@@ -56,11 +56,11 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       "additionalInformation" -> Json.obj(
         "customerStatus" -> "2"
       ),
-      "attachments" -> Json.obj(
-        "EORIrequested" -> true,
-        "VAT5L" -> Json.toJson[AttachmentMethod](Attached),
-        "attachment1614a" -> Json.toJson[AttachmentMethod](Attached),
-        "attachment1614h" -> Json.toJson[AttachmentMethod](Attached),
+      "attachments"           -> Json.obj(
+        "EORIrequested"         -> true,
+        "VAT5L"                 -> Json.toJson[AttachmentMethod](Attached),
+        "attachment1614a"       -> Json.toJson[AttachmentMethod](Attached),
+        "attachment1614h"       -> Json.toJson[AttachmentMethod](Attached),
         "landPropertyOtherDocs" -> Json.toJson[AttachmentMethod](Attached)
       )
     )
@@ -71,8 +71,8 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         "customerStatus" -> "2",
         "overseasTrader" -> true
       ),
-      "attachments" -> Json.obj(
-        "EORIrequested" -> true,
+      "attachments"           -> Json.obj(
+        "EORIrequested"    -> true,
         "identityEvidence" -> Json.toJson[AttachmentMethod](Post)
       )
     )
@@ -83,8 +83,8 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
         "customerStatus" -> "2",
         "overseasTrader" -> false
       ),
-      "attachments" -> Json.obj(
-        "EORIrequested" -> true,
+      "attachments"           -> Json.obj(
+        "EORIrequested"    -> true,
         "identityEvidence" -> Json.toJson[AttachmentMethod](Post)
       )
     )
@@ -93,9 +93,9 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
     Json.obj(
       "additionalInformation" -> Json.obj(
         "customerStatus" -> "2",
-        "welshLanguage" -> true
+        "welshLanguage"  -> true
       ),
-      "attachments" -> Json.obj()
+      "attachments"           -> Json.obj()
     )
 
   "buildAdminBlock" should {
@@ -141,7 +141,8 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
       "both NETP eligibility and vat application details data are in the database" in {
         val vatScheme = testVatScheme.copy(
-          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP, fixedEstablishmentInManOrUk = false)),
+          eligibilitySubmissionData =
+            Some(testEligibilitySubmissionData.copy(partyType = NETP, fixedEstablishmentInManOrUk = false)),
           vatApplication = Some(testVatApplicationDetails),
           attachments = Some(Attachments(Some(Post)))
         )
@@ -158,7 +159,9 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
       "user is Overseas with fixed establishment in UK/Man and Email attachment" in {
         val vatScheme = testVatScheme.copy(
-          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NonUkNonEstablished, fixedEstablishmentInManOrUk = true)),
+          eligibilitySubmissionData = Some(
+            testEligibilitySubmissionData.copy(partyType = NonUkNonEstablished, fixedEstablishmentInManOrUk = true)
+          ),
           vatApplication = Some(testVatApplicationDetails),
           attachments = Some(Attachments(Some(EmailMethod)))
         )
@@ -176,7 +179,11 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
 
     "throw an exception" when {
       "the eligibility data is missing from the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(ArgumentMatchers.any[Request[_]]))
+        when(
+          mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(
+            ArgumentMatchers.any[Request[_]]
+          )
+        )
           .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
@@ -191,7 +198,11 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       }
 
       "the vat application details data is missing from the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(ArgumentMatchers.any[Request[_]]))
+        when(
+          mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(
+            ArgumentMatchers.any[Request[_]]
+          )
+        )
           .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(
@@ -206,7 +217,11 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       }
 
       "there is no eligibility data or trading details data in the database" in {
-        when(mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(ArgumentMatchers.any[Request[_]]))
+        when(
+          mockAttachmentService.getAttachmentList(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId))(
+            ArgumentMatchers.any[Request[_]]
+          )
+        )
           .thenReturn(Future.successful(List[AttachmentType]()))
 
         val vatScheme = testVatScheme.copy(

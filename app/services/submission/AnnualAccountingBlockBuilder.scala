@@ -25,31 +25,34 @@ import utils.JsonUtils.{jsonObject, required}
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class AnnualAccountingBlockBuilder @Inject()() {
+class AnnualAccountingBlockBuilder @Inject() () {
 
   def buildAnnualAccountingBlock(vatScheme: VatScheme): Option[JsObject] =
     (vatScheme.vatApplication, vatScheme.eligibilitySubmissionData) match {
-      case (Some(vatApplication), Some(eligibilitySubmissionData)) if vatApplication.returnsFrequency.contains(Annual) =>
-        Some(jsonObject(
-          "submissionType" -> "1",
-          "customerRequest" -> vatApplication.annualAccountingDetails.map { details =>
-            jsonObject(
-              required("paymentMethod" -> details.paymentMethod),
-              "annualStagger" -> vatApplication.staggerStart,
-              required("paymentFrequency" -> details.paymentFrequency),
-              required("estimatedTurnover" -> vatApplication.turnoverEstimate),
-              "reqStartDate" -> {
-                eligibilitySubmissionData.registrationReason match {
-                  case Voluntary | SuppliesOutsideUk | IntendingTrader => vatApplication.startDate
-                  case BackwardLook => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
-                  case ForwardLook => Some(eligibilitySubmissionData.threshold.earliestDate)
-                  case NonUk => eligibilitySubmissionData.threshold.thresholdOverseas
-                  case TransferOfAGoingConcern => eligibilitySubmissionData.togcCole.map(_.dateOfTransfer)
+      case (Some(vatApplication), Some(eligibilitySubmissionData))
+          if vatApplication.returnsFrequency.contains(Annual) =>
+        Some(
+          jsonObject(
+            "submissionType"  -> "1",
+            "customerRequest" -> vatApplication.annualAccountingDetails.map { details =>
+              jsonObject(
+                required("paymentMethod"     -> details.paymentMethod),
+                "annualStagger" -> vatApplication.staggerStart,
+                required("paymentFrequency"  -> details.paymentFrequency),
+                required("estimatedTurnover" -> vatApplication.turnoverEstimate),
+                "reqStartDate"  -> {
+                  eligibilitySubmissionData.registrationReason match {
+                    case Voluntary | SuppliesOutsideUk | IntendingTrader => vatApplication.startDate
+                    case BackwardLook                                    => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
+                    case ForwardLook                                     => Some(eligibilitySubmissionData.threshold.earliestDate)
+                    case NonUk                                           => eligibilitySubmissionData.threshold.thresholdOverseas
+                    case TransferOfAGoingConcern                         => eligibilitySubmissionData.togcCole.map(_.dateOfTransfer)
+                  }
                 }
-              }
-            )
-          }
-        ))
+              )
+            }
+          )
+        )
       case _ => None
     }
 }

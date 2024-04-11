@@ -22,15 +22,17 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import utils.JsonUtilities
 
-case class ApplicantDetails(personalDetails: Option[PersonalDetails] = None,
-                            entity: Option[BusinessEntity] = None,
-                            currentAddress: Option[Address] = None,
-                            noPreviousAddress: Option[Boolean] = None,
-                            previousAddress: Option[Address] = None,
-                            contact: Contact = Contact(),
-                            changeOfName: FormerName = FormerName(),
-                            roleInTheBusiness: Option[RoleInTheBusiness] = None,
-                            otherRoleInTheBusiness: Option[String] = None)
+case class ApplicantDetails(
+  personalDetails: Option[PersonalDetails] = None,
+  entity: Option[BusinessEntity] = None,
+  currentAddress: Option[Address] = None,
+  noPreviousAddress: Option[Boolean] = None,
+  previousAddress: Option[Address] = None,
+  contact: Contact = Contact(),
+  changeOfName: FormerName = FormerName(),
+  roleInTheBusiness: Option[RoleInTheBusiness] = None,
+  otherRoleInTheBusiness: Option[String] = None
+)
 
 object ApplicantDetails extends JsonUtilities {
 
@@ -44,7 +46,7 @@ object ApplicantDetails extends JsonUtilities {
       (__ \ "changeOfName").readWithDefault[FormerName](FormerName()) and
       (__ \ "roleInTheBusiness").readNullable[RoleInTheBusiness] and
       (__ \ "otherRoleInTheBusiness").readNullable[String]
-    ) (ApplicantDetails.apply _)
+  )(ApplicantDetails.apply _)
 
   implicit val writes: Writes[ApplicantDetails] = (
     (__ \ "personalDetails").writeNullable[PersonalDetails] and
@@ -56,6 +58,6 @@ object ApplicantDetails extends JsonUtilities {
       (__ \ "changeOfName").write[FormerName] and
       (__ \ "roleInTheBusiness").writeNullable[RoleInTheBusiness] and
       (__ \ "otherRoleInTheBusiness").writeNullable[String]
-    ) (unlift(ApplicantDetails.unapply))
+  )(unlift(ApplicantDetails.unapply))
 
 }

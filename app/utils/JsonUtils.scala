@@ -20,7 +20,7 @@ import play.api.libs.json.{Format, JsObject, JsValue, Writes}
 
 object JsonUtils {
 
-  case class JsonField private(json: Option[(String, JsValue)])
+  case class JsonField private (json: Option[(String, JsValue)])
 
   def jsonObject(fields: JsonField*): JsObject =
     JsObject(fields.flatMap(_.json))
@@ -32,7 +32,7 @@ object JsonUtils {
     field match {
       case (key, Some(value)) =>
         JsonField(Some(field._1 -> writer.writes(value)))
-      case (key, None) =>
+      case (key, None)        =>
         JsonField(None)
     }
 
@@ -40,22 +40,27 @@ object JsonUtils {
     field match {
       case (_, Some(value)) =>
         JsonField(Some(field._1 -> writer.writes(value)))
-      case (_, None) =>
+      case (_, None)        =>
         throw new IllegalStateException(s"Field '${field._1}' was missing but is required")
     }
 
-  def optionalRequiredIf[T](condition: => Boolean)(field: (String, Option[T]))(implicit writer: Writes[T]): JsonField = {
-    if (condition) JsonField(Some(field._1 -> writer.writes(field._2.getOrElse(throw new IllegalStateException(s"Field '${field._1}' was missing but is required")))))
+  def optionalRequiredIf[T](condition: => Boolean)(field: (String, Option[T]))(implicit writer: Writes[T]): JsonField =
+    if (condition)
+      JsonField(
+        Some(
+          field._1 -> writer.writes(
+            field._2.getOrElse(throw new IllegalStateException(s"Field '${field._1}' was missing but is required"))
+          )
+        )
+      )
     else JsonField(None)
-  }
 
-  def conditional[T](condition: => Boolean)(field: (String, T))(implicit writer: Writes[T]): JsonField = {
+  def conditional[T](condition: => Boolean)(field: (String, T))(implicit writer: Writes[T]): JsonField =
     if (condition) JsonField(Some(field._1 -> writer.writes(field._2)))
     else JsonField(None)
-  }
 
   def canParseTo[A](implicit fmt: Format[A]): PartialFunction[JsValue, A] = new PartialFunction[JsValue, A] {
-    def apply(js: JsValue): A = js.validate[A].get
+    def apply(js: JsValue): A             = js.validate[A].get
     def isDefinedAt(js: JsValue): Boolean = js.validate[A].isSuccess
   }
 }

@@ -8,12 +8,12 @@ This code is open source software licensed under the [Apache 2.0 License]("http:
 
 ## Prior to committing
 ```
-sbt clean coverage test it:test scalastyle coverageReport
+sbt clean coverage test it/test scalastyle coverageReport
 ```
 Alternatively, create an alias for the above line, and get in the habit of running it before checking in:
 
 ```bash
-alias precommit="sbt clean coverage test it:test scalastyle coverageReport" 
+alias precommit="sbt clean coverage test it/test scalastyle coverageReport" 
 ```
 
 ### NOTE: Only commit if test coverage report is above or equal to 90%, scalastyle warnings are corrected and tests green.
@@ -22,13 +22,13 @@ alias precommit="sbt clean coverage test it:test scalastyle coverageReport"
 User service manager to run all services required by VAT Registration backend:
 
 ```bash
-sm --start VAT_REG_ALL -f
+sm2 --start VAT_REG_ALL
 ```
 Note this will start the VAT registration backend itself too, as it's included in the profile.
 
 Alternatively, to run the service with local changes, `cd` to cloned directory and execute following:
 
-- `sm --stop VAT_REG`
+- `sm2 --stop VAT_REG`
 - `/run.sh`
 
 The service will come to life  @

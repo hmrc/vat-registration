@@ -28,9 +28,9 @@ import javax.inject.Singleton
 
 // scalastyle:off
 @Singleton
-class DeclarationAuditBlockBuilder extends LoggingUtils{
+class DeclarationAuditBlockBuilder extends LoggingUtils {
 
-  def buildDeclarationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject = {
+  def buildDeclarationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     (vatScheme.applicantDetails, vatScheme.confirmInformationDeclaration, vatScheme.transactorDetails) match {
       case (Some(applicantDetails), Some(declaration), optTransactorDetails) =>
         jsonObject(
@@ -43,9 +43,11 @@ class DeclarationAuditBlockBuilder extends LoggingUtils{
                 applicantDetails.roleInTheBusiness.map(_.toDeclarationCapacity)
               }
             }.map(_.toString)),
-            optionalRequiredIf(optTransactorDetails.exists(_.declarationCapacity.exists(_.role.equals(Other))) ||
-              (optTransactorDetails.isEmpty && applicantDetails.roleInTheBusiness.contains(Other)))(
-              "capacityOther" -> {
+            optionalRequiredIf(
+              optTransactorDetails.exists(_.declarationCapacity.exists(_.role.equals(Other))) ||
+                (optTransactorDetails.isEmpty && applicantDetails.roleInTheBusiness.contains(Other))
+            )(
+              "capacityOther"              -> {
                 if (optTransactorDetails.isDefined) {
                   optTransactorDetails.flatMap(_.declarationCapacity.flatMap(_.otherRole))
                 } else {
@@ -54,25 +56,25 @@ class DeclarationAuditBlockBuilder extends LoggingUtils{
               }
             )
           ),
-          "applicant" -> jsonObject(
-            required("roleInBusiness" -> applicantDetails.roleInTheBusiness.map(_.toString)),
+          "applicant"          -> jsonObject(
+            required("roleInBusiness"  -> applicantDetails.roleInTheBusiness.map(_.toString)),
             optionalRequiredIf(applicantDetails.roleInTheBusiness.contains(Other))(
-              "otherRole" -> applicantDetails.otherRoleInTheBusiness
+              "otherRole"              -> applicantDetails.otherRoleInTheBusiness
             ),
-            required("name" -> applicantDetails.personalDetails.map(details => formatName(details.name))),
+            required("name"            -> applicantDetails.personalDetails.map(details => formatName(details.name))),
             optionalRequiredIf(applicantDetails.changeOfName.hasFormerName.contains(true))(
-              "previousName" -> formatFormerName(applicantDetails.changeOfName)
+              "previousName"           -> formatFormerName(applicantDetails.changeOfName)
             ),
-            "currentAddress" -> applicantDetails.currentAddress.map(formatAddress),
+            "currentAddress"       -> applicantDetails.currentAddress.map(formatAddress),
             optional("previousAddress" -> applicantDetails.previousAddress.map(formatAddress)),
             optionalRequiredIf(applicantDetails.personalDetails.exists(_.arn.isEmpty))(
-              "dateOfBirth" -> applicantDetails.personalDetails.flatMap(_.dateOfBirth)
+              "dateOfBirth"            -> applicantDetails.personalDetails.flatMap(_.dateOfBirth)
             ),
             "communicationDetails" -> jsonObject(
               optional("emailAddress" -> applicantDetails.contact.email),
-              optional("telephone" -> applicantDetails.contact.tel)
+              optional("telephone"    -> applicantDetails.contact.tel)
             ),
-            "identifiers" -> jsonObject(
+            "identifiers"          -> jsonObject(
               optional("nationalInsuranceNumber" -> applicantDetails.personalDetails.map(_.nino))
             )
           ),
@@ -80,49 +82,48 @@ class DeclarationAuditBlockBuilder extends LoggingUtils{
             jsonObject(
               required("individualName" -> transactorDetails.personalDetails.map(details => formatName(details.name))),
               optionalRequiredIf(transactorDetails.isPartOfOrganisation.contains(true))(
-                "organisationName" -> transactorDetails.organisationName
+                "organisationName"      -> transactorDetails.organisationName
               ),
               "commDetails" -> jsonObject(
                 "telephone" -> transactorDetails.telephone,
-                "email" -> transactorDetails.email
+                "email"     -> transactorDetails.email
               ),
               optionalRequiredIf(transactorDetails.personalDetails.exists(_.arn.isEmpty))(
-                "address" -> transactorDetails.address.map(formatAddress)
+                "address"               -> transactorDetails.address.map(formatAddress)
               ),
               optionalRequiredIf(transactorDetails.personalDetails.exists(_.personalIdentifiers.nonEmpty))(
-                "identification" -> transactorDetails.personalDetails.map(_.personalIdentifiers)
+                "identification"        -> transactorDetails.personalDetails.map(_.personalIdentifiers)
               )
             )
           })
         )
-      case _ =>
-        errorLog("[DeclarationAuditBlockBuilder][buildDeclarationBlock] - Could not construct declaration block because the application details and declaration are missing")
+      case _                                                                 =>
+        errorLog(
+          "[DeclarationAuditBlockBuilder][buildDeclarationBlock] - Could not construct declaration block because the application details and declaration are missing"
+        )
         throw new InternalServerException(
           s"[DeclarationBlockBuilder] Could not construct declaration block because the following are missing:" +
             s"ApplicantDetails found - ${vatScheme.applicantDetails.isDefined}, " +
             s"Declaration found - ${vatScheme.confirmInformationDeclaration.isDefined}."
         )
     }
-  }
 
   private def formatName(name: Name): JsObject = jsonObject(
-    optional("firstName" -> name.first),
+    optional("firstName"  -> name.first),
     optional("middleName" -> name.middle),
     "lastName" -> name.last
   )
 
   private def formatFormerName(formerName: FormerName): Option[JsObject] =
-    formerName.name.map(name =>
-      formatName(name) ++ jsonObject(optional("nameChangeDate" -> formerName.change))
-    )
+    formerName.name.map(name => formatName(name) ++ jsonObject(optional("nameChangeDate" -> formerName.change)))
 
   private def formatAddress(address: Address): JsObject = jsonObject(
     "line1" -> address.line1,
-    optional("line2" -> address.line2),
-    optional("line3" -> address.line3),
-    optional("line4" -> address.line4),
-    optional("line5" -> address.line5),
-    optional("postcode" -> address.postcode),
+    optional("line2"       -> address.line2),
+    optional("line3"       -> address.line3),
+    optional("line4"       -> address.line4),
+    optional("line5"       -> address.line5),
+    optional("postcode"    -> address.postcode),
     optional("countryCode" -> address.country.flatMap(_.code))
   )
 

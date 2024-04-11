@@ -22,8 +22,8 @@ import play.api.libs.json.{JsObject, Json}
 
 class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
 
-  val annualAccountingAuditBlockJson: JsObject = Json.parse(
-    s"""
+  val annualAccountingAuditBlockJson: JsObject = Json
+    .parse(s"""
       {"submissionType":"1",
        |"customerRequest":{
        |   "paymentMethod":"01",
@@ -33,14 +33,18 @@ class AnnualAccountingAuditBlockBuilderSpec extends VatRegSpec with VatRegistrat
        |   "reqStartDate":"2020-10-07"
        |   }
        |}
-       |""".stripMargin).as[JsObject]
+       |""".stripMargin)
+    .as[JsObject]
 
   object TestBuilder extends AnnualAccountingAuditBlockBuilder
 
   "buildAnnualAccountingBlock" should {
     "return the correct json" when {
       "the applicant wants to join AAS and all data is provided" in {
-        val testScheme = testVatScheme.copy(vatApplication = Some(validAASApplicationDeatils), eligibilitySubmissionData = Some(testEligibilitySubmissionData))
+        val testScheme = testVatScheme.copy(
+          vatApplication = Some(validAASApplicationDeatils),
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData)
+        )
 
         val res = TestBuilder.buildAnnualAccountingAuditBlock(testScheme)
 

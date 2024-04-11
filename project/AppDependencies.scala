@@ -17,21 +17,23 @@
 import sbt._
 
 object AppDependencies {
-  def apply(): Seq[ModuleID] = CompileDependencies() ++ UnitTestDependencies() ++ IntegrationTestDependencies()
+  def apply(): Seq[ModuleID] = CompileDependencies() ++ UnitTestDependencies()
+
+  val it: Seq[ModuleID] = Seq()
+
 }
 
 object CompileDependencies {
-  val domainVersion = "8.1.0-play-28"
-  val bootstrapVersion = "7.12.0"
-  val hmrcMongoVersion = "0.74.0"
+  val domainVersion = "9.0.0"
+  val bootstrapVersion = "8.5.0"
+  val hmrcMongoVersion = "1.8.0"
   val catsVersion = "2.8.0"
-
   val flexmarkVersion = "0.36.8"
 
-  val compile = Seq(
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28" % hmrcMongoVersion,
-    "uk.gov.hmrc" %% "bootstrap-backend-play-28" % bootstrapVersion,
-    "uk.gov.hmrc" %% "domain" % domainVersion,
+  val compile: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30" % hmrcMongoVersion,
+    "uk.gov.hmrc" %% "bootstrap-backend-play-30" % bootstrapVersion,
+    "uk.gov.hmrc" %% "domain-play-30" % domainVersion,
     "org.typelevel" %% "cats-core" % catsVersion,
     "org.openapi4j" % "openapi-operation-validator" % "1.0.7",
     "org.openapi4j" % "openapi-parser" % "1.0.7"
@@ -43,41 +45,25 @@ object CompileDependencies {
 object UnitTestDependencies extends CommonTestDependencies {
   override val scope: Configuration = Test
 
-  val mockitoVersion = "4.8.1"
-
-  override val testDependencies: Seq[ModuleID] = Seq(
+  override val test: Seq[ModuleID] = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
     "org.scoverage" %% "scalac-scoverage-runtime" % scoverageVersion % scope,
     "org.mockito" % "mockito-core" % mockitoVersion % scope,
     "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % "test",
-    "com.miguno.akka" %% "akka-mock-scheduler" % "0.5.5" % scope,
+    "com.github.pjfanning" %% "pekko-mock-scheduler" % "0.6.0" % scope,
     "com.vladsch.flexmark" % "flexmark-all" % flexmarkVersion % scope,
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.14.0" % scope
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.14.0" % scope,
+    "uk.gov.hmrc" %% "bootstrap-test-play-30" % "8.5.0" % scope
   )
 
-  def apply(): Seq[ModuleID] = testDependencies
-}
-
-object IntegrationTestDependencies extends CommonTestDependencies {
-  override val scope: Configuration = IntegrationTest
-
-  val wireMockVersion = "2.35.0"
-
-  override val testDependencies: Seq[ModuleID] = Seq(
-    "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
-    "org.scoverage" %% "scalac-scoverage-runtime" % scoverageVersion % scope,
-    "com.github.tomakehurst" % "wiremock-jre8" % wireMockVersion % scope,
-    "com.vladsch.flexmark" % "flexmark-all" % flexmarkVersion % scope, // Scalatest doesn't currently work with the latest Flexmark
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.14.0" % scope
-  )
-
-  def apply(): Seq[ModuleID] = testDependencies
+  def apply(): Seq[ModuleID] = test
 }
 
 trait CommonTestDependencies {
-  val scalaTestPlusVersion = "5.1.0"
-  val scoverageVersion = "1.4.1"
+  val scalaTestPlusVersion = "7.0.1"
+  val scoverageVersion = "2.1.0"
   val flexmarkVersion = "0.36.8"
+  val mockitoVersion = "4.8.1"
   val scope: Configuration
-  val testDependencies: Seq[ModuleID]
+  val test: Seq[ModuleID]
 }

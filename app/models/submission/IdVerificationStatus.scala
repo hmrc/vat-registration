@@ -26,22 +26,23 @@ case object IdUnverifiable extends IdVerificationStatus
 
 case object IdVerificationFailed extends IdVerificationStatus
 
-
 object IdVerificationStatus {
 
   val stati: Map[IdVerificationStatus, String] = Map(
-    IdVerified -> "1",
-    IdUnverifiable -> "2",
+    IdVerified           -> "1",
+    IdUnverifiable       -> "2",
     IdVerificationFailed -> "3"
   )
 
   val inverseStati = stati.map(_.swap)
 
-  def fromString(value: String): IdVerificationStatus = inverseStati(value)
+  def fromString(value: String): IdVerificationStatus   = inverseStati(value)
   def toJsString(value: IdVerificationStatus): JsString = JsString(stati(value))
 
-  implicit val writes = Writes[IdVerificationStatus] { status => toJsString(status) }
-  implicit val reads = Reads[IdVerificationStatus] { status => status.validate[String] map fromString }
-  implicit val format = Format[IdVerificationStatus](reads, writes)
+  implicit val writes: Writes[IdVerificationStatus] = Writes[IdVerificationStatus](status => toJsString(status))
+  implicit val reads: Reads[IdVerificationStatus]   = Reads[IdVerificationStatus] { status =>
+    status.validate[String] map fromString
+  }
+  implicit val format: Format[IdVerificationStatus] = Format[IdVerificationStatus](reads, writes)
 
 }

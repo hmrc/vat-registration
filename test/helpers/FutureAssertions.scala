@@ -16,7 +16,7 @@
 
 package helpers
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import cats.data.{EitherT, OptionT}
 import org.scalatest.Assertion
 import org.scalatest.concurrent.ScalaFutures
@@ -57,7 +57,6 @@ trait FutureAssertions extends ScalaFutures {
     def failedWith(e: Exception): Assertion = whenReady(ot.value.failed)(_ mustBe e)
 
   }
-
 
   implicit class EitherTReturns[L, R](et: EitherT[Future, L, R]) {
 

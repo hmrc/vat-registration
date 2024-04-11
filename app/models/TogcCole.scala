@@ -21,19 +21,21 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class TogcCole(dateOfTransfer: LocalDate,
-                    previousBusinessName: String,
-                    vatRegistrationNumber: String,
-                    wantToKeepVatNumber: Boolean,
-                    agreedWithTermsForKeepingVat: Option[Boolean])
+case class TogcCole(
+  dateOfTransfer: LocalDate,
+  previousBusinessName: String,
+  vatRegistrationNumber: String,
+  wantToKeepVatNumber: Boolean,
+  agreedWithTermsForKeepingVat: Option[Boolean]
+)
 
 object TogcCole {
-  implicit val format: Format[TogcCole] = Json.format[TogcCole]
+  implicit val format: Format[TogcCole]         = Json.format[TogcCole]
   val eligibilityDataJsonReads: Reads[TogcCole] = (
     (__ \ "dateOfBusinessTransfer" \ "date").read[LocalDate] and
-    (__ \ "previousBusinessName").read[String] and
-    (__ \ "vatNumber").read[String] and
-    (__ \ "keepOldVrn").read[Boolean] and
-    (__ \ "termsAndConditions").readNullable[Boolean]
+      (__ \ "previousBusinessName").read[String] and
+      (__ \ "vatNumber").read[String] and
+      (__ \ "keepOldVrn").read[Boolean] and
+      (__ \ "termsAndConditions").readNullable[Boolean]
   )(TogcCole.apply _)
 }

@@ -31,36 +31,49 @@ import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
-class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository with MockUpscanMongoRepository {
+class AttachmentsServiceSpec
+    extends VatRegSpec
+    with VatRegistrationFixture
+    with MockVatSchemeRepository
+    with MockUpscanMongoRepository {
 
   object Service extends AttachmentsService(mockVatSchemeRepository, mockUpscanMongoRepository)
 
   implicit val request: Request[_] = FakeRequest()
 
-  val attachmentsKey = "attachments"
-  val testUnverifiedUserVatScheme = testFullVatScheme.copy(
+  val attachmentsKey                    = "attachments"
+  val testUnverifiedUserVatScheme       = testFullVatScheme.copy(
     applicantDetails = Some(unverifiedUserApplicantDetails)
   )
   val testUnverifiedTransactorVatScheme = testFullVatScheme.copy(
-    transactorDetails = Some(validTransactorDetails.copy(
-      personalDetails = validTransactorDetails.personalDetails.map(_.copy(
-        identifiersMatch = false
-      ))
-    )),
-    eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-      isTransactor = true
-    ))
+    transactorDetails = Some(
+      validTransactorDetails.copy(
+        personalDetails = validTransactorDetails.personalDetails.map(
+          _.copy(
+            identifiersMatch = false
+          )
+        )
+      )
+    ),
+    eligibilitySubmissionData = Some(
+      testEligibilitySubmissionData.copy(
+        isTransactor = true
+      )
+    )
   )
-  val partnershipEligibilityData = testEligibilitySubmissionData.copy(partyType = Partnership)
-  val testPartnershipVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(partnershipEligibilityData))
-  val llpEligibilityData = testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)
-  val testLlpVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(llpEligibilityData))
-  val vatGroupEligibilityData = testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)
-  val testVatGroupVatScheme = testVatScheme.copy(eligibilitySubmissionData = Some(vatGroupEligibilityData))
-  val testLnpVatScheme = testVatScheme.copy(business = Some(testBusiness.copy(hasLandAndProperty = Some(true))))
-  val test1614aVatScheme = testVatScheme.copy(attachments = Some(Attachments(method = Some(Attached), supplyVat1614a = Some(true))))
-  val test1614hVatScheme = testVatScheme.copy(attachments = Some(Attachments(method = Some(Attached), supplyVat1614h = Some(true))))
-  val testSchemeWithTaxRepresentative = testVatScheme.copy(vatApplication = Some(testVatApplicationDetails.copy(hasTaxRepresentative = Some(true))))
+  val partnershipEligibilityData        = testEligibilitySubmissionData.copy(partyType = Partnership)
+  val testPartnershipVatScheme          = testVatScheme.copy(eligibilitySubmissionData = Some(partnershipEligibilityData))
+  val llpEligibilityData                = testEligibilitySubmissionData.copy(partyType = LtdLiabilityPartnership)
+  val testLlpVatScheme                  = testVatScheme.copy(eligibilitySubmissionData = Some(llpEligibilityData))
+  val vatGroupEligibilityData           = testEligibilitySubmissionData.copy(registrationReason = GroupRegistration)
+  val testVatGroupVatScheme             = testVatScheme.copy(eligibilitySubmissionData = Some(vatGroupEligibilityData))
+  val testLnpVatScheme                  = testVatScheme.copy(business = Some(testBusiness.copy(hasLandAndProperty = Some(true))))
+  val test1614aVatScheme                =
+    testVatScheme.copy(attachments = Some(Attachments(method = Some(Attached), supplyVat1614a = Some(true))))
+  val test1614hVatScheme                =
+    testVatScheme.copy(attachments = Some(Attachments(method = Some(Attached), supplyVat1614h = Some(true))))
+  val testSchemeWithTaxRepresentative   =
+    testVatScheme.copy(vatApplication = Some(testVatApplicationDetails.copy(hasTaxRepresentative = Some(true))))
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -96,9 +109,13 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
       }
 
       "return VAT2 in the attachment list if additional partners documents requested" in {
-        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-          testPartnershipVatScheme.copy(attachments = Some(Attachments(additionalPartnersDocuments = Some(true))))
-        )))
+        mockGetRegistration(testInternalId, testRegId)(
+          Future.successful(
+            Some(
+              testPartnershipVatScheme.copy(attachments = Some(Attachments(additionalPartnersDocuments = Some(true))))
+            )
+          )
+        )
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
@@ -106,9 +123,13 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
       }
 
       "not return VAT2 in the attachment list if no additional partners documents required" in {
-        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-          testPartnershipVatScheme.copy(attachments = Some(Attachments(additionalPartnersDocuments = Some(false))))
-        )))
+        mockGetRegistration(testInternalId, testRegId)(
+          Future.successful(
+            Some(
+              testPartnershipVatScheme.copy(attachments = Some(Attachments(additionalPartnersDocuments = Some(false))))
+            )
+          )
+        )
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
@@ -147,9 +168,13 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
       }
 
       "return an empty list after clearing down old upscan references and attachment answers" in {
-        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-          testVatScheme.copy(attachments = Some(Attachments(Some(Attached))))
-        )))
+        mockGetRegistration(testInternalId, testRegId)(
+          Future.successful(
+            Some(
+              testVatScheme.copy(attachments = Some(Attachments(Some(Attached))))
+            )
+          )
+        )
         mockDeleteSection(testInternalId, testRegId, AttachmentsSectionId.repoKey)(response = true)
         mockDeleteAllUpscanDetails(testRegId)(Future.successful(true))
 
@@ -157,25 +182,40 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         res mustBe Nil
         verify(mockVatSchemeRepository, Mockito.times(1))
-          .deleteSection(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(AttachmentsSectionId.repoKey))(ArgumentMatchers.any[Request[_]])
+          .deleteSection(
+            ArgumentMatchers.eq(testInternalId),
+            ArgumentMatchers.eq(testRegId),
+            ArgumentMatchers.eq(AttachmentsSectionId.repoKey)
+          )(ArgumentMatchers.any[Request[_]])
         verify(mockUpscanMongoRepository, Mockito.times(1))
           .deleteAllUpscanDetails(ArgumentMatchers.eq(testRegId))
       }
 
       "return an empty list after clearing down old upscan references and attachment answers except the VAT2 flag" in {
-        val oldAttachmentsInfo = Attachments(Some(Attached), Some(true), Some(false), Some(true), Some(false))
+        val oldAttachmentsInfo     = Attachments(Some(Attached), Some(true), Some(false), Some(true), Some(false))
         val clearedAttachmentsInfo = Attachments(additionalPartnersDocuments = Some(false))
-        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(
-          testVatScheme.copy(attachments = Some(oldAttachmentsInfo))
-        )))
-        mockUpsertSection(testInternalId, testRegId, AttachmentsSectionId.repoKey, clearedAttachmentsInfo)(Some(clearedAttachmentsInfo))
+        mockGetRegistration(testInternalId, testRegId)(
+          Future.successful(
+            Some(
+              testVatScheme.copy(attachments = Some(oldAttachmentsInfo))
+            )
+          )
+        )
+        mockUpsertSection(testInternalId, testRegId, AttachmentsSectionId.repoKey, clearedAttachmentsInfo)(
+          Some(clearedAttachmentsInfo)
+        )
         mockDeleteAllUpscanDetails(testRegId)(Future.successful(true))
 
         val res = await(Service.getAttachmentList(testInternalId, testRegId))
 
         res mustBe Nil
         verify(mockVatSchemeRepository, Mockito.times(1))
-          .upsertSection(ArgumentMatchers.eq(testInternalId), ArgumentMatchers.eq(testRegId), ArgumentMatchers.eq(AttachmentsSectionId.repoKey), ArgumentMatchers.eq(clearedAttachmentsInfo))(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])
+          .upsertSection(
+            ArgumentMatchers.eq(testInternalId),
+            ArgumentMatchers.eq(testRegId),
+            ArgumentMatchers.eq(AttachmentsSectionId.repoKey),
+            ArgumentMatchers.eq(clearedAttachmentsInfo)
+          )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])
         verify(mockUpscanMongoRepository, Mockito.times(1))
           .deleteAllUpscanDetails(ArgumentMatchers.eq(testRegId))
       }
@@ -213,10 +253,12 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
       "the user has some complete upscan details" in {
         mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testUnverifiedUserVatScheme)))
         mockGetAllUpscanDetails(testRegId)(
-          Future.successful(List(
-            testUpscanDetails(PrimaryIdentityEvidence),
-            testUpscanDetails(ExtraIdentityEvidence)
-          ))
+          Future.successful(
+            List(
+              testUpscanDetails(PrimaryIdentityEvidence),
+              testUpscanDetails(ExtraIdentityEvidence)
+            )
+          )
         )
 
         val res = await(Service.getIncompleteAttachments(testInternalId, testRegId))
@@ -232,16 +274,22 @@ class AttachmentsServiceSpec extends VatRegSpec with VatRegistrationFixture with
 
         val res = await(Service.getIncompleteAttachments(testInternalId, testRegId))
 
-        res mustBe List(PrimaryTransactorIdentityEvidence, ExtraTransactorIdentityEvidence, ExtraTransactorIdentityEvidence)
+        res mustBe List(
+          PrimaryTransactorIdentityEvidence,
+          ExtraTransactorIdentityEvidence,
+          ExtraTransactorIdentityEvidence
+        )
       }
 
       "the user has some complete upscan details" in {
         mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testUnverifiedTransactorVatScheme)))
         mockGetAllUpscanDetails(testRegId)(
-          Future.successful(List(
-            testUpscanDetails(PrimaryTransactorIdentityEvidence),
-            testUpscanDetails(ExtraTransactorIdentityEvidence)
-          ))
+          Future.successful(
+            List(
+              testUpscanDetails(PrimaryTransactorIdentityEvidence),
+              testUpscanDetails(ExtraTransactorIdentityEvidence)
+            )
+          )
         )
 
         val res = await(Service.getIncompleteAttachments(testInternalId, testRegId))

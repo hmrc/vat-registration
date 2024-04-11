@@ -25,22 +25,22 @@ case object Email extends ContactPreference
 case object Letter extends ContactPreference
 
 object ContactPreference {
-  val email = "Email"
+  val email  = "Email"
   val letter = "Letter"
 
   implicit val reads: Reads[ContactPreference] = Reads[ContactPreference] {
-    case JsString(`email`) => JsSuccess(Email)
+    case JsString(`email`)  => JsSuccess(Email)
     case JsString(`letter`) => JsSuccess(Letter)
-    case _ => JsError("Could not parse contact preference")
+    case _                  => JsError("Could not parse contact preference")
   }
 
   implicit val writes: Writes[ContactPreference] = Writes[ContactPreference] {
-    case Email => JsString(email)
+    case Email  => JsString(email)
     case Letter => JsString(letter)
   }
 
   implicit val formats: Format[ContactPreference] = Format(reads, writes)
 
   val electronic = "ZEL"
-  val paper = "P01"
+  val paper      = "P01"
 }

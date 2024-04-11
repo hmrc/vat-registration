@@ -18,8 +18,7 @@ package models.api.vatapplication
 
 import play.api.libs.json.{Format, Json}
 
-case class AASDetails(paymentMethod: Option[PaymentMethod],
-                      paymentFrequency: Option[PaymentFrequency])
+case class AASDetails(paymentMethod: Option[PaymentMethod], paymentFrequency: Option[PaymentFrequency])
 
 object AASDetails {
   implicit val format: Format[AASDetails] = Json.format[AASDetails]

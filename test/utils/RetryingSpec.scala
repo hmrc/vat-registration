@@ -16,7 +16,7 @@
 
 package utils
 
-import akka.actor.{ActorSystem, Scheduler}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import com.google.common.base.Stopwatch
 import helpers.VatRegSpec
 import play.api.inject.bind
@@ -133,7 +133,8 @@ class RetryingSpec extends VatRegSpec {
 
         await(
           retrying
-            .retry[String](List(delay), !_.isSuccess)(succeedAfter(1)))(delay * 2) mustBe s"Attempt 1"
+            .retry[String](List(delay), !_.isSuccess)(succeedAfter(1))
+        )(delay * 2) mustBe s"Attempt 1"
 
         stopwatch.stop()
         stopwatch.elapsed(TimeUnit.MILLISECONDS) mustBe >(delay.toMillis)
@@ -145,7 +146,8 @@ class RetryingSpec extends VatRegSpec {
 
         await(
           retrying
-            .retry[String](List(delay), !_.isSuccess)(succeedAfter(0)))(delay * 2) mustBe s"Attempt 0"
+            .retry[String](List(delay), !_.isSuccess)(succeedAfter(0))
+        )(delay * 2) mustBe s"Attempt 0"
 
         stopwatch.stop()
         stopwatch.elapsed(TimeUnit.MILLISECONDS) mustBe <(delay.toMillis)
@@ -155,7 +157,15 @@ class RetryingSpec extends VatRegSpec {
     "getting fibonacci delays" must {
       "return fibonacci values" in {
         Retrying
-          .fibonacciDelays(1.second, 7) mustBe Seq(1.second, 1.second, 2.seconds, 3.seconds, 5.seconds, 8.seconds, 13.seconds)
+          .fibonacciDelays(1.second, 7) mustBe Seq(
+          1.second,
+          1.second,
+          2.seconds,
+          3.seconds,
+          5.seconds,
+          8.seconds,
+          13.seconds
+        )
       }
 
       "must allow to be scaled by a factor" in {
@@ -164,7 +174,8 @@ class RetryingSpec extends VatRegSpec {
           500.milliseconds,
           1000.milliseconds,
           1500.milliseconds,
-          2500.milliseconds)
+          2500.milliseconds
+        )
       }
     }
   }

@@ -19,21 +19,19 @@ package models.api
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class Name(first: Option[String],
-                middle: Option[String],
-                last: String)
+case class Name(first: Option[String], middle: Option[String], last: String)
 
 object Name {
   implicit val format: Format[Name] = (
     (__ \ "first").formatNullable[String] and
-    (__ \ "middle").formatNullable[String] and
-    (__ \ "last").format[String]
+      (__ \ "middle").formatNullable[String] and
+      (__ \ "last").format[String]
   )(Name.apply, unlift(Name.unapply))
 
   val auditWrites: Format[Name] = (
     (__ \ "firstName").formatNullable[String] and
-    (__ \ "middleName").formatNullable[String] and
-    (__ \ "lastName").format[String]
+      (__ \ "middleName").formatNullable[String] and
+      (__ \ "lastName").format[String]
   )(Name.apply, unlift(Name.unapply))
 
 }

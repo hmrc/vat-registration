@@ -24,40 +24,42 @@ import play.api.mvc.Request
 import play.api.test.FakeRequest
 import services.submission.buildermocks._
 
-class SubmissionPayloadBuilderSpec extends VatRegSpec
-  with VatRegistrationFixture
-  with VatSubmissionFixture
-  with MockAdminBlockBuilder
-  with MockCustomerIdentificationBlockBuilder
-  with MockContactBlockBuilder
-  with MockPeriodsBlockBuilder
-  with MockBankDetailsBlockBuilder
-  with MockComplianceBlockBuilder
-  with MockSubscriptionBlockBuilder
-  with MockDeclarationBlockBuilder
-  with MockAnnualAccountingBlockBuilder
-  with MockEntitiesBlockBuilder {
+class SubmissionPayloadBuilderSpec
+    extends VatRegSpec
+    with VatRegistrationFixture
+    with VatSubmissionFixture
+    with MockAdminBlockBuilder
+    with MockCustomerIdentificationBlockBuilder
+    with MockContactBlockBuilder
+    with MockPeriodsBlockBuilder
+    with MockBankDetailsBlockBuilder
+    with MockComplianceBlockBuilder
+    with MockSubscriptionBlockBuilder
+    with MockDeclarationBlockBuilder
+    with MockAnnualAccountingBlockBuilder
+    with MockEntitiesBlockBuilder {
 
   implicit val request: Request[_] = FakeRequest()
 
-  object TestBuilder extends SubmissionPayloadBuilder(
-    mockAdminBlockBuilder,
-    mockDeclarationBlockBuilder,
-    mockCustomerIdentificationBlockBuilder,
-    mockContactBlockBuilder,
-    mockPeriodsBlockBuilder,
-    mockSubscriptionBlockBuilder,
-    mockBankDetailsBlockBuilder,
-    mockComplianceBlockBuilder,
-    mockAnnualAccountingBlockBuilder,
-    mockEntitiesBlockBuilder
-  )
+  object TestBuilder
+      extends SubmissionPayloadBuilder(
+        mockAdminBlockBuilder,
+        mockDeclarationBlockBuilder,
+        mockCustomerIdentificationBlockBuilder,
+        mockContactBlockBuilder,
+        mockPeriodsBlockBuilder,
+        mockSubscriptionBlockBuilder,
+        mockBankDetailsBlockBuilder,
+        mockComplianceBlockBuilder,
+        mockAnnualAccountingBlockBuilder,
+        mockEntitiesBlockBuilder
+      )
 
   val testAdminBlockJson: JsObject = Json.obj(
     "additionalInformation" -> Json.obj(
       "customerStatus" -> "2"
     ),
-    "attachments" -> Json.obj(
+    "attachments"           -> Json.obj(
       "EORIrequested" -> true
     )
   )
@@ -65,52 +67,52 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
   val testDeclarationBlockJson: JsObject = Json.obj(
     "declarationSigning" -> Json.obj(
       "confirmInformationDeclaration" -> true,
-      "declarationCapacity" -> "03"
+      "declarationCapacity"           -> "03"
     ),
-    "applicantDetails" -> Json.obj(
+    "applicantDetails"   -> Json.obj(
       "roleInBusiness" -> "Director",
-      "name" -> Json.obj(
+      "name"           -> Json.obj(
         "firstName" -> "Test",
-        "lastName" -> "Name"
+        "lastName"  -> "Name"
       ),
-      "dateOfBirth" -> "2000-10-20",
-      "currAddress" -> Json.obj(
-        "line1" -> "line1",
-        "line2" -> "line2",
-        "postCode" -> "ZZ1 1ZZ",
+      "dateOfBirth"    -> "2000-10-20",
+      "currAddress"    -> Json.obj(
+        "line1"       -> "line1",
+        "line2"       -> "line2",
+        "postCode"    -> "ZZ1 1ZZ",
         "countryCode" -> "GB"
       ),
-      "commDetails" -> Json.obj(
+      "commDetails"    -> Json.obj(
         "email" -> "email@email.com"
       ),
-      "identifiers" -> Json.arr(
+      "identifiers"    -> Json.arr(
         Json.obj(
-          "idValue" -> "AB123456A",
-          "idType" -> "NINO",
+          "idValue"               -> "AB123456A",
+          "idType"                -> "NINO",
           "IDsVerificationStatus" -> "1",
-          "date" -> "2018-01-01"
+          "date"                  -> "2018-01-01"
         )
       )
     )
   )
 
   val testCustomerIdentificationBlockJson: JsObject = Json.obj(
-    "tradingName" -> "trading-name",
+    "tradingName"      -> "trading-name",
     "tradersPartyType" -> "50",
-    "primeBPSafeID" -> "testBpSafeId",
-    "shortOrgName" -> "testCompanyName"
+    "primeBPSafeID"    -> "testBpSafeId",
+    "shortOrgName"     -> "testCompanyName"
   )
 
   val testContactBlockJson: JsObject = Json.obj(
-    "address" -> Json.obj(
-      "line1" -> "line1",
-      "line2" -> "line2",
-      "postCode" -> "ZZ1 1ZZ",
+    "address"     -> Json.obj(
+      "line1"       -> "line1",
+      "line2"       -> "line2",
+      "postCode"    -> "ZZ1 1ZZ",
       "countryCode" -> "GB"
     ),
     "commDetails" -> Json.obj(
-      "telephone" -> "12345",
-      "email" -> "email@email.com",
+      "telephone"       -> "12345",
+      "email"           -> "email@email.com",
       "commsPreference" -> "ZEL"
     )
   )
@@ -119,89 +121,89 @@ class SubmissionPayloadBuilderSpec extends VatRegSpec
 
   val testBankDetailsBlockJson: JsObject = Json.obj(
     "UK" -> Json.obj(
-      "accountName" -> "Test Bank Account",
-      "sortCode" -> "010203",
+      "accountName"   -> "Test Bank Account",
+      "sortCode"      -> "010203",
       "accountNumber" -> "01023456"
     )
   )
 
   val testComplianceJson: JsObject = Json.obj(
-    "numOfWorkersSupplied" -> 1,
+    "numOfWorkersSupplied"    -> 1,
     "intermediaryArrangement" -> true,
-    "supplyWorkers" -> true
+    "supplyWorkers"           -> true
   )
 
   val testSubscriptionBlockJson: JsObject = Json.obj(
     "subscription" -> Json.obj(
-      "reasonForSubscription" -> Json.obj(
-        "registrationReason" -> "0016",
-        "relevantDate" -> "2020-10-07",
+      "reasonForSubscription"   -> Json.obj(
+        "registrationReason"     -> "0016",
+        "relevantDate"           -> "2020-10-07",
         "voluntaryOrEarlierDate" -> "2020-02-02",
-        "exemptionOrException" -> "0"
+        "exemptionOrException"   -> "0"
       ),
       "corporateBodyRegistered" -> Json.obj(
         "companyRegistrationNumber" -> "testCrn",
-        "dateOfIncorporation" -> "2020-01-02",
-        "countryOfIncorporation" -> "GB"
+        "dateOfIncorporation"       -> "2020-01-02",
+        "countryOfIncorporation"    -> "GB"
       ),
-      "businessActivities" -> Json.obj(
+      "businessActivities"      -> Json.obj(
         "description" -> "testDescription",
-        "SICCodes" -> Json.obj(
+        "SICCodes"    -> Json.obj(
           "primaryMainCode" -> "12345",
-          "mainCode2" -> "00002",
-          "mainCode3" -> "00003",
-          "mainCode4" -> "00004"
+          "mainCode2"       -> "00002",
+          "mainCode3"       -> "00003",
+          "mainCode4"       -> "00004"
         )
       ),
-      "yourTurnover" -> Json.obj(
+      "yourTurnover"            -> Json.obj(
         "turnoverNext12Months" -> 123456,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies"    -> 12.99,
         "VATRepaymentExpected" -> true
       ),
-      "schemes" -> Json.obj(
-        "FRSCategory" -> "testCategory",
-        "FRSPercentage" -> 15,
-        "startDate" -> "2020-02-02",
+      "schemes"                 -> Json.obj(
+        "FRSCategory"       -> "testCategory",
+        "FRSPercentage"     -> 15,
+        "startDate"         -> "2020-02-02",
         "limitedCostTrader" -> false
       )
     )
   )
 
   val testAnnualAccountingBlockJson: JsObject = Json.obj(
-    "submissionType" -> "01",
+    "submissionType"  -> "01",
     "customerRequest" -> Json.obj(
-      "paymentMethod" -> "",
-      "annualStagger" -> "",
-      "paymentFrequency" -> "",
-      "estimatedTurnover" -> "",
+      "paymentMethod"      -> "",
+      "annualStagger"      -> "",
+      "paymentFrequency"   -> "",
+      "estimatedTurnover"  -> "",
       "requestedStartDate" -> ""
     )
   )
 
   val testEntitiesBlockJson = Json.arr(
     Json.obj(
-      "action" -> 1,
-      "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
-      "partyType" -> Json.toJson[PartyType](Individual),
+      "action"                 -> 1,
+      "entityType"             -> Json.toJson[EntitiesArrayType](PartnerEntity),
+      "partyType"              -> Json.toJson[PartyType](Individual),
       "businessContactDetails" -> Json.obj(
-        "address" -> Json.toJson(testAddress),
+        "address"   -> Json.toJson(testAddress),
         "telephone" -> "testPhone"
       )
     )
   )
 
   val expectedJson: JsObject = Json.obj(
-    "messageType" -> "SubscriptionCreate",
-    "admin" -> testAdminBlockJson,
-    "declaration" -> testDeclarationBlockJson,
+    "messageType"            -> "SubscriptionCreate",
+    "admin"                  -> testAdminBlockJson,
+    "declaration"            -> testDeclarationBlockJson,
     "customerIdentification" -> testCustomerIdentificationBlockJson,
-    "contact" -> testContactBlockJson,
-    "subscription" -> testSubscriptionBlockJson,
-    "bankDetails" -> testBankDetailsBlockJson,
-    "periods" -> testPeriodsBlockJson,
-    "joinAA" -> testAnnualAccountingBlockJson,
-    "compliance" -> testComplianceJson,
-    "entities" -> testEntitiesBlockJson
+    "contact"                -> testContactBlockJson,
+    "subscription"           -> testSubscriptionBlockJson,
+    "bankDetails"            -> testBankDetailsBlockJson,
+    "periods"                -> testPeriodsBlockJson,
+    "joinAA"                 -> testAnnualAccountingBlockJson,
+    "compliance"             -> testComplianceJson,
+    "entities"               -> testEntitiesBlockJson
   )
 
   "buildSubmissionPayload" should {

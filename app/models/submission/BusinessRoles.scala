@@ -20,12 +20,12 @@ import play.api.libs.json.{Format, JsString, Reads, Writes}
 
 sealed trait RoleInTheBusiness {
   def toDeclarationCapacity: DeclarationCapacity = this match {
-    case OwnerProprietor => OwnerProprietor
-    case PartnerRole => PartnerRole
-    case Director => Director
-    case CompanySecretary => CompanySecretary
-    case BoardMember => BoardMember
-    case Trustee => Trustee
+    case OwnerProprietor             => OwnerProprietor
+    case PartnerRole                 => PartnerRole
+    case Director                    => Director
+    case CompanySecretary            => CompanySecretary
+    case BoardMember                 => BoardMember
+    case Trustee                     => Trustee
     case FinancialController | Other => Other
   }
 }
@@ -46,53 +46,53 @@ case object FinancialController extends RoleInTheBusiness
 
 object RoleInTheBusiness {
 
-  val stati: Map[RoleInTheBusiness, String] = Map[RoleInTheBusiness, String] (
-    OwnerProprietor -> "01",
-    PartnerRole -> "02",
-    Director -> "03",
-    CompanySecretary -> "04",
-    BoardMember -> "05",
-    Trustee -> "06",
+  val stati: Map[RoleInTheBusiness, String] = Map[RoleInTheBusiness, String](
+    OwnerProprietor     -> "01",
+    PartnerRole         -> "02",
+    Director            -> "03",
+    CompanySecretary    -> "04",
+    BoardMember         -> "05",
+    Trustee             -> "06",
     FinancialController -> "07",
-    Other -> "08"
+    Other               -> "08"
   )
 
   val inverseStati: Map[String, RoleInTheBusiness] = stati.map(_.swap)
 
-  def fromString(value: String): RoleInTheBusiness = inverseStati(value)
+  def fromString(value: String): RoleInTheBusiness   = inverseStati(value)
   def toJsString(value: RoleInTheBusiness): JsString = JsString(stati(value))
 
   implicit val format: Format[RoleInTheBusiness] = Format[RoleInTheBusiness](
-    Reads[RoleInTheBusiness] { json => json.validate[String] map fromString },
-    Writes[RoleInTheBusiness] (toJsString)
+    Reads[RoleInTheBusiness](json => json.validate[String] map fromString),
+    Writes[RoleInTheBusiness](toJsString)
   )
 
 }
 
 object DeclarationCapacity {
 
-  val stati: Map[DeclarationCapacity, String] = Map[DeclarationCapacity, String] (
-    OwnerProprietor -> "01",
-    PartnerRole -> "02",
-    Director -> "03",
-    CompanySecretary -> "04",
-    Trustee -> "05",
-    BoardMember -> "06",
-    AccountantAgent -> "07",
-    Representative -> "08",
+  val stati: Map[DeclarationCapacity, String] = Map[DeclarationCapacity, String](
+    OwnerProprietor    -> "01",
+    PartnerRole        -> "02",
+    Director           -> "03",
+    CompanySecretary   -> "04",
+    Trustee            -> "05",
+    BoardMember        -> "06",
+    AccountantAgent    -> "07",
+    Representative     -> "08",
     AuthorisedEmployee -> "09",
-    Other -> "10",
-    HmrcOfficer -> "11"
+    Other              -> "10",
+    HmrcOfficer        -> "11"
   )
 
   val inverseStati: Map[String, DeclarationCapacity] = stati.map(_.swap)
 
-  def fromString(value: String): DeclarationCapacity = inverseStati(value)
+  def fromString(value: String): DeclarationCapacity   = inverseStati(value)
   def toJsString(value: DeclarationCapacity): JsString = JsString(stati(value))
 
   implicit val format: Format[DeclarationCapacity] = Format[DeclarationCapacity](
-    Reads[DeclarationCapacity] { json => json.validate[String] map fromString },
-    Writes[DeclarationCapacity] (toJsString)
+    Reads[DeclarationCapacity](json => json.validate[String] map fromString),
+    Writes[DeclarationCapacity](toJsString)
   )
 
 }

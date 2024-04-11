@@ -28,73 +28,78 @@ import utils.{LoggingUtils, StringNormaliser}
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class EntitiesBlockBuilder @Inject()() extends LoggingUtils{
+class EntitiesBlockBuilder @Inject() () extends LoggingUtils {
 
   private val addPartnerAction = "1"
 
   // scalastyle:off
   def buildEntitiesBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsValue] = {
-    val business = vatScheme.business.getOrElse{
+    val business         = vatScheme.business.getOrElse {
       errorLog("[EntitiesBlockBuilder][buildEntitiesBlock] - Attempted to build entities block without business")
       throw new InternalServerException("Attempted to build entities block without business")
     }
-    val applicantDetails = vatScheme.applicantDetails.getOrElse{
-      errorLog("[EntitiesBlockBuilder][buildEntitiesBlock] - Attempted to build entities block without applicant details")
+    val applicantDetails = vatScheme.applicantDetails.getOrElse {
+      errorLog(
+        "[EntitiesBlockBuilder][buildEntitiesBlock] - Attempted to build entities block without applicant details"
+      )
       throw new InternalServerException("Attempted to build entities block without applicant details")
     }
-    val regReason = vatScheme.eligibilitySubmissionData.map(_.registrationReason).getOrElse{
+    val regReason        = vatScheme.eligibilitySubmissionData.map(_.registrationReason).getOrElse {
       errorLog("[EntitiesBlockBuilder][buildEntitiesBlock] - Attempted to build entities block without reg reason")
       throw new InternalServerException("Attempted to build entities block without reg reason")
     }
 
     val entities = vatScheme.entities match {
-      case Some(entityList) => entityList.filter(entity => entity.details.isDefined)
-      case None if regReason.equals(GroupRegistration) => List(Entity(
-        details = applicantDetails.entity,
-        partyType = UkCompany,
-        isLeadPartner = Some(true),
-        address = None,
-        email = None,
-        telephoneNumber = None
-      ))
-      case _ => Nil
+      case Some(entityList)                            => entityList.filter(entity => entity.details.isDefined)
+      case None if regReason.equals(GroupRegistration) =>
+        List(
+          Entity(
+            details = applicantDetails.entity,
+            partyType = UkCompany,
+            isLeadPartner = Some(true),
+            address = None,
+            email = None,
+            telephoneNumber = None
+          )
+        )
+      case _                                           => Nil
     }
 
     entities match {
       case entities if entities.nonEmpty =>
         Some(Json.toJson(entities.map { partner =>
           jsonObject(
-            "action" -> addPartnerAction,
-            "entityType" -> Json.toJson[EntitiesArrayType](
+            "action"                 -> addPartnerAction,
+            "entityType"             -> Json.toJson[EntitiesArrayType](
               regReason match {
                 case GroupRegistration => GroupRepMemberEntity
-                case _ => PartnerEntity
+                case _                 => PartnerEntity
               }
             ),
-            "tradersPartyType" -> Json.toJson[PartyType](partner.partyType match {
-              case NETP => Individual
+            "tradersPartyType"       -> Json.toJson[PartyType](partner.partyType match {
+              case NETP      => Individual
               case partyType => partyType
             }),
             "customerIdentification" -> {
               partner.details match {
                 case Some(details) if details.bpSafeId.isDefined =>
                   jsonObject("primeBPSafeID" -> details.bpSafeId)
-                case Some(details) =>
+                case Some(details)                               =>
                   jsonObject(
                     "customerID" -> Json.toJson(details.identifiers)
                   ) ++ {
                     details match {
                       case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, _, _, _, _, _) =>
                         jsonObject(
-                          "name" -> jsonObject(
+                          "name"        -> jsonObject(
                             "firstName" -> firstName,
-                            "lastName" -> lastName
+                            "lastName"  -> lastName
                           ),
                           "dateOfBirth" -> dateOfBirth
                         )
-                      case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
-                      case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
-                      case PartnershipIdEntity(_, _, companyName, _, _, _, _, _, _, _) => orgNameJson(companyName, None)
+                      case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _)                   => orgNameJson(companyName, None)
+                      case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _)                       => orgNameJson(companyName, None)
+                      case PartnershipIdEntity(_, _, companyName, _, _, _, _, _, _, _)                  => orgNameJson(companyName, None)
                     }
                   }
               }
@@ -103,27 +108,29 @@ class EntitiesBlockBuilder @Inject()() extends LoggingUtils{
               partner.isLeadPartner match {
                 case Some(true) =>
                   jsonObject(
-                    "address" -> business.ppobAddress.map(formatAddress),
+                    "address"     -> business.ppobAddress.map(formatAddress),
                     "commDetails" -> {
                       regReason match {
-                        case GroupRegistration => jsonObject(
-                          optional("telephone" -> applicantDetails.contact.tel),
-                          optional("email" -> applicantDetails.contact.email)
-                        )
-                        case _ => jsonObject(
-                          required("telephone" -> business.telephoneNumber),
-                          required("email" -> business.email)
-                        )
+                        case GroupRegistration =>
+                          jsonObject(
+                            optional("telephone" -> applicantDetails.contact.tel),
+                            optional("email"     -> applicantDetails.contact.email)
+                          )
+                        case _                 =>
+                          jsonObject(
+                            required("telephone" -> business.telephoneNumber),
+                            required("email"     -> business.email)
+                          )
                       }
                     }
                   )
-                case _ =>
+                case _          =>
                   jsonObject(
-                    "address" -> partner.address.map(formatAddress),
+                    "address"     -> partner.address.map(formatAddress),
                     "commDetails" -> {
                       jsonObject(
                         optional("telephone" -> partner.telephoneNumber),
-                        optional("email" -> partner.email)
+                        optional("email"     -> partner.email)
                       )
                     }
                   )
@@ -131,34 +138,40 @@ class EntitiesBlockBuilder @Inject()() extends LoggingUtils{
             }
           )
         }))
-      case _ =>
+      case _                             =>
         None
     }
   }
 
   private def formatAddress(address: Address): JsObject = jsonObject(
     "line1" -> address.line1,
-    optional("line2" -> address.line2),
-    optional("line3" -> address.line3),
-    optional("line4" -> address.line4),
-    optional("line5" -> address.line5),
-    optional("postCode" -> address.postcode),
+    optional("line2"       -> address.line2),
+    optional("line3"       -> address.line3),
+    optional("line4"       -> address.line4),
+    optional("line5"       -> address.line5),
+    optional("postCode"    -> address.postcode),
     optional("countryCode" -> address.country.flatMap(_.code))
   )
 
-  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String])(implicit request: Request[_]): JsObject =
+  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String])(implicit
+    request: Request[_]
+  ): JsObject =
     (orgName.map(StringNormaliser.normaliseString), optShortOrgName.map(StringNormaliser.normaliseString)) match {
-      case (Some(orgName), Some(shortOrgName)) => jsonObject(
-        "shortOrgName" -> shortOrgName,
-        "organisationName" -> orgName
-      )
-      case (Some(orgName), None) => jsonObject(
-        "shortOrgName" -> orgName,
-        "organisationName" -> orgName
-      )
-      case _ =>
+      case (Some(orgName), Some(shortOrgName)) =>
+        jsonObject(
+          "shortOrgName"     -> shortOrgName,
+          "organisationName" -> orgName
+        )
+      case (Some(orgName), None)               =>
+        jsonObject(
+          "shortOrgName"     -> orgName,
+          "organisationName" -> orgName
+        )
+      case _                                   =>
         errorLog("[EntitiesBlockBuilder][orgNameJson] - missing organisation name for a partyType that requires it")
-        throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
+        throw new InternalServerException(
+          "[EntitiesBlockBuilder] missing organisation name for a partyType that requires it"
+        )
     }
 
 }

@@ -31,7 +31,8 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
   object TestBuilder extends DeclarationBlockBuilder
 
   val testApplicantDetails = validApplicantDetails.copy(changeOfName = FormerName())
-  val declarationVatScheme = testVatScheme.copy(applicantDetails = Some(testApplicantDetails), confirmInformationDeclaration = Some(true))
+  val declarationVatScheme =
+    testVatScheme.copy(applicantDetails = Some(testApplicantDetails), confirmInformationDeclaration = Some(true))
 
   implicit val request: Request[_] = FakeRequest()
 
@@ -77,12 +78,11 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       }
       "the user has a previous address" in {
         val applicantDetails = testApplicantDetails.copy(previousAddress = Some(testAddress))
-        val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
+        val vatScheme        = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
 
         val res = TestBuilder.buildDeclarationBlock(vatScheme)
 
-        res mustBe Json.parse(
-          """
+        res mustBe Json.parse("""
             |{
             |  "declarationSigning": {
             |    "confirmInformationDeclaration": true,
@@ -126,7 +126,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       }
       "the user has a previous name" in {
         val applicantDetails = testApplicantDetails.copy(changeOfName = testFormerName)
-        val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
+        val vatScheme        = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
 
         val res = TestBuilder.buildDeclarationBlock(vatScheme)
 
@@ -171,13 +171,13 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
         )
       }
       "the user provides all contact details" in {
-        val contactDetails = Contact(
+        val contactDetails   = Contact(
           email = Some("skylake@vilikariet.com"),
           tel = Some("1234"),
           emailVerified = Some(true)
         )
         val applicantDetails = testApplicantDetails.copy(contact = contactDetails)
-        val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
+        val vatScheme        = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
 
         val res = TestBuilder.buildDeclarationBlock(vatScheme)
 
@@ -218,7 +218,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
         )
       }
       "the user provides all contact details and their role is 'Other'" in {
-        val contactDetails = Contact(
+        val contactDetails   = Contact(
           email = Some("skylake@vilikariet.com"),
           tel = Some("1234"),
           emailVerified = Some(true)
@@ -228,7 +228,7 @@ class DeclarationBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           roleInTheBusiness = Some(Other),
           otherRoleInTheBusiness = Some("testRole")
         )
-        val vatScheme = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
+        val vatScheme        = declarationVatScheme.copy(applicantDetails = Some(applicantDetails))
 
         val res = TestBuilder.buildDeclarationBlock(vatScheme)
 

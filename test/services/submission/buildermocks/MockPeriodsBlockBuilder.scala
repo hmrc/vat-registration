@@ -31,8 +31,7 @@ trait MockPeriodsBlockBuilder extends MockitoSugar {
 
   val mockPeriodsBlockBuilder: PeriodsBlockBuilder = mock[PeriodsBlockBuilder]
 
-  def mockBuildPeriodsBlock(vatScheme: VatScheme)
-                           (response: JsObject): OngoingStubbing[JsObject] =
+  def mockBuildPeriodsBlock(vatScheme: VatScheme)(response: JsObject): OngoingStubbing[JsObject] =
     when(mockPeriodsBlockBuilder.buildPeriodsBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]]))
       .thenReturn(response)
 

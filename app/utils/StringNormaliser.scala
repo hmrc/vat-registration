@@ -46,7 +46,8 @@ object StringNormaliser {
     'ŀ' -> "l"
   )
 
-  def normaliseString(string: String): String = Normalizer.normalize(string, Form.NFD)
+  def normaliseString(string: String): String = Normalizer
+    .normalize(string, Form.NFD)
     .map(char => characterConversions.getOrElse(char, char))
     .mkString
     .replaceAll("\\p{M}", "")

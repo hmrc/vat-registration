@@ -22,33 +22,33 @@ import play.api.mvc.Request
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
 
 @Singleton
-class SubmissionPayloadBuilder @Inject()(adminBlockBuilder: AdminBlockBuilder,
-                                         declarationBlockBuilder: DeclarationBlockBuilder,
-                                         customerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder,
-                                         contactBlockBuilder: ContactBlockBuilder,
-                                         periodsBlockBuilder: PeriodsBlockBuilder,
-                                         subscriptionBlockBuilder: SubscriptionBlockBuilder,
-                                         bankDetailsBlockBuilder: BankDetailsBlockBuilder,
-                                         complianceBlockBuilder: ComplianceBlockBuilder,
-                                         annualAccountingBlockBuilder: AnnualAccountingBlockBuilder,
-                                         entitiesBlockBuilder: EntitiesBlockBuilder
-                                        )(implicit ec: ExecutionContext) {
+class SubmissionPayloadBuilder @Inject() (
+  adminBlockBuilder: AdminBlockBuilder,
+  declarationBlockBuilder: DeclarationBlockBuilder,
+  customerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder,
+  contactBlockBuilder: ContactBlockBuilder,
+  periodsBlockBuilder: PeriodsBlockBuilder,
+  subscriptionBlockBuilder: SubscriptionBlockBuilder,
+  bankDetailsBlockBuilder: BankDetailsBlockBuilder,
+  complianceBlockBuilder: ComplianceBlockBuilder,
+  annualAccountingBlockBuilder: AnnualAccountingBlockBuilder,
+  entitiesBlockBuilder: EntitiesBlockBuilder
+) {
 
   def buildSubmissionPayload(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     jsonObject(
-      "messageType" -> "SubscriptionCreate",
-      "admin" -> adminBlockBuilder.buildAdminBlock(vatScheme),
-      "declaration" -> declarationBlockBuilder.buildDeclarationBlock(vatScheme),
+      "messageType"            -> "SubscriptionCreate",
+      "admin"                  -> adminBlockBuilder.buildAdminBlock(vatScheme),
+      "declaration"            -> declarationBlockBuilder.buildDeclarationBlock(vatScheme),
       "customerIdentification" -> customerIdentificationBlockBuilder.buildCustomerIdentificationBlock(vatScheme),
-      "contact" -> contactBlockBuilder.buildContactBlock(vatScheme),
-      "subscription" -> subscriptionBlockBuilder.buildSubscriptionBlock(vatScheme),
-      "periods" -> periodsBlockBuilder.buildPeriodsBlock(vatScheme),
+      "contact"                -> contactBlockBuilder.buildContactBlock(vatScheme),
+      "subscription"           -> subscriptionBlockBuilder.buildSubscriptionBlock(vatScheme),
+      "periods"                -> periodsBlockBuilder.buildPeriodsBlock(vatScheme),
       optional("bankDetails" -> bankDetailsBlockBuilder.buildBankDetailsBlock(vatScheme)),
-      optional("joinAA" -> annualAccountingBlockBuilder.buildAnnualAccountingBlock(vatScheme)),
-      optional("compliance" -> complianceBlockBuilder.buildComplianceBlock(vatScheme)),
-      optional("entities" -> entitiesBlockBuilder.buildEntitiesBlock(vatScheme))
+      optional("joinAA"      -> annualAccountingBlockBuilder.buildAnnualAccountingBlock(vatScheme)),
+      optional("compliance"  -> complianceBlockBuilder.buildComplianceBlock(vatScheme)),
+      optional("entities"    -> entitiesBlockBuilder.buildEntitiesBlock(vatScheme))
     )
 }

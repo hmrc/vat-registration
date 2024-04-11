@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package itutil
 
 import models.api.VatScheme
+import org.mongodb.scala.result.InsertOneResult
 import org.scalatest._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.PlaySpec
@@ -77,12 +79,12 @@ trait IntegrationSpecBase extends PlaySpec
   lazy val upscanMongoRepository: UpscanMongoRepository = app.injector.instanceOf[UpscanMongoRepository]
 
   trait SetupHelper {
-    await(repo.collection.drop.toFuture())
-    await(repo.ensureIndexes)
+    await(repo.collection.drop().toFuture())
+    await(repo.ensureIndexes())
     await(upscanMongoRepository.collection.drop().toFuture())
-    await(upscanMongoRepository.ensureIndexes)
+    await(upscanMongoRepository.ensureIndexes())
 
-    def insertIntoDb(vatScheme: VatScheme) = {
+    def insertIntoDb(vatScheme: VatScheme): InsertOneResult = {
       val count = await(repo.collection.countDocuments().toFuture())
       val res = await(repo.collection.insertOne(vatScheme).toFuture())
       await(repo.collection.countDocuments().toFuture()) mustBe count + 1

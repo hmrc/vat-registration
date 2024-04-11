@@ -18,27 +18,28 @@ package models.api
 
 import play.api.libs.json.{Json, OFormat}
 
-case class Business(hasTradingName: Option[Boolean],
-                    tradingName: Option[String],
-                    shortOrgName: Option[String],
-                    ppobAddress: Option[Address],
-                    email: Option[String],
-                    telephoneNumber: Option[String],
-                    hasWebsite: Option[Boolean],
-                    website: Option[String],
-                    contactPreference: Option[ContactPreference],
-                    welshLanguage: Option[Boolean],
-                    hasLandAndProperty: Option[Boolean],
-                    businessDescription: Option[String],
-                    businessActivities: Option[List[SicCode]],
-                    mainBusinessActivity: Option[SicCode],
-                    labourCompliance: Option[ComplianceLabour],
-                    otherBusinessInvolvement: Option[Boolean]) {
+case class Business(
+  hasTradingName: Option[Boolean],
+  tradingName: Option[String],
+  shortOrgName: Option[String],
+  ppobAddress: Option[Address],
+  email: Option[String],
+  telephoneNumber: Option[String],
+  hasWebsite: Option[Boolean],
+  website: Option[String],
+  contactPreference: Option[ContactPreference],
+  welshLanguage: Option[Boolean],
+  hasLandAndProperty: Option[Boolean],
+  businessDescription: Option[String],
+  businessActivities: Option[List[SicCode]],
+  mainBusinessActivity: Option[SicCode],
+  labourCompliance: Option[ComplianceLabour],
+  otherBusinessInvolvement: Option[Boolean]
+) {
 
   lazy val otherBusinessActivities: List[SicCode] =
     businessActivities.getOrElse(Nil).diff(mainBusinessActivity.toList)
 }
-
 
 object Business {
 

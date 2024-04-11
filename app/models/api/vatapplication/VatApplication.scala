@@ -21,20 +21,22 @@ import utils.JsonUtilities
 
 import java.time.LocalDate
 
-case class VatApplication(eoriRequested: Option[Boolean],
-                          tradeVatGoodsOutsideUk: Option[Boolean],
-                          turnoverEstimate: Option[BigDecimal],
-                          appliedForExemption: Option[Boolean],
-                          zeroRatedSupplies: Option[BigDecimal],
-                          claimVatRefunds: Option[Boolean],
-                          returnsFrequency: Option[ReturnsFrequency],
-                          staggerStart: Option[Stagger],
-                          startDate: Option[LocalDate],
-                          annualAccountingDetails: Option[AASDetails],
-                          overseasCompliance: Option[OverseasCompliance],
-                          northernIrelandProtocol: Option[NIPCompliance],
-                          hasTaxRepresentative: Option[Boolean],
-                          currentlyTrading: Option[Boolean])
+case class VatApplication(
+  eoriRequested: Option[Boolean],
+  tradeVatGoodsOutsideUk: Option[Boolean],
+  turnoverEstimate: Option[BigDecimal],
+  appliedForExemption: Option[Boolean],
+  zeroRatedSupplies: Option[BigDecimal],
+  claimVatRefunds: Option[Boolean],
+  returnsFrequency: Option[ReturnsFrequency],
+  staggerStart: Option[Stagger],
+  startDate: Option[LocalDate],
+  annualAccountingDetails: Option[AASDetails],
+  overseasCompliance: Option[OverseasCompliance],
+  northernIrelandProtocol: Option[NIPCompliance],
+  hasTaxRepresentative: Option[Boolean],
+  currentlyTrading: Option[Boolean]
+)
 
 object VatApplication extends JsonUtilities {
   implicit val format: Format[VatApplication] = Json.format[VatApplication]

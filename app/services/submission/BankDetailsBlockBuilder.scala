@@ -28,31 +28,45 @@ import utils.LoggingUtils
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class BankDetailsBlockBuilder @Inject()() extends LoggingUtils{
+class BankDetailsBlockBuilder @Inject() () extends LoggingUtils {
 
   def buildBankDetailsBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
     (vatScheme.bankAccount, vatScheme.partyType) match {
       case (Some(BankAccount(true, Some(details), _)), Some(partyType)) =>
-        Some(jsonObject(
-          "UK" -> jsonObject(
-            "accountName" -> details.name,
-            "sortCode" -> details.sortCode.replaceAll("-", ""),
-            "accountNumber" -> details.number,
-            conditional(List(IndeterminateStatus, InvalidStatus).contains(details.status))("bankDetailsNotValid" -> true)
+        Some(
+          jsonObject(
+            "UK" -> jsonObject(
+              "accountName"   -> details.name,
+              "sortCode"      -> details.sortCode.replaceAll("-", ""),
+              "accountNumber" -> details.number,
+              conditional(List(IndeterminateStatus, InvalidStatus).contains(details.status))(
+                "bankDetailsNotValid" -> true
+              )
+            )
           )
-        ))
-      case (Some(BankAccount(false, _, Some(reason))), _) =>
-        Some(jsonObject(
-          "UK" -> jsonObject(
-            "reasonBankAccNotProvided" -> reasonId(reason)
+        )
+      case (Some(BankAccount(false, _, Some(reason))), _)               =>
+        Some(
+          jsonObject(
+            "UK" -> jsonObject(
+              "reasonBankAccNotProvided" -> reasonId(reason)
+            )
           )
-        ))
-      case (_, Some(NETP | NonUkNonEstablished)) =>
-        Some(jsonObject("UK" -> jsonObject(
-          "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
-        )))
-      case _ =>
-        errorLog("[BankDetailsBlockBuilder][buildBankDetailsBlock] - Could not build bank details block for submission due to missing bank account")
-        throw new InternalServerException("Could not build bank details block for submission due to missing bank account")
+        )
+      case (_, Some(NETP | NonUkNonEstablished))                        =>
+        Some(
+          jsonObject(
+            "UK" -> jsonObject(
+              "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
+            )
+          )
+        )
+      case _                                                            =>
+        errorLog(
+          "[BankDetailsBlockBuilder][buildBankDetailsBlock] - Could not build bank details block for submission due to missing bank account"
+        )
+        throw new InternalServerException(
+          "Could not build bank details block for submission due to missing bank account"
+        )
     }
 }

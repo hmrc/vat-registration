@@ -40,29 +40,28 @@ case object ArnIdType extends IdType
 
 case object OtherIdType extends IdType
 
-
 object IdType {
 
   val stati: Map[IdType, String] = Map(
-    NinoIdType -> "NINO",
-    UtrIdType -> "UTR",
-    CrnIdType -> "CRN",
-    TempNinoIDType -> "TEMPNI",
+    NinoIdType       -> "NINO",
+    UtrIdType        -> "UTR",
+    CrnIdType        -> "CRN",
+    TempNinoIDType   -> "TEMPNI",
     CharityRefIdType -> "CHRN",
-    CascIdType -> "CASC",
-    VrnIdType -> "VRN",
-    EmpRefIdType -> "EMPREF",
-    ArnIdType -> "ARN",
-    OtherIdType -> "OTHER"
+    CascIdType       -> "CASC",
+    VrnIdType        -> "VRN",
+    EmpRefIdType     -> "EMPREF",
+    ArnIdType        -> "ARN",
+    OtherIdType      -> "OTHER"
   )
 
   val inverseStati = stati.map(_.swap)
 
-  def fromString(value: String): IdType = inverseStati(value)
+  def fromString(value: String): IdType   = inverseStati(value)
   def toJsString(value: IdType): JsString = JsString(stati(value))
 
-  implicit val writes = Writes[IdType] { idType => toJsString(idType) }
-  implicit val reads = Reads[IdType] { idType => idType.validate[String] map fromString }
-  implicit val format = Format[IdType](reads, writes)
+  implicit val writes: Writes[IdType] = Writes[IdType](idType => toJsString(idType))
+  implicit val reads: Reads[IdType]   = Reads[IdType](idType => idType.validate[String] map fromString)
+  implicit val format: Format[IdType] = Format[IdType](reads, writes)
 
 }

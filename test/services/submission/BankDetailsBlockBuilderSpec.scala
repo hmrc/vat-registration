@@ -35,17 +35,17 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
   val bankDetailsBlockJson: JsObject = Json.obj(
     "UK" -> Json.obj(
-      "accountName" -> testBankName,
-      "sortCode" -> testSortCode,
+      "accountName"   -> testBankName,
+      "sortCode"      -> testSortCode,
       "accountNumber" -> testBankNumber
     )
   )
 
   val notValidBankDetailsBlockJson: JsObject = Json.obj(
     "UK" -> Json.obj(
-      "accountName" -> testBankName,
-      "sortCode" -> testSortCode,
-      "accountNumber" -> testBankNumber,
+      "accountName"         -> testBankName,
+      "sortCode"            -> testSortCode,
+      "accountNumber"       -> testBankNumber,
       "bankDetailsNotValid" -> true
     )
   )

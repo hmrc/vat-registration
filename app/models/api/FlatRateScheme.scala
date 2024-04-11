@@ -20,18 +20,20 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class FlatRateScheme(joinFrs: Option[Boolean] = None,
-                          overBusinessGoods: Option[Boolean] = None,
-                          estimateTotalSales: Option[BigDecimal] = None,
-                          overBusinessGoodsPercent: Option[Boolean] = None,
-                          useThisRate: Option[Boolean] = None,
-                          frsStart: Option[LocalDate] = None,
-                          categoryOfBusiness: Option[String] = None,
-                          percent: Option[BigDecimal] = None,
-                          limitedCostTrader: Option[Boolean] = None)
+case class FlatRateScheme(
+  joinFrs: Option[Boolean] = None,
+  overBusinessGoods: Option[Boolean] = None,
+  estimateTotalSales: Option[BigDecimal] = None,
+  overBusinessGoodsPercent: Option[Boolean] = None,
+  useThisRate: Option[Boolean] = None,
+  frsStart: Option[LocalDate] = None,
+  categoryOfBusiness: Option[String] = None,
+  percent: Option[BigDecimal] = None,
+  limitedCostTrader: Option[Boolean] = None
+)
 
 object FlatRateScheme {
-  val fallbackReads: Reads[FlatRateScheme] = Json.reads[FlatRateScheme]
-  val writes: Writes[FlatRateScheme] = Json.writes[FlatRateScheme]
+  val fallbackReads: Reads[FlatRateScheme]    = Json.reads[FlatRateScheme]
+  val writes: Writes[FlatRateScheme]          = Json.writes[FlatRateScheme]
   implicit val format: Format[FlatRateScheme] = Format(fallbackReads, writes)
 }

@@ -25,7 +25,7 @@ import play.api.libs.json._
 class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRegistrationFixture {
 
   private def writeAndRead[T](t: T)(implicit fmt: Format[T]) = fmt.reads(Json.toJson(fmt.writes(t)))
-  private def format(partyType: PartyType) = Format(ApplicantDetails.reads(partyType), ApplicantDetails.writes)
+  private def format(partyType: PartyType)                   = Format(ApplicantDetails.reads(partyType), ApplicantDetails.writes)
 
   "Creating a Json from a valid VatApplicantDetails model" should {
     "parse successfully if the entity is a Ltd Co" in {
@@ -34,7 +34,7 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
     }
 
     "parse successfully if the entity is a Sole Trader" in {
-      implicit val fmt = format(Individual)
+      implicit val fmt         = format(Individual)
       val soleTraderAppDetails = validApplicantDetails.copy(
         entity = Some(testSoleTraderEntity)
       )
@@ -42,7 +42,7 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
     }
 
     "parse successfully if the entity is a General Partnership" in {
-      implicit val fmt = format(Partnership)
+      implicit val fmt                 = format(Partnership)
       val generalPartnershipAppDetails = validApplicantDetails.copy(
         entity = Some(testGeneralPartnershipEntity)
       )
@@ -50,7 +50,7 @@ class ApplicantDetailsSpec extends BaseSpec with JsonFormatValidation with VatRe
     }
 
     "parse successfully if the entity is a Trust" in {
-      implicit val fmt = format(Trust)
+      implicit val fmt    = format(Trust)
       val trustAppDetails = validApplicantDetails.copy(
         entity = Some(testTrustEntity)
       )

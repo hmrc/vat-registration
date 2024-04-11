@@ -132,56 +132,56 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
   def fullNetpSubscriptionBlockJson: JsValue = Json.obj(
     "reasonForSubscription" -> Json.obj(
-      "relevantDate" -> "2020-10-01",
-      "registrationReason" -> Json.toJson[RegistrationReason](NonUk),
+      "relevantDate"         -> "2020-10-01",
+      "registrationReason"   -> Json.toJson[RegistrationReason](NonUk),
       "exemptionOrException" -> "0"
     ),
-    "yourTurnover" -> Json.obj(
+    "yourTurnover"          -> Json.obj(
       "VATRepaymentExpected" -> false,
       "turnoverNext12Months" -> testTurnover,
-      "zeroRatedSupplies" -> 12.99
+      "zeroRatedSupplies"    -> 12.99
     ),
-    "schemes" -> Json.obj(
-      "startDate" -> testDate,
-      "FRSCategory" -> "testCategory",
-      "FRSPercentage" -> 15,
+    "schemes"               -> Json.obj(
+      "startDate"         -> testDate,
+      "FRSCategory"       -> "testCategory",
+      "FRSPercentage"     -> 15,
       "limitedCostTrader" -> false
     ),
-    "businessActivities" -> Json.obj(
-      "SICCodes" -> Json.obj(
+    "businessActivities"    -> Json.obj(
+      "SICCodes"                -> Json.obj(
         "primaryMainCode" -> "12345",
-        "mainCode2" -> "23456",
-        "mainCode3" -> "34567"
+        "mainCode2"       -> "23456",
+        "mainCode3"       -> "34567"
       ),
-      "description" -> "testBusinessDescription",
-      "goodsToOverseas" -> true,
-      "goodsToCustomerEU" -> true,
+      "description"             -> "testBusinessDescription",
+      "goodsToOverseas"         -> true,
+      "goodsToCustomerEU"       -> true,
       "storingGoodsForDispatch" -> Json.toJson[StoringGoodsForDispatch](StoringWithinUk),
-      "fulfilmentWarehouse" -> true,
-      "FHDDSWarehouseNumber" -> testWarehouseNumber,
-      "nameOfWarehouse" -> testWarehouseName
+      "fulfilmentWarehouse"     -> true,
+      "FHDDSWarehouseNumber"    -> testWarehouseNumber,
+      "nameOfWarehouse"         -> testWarehouseName
     )
   )
 
   val otherBusinessInvolvementsJson: JsValue = Json.obj(
     "corporateBodyRegistered" -> Json.obj(
-      "dateOfIncorporation" -> testDateOFIncorp,
+      "dateOfIncorporation"       -> testDateOFIncorp,
       "companyRegistrationNumber" -> testCrn,
-      "countryOfIncorporation" -> "GB"
+      "countryOfIncorporation"    -> "GB"
     ),
-    "reasonForSubscription" -> Json.obj(
+    "reasonForSubscription"   -> Json.obj(
       "voluntaryOrEarlierDate" -> testDate,
-      "relevantDate" -> testDate,
-      "registrationReason" -> Voluntary.key,
-      "exemptionOrException" -> VatScheme.exemptionKey
+      "relevantDate"           -> testDate,
+      "registrationReason"     -> Voluntary.key,
+      "exemptionOrException"   -> VatScheme.exemptionKey
     ),
-    "yourTurnover" -> Json.obj(
+    "yourTurnover"            -> Json.obj(
       "VATRepaymentExpected" -> false,
       "turnoverNext12Months" -> testTurnover,
-      "zeroRatedSupplies" -> 12.99
+      "zeroRatedSupplies"    -> 12.99
     ),
-    "businessActivities" -> Json.obj(
-      "SICCodes" -> Json.obj(
+    "businessActivities"      -> Json.obj(
+      "SICCodes"    -> Json.obj(
         "primaryMainCode" -> "12345"
       ),
       "description" -> "testBusinessDescription"
@@ -189,14 +189,14 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "otherBusinessActivities" -> Json.arr(
       Json.obj(
         "businessName" -> testCompanyName,
-        "idType" -> Json.toJson[IdType](VrnIdType),
-        "idValue" -> testVrn,
+        "idType"       -> Json.toJson[IdType](VrnIdType),
+        "idValue"      -> testVrn,
         "stillTrading" -> true
       ),
       Json.obj(
         "businessName" -> testCompanyName,
-        "idType" -> Json.toJson[IdType](UtrIdType),
-        "idValue" -> testUtr,
+        "idType"       -> Json.toJson[IdType](UtrIdType),
+        "idValue"      -> testUtr,
         "stillTrading" -> true
       ),
       Json.obj(
@@ -211,12 +211,17 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
         vatApplication = Some(testVatApplicationDetails),
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(
-            mandatoryRegistration = true, Some(LocalDate.of(2020, 10, 1)), None, None
-          ),
-          registrationReason = ForwardLook
-        )),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(
+              mandatoryRegistration = true,
+              Some(LocalDate.of(2020, 10, 1)),
+              None,
+              None
+            ),
+            registrationReason = ForwardLook
+          )
+        ),
         flatRateScheme = Some(validFullFlatRateScheme),
         business = Some(testBusiness)
       )
@@ -230,12 +235,17 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
         vatApplication = Some(testVatApplicationDetails),
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(
-            mandatoryRegistration = true, None, Some(LocalDate.of(2020, 10, 1)), None
-          ),
-          registrationReason = BackwardLook
-        )),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(
+              mandatoryRegistration = true,
+              None,
+              Some(LocalDate.of(2020, 10, 1)),
+              None
+            ),
+            registrationReason = BackwardLook
+          )
+        ),
         flatRateScheme = Some(validFullFlatRateScheme),
         business = Some(testBusiness)
       )
@@ -247,20 +257,30 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
 
     "build a full subscription json when all data is provided and user is NETP" in {
       val vatScheme = testVatScheme.copy(
-        applicantDetails = Some(validApplicantDetails.copy(
-          entity = Some(testSoleTraderEntity.copy(
-            nino = None,
-            trn = Some(testTrn)
-          ))
-        )),
+        applicantDetails = Some(
+          validApplicantDetails.copy(
+            entity = Some(
+              testSoleTraderEntity.copy(
+                nino = None,
+                trn = Some(testTrn)
+              )
+            )
+          )
+        ),
         vatApplication = Some(testOverseasVatApplicationDetails),
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(
-            mandatoryRegistration = true, None, None, None, Some(LocalDate.of(2020, 10, 1))
-          ),
-          partyType = NETP,
-          registrationReason = NonUk
-        )),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(
+              mandatoryRegistration = true,
+              None,
+              None,
+              None,
+              Some(LocalDate.of(2020, 10, 1))
+            ),
+            partyType = NETP,
+            registrationReason = NonUk
+          )
+        ),
         flatRateScheme = Some(validFullFlatRateScheme),
         business = Some(testBusiness)
       )
@@ -274,10 +294,12 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
         vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          registrationReason = Voluntary
-        )),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(mandatoryRegistration = false, None, None, None),
+            registrationReason = Voluntary
+          )
+        ),
         flatRateScheme = Some(validEmptyFlatRateScheme),
         business = Some(testBusiness.copy(businessActivities = Some(Nil)))
       )
@@ -290,11 +312,14 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "build a minimal subscription json when minimum data is provided and user is an intending trader" in {
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
-        vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true), currentlyTrading = Some(false))),
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          registrationReason = Voluntary
-        )),
+        vatApplication =
+          Some(testVatApplicationDetails.copy(appliedForExemption = Some(true), currentlyTrading = Some(false))),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(mandatoryRegistration = false, None, None, None),
+            registrationReason = Voluntary
+          )
+        ),
         flatRateScheme = Some(validEmptyFlatRateScheme),
         business = Some(testBusiness.copy(businessActivities = Some(Nil)))
       )
@@ -308,10 +333,12 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
         vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          registrationReason = Voluntary
-        )),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(mandatoryRegistration = false, None, None, None),
+            registrationReason = Voluntary
+          )
+        ),
         business = Some(testBusiness.copy(businessActivities = Some(Nil)))
       )
 
@@ -324,10 +351,12 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
       val vatScheme = testVatScheme.copy(
         applicantDetails = Some(validApplicantDetails),
         vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None),
-          registrationReason = Voluntary
-        )),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(mandatoryRegistration = false, None, None, None),
+            registrationReason = Voluntary
+          )
+        ),
         business = Some(testBusiness.copy(businessActivities = Some(Nil), otherBusinessInvolvement = Some(true))),
         otherBusinessInvolvements = Some(
           List(

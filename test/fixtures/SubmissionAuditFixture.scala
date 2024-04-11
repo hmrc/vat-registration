@@ -26,46 +26,46 @@ trait SubmissionAuditFixture extends VatRegistrationFixture {
   val testFormBundleId = "testFormBundleId"
 
   val testAddressJson = Json.obj(
-    "line1" -> "line1",
-    "line2" -> "line2",
-    "postcode" -> "ZZ1 1ZZ",
+    "line1"       -> "line1",
+    "line2"       -> "line2",
+    "postcode"    -> "ZZ1 1ZZ",
     "countryCode" -> "GB"
   )
 
   val bankAuditBlockJson: JsObject = Json.obj(
-    "accountName" -> "testBankName",
-    "sortCode" -> "01-02-03",
+    "accountName"   -> "testBankName",
+    "sortCode"      -> "01-02-03",
     "accountNumber" -> "01023456"
   )
 
   val complianceAuditBlockJson = Json.obj(
-    "numOfWorkersSupplied" -> 1,
+    "numOfWorkersSupplied"    -> 1,
     "intermediaryArrangement" -> true,
-    "supplyWorkers" -> true
+    "supplyWorkers"           -> true
   )
 
   lazy val contactBlockFullJson: JsObject =
     Json.obj(
-      "address" -> testAddressJson,
+      "address"                      -> testAddressJson,
       "businessCommunicationDetails" -> Json.obj(
-        "telephone" -> "12345678910",
-        "emailAddress" -> "test@test.com",
+        "telephone"     -> "12345678910",
+        "emailAddress"  -> "test@test.com",
         "emailVerified" -> true,
-        "webAddress" -> "www.foo.com",
-        "preference" -> "ZEL"
+        "webAddress"    -> "www.foo.com",
+        "preference"    -> "ZEL"
       )
     )
 
   val customerIdentificationAuditBlockJson = Json.obj(
     "customerIdentification" -> Json.obj(
       "tradersPartyType" -> UkCompany.toString,
-      "identifiers" -> Json.obj(
+      "identifiers"      -> Json.obj(
         "companyRegistrationNumber" -> testCrn,
-        "ctUTR" -> testUtr
+        "ctUTR"                     -> testUtr
       ),
-      "shortOrgName" -> testCompanyName,
-      "dateOfBirth" -> testDateOfBirth,
-      "tradingName" -> testTradingName
+      "shortOrgName"     -> testCompanyName,
+      "dateOfBirth"      -> testDateOfBirth,
+      "tradingName"      -> testTradingName
     )
   )
 
@@ -73,27 +73,27 @@ trait SubmissionAuditFixture extends VatRegistrationFixture {
     Json.obj(
       "declarationSigning" -> Json.obj(
         "confirmInformationDeclaration" -> true,
-        "declarationCapacity" -> "Director"
+        "declarationCapacity"           -> "Director"
       ),
-      "applicant" -> Json.obj(
-        "roleInBusiness" -> "Director",
-        "name" -> Json.obj(
+      "applicant"          -> Json.obj(
+        "roleInBusiness"       -> "Director",
+        "name"                 -> Json.obj(
           "firstName" -> testName.first,
-          "lastName" -> testName.last
+          "lastName"  -> testName.last
         ),
-        "previousName" -> Json.obj(
-          "firstName" -> testOldName.first,
-          "lastName" -> testOldName.last,
+        "previousName"         -> Json.obj(
+          "firstName"      -> testOldName.first,
+          "lastName"       -> testOldName.last,
           "nameChangeDate" -> testDate
         ),
-        "currentAddress" -> testAddressJson,
-        "previousAddress" -> testAddressJson,
-        "dateOfBirth" -> testDate,
+        "currentAddress"       -> testAddressJson,
+        "previousAddress"      -> testAddressJson,
+        "dateOfBirth"          -> testDate,
         "communicationDetails" -> Json.obj(
           "emailAddress" -> "skylake@vilikariet.com",
-          "telephone" -> "1234567890"
+          "telephone"    -> "1234567890"
         ),
-        "identifiers" -> Json.obj(
+        "identifiers"          -> Json.obj(
           "nationalInsuranceNumber" -> testNino
         )
       )
@@ -105,29 +105,29 @@ trait SubmissionAuditFixture extends VatRegistrationFixture {
 
   val fullSubscriptionBlockJson: JsValue =
     Json.obj(
-      "overThresholdIn12MonthPeriod" -> true,
-      "overThresholdIn12MonthDate" -> testDate,
-      "overThresholdInPreviousMonth" -> true,
+      "overThresholdIn12MonthPeriod"     -> true,
+      "overThresholdIn12MonthDate"       -> testDate,
+      "overThresholdInPreviousMonth"     -> true,
       "overThresholdInPreviousMonthDate" -> testDate,
-      "overThresholdInNextMonth" -> true,
-      "overThresholdInNextMonthDate" -> testDate,
-      "reasonForSubscription" -> Json.obj(
+      "overThresholdInNextMonth"         -> true,
+      "overThresholdInNextMonthDate"     -> testDate,
+      "reasonForSubscription"            -> Json.obj(
         "voluntaryOrEarlierDate" -> testDate,
-        "exemptionOrException" -> "0"
+        "exemptionOrException"   -> "0"
       ),
-      "yourTurnover" -> Json.obj(
+      "yourTurnover"                     -> Json.obj(
         "turnoverNext12Months" -> 123456,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies"    -> 12.99,
         "vatRepaymentExpected" -> true
       ),
-      "schemes" -> Json.obj(
-        "startDate" -> testDate,
-        "flatRateSchemeCategory" -> "123",
+      "schemes"                          -> Json.obj(
+        "startDate"                -> testDate,
+        "flatRateSchemeCategory"   -> "123",
         "flatRateSchemePercentage" -> 15,
-        "limitedCostTrader" -> false
+        "limitedCostTrader"        -> false
       ),
-      "businessActivities" -> Json.obj(
-        "sicCodes" -> Json.obj(
+      "businessActivities"               -> Json.obj(
+        "sicCodes"    -> Json.obj(
           "primaryMainCode" -> "12345"
         ),
         "description" -> "the flu"
@@ -135,30 +135,30 @@ trait SubmissionAuditFixture extends VatRegistrationFixture {
     )
 
   val auditModelJson = Json.obj(
-    "authProviderId" -> "1",
-    "journeyId" -> testRegId,
-    "userType" -> Organisation.toString,
-    "messageType" -> "SubscriptionCreate",
-    "customerStatus" -> VatRegStatus.submitted,
-    "eoriRequested" -> true,
+    "authProviderId"          -> "1",
+    "journeyId"               -> testRegId,
+    "userType"                -> Organisation.toString,
+    "messageType"             -> "SubscriptionCreate",
+    "customerStatus"          -> VatRegStatus.submitted,
+    "eoriRequested"           -> true,
     "corporateBodyRegistered" -> Json.obj(
-      "dateOfIncorporation" -> testDate,
+      "dateOfIncorporation"    -> testDate,
       "countryOfIncorporation" -> testDate
     ),
-    "idsVerificationStatus" -> "1",
-    "cidVerification" -> "1",
-    "userEnteredDetails" -> detailBlockAnswers
+    "idsVerificationStatus"   -> "1",
+    "cidVerification"         -> "1",
+    "userEnteredDetails"      -> detailBlockAnswers
   )
 
   val detailBlockAnswers = Json.obj(
-    "outsideEUSales" -> true,
-    "subscription" -> fullSubscriptionBlockJson,
-    "compliance" -> complianceAuditBlockJson,
-    "declaration" -> declarationAuditBlockJson,
+    "outsideEUSales"         -> true,
+    "subscription"           -> fullSubscriptionBlockJson,
+    "compliance"             -> complianceAuditBlockJson,
+    "declaration"            -> declarationAuditBlockJson,
     "customerIdentification" -> customerIdentificationAuditBlockJson,
-    "bankDetails" -> bankAuditBlockJson,
-    "businessContact" -> contactBlockFullJson,
-    "periods" -> periodsAuditBlockJson
+    "bankDetails"            -> bankAuditBlockJson,
+    "businessContact"        -> contactBlockFullJson,
+    "periods"                -> periodsAuditBlockJson
   )
 
 }

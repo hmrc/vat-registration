@@ -18,9 +18,8 @@ package controllers.test
 
 import auth.Authorisation
 import models.api.{UpscanDetails, VatScheme}
-import play.api.libs.json.JsError.toJson
 import play.api.libs.json._
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.VatSchemeRepository
 import services.{RegistrationService, UpscanService}
 import uk.gov.hmrc.auth.core.AuthConnector
@@ -30,31 +29,32 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SetupDataController @Inject()(val authConnector: AuthConnector,
-                                    registrationService: RegistrationService,
-                                    upscanService: UpscanService,
-                                    vatSchemeRepository: VatSchemeRepository)
-                                   (implicit val executionContext: ExecutionContext,
-                                                 cc: ControllerComponents) extends BackendController(cc) with Authorisation {
-
-
-
+class SetupDataController @Inject() (
+  val authConnector: AuthConnector,
+  registrationService: RegistrationService,
+  upscanService: UpscanService,
+  vatSchemeRepository: VatSchemeRepository
+)(implicit val executionContext: ExecutionContext, cc: ControllerComponents)
+    extends BackendController(cc)
+    with Authorisation {
 
   def setUpData(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { interalId =>
       Json.toJson(request.body.asJson).validate[VatScheme](VatScheme.format()) match {
-              case JsSuccess(value, path) =>
-                val data = value.copy(internalId = interalId, registrationId = regId)
-                registrationService.upsertRegistration(internalId = interalId, data.registrationId, data).map {
-                  updatedRegistration =>
-                    Created(Json.toJson(value.registrationId))
-                }.recover {
-                  case _ => NotFound(Json.toJson("error"))
-                }
-              case _ => Future.successful(NotFound(Json.toJson("error")))
+        case JsSuccess(value, path) =>
+          val data = value.copy(internalId = interalId, registrationId = regId)
+          registrationService
+            .upsertRegistration(internalId = interalId, data.registrationId, data)
+            .map { updatedRegistration =>
+              Created(Json.toJson(value.registrationId))
             }
-          }
+            .recover { case _ =>
+              NotFound(Json.toJson("error"))
+            }
+        case _                      => Future.successful(NotFound(Json.toJson("error")))
+      }
     }
+  }
 
   def setUpUpscan(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { _ =>
@@ -62,7 +62,7 @@ class SetupDataController @Inject()(val authConnector: AuthConnector,
         case JsSuccess(value, _) =>
           val data = value.map(_.copy(registrationId = Some(regId)))
           Future.sequence(data.map(upscanService.upsertUpscanDetails(_))).map(_ => Created(Json.toJson(value)))
-        case error: JsError =>
+        case error: JsError      =>
           Future.successful(NotFound(Json.toJson("error")))
       }
     }

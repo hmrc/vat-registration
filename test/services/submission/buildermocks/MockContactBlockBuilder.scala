@@ -31,8 +31,7 @@ trait MockContactBlockBuilder extends MockitoSugar {
 
   val mockContactBlockBuilder: ContactBlockBuilder = mock[ContactBlockBuilder]
 
-  def mockBuildContactBlock(vatScheme: VatScheme)
-                           (response: JsObject): OngoingStubbing[JsObject] =
+  def mockBuildContactBlock(vatScheme: VatScheme)(response: JsObject): OngoingStubbing[JsObject] =
     when(mockContactBlockBuilder.buildContactBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]]))
       .thenReturn(response)
 

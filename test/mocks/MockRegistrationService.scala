@@ -33,18 +33,20 @@ trait MockRegistrationService extends MockitoSugar {
 
   val mockRegistrationService = mock[RegistrationService]
 
-  def mockNewRegistration(internalId: String)
-                         (response: Future[VatScheme]): OngoingStubbing[Future[VatScheme]] =
+  def mockNewRegistration(internalId: String)(response: Future[VatScheme]): OngoingStubbing[Future[VatScheme]] =
     when(mockRegistrationService.newRegistration(ArgumentMatchers.eq(internalId)))
-    .thenReturn(response)
+      .thenReturn(response)
 
-  def mockGetAnswer[T](internalId: String, regId: String, section: RegistrationSectionId, answer: String)
-                      (response: Future[Option[T]]): OngoingStubbing[Future[Option[T]]] =
-    when(mockRegistrationService.getAnswer[T](
-      ArgumentMatchers.eq(internalId),
-      ArgumentMatchers.eq(regId),
-      ArgumentMatchers.eq(section),
-      ArgumentMatchers.eq(answer)
-    )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])) thenReturn response
+  def mockGetAnswer[T](internalId: String, regId: String, section: RegistrationSectionId, answer: String)(
+    response: Future[Option[T]]
+  ): OngoingStubbing[Future[Option[T]]] =
+    when(
+      mockRegistrationService.getAnswer[T](
+        ArgumentMatchers.eq(internalId),
+        ArgumentMatchers.eq(regId),
+        ArgumentMatchers.eq(section),
+        ArgumentMatchers.eq(answer)
+      )(ArgumentMatchers.any(), ArgumentMatchers.any[Request[_]])
+    ) thenReturn response
 
 }

@@ -23,91 +23,103 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import utils.LoggingUtils
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RegistrationSectionController @Inject()(val authConnector: AuthConnector,
-                                              val registrationService: RegistrationService,
-                                              val sectionValidationService: SectionValidationService,
-                                              controllerComponents: ControllerComponents,
-                                              cipherService: CipherService
-                                             )(implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
-
+class RegistrationSectionController @Inject() (
+  val authConnector: AuthConnector,
+  val registrationService: RegistrationService,
+  val sectionValidationService: SectionValidationService,
+  controllerComponents: ControllerComponents,
+  cipherService: CipherService
+)(implicit val executionContext: ExecutionContext)
+    extends BackendController(controllerComponents)
+    with Authorisation {
 
   /** GET /registrations/:regId/sections/:sectionId
-   * ===Purpose===
-   * Retrieve the data of the named section in the given registration
-   * ===Detail===
-   *
-   * @param regId
-   * @param sectionId
-   * @return OK - Json representation of the named section<br>
-   *         NOT_FOUND - The named section doesn't exist in the named section
-   */
+    * ===Purpose===
+    * Retrieve the data of the named section in the given registration
+    * ===Detail===
+    *
+    * @param regId
+    * @param sectionId
+    * @return
+    *   OK - Json representation of the named section<br> NOT_FOUND - The named section doesn't exist in the named
+    *   section
+    */
   def getSection(regId: String, section: RegistrationSectionId): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
       registrationService.getSection[JsValue](internalId, regId, section).flatMap {
         case Some(sectionData) =>
-          sectionValidationService.validate(internalId, regId, section, cipherService.conditionallyDecrypt(section, sectionData)).map {
-            case Right(ValidSection(value)) =>
-              Ok(value)
-            case Left(response@InvalidSection(_)) =>
-              errorLog(s"[RegistrationSectionController][getSection] errored with ${response.asString}")
-              InternalServerError(response.asString)
-          }
-        case _ =>
+          sectionValidationService
+            .validate(internalId, regId, section, cipherService.conditionallyDecrypt(section, sectionData))
+            .map {
+              case Right(ValidSection(value))         =>
+                Ok(value)
+              case Left(response @ InvalidSection(_)) =>
+                errorLog(s"[RegistrationSectionController][getSection] errored with ${response.asString}")
+                InternalServerError(response.asString)
+            }
+        case _                 =>
           Future.successful(NotFound)
       }
     }
   }
 
   /** PUT /registrations/:regId/sections/:sectionId
-   * ===Purpose===
-   * Replaces the named section in the given registration with the given JSON
-   * ===Detail===
-   *
-   * @param regId
-   * @param sectionKey
-   * @return OK - Json representation of the updated section<br>
-   *         BAD_REQUEST - The request json was not valid for the given section
-   */
-  def replaceSection(regId: String, section: RegistrationSectionId): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    isAuthenticated { internalId =>
-      sectionValidationService.validate(internalId, regId, section, request.body).flatMap {
-        case Right(ValidSection(validatedJson)) =>
-          val encryptedJson = cipherService.conditionallyEncrypt(section, validatedJson)
-          registrationService.upsertSection[JsValue](internalId, regId, section, encryptedJson).map {
-            case Some(updatedSectionJson) =>
-              Ok(updatedSectionJson)
-            case _ =>
-              errorLog(s"[RegistrationSectionController][replaceSection] errored with Unable to upsert section '${section.key}' for regId '$regId'")
-              InternalServerError(s"[RegistrationSectionController][upsertSection] Unable to upsert section '${section.key}' for regId '$regId'")
-          }
-        case Left(response@InvalidSection(_)) =>
-          errorLog(s"[RegistrationSectionController][upsertSection] Missing keys: ${response.asString}")
-          Future.successful(BadRequest(response.asString))
+    * ===Purpose===
+    * Replaces the named section in the given registration with the given JSON
+    * ===Detail===
+    *
+    * @param regId
+    * @param sectionKey
+    * @return
+    *   OK - Json representation of the updated section<br> BAD_REQUEST - The request json was not valid for the given
+    *   section
+    */
+  def replaceSection(regId: String, section: RegistrationSectionId): Action[JsValue] = Action.async(parse.json) {
+    implicit request =>
+      isAuthenticated { internalId =>
+        sectionValidationService.validate(internalId, regId, section, request.body).flatMap {
+          case Right(ValidSection(validatedJson)) =>
+            val encryptedJson = cipherService.conditionallyEncrypt(section, validatedJson)
+            registrationService.upsertSection[JsValue](internalId, regId, section, encryptedJson).map {
+              case Some(updatedSectionJson) =>
+                Ok(updatedSectionJson)
+              case _                        =>
+                errorLog(
+                  s"[RegistrationSectionController][replaceSection] errored with Unable to upsert section '${section.key}' for regId '$regId'"
+                )
+                InternalServerError(
+                  s"[RegistrationSectionController][upsertSection] Unable to upsert section '${section.key}' for regId '$regId'"
+                )
+            }
+          case Left(response @ InvalidSection(_)) =>
+            errorLog(s"[RegistrationSectionController][upsertSection] Missing keys: ${response.asString}")
+            Future.successful(BadRequest(response.asString))
+        }
       }
-    }
   }
 
   /** DELETE /registrations/:regId/sections/:sectionId
-   * ===Purpose===
-   * Delete the named section in the given registration
-   * ===Detail===
-   *
-   * @param regId
-   * @param sectionKey
-   * @return NO_CONTENT
-   */
-  def deleteSection(regId: String, section: RegistrationSectionId): Action[AnyContent] = Action.async { implicit request =>
-    isAuthenticated { internalId =>
-      registrationService.deleteSection(internalId, regId, section).map { _ =>
-        NoContent
+    * ===Purpose===
+    * Delete the named section in the given registration
+    * ===Detail===
+    *
+    * @param regId
+    * @param sectionKey
+    * @return
+    *   NO_CONTENT
+    */
+  def deleteSection(regId: String, section: RegistrationSectionId): Action[AnyContent] = Action.async {
+    implicit request =>
+      isAuthenticated { internalId =>
+        registrationService.deleteSection(internalId, regId, section).map { _ =>
+          NoContent
+        }
       }
-    }
   }
 
 }

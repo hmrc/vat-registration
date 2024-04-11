@@ -29,12 +29,12 @@ import javax.inject.{Inject, Singleton}
 
 // scalastyle:off
 @Singleton
-class CustomerIdentificationBlockBuilder @Inject()() extends LoggingUtils{
+class CustomerIdentificationBlockBuilder @Inject() () extends LoggingUtils {
 
   def buildCustomerIdentificationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     (vatScheme.eligibilitySubmissionData, vatScheme.applicantDetails, vatScheme.business) match {
       case (Some(eligibilityData), Some(applicantDetails), Some(business)) =>
-        val entity = applicantDetails.entity.getOrElse{
+        val entity = applicantDetails.entity.getOrElse {
           errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - missing applicant entity")
           throw new InternalServerException("[CustomerIdentificationBlockBuilder] missing applicant entity")
         }
@@ -43,8 +43,8 @@ class CustomerIdentificationBlockBuilder @Inject()() extends LoggingUtils{
           "tradersPartyType" -> {
             eligibilityData match {
               case EligibilitySubmissionData(_, _, _, GroupRegistration, _, _, _, _) => TaxGroups
-              case EligibilitySubmissionData(_, _, NETP, _, _, _, _, _) => Individual
-              case EligibilitySubmissionData(_, _, partyType, _, _, _, _, _) => partyType
+              case EligibilitySubmissionData(_, _, NETP, _, _, _, _, _)              => Individual
+              case EligibilitySubmissionData(_, _, partyType, _, _, _, _, _)         => partyType
             }
           },
           optional("tradingName" -> business.tradingName.map(StringNormaliser.normaliseString))
@@ -52,59 +52,82 @@ class CustomerIdentificationBlockBuilder @Inject()() extends LoggingUtils{
           entity.bpSafeId match {
             case _ if eligibilityData.registrationReason.equals(GroupRegistration) =>
               jsonObject()
-            case Some(bpSafeId) =>
+            case Some(bpSafeId)                                                    =>
               jsonObject("primeBPSafeID" -> bpSafeId)
-            case None if entity.identifiers.nonEmpty =>
+            case None if entity.identifiers.nonEmpty                               =>
               jsonObject("customerID" -> Json.toJson(entity.identifiers))
-            case _ =>
+            case _                                                                 =>
               jsonObject()
           }
         } ++ {
           val shortOrgName = business.shortOrgName.map(StringNormaliser.normaliseString)
           entity match {
-            case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, bpSafeId, _, _, _, _) if bpSafeId.isEmpty =>
+            case SoleTraderIdEntity(firstName, lastName, dateOfBirth, _, _, _, bpSafeId, _, _, _, _)
+                if bpSafeId.isEmpty =>
               jsonObject(
-                "name" -> jsonObject(
+                "name"        -> jsonObject(
                   "firstName" -> firstName,
-                  "lastName" -> lastName
+                  "lastName"  -> lastName
                 ),
                 "dateOfBirth" -> dateOfBirth
               )
-            case IncorporatedEntity(companyName, _, _, _, bpSafeId, _, _, _, _, _) if bpSafeId.isEmpty =>
+            case IncorporatedEntity(companyName, _, _, _, bpSafeId, _, _, _, _, _) if bpSafeId.isEmpty  =>
               orgNameJson(companyName, shortOrgName)
-            case MinorEntity(companyName, _, _, _, _, _, _, _, _, bpSafeId, _) if bpSafeId.isEmpty =>
+            case MinorEntity(companyName, _, _, _, _, _, _, _, _, bpSafeId, _) if bpSafeId.isEmpty      =>
               orgNameJson(companyName, shortOrgName)
             case PartnershipIdEntity(_, _, companyName, _, _, _, bpSafeId, _, _, _) if bpSafeId.isEmpty =>
               orgNameJson(companyName, shortOrgName)
-            case _ => jsonObject() //Don't send company name when safeId is present
+            case _                                                                                      => jsonObject() // Don't send company name when safeId is present
           }
         }
-      case (None, _, _) =>
-        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not retrieve VAT scheme")
+      case (None, _, _)                                                    =>
+        errorLog(
+          "[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not retrieve VAT scheme"
+        )
         throw new InternalServerException("Could not retrieve VAT scheme")
-      case (_, None, _) =>
-        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing applicant details data")
-        throw new InternalServerException("Could not build customer identification block for submission due to missing applicant details data")
-      case (_, _, None) =>
-        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing business details data")
-        throw new InternalServerException("Could not build customer identification block for submission due to missing business details data")
-      case _ =>
-        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing data from applicant and trading details")
-        throw new InternalServerException("Could not build customer identification block for submission due to missing data from applicant and trading details")
+      case (_, None, _)                                                    =>
+        errorLog(
+          "[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing applicant details data"
+        )
+        throw new InternalServerException(
+          "Could not build customer identification block for submission due to missing applicant details data"
+        )
+      case (_, _, None)                                                    =>
+        errorLog(
+          "[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing business details data"
+        )
+        throw new InternalServerException(
+          "Could not build customer identification block for submission due to missing business details data"
+        )
+      case _                                                               =>
+        errorLog(
+          "[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - Could not build customer identification block for submission due to missing data from applicant and trading details"
+        )
+        throw new InternalServerException(
+          "Could not build customer identification block for submission due to missing data from applicant and trading details"
+        )
     }
 
-  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String])(implicit request: Request[_]): JsObject =
+  private def orgNameJson(orgName: Option[String], optShortOrgName: Option[String])(implicit
+    request: Request[_]
+  ): JsObject =
     (orgName.map(StringNormaliser.normaliseString), optShortOrgName.map(StringNormaliser.normaliseString)) match {
-      case (Some(orgName), Some(shortOrgName)) => jsonObject(
-        "shortOrgName" -> shortOrgName,
-        "organisationName" -> orgName
-      )
-      case (Some(orgName), None) => jsonObject(
-        "shortOrgName" -> orgName,
-        "organisationName" -> orgName
-      )
-      case _ =>
-        errorLog("[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - missing organisation name for a partyType that requires it")
-        throw new InternalServerException("[EntitiesBlockBuilder] missing organisation name for a partyType that requires it")
+      case (Some(orgName), Some(shortOrgName)) =>
+        jsonObject(
+          "shortOrgName"     -> shortOrgName,
+          "organisationName" -> orgName
+        )
+      case (Some(orgName), None)               =>
+        jsonObject(
+          "shortOrgName"     -> orgName,
+          "organisationName" -> orgName
+        )
+      case _                                   =>
+        errorLog(
+          "[CustomerIdentificationBlockBuilder][buildCustomerIdentificationBlock] - missing organisation name for a partyType that requires it"
+        )
+        throw new InternalServerException(
+          "[EntitiesBlockBuilder] missing organisation name for a partyType that requires it"
+        )
     }
 }

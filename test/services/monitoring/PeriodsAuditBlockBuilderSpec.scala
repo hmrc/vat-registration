@@ -33,7 +33,9 @@ class PeriodsAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
   "the periods block builder" should {
     "write the correct json for the monthly stagger" in {
       val testScheme = testVatScheme.copy(
-        vatApplication = Some(testVatApplicationDetails).map(_.copy(returnsFrequency = Some(Monthly), staggerStart = Some(MonthlyStagger)))
+        vatApplication = Some(testVatApplicationDetails).map(
+          _.copy(returnsFrequency = Some(Monthly), staggerStart = Some(MonthlyStagger))
+        )
       )
 
       val res = TestBuilder.buildPeriodsBlock(testScheme)

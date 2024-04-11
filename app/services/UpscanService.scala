@@ -25,7 +25,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) extends LoggingUtils {
+class UpscanService @Inject() (upscanMongoRepository: UpscanMongoRepository) extends LoggingUtils {
 
   def getUpscanDetails(reference: String)(implicit request: Request[_]): Future[Option[UpscanDetails]] = {
     infoLog(s"[UpscanService][getUpscanDetails] attempting to get upscan details from mongo for reference: $reference")
@@ -33,11 +33,15 @@ class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) exte
   }
 
   def getAllUpscanDetails(registrationId: String)(implicit request: Request[_]): Future[Seq[UpscanDetails]] = {
-    infoLog(s"[UpscanService][getAllUpscanDetails] attempting to get all upscan details from mongo for regId: $registrationId")
+    infoLog(
+      s"[UpscanService][getAllUpscanDetails] attempting to get all upscan details from mongo for regId: $registrationId"
+    )
     upscanMongoRepository.getAllUpscanDetails(registrationId)
   }
 
-  def createUpscanDetails(registrationId: String, details: UpscanCreate)(implicit request: Request[_]): Future[UpscanDetails] = {
+  def createUpscanDetails(registrationId: String, details: UpscanCreate)(implicit
+    request: Request[_]
+  ): Future[UpscanDetails] = {
     val newUpscanDetails = UpscanDetails(
       registrationId = Some(registrationId),
       reference = details.reference,
@@ -45,22 +49,24 @@ class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) exte
       fileStatus = InProgress
     )
 
-    infoLog(s"[UpscanService][createUpscanDetails] attempting to create upscan details record in mongo:" +
-      s"\n regId: $registrationId" +
-      s"\n reference: ${details.reference}" +
-      s"\n attachmentType: ${details.attachmentType}" +
-      s"\n fileStatus: ${newUpscanDetails.fileStatus}"
+    infoLog(
+      s"[UpscanService][createUpscanDetails] attempting to create upscan details record in mongo:" +
+        s"\n regId: $registrationId" +
+        s"\n reference: ${details.reference}" +
+        s"\n attachmentType: ${details.attachmentType}" +
+        s"\n fileStatus: ${newUpscanDetails.fileStatus}"
     )
 
     upscanMongoRepository.upsertUpscanDetails(newUpscanDetails)
   }
 
   def upsertUpscanDetails(upscanDetails: UpscanDetails)(implicit request: Request[_]): Future[UpscanDetails] = {
-    infoLog(s"[UpscanService][upsertUpscanDetails] attempting to create upscan details record in mongo:" +
-      s"\n regId: ${upscanDetails.registrationId}" +
-      s"\n reference: ${upscanDetails.reference}" +
-      s"\n attachmentType: ${upscanDetails.attachmentType}" +
-      s"\n fileStatus: ${upscanDetails.fileStatus}"
+    infoLog(
+      s"[UpscanService][upsertUpscanDetails] attempting to create upscan details record in mongo:" +
+        s"\n regId: ${upscanDetails.registrationId}" +
+        s"\n reference: ${upscanDetails.reference}" +
+        s"\n attachmentType: ${upscanDetails.attachmentType}" +
+        s"\n fileStatus: ${upscanDetails.fileStatus}"
     )
 
     upscanMongoRepository.upsertUpscanDetails(upscanDetails)
@@ -72,7 +78,9 @@ class UpscanService @Inject()(upscanMongoRepository: UpscanMongoRepository) exte
   }
 
   def deleteAllUpscanDetails(registrationId: String)(implicit request: Request[_]): Future[Boolean] = {
-    infoLog(s"[UpscanService][deleteAllUpscanDetails] attempting to delete all upscan details for regId $registrationId")
+    infoLog(
+      s"[UpscanService][deleteAllUpscanDetails] attempting to delete all upscan details for regId $registrationId"
+    )
     upscanMongoRepository.deleteAllUpscanDetails(registrationId)
   }
 }

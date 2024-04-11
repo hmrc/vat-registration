@@ -23,12 +23,14 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class VatSchemeHeader(registrationId: String,
-                           status: VatRegStatus.Value,
-                           applicationReference: Option[String] = None,
-                           confirmInformationDeclaration: Option[Boolean] = None,
-                           createdDate: LocalDate,
-                           requiresAttachments: Boolean)
+case class VatSchemeHeader(
+  registrationId: String,
+  status: VatRegStatus.Value,
+  applicationReference: Option[String] = None,
+  confirmInformationDeclaration: Option[Boolean] = None,
+  createdDate: LocalDate,
+  requiresAttachments: Boolean
+)
 
 case object VatSchemeHeader {
   val reads: Reads[VatSchemeHeader] = (
@@ -38,10 +40,9 @@ case object VatSchemeHeader {
       (__ \ "confirmInformationDeclaration").readNullable[Boolean] and
       (__ \ "createdDate").read[LocalDate] and
       (__ \ "attachments").readNullable[Attachments].fmap(block => block.exists(_.method.isDefined))
-    ) (VatSchemeHeader.apply _)
+  )(VatSchemeHeader.apply _)
 
   val writes: Writes[VatSchemeHeader] = Json.writes[VatSchemeHeader]
 
   implicit val format: Format[VatSchemeHeader] = Format[VatSchemeHeader](reads, writes)
 }
-

@@ -32,6 +32,8 @@ trait MockComplianceBlockBuilder extends MockitoSugar {
   val mockComplianceBlockBuilder = mock[ComplianceBlockBuilder]
 
   def mockBuildComplianceBlock(vatScheme: VatScheme)(response: Option[JsObject]): OngoingStubbing[Option[JsObject]] =
-    when(mockComplianceBlockBuilder.buildComplianceBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]])).thenReturn(response)
+    when(
+      mockComplianceBlockBuilder.buildComplianceBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]])
+    ).thenReturn(response)
 
 }

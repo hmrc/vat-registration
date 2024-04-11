@@ -17,7 +17,6 @@
 package controllers.test
 
 import auth.Authorisation
-import play.api.Logging
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.VatSchemeRepository
 import services.submission.SubmissionPayloadBuilder
@@ -29,18 +28,22 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class RetrieveVatSubmissionController @Inject()(cc: ControllerComponents,
-                                                submissionPayloadBuilder: SubmissionPayloadBuilder,
-                                                val authConnector: AuthConnector,
-                                                val resourceConn: VatSchemeRepository
-                                               )(implicit val executionContext: ExecutionContext) extends BackendController(cc) with Authorisation {
+class RetrieveVatSubmissionController @Inject() (
+  cc: ControllerComponents,
+  submissionPayloadBuilder: SubmissionPayloadBuilder,
+  val authConnector: AuthConnector,
+  val resourceConn: VatSchemeRepository
+)(implicit val executionContext: ExecutionContext)
+    extends BackendController(cc)
+    with Authorisation {
 
   def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
       for {
-        vatScheme <- resourceConn.getRegistration(internalId, regId)
-          .map(_.getOrElse(throw new InternalServerException("Missing VatScheme")))
-        payload = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
+        vatScheme <- resourceConn
+                       .getRegistration(internalId, regId)
+                       .map(_.getOrElse(throw new InternalServerException("Missing VatScheme")))
+        payload    = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
       } yield Ok(payload)
     }
   }

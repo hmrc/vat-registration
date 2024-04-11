@@ -1,3 +1,18 @@
+/*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package controllers.registrations
 
@@ -8,7 +23,7 @@ import models.api.VatScheme
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 import play.api.test.Helpers._
 import services.RegistrationIdService
 import utils.TimeMachine
@@ -17,8 +32,8 @@ import scala.concurrent.ExecutionContext
 
 class RegistrationControllerISpec extends IntegrationStubbing {
 
-  implicit val fmt = VatScheme.format()
-  implicit val ec = ExecutionContext.Implicits.global
+  implicit val fmt: OFormat[VatScheme] = VatScheme.format()
+  implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(config)
@@ -31,7 +46,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
 
   def registrationUrl(regID: String) = s"$registrationsUrl/$regID"
 
-  val testRegId2 = testRegId + "2"
+  val testRegId2: String = testRegId + "2"
 
   val testVatScheme2: VatScheme = testVatScheme.copy(registrationId = testRegId2)
   val testVatSchemeHeader: VatSchemeHeader = VatSchemeHeader(
@@ -56,7 +71,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
         insertIntoDb(testVatScheme)
         insertIntoDb(testVatScheme2)
 
-        val res = await(client(registrationsUrl).get)
+        val res = await(client(registrationsUrl).get())
 
         res.status mustBe OK
         res.json mustBe Json.toJson(Seq(testVatSchemeHeader, testVatSchemeHeader2))
@@ -66,7 +81,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
       "return OK with an empty list" in new SetupHelper {
         given.user.isAuthorised
 
-        val res = await(client(registrationsUrl).get)
+        val res = await(client(registrationsUrl).get())
 
         res.status mustBe OK
         res.json mustBe Json.toJson(Nil)
@@ -107,7 +122,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
         given.user.isAuthorised
         insertIntoDb(testVatScheme)
 
-        val res = await(client(registrationUrl(testRegId)).get)
+        val res = await(client(registrationUrl(testRegId)).get())
 
         res.status mustBe OK
         res.json mustBe Json.toJson(testVatScheme)
@@ -116,7 +131,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
         given.user.isAuthorised
         insertIntoDb(testVatScheme.copy(applicationReference = Some(testApplicationReference)))
 
-        val res = await(client(registrationUrl(testRegId)).get)
+        val res = await(client(registrationUrl(testRegId)).get())
 
         res.status mustBe OK
         res.json mustBe Json.toJson(testVatScheme.copy(applicationReference = Some(testApplicationReference)))
@@ -126,7 +141,7 @@ class RegistrationControllerISpec extends IntegrationStubbing {
       "return NOT FOUND" in new SetupHelper {
         given.user.isAuthorised
 
-        val res = await(client(registrationUrl(testRegId)).get)
+        val res = await(client(registrationUrl(testRegId)).get())
 
         res.status mustBe NOT_FOUND
       }

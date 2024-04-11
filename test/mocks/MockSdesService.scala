@@ -32,19 +32,19 @@ trait MockSdesService {
 
   val mockSdesService: SdesService = mock[SdesService]
 
-  def mockNotifySdes(regId: String,
-                     formBundleId: String,
-                     nrsSubmissionId: Option[String],
-                     providerId: String,
-                     result: Future[Seq[SdesNotificationResult]]): OngoingStubbing[Future[Seq[SdesNotificationResult]]] =
+  def mockNotifySdes(
+    regId: String,
+    formBundleId: String,
+    nrsSubmissionId: Option[String],
+    providerId: String,
+    result: Future[Seq[SdesNotificationResult]]
+  ): OngoingStubbing[Future[Seq[SdesNotificationResult]]] =
     when(
       mockSdesService.notifySdes(
         ArgumentMatchers.eq(regId),
         ArgumentMatchers.eq(formBundleId),
         ArgumentMatchers.eq(nrsSubmissionId),
         ArgumentMatchers.eq(providerId)
-      )(ArgumentMatchers.any[HeaderCarrier],
-        ArgumentMatchers.any[Request[_]],
-        ArgumentMatchers.any[ExecutionContext])
+      )(ArgumentMatchers.any[HeaderCarrier], ArgumentMatchers.any[Request[_]], ArgumentMatchers.any[ExecutionContext])
     ).thenReturn(result)
 }

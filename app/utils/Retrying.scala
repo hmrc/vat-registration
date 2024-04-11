@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 object Retrying {
-  private val fibonacci: Stream[Int] = 1 #:: fibonacci.scanLeft(1)(_ + _)
+  private val fibonacci: LazyList[Int] = 1 #:: fibonacci.scanLeft(1)(_ + _)
 
   def fibonacciDelays(initialDelay: FiniteDuration, numRetries: Int): List[FiniteDuration] =
     fibonacci.take(numRetries).map(i => i * initialDelay).toList
@@ -35,21 +35,21 @@ trait Retrying {
   implicit val ec: ExecutionContext
 
   /** Retries an operation returning a future
-   * @param delays
-   *   delays between retries
-   * @param retryCondition
-   *   whether to retry based on a result or otherwise return that result (which may be a failed future)
-   * @param task
-   *   the task returning a future (a function that accepts the attempt number)
-   * @return
-   *   the result of the last attempt
-   */
+    * @param delays
+    *   delays between retries
+    * @param retryCondition
+    *   whether to retry based on a result or otherwise return that result (which may be a failed future)
+    * @param task
+    *   the task returning a future (a function that accepts the attempt number)
+    * @return
+    *   the result of the last attempt
+    */
   def retry[A](delays: List[FiniteDuration], retryCondition: Try[A] => Boolean)(task: Int => Future[A]): Future[A] = {
 
     def loop(attemptNumber: Int, delays: List[FiniteDuration]): Future[A] = {
       def retryIfPossible(result: Try[A]): Future[A] =
         delays match {
-          case Nil => Future.fromTry(result)
+          case Nil           => Future.fromTry(result)
           case delay :: tail =>
             if (retryCondition(result)) {
               for {

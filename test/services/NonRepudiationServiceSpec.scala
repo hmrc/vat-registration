@@ -36,34 +36,41 @@ import java.security.MessageDigest
 import java.util.Base64
 import scala.concurrent.Future
 
-class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with VatRegistrationFixture with Eventually with MockUpscanMongoRepository {
+class NonRepudiationServiceSpec
+    extends VatRegSpec
+    with MockAuditService
+    with VatRegistrationFixture
+    with Eventually
+    with MockUpscanMongoRepository {
 
   import AuthTestData._
 
-  object TestService extends NonRepudiationService(
-    mockNonRepudiationConnector,
-    mockUpscanMongoRepository,
-    mockAuditService,
-    mockAuthConnector
-  )
+  object TestService
+      extends NonRepudiationService(
+        mockNonRepudiationConnector,
+        mockUpscanMongoRepository,
+        mockAuditService,
+        mockAuthConnector
+      )
 
-  implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization(testAuthToken)))
+  implicit val hc: HeaderCarrier            = HeaderCarrier(authorization = Some(Authorization(testAuthToken)))
   implicit val request: Request[AnyContent] = FakeRequest()
 
   val testFormBundleId = "testFormBundleId"
 
   "submitNonRepudiation" should {
     "call the nonRepudiationConnector with the correctly formatted metadata" in {
-      val testSubmissionId = "testSubmissionId"
-      val testPayloadString = "testPayloadString"
+      val testSubmissionId   = "testSubmissionId"
+      val testPayloadString  = "testPayloadString"
       val testRegistrationId = "testRegistrationId"
 
-      val testPayloadChecksum = MessageDigest.getInstance("SHA-256")
+      val testPayloadChecksum = MessageDigest
+        .getInstance("SHA-256")
         .digest(testPayloadString.getBytes(StandardCharsets.UTF_8))
-        .map("%02x".format(_)).mkString
+        .map("%02x".format(_))
+        .mkString
 
       val testEncodedPayload = Base64.getEncoder.encodeToString(testPayloadString.getBytes(StandardCharsets.UTF_8))
-
 
       val expectedMetadata = NonRepudiationMetadata(
         businessId = "vrs",
@@ -77,22 +84,31 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
         searchKeys = Map("formBundleId" -> testFormBundleId)
       )
 
-      when(mockNonRepudiationConnector.submitNonRepudiation(
-        ArgumentMatchers.eq(testEncodedPayload),
-        ArgumentMatchers.eq(expectedMetadata),
-        ArgumentMatchers.eq(Nil)
-      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request)))
+      when(
+        mockNonRepudiationConnector.submitNonRepudiation(
+          ArgumentMatchers.eq(testEncodedPayload),
+          ArgumentMatchers.eq(expectedMetadata),
+          ArgumentMatchers.eq(Nil)
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+      )
         .thenReturn(Future.successful(NonRepudiationSubmissionAccepted(testSubmissionId)))
 
-      when(mockAuthConnector.authorise(
-        ArgumentMatchers.eq(EmptyPredicate),
-        ArgumentMatchers.eq(NonRepudiationService.nonRepudiationIdentityRetrievals
-        ))(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(executionContext))
+      when(
+        mockAuthConnector.authorise(
+          ArgumentMatchers.eq(EmptyPredicate),
+          ArgumentMatchers.eq(NonRepudiationService.nonRepudiationIdentityRetrievals)
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(executionContext))
       ).thenReturn(Future.successful(testAuthRetrievals))
 
       mockGetAllUpscanDetails(testRegistrationId)(Future.successful(Nil))
 
-      val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testFormBundleId, testUserHeaders)
+      val res = TestService.submitNonRepudiation(
+        testRegistrationId,
+        testPayloadString,
+        testDateTime,
+        testFormBundleId,
+        testUserHeaders
+      )
 
       await(res) mustBe Some(testSubmissionId)
 
@@ -101,15 +117,16 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
       }
     }
     "audit when the non repudiation call fails" in {
-      val testPayloadString = "testPayloadString"
+      val testPayloadString  = "testPayloadString"
       val testRegistrationId = "testRegistrationId"
 
-      val testPayloadChecksum = MessageDigest.getInstance("SHA-256")
+      val testPayloadChecksum = MessageDigest
+        .getInstance("SHA-256")
         .digest(testPayloadString.getBytes(StandardCharsets.UTF_8))
-        .map("%02x".format(_)).mkString
+        .map("%02x".format(_))
+        .mkString
 
       val testEncodedPayload = Base64.getEncoder.encodeToString(testPayloadString.getBytes(StandardCharsets.UTF_8))
-
 
       val expectedMetadata = NonRepudiationMetadata(
         businessId = "vrs",
@@ -125,22 +142,31 @@ class NonRepudiationServiceSpec extends VatRegSpec with MockAuditService with Va
 
       val testExceptionMessage = "testExceptionMessage"
 
-      when(mockAuthConnector.authorise(
-        ArgumentMatchers.eq(EmptyPredicate),
-        ArgumentMatchers.eq(NonRepudiationService.nonRepudiationIdentityRetrievals
-        ))(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(executionContext))
+      when(
+        mockAuthConnector.authorise(
+          ArgumentMatchers.eq(EmptyPredicate),
+          ArgumentMatchers.eq(NonRepudiationService.nonRepudiationIdentityRetrievals)
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(executionContext))
       ).thenReturn(Future.successful(testAuthRetrievals))
 
-      when(mockNonRepudiationConnector.submitNonRepudiation(
-        ArgumentMatchers.eq(testEncodedPayload),
-        ArgumentMatchers.eq(expectedMetadata),
-        ArgumentMatchers.eq(Nil)
-      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request)))
+      when(
+        mockNonRepudiationConnector.submitNonRepudiation(
+          ArgumentMatchers.eq(testEncodedPayload),
+          ArgumentMatchers.eq(expectedMetadata),
+          ArgumentMatchers.eq(Nil)
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+      )
         .thenReturn(Future.successful(NonRepudiationSubmissionFailed(testExceptionMessage, NOT_FOUND)))
 
       mockGetAllUpscanDetails(testRegistrationId)(Future.successful(Nil))
 
-      val res = TestService.submitNonRepudiation(testRegistrationId, testPayloadString, testDateTime, testFormBundleId, testUserHeaders)
+      val res = TestService.submitNonRepudiation(
+        testRegistrationId,
+        testPayloadString,
+        testDateTime,
+        testFormBundleId,
+        testUserHeaders
+      )
 
       await(res) mustBe None
 

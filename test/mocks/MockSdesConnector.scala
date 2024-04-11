@@ -32,7 +32,10 @@ trait MockSdesConnector {
 
   val mockSdesConnector: SdesConnector = mock[SdesConnector]
 
-  def mockNotifySdes(payload: SdesNotification, result: Future[SdesNotificationResult]): OngoingStubbing[Future[SdesNotificationResult]] =
+  def mockNotifySdes(
+    payload: SdesNotification,
+    result: Future[SdesNotificationResult]
+  ): OngoingStubbing[Future[SdesNotificationResult]] =
     when(
       mockSdesConnector.notifySdes(ArgumentMatchers.eq(payload))(ArgumentMatchers.any[HeaderCarrier])
     ).thenReturn(result)

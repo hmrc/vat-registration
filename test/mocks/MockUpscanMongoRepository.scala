@@ -32,30 +32,44 @@ trait MockUpscanMongoRepository extends MockitoSugar with VatRegistrationFixture
 
   val mockUpscanMongoRepository: UpscanMongoRepository = mock[UpscanMongoRepository]
 
-  def mockGetUpscanDetails(reference: String)(response: Future[Option[UpscanDetails]]): OngoingStubbing[Future[Option[UpscanDetails]]] =
-    when(mockUpscanMongoRepository.getUpscanDetails(
-      ArgumentMatchers.eq(reference)
-    )).thenReturn(response)
+  def mockGetUpscanDetails(
+    reference: String
+  )(response: Future[Option[UpscanDetails]]): OngoingStubbing[Future[Option[UpscanDetails]]] =
+    when(
+      mockUpscanMongoRepository.getUpscanDetails(
+        ArgumentMatchers.eq(reference)
+      )
+    ).thenReturn(response)
 
-  def mockGetAllUpscanDetails(regId: String)(response: Future[Seq[UpscanDetails]]): OngoingStubbing[Future[Seq[UpscanDetails]]] =
-    when(mockUpscanMongoRepository.getAllUpscanDetails(
-      ArgumentMatchers.eq(regId)
-    )).thenReturn(response)
+  def mockGetAllUpscanDetails(
+    regId: String
+  )(response: Future[Seq[UpscanDetails]]): OngoingStubbing[Future[Seq[UpscanDetails]]] =
+    when(
+      mockUpscanMongoRepository.getAllUpscanDetails(
+        ArgumentMatchers.eq(regId)
+      )
+    ).thenReturn(response)
 
-  def mockUpsertUpscanDetails(upscanDetails: UpscanDetails)(response: Future[UpscanDetails]): OngoingStubbing[Future[UpscanDetails]] =
-    {
-      when(mockUpscanMongoRepository.upsertUpscanDetails(
+  def mockUpsertUpscanDetails(
+    upscanDetails: UpscanDetails
+  )(response: Future[UpscanDetails]): OngoingStubbing[Future[UpscanDetails]] =
+    when(
+      mockUpscanMongoRepository.upsertUpscanDetails(
         ArgumentMatchers.eq(upscanDetails)
-      )).thenReturn(response)
-    }
+      )
+    ).thenReturn(response)
 
   def mockDeleteUpscanDetails(reference: String)(response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
-    when(mockUpscanMongoRepository.deleteUpscanDetails(
-      ArgumentMatchers.eq(reference)
-    )).thenReturn(response)
+    when(
+      mockUpscanMongoRepository.deleteUpscanDetails(
+        ArgumentMatchers.eq(reference)
+      )
+    ).thenReturn(response)
 
   def mockDeleteAllUpscanDetails(regId: String)(response: Future[Boolean]): OngoingStubbing[Future[Boolean]] =
-    when(mockUpscanMongoRepository.deleteAllUpscanDetails(
-      ArgumentMatchers.eq(regId)
-    )).thenReturn(response)
+    when(
+      mockUpscanMongoRepository.deleteAllUpscanDetails(
+        ArgumentMatchers.eq(regId)
+      )
+    ).thenReturn(response)
 }

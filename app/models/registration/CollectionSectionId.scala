@@ -24,31 +24,31 @@ sealed trait CollectionSectionId extends RegistrationSectionId {
 }
 
 case object OtherBusinessInvolvementsSectionId extends CollectionSectionId {
-  val key = "other-business-involvements"
-  val repoKey = "otherBusinessInvolvements"
+  val key      = "other-business-involvements"
+  val repoKey  = "otherBusinessInvolvements"
   val maxIndex = 10
 }
 
 case object EntitiesSectionId extends CollectionSectionId {
-  val key = "entities"
+  val key             = "entities"
   val repoKey: String = key
-  val maxIndex = 50
+  val maxIndex        = 50
 }
 
 object CollectionSectionId {
   // scalastyle:off
   implicit def urlBinder(implicit stringBinder: PathBindable[String]): PathBindable[CollectionSectionId] =
     new PathBindable[CollectionSectionId] {
-      override def bind(key: String, value: String): Either[String, CollectionSectionId] = {
+      override def bind(key: String, value: String): Either[String, CollectionSectionId] =
         for {
-          id <- stringBinder.bind(key, value).right
+          id      <- stringBinder.bind(key, value)
           section <- (key, id) match {
-            case ("section", OtherBusinessInvolvementsSectionId.key) => Right(OtherBusinessInvolvementsSectionId)
-            case ("section", EntitiesSectionId.key) => Right(EntitiesSectionId)
-            case _ => Left("Invalid registration section")
-          }
+                       case ("section", OtherBusinessInvolvementsSectionId.key) =>
+                         Right(OtherBusinessInvolvementsSectionId)
+                       case ("section", EntitiesSectionId.key)                  => Right(EntitiesSectionId)
+                       case _                                                   => Left("Invalid registration section")
+                     }
         } yield section
-      }
 
       override def unbind(key: String, value: CollectionSectionId): String =
         stringBinder.unbind(key, value.key)

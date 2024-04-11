@@ -26,19 +26,19 @@ class EntitiesArrayTypeSpec extends VatRegSpec {
   "reads" must {
     "parse 1 to GroupMemberEntity" in {
       val testJson = Json.obj(fieldName -> "1")
-      val res = (testJson \ fieldName).validate[EntitiesArrayType].asOpt
+      val res      = (testJson \ fieldName).validate[EntitiesArrayType].asOpt
 
       res mustBe Some(GroupMemberEntity)
     }
     "parse 2 to GroupRepMemberEntity" in {
       val testJson = Json.obj(fieldName -> "2")
-      val res = (testJson \ fieldName).validate[EntitiesArrayType].asOpt
+      val res      = (testJson \ fieldName).validate[EntitiesArrayType].asOpt
 
       res mustBe Some(GroupRepMemberEntity)
     }
     "parse 3 to PartnerEntity" in {
       val testJson = Json.obj(fieldName -> "3")
-      val res = (testJson \ fieldName).validate[EntitiesArrayType].asOpt
+      val res      = (testJson \ fieldName).validate[EntitiesArrayType].asOpt
 
       res mustBe Some(PartnerEntity)
     }

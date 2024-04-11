@@ -32,18 +32,21 @@ trait MockSubmissionAuditBlockBuilder extends MockitoSugar {
 
   val mockSubmissionAuditBlockBuilder = mock[SubmissionAuditBlockBuilder]
 
-  def mockBuildAuditJson(vatScheme: VatScheme,
-                         authProviderId: String,
-                         affinityGroup: AffinityGroup,
-                         optAgentReferenceNumber: Option[String],
-                         formBundleId: String)
-                        (response: SubmissionAuditModel): OngoingStubbing[SubmissionAuditModel] =
-    when(mockSubmissionAuditBlockBuilder.buildAuditJson(
-      ArgumentMatchers.eq(vatScheme),
-      ArgumentMatchers.eq(authProviderId),
-      ArgumentMatchers.eq(affinityGroup),
-      ArgumentMatchers.eq(optAgentReferenceNumber),
-      ArgumentMatchers.eq(formBundleId)
-    )(ArgumentMatchers.any[Request[_]])) thenReturn response
+  def mockBuildAuditJson(
+    vatScheme: VatScheme,
+    authProviderId: String,
+    affinityGroup: AffinityGroup,
+    optAgentReferenceNumber: Option[String],
+    formBundleId: String
+  )(response: SubmissionAuditModel): OngoingStubbing[SubmissionAuditModel] =
+    when(
+      mockSubmissionAuditBlockBuilder.buildAuditJson(
+        ArgumentMatchers.eq(vatScheme),
+        ArgumentMatchers.eq(authProviderId),
+        ArgumentMatchers.eq(affinityGroup),
+        ArgumentMatchers.eq(optAgentReferenceNumber),
+        ArgumentMatchers.eq(formBundleId)
+      )(ArgumentMatchers.any[Request[_]])
+    ) thenReturn response
 
 }

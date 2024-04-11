@@ -24,17 +24,17 @@ case object QuarterlyPayment extends PaymentFrequency
 
 object PaymentFrequency {
 
-  val monthly: String = "M"
+  val monthly: String   = "M"
   val quarterly: String = "Q"
 
   val reads: Reads[PaymentFrequency] = Reads[PaymentFrequency] {
-    case JsString(`monthly`) => JsSuccess(MonthlyPayment)
+    case JsString(`monthly`)   => JsSuccess(MonthlyPayment)
     case JsString(`quarterly`) => JsSuccess(QuarterlyPayment)
-    case _ => JsError("Could not parse payment frequency")
+    case _                     => JsError("Could not parse payment frequency")
   }
 
   val writes: Writes[PaymentFrequency] = Writes[PaymentFrequency] {
-    case MonthlyPayment => JsString(monthly)
+    case MonthlyPayment   => JsString(monthly)
     case QuarterlyPayment => JsString(quarterly)
   }
 

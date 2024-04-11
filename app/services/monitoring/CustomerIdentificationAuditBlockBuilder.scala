@@ -28,13 +28,15 @@ import javax.inject.Singleton
 
 // scalastyle:off
 @Singleton
-class CustomerIdentificationAuditBlockBuilder extends LoggingUtils{
+class CustomerIdentificationAuditBlockBuilder extends LoggingUtils {
 
-  def buildCustomerIdentificationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsValue = {
+  def buildCustomerIdentificationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsValue =
     (vatScheme.applicantDetails, vatScheme.business) match {
       case (Some(applicantDetails), Some(business)) =>
-        val entity = applicantDetails.entity.getOrElse{
-          errorLog("[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - missing applicant entity")
+        val entity = applicantDetails.entity.getOrElse {
+          errorLog(
+            "[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - missing applicant entity"
+          )
           throw new InternalServerException("[CustomerIdentificationBlockBuilder] missing applicant entity")
         }
 
@@ -43,57 +45,70 @@ class CustomerIdentificationAuditBlockBuilder extends LoggingUtils{
           optional("identifiers" -> {
             entity match {
               case IncorporatedEntity(_, companyNumber, _, optCtutr, _, _, _, _, _, optChrn) =>
-                Some(jsonObject(
-                  "companyRegistrationNumber" -> companyNumber,
-                  optional("ctUTR" -> optCtutr),
-                  optional("CHRN" -> optChrn)
-                ))
-              case SoleTraderIdEntity(_, _, _, optNino, optUtr, _, _, _, _, _, _) =>
-                Some(jsonObject(
-                  optional("NINO" -> optNino),
-                  optional("saUTR" -> optUtr)
-                ))
-              case PartnershipIdEntity(optUtr, _, _, _, _, optChrn, _, _, _, _) =>
-                Some(jsonObject(
-                  optional("saUTR" -> optUtr),
-                  optional("CHRN" -> optChrn)
-                ))
-              case _ =>
+                Some(
+                  jsonObject(
+                    "companyRegistrationNumber" -> companyNumber,
+                    optional("ctUTR" -> optCtutr),
+                    optional("CHRN"  -> optChrn)
+                  )
+                )
+              case SoleTraderIdEntity(_, _, _, optNino, optUtr, _, _, _, _, _, _)            =>
+                Some(
+                  jsonObject(
+                    optional("NINO"  -> optNino),
+                    optional("saUTR" -> optUtr)
+                  )
+                )
+              case PartnershipIdEntity(optUtr, _, _, _, _, optChrn, _, _, _, _)              =>
+                Some(
+                  jsonObject(
+                    optional("saUTR" -> optUtr),
+                    optional("CHRN"  -> optChrn)
+                  )
+                )
+              case _                                                                         =>
                 None
             }
           }),
           optionalRequiredIf(applicantDetails.personalDetails.exists(_.arn.isEmpty))(
-            "dateOfBirth" -> applicantDetails.personalDetails.flatMap(_.dateOfBirth)
+            "dateOfBirth"        -> applicantDetails.personalDetails.flatMap(_.dateOfBirth)
           ),
           optional("tradingName" -> business.tradingName)
         ) ++ {
           (business.shortOrgName, getCompanyName(entity)) match {
-            case (Some(shortOrgName), Some(companyName)) => jsonObject(
-              "shortOrgName" -> shortOrgName,
-              "organisationName" -> companyName
-            )
-            case (None, optCompanyName) => jsonObject(
-              optional("shortOrgName" -> optCompanyName),
-              optional("organisationName" -> optCompanyName)
-            )
+            case (Some(shortOrgName), Some(companyName)) =>
+              jsonObject(
+                "shortOrgName"     -> shortOrgName,
+                "organisationName" -> companyName
+              )
+            case (None, optCompanyName)                  =>
+              jsonObject(
+                optional("shortOrgName"     -> optCompanyName),
+                optional("organisationName" -> optCompanyName)
+              )
           }
         }
-      case (None, _) =>
-        errorLog("[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - Could not build customerIdentification block due to missing Applicant details data")
-        throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Applicant details data")
-      case (_, None) =>
-        errorLog("[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - Could not build customerIdentification block due to missing Business details data")
-        throw new InternalServerException("[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Business details data")
+      case (None, _)                                =>
+        errorLog(
+          "[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - Could not build customerIdentification block due to missing Applicant details data"
+        )
+        throw new InternalServerException(
+          "[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Applicant details data"
+        )
+      case (_, None)                                =>
+        errorLog(
+          "[CustomerIdentificationAuditBlockBuilder][buildCustomerIdentificationBlock] - Could not build customerIdentification block due to missing Business details data"
+        )
+        throw new InternalServerException(
+          "[CustomerIdentificationBlockBuilder][Audit] Could not build customerIdentification block due to missing Business details data"
+        )
     }
-  }
 
-
-  def getCompanyName(entity: BusinessEntity): Option[String] = {
+  def getCompanyName(entity: BusinessEntity): Option[String] =
     entity match {
-      case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _) => companyName
-      case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _) => companyName
+      case IncorporatedEntity(companyName, _, _, _, _, _, _, _, _, _)  => companyName
+      case MinorEntity(companyName, _, _, _, _, _, _, _, _, _, _)      => companyName
       case PartnershipIdEntity(_, _, companyName, _, _, _, _, _, _, _) => companyName
-      case _ => None
+      case _                                                           => None
     }
-  }
 }

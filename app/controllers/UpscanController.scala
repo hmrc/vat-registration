@@ -29,27 +29,36 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class UpscanController @Inject()(controllerComponents: ControllerComponents,
-                                 upscanService: UpscanService,
-                                 val authConnector: AuthConnector
-                                )(implicit val executionContext: ExecutionContext)
-  extends BackendController(controllerComponents) with Authorisation {
+class UpscanController @Inject() (
+  controllerComponents: ControllerComponents,
+  upscanService: UpscanService,
+  val authConnector: AuthConnector
+)(implicit val executionContext: ExecutionContext)
+    extends BackendController(controllerComponents)
+    with Authorisation {
 
-  def createUpscanDetails(regId: String): Action[UpscanCreate] = Action.async(parse.json[UpscanCreate]) { implicit request =>
-    isAuthenticated { _ =>
-      upscanService.createUpscanDetails(regId, request.body).map(_ => Ok)
-    }
+  def createUpscanDetails(regId: String): Action[UpscanCreate] = Action.async(parse.json[UpscanCreate]) {
+    implicit request =>
+      isAuthenticated { _ =>
+        upscanService.createUpscanDetails(regId, request.body).map(_ => Ok)
+      }
   }
 
   def getUpscanDetails(regId: String, reference: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { _ =>
-      infoLog(s"[UpscanController][getUpscanDetails] attempting to get upscan details regId: $regId reference $reference")
+      infoLog(
+        s"[UpscanController][getUpscanDetails] attempting to get upscan details regId: $regId reference $reference"
+      )
       upscanService.getUpscanDetails(reference).map {
         case Some(upscanDetails) =>
-          infoLog(s"[UpscanController][getUpscanDetails] successfully retrieved upscan details from mongo. regID $regId reference: $reference")
+          infoLog(
+            s"[UpscanController][getUpscanDetails] successfully retrieved upscan details from mongo. regID $regId reference: $reference"
+          )
           Ok(Json.toJson(upscanDetails))
-        case None =>
-          warnLog(s"[UpscanController][getUpscanDetails] unable to retrieve upscan details from mongo. regID $regId reference: $reference")
+        case None                =>
+          warnLog(
+            s"[UpscanController][getUpscanDetails] unable to retrieve upscan details from mongo. regID $regId reference: $reference"
+          )
           NotFound
       }
     }
@@ -64,14 +73,18 @@ class UpscanController @Inject()(controllerComponents: ControllerComponents,
   def upscanDetailsCallback: Action[UpscanDetails] = Action.async(parse.json[UpscanDetails]) { implicit request =>
     upscanService.getUpscanDetails(request.body.reference).flatMap {
       case Some(details) =>
-        infoLog(s"[UpscanController][upscanDetailsCallback] upscan details successfully retrieved. Attempting to update with callback details. " +
-          s"regId: ${request.body.registrationId} reference: ${request.body.reference}")
+        infoLog(
+          s"[UpscanController][upscanDetailsCallback] upscan details successfully retrieved. Attempting to update with callback details. " +
+            s"regId: ${request.body.registrationId} reference: ${request.body.reference}"
+        )
 
         val updatedDetails = request.body.copy(registrationId = details.registrationId)
         upscanService.upsertUpscanDetails(updatedDetails).map(_ => Ok)
-      case None =>
-        errorLog(s"[UpscanController][upscanDetailsCallback] Callback attempted to update non-existent UpscanDetails. " +
-          s"regId: ${request.body.registrationId} reference: ${request.body.reference}")
+      case None          =>
+        errorLog(
+          s"[UpscanController][upscanDetailsCallback] Callback attempted to update non-existent UpscanDetails. " +
+            s"regId: ${request.body.registrationId} reference: ${request.body.reference}"
+        )
 
         throw new InternalServerException("[UpscanController] Callback attempted to update non-existent UpscanDetails")
     }
@@ -79,7 +92,9 @@ class UpscanController @Inject()(controllerComponents: ControllerComponents,
 
   def deleteUpscanDetails(regId: String, reference: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { _ =>
-      infoLog(s"[UpscanController][deleteUpscanDetails] attempting to delete upscan details. regId: $regId reference: $reference")
+      infoLog(
+        s"[UpscanController][deleteUpscanDetails] attempting to delete upscan details. regId: $regId reference: $reference"
+      )
       upscanService.deleteUpscanDetails(reference).map { _ =>
         NoContent
       }

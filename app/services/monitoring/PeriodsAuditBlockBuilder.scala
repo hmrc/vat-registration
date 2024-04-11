@@ -28,13 +28,16 @@ import javax.inject.Singleton
 @Singleton
 class PeriodsAuditBlockBuilder extends LoggingUtils {
 
-  def buildPeriodsBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject = {
+  def buildPeriodsBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
     vatScheme.vatApplication match {
       case Some(vatApplication) =>
         jsonObject("customerPreferredPeriodicity" -> vatApplication.staggerStart)
-      case None =>
-        errorLog("[PeriodsAuditBlockBuilder][buildPeriodsBlock] - Couldn't build periods section due to missing vat application section in vat scheme")
-        throw new InternalServerException("[PeriodsBlockBuilder]: Couldn't build periods section due to missing vat application section in vat scheme")
+      case None                 =>
+        errorLog(
+          "[PeriodsAuditBlockBuilder][buildPeriodsBlock] - Couldn't build periods section due to missing vat application section in vat scheme"
+        )
+        throw new InternalServerException(
+          "[PeriodsBlockBuilder]: Couldn't build periods section due to missing vat application section in vat scheme"
+        )
     }
-  }
 }

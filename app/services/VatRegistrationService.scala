@@ -27,30 +27,33 @@ import scala.concurrent.{ExecutionContext, Future}
 import utils.LoggingUtils
 import play.api.mvc.Request
 
-
 @Singleton
-class VatRegistrationService @Inject()(registrationRepository: VatSchemeRepository,
-                                       val backendConfig: BackendConfig)
-                                      (implicit executionContext: ExecutionContext)
-  extends ApplicativeSyntax with FutureInstances with LoggingUtils {
+class VatRegistrationService @Inject() (registrationRepository: VatSchemeRepository, val backendConfig: BackendConfig)(
+  implicit executionContext: ExecutionContext
+) extends ApplicativeSyntax
+    with FutureInstances
+    with LoggingUtils {
 
-  def getStatus(internalId: String, regId: String)(implicit request: Request[_]): Future[VatRegStatus.Value] = {
+  def getStatus(internalId: String, regId: String)(implicit request: Request[_]): Future[VatRegStatus.Value] =
     registrationRepository.getRegistration(internalId, regId) map {
       case Some(registration) =>
         List(
           registration.applicantDetails.flatMap(_.personalDetails.flatMap(_.score)),
           registration.transactorDetails.flatMap(_.personalDetails.flatMap(_.score)),
-          registration.applicantDetails.flatMap(_.contact.email).map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0),
-          registration.transactorDetails.flatMap(_.email).map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0)
+          registration.applicantDetails
+            .flatMap(_.contact.email)
+            .map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0),
+          registration.transactorDetails
+            .flatMap(_.email)
+            .map(email => if (backendConfig.emailCheck.exists(email.endsWith)) 100 else 0)
         ).flatten match {
           case scores if scores.contains(100) =>
             registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.contact)
             VatRegStatus.contact
-          case _ => registration.status
+          case _                              => registration.status
         }
-      case None =>
+      case None               =>
         warnLog(s"[VatRegistrationService][getStatus] - No VAT registration document found for $regId")
         throw new InternalServerException(s"[VatRegistrationService] No VAT registration document found for $regId")
     }
-  }
 }

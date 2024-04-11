@@ -18,7 +18,6 @@ package models.api
 
 import play.api.libs.json.{Format, JsResult, JsString, JsValue}
 
-
 sealed trait BusinessVerificationStatus
 
 case object BvPass extends BusinessVerificationStatus
@@ -33,28 +32,28 @@ case object BvSaEnrolled extends BusinessVerificationStatus
 
 object BusinessVerificationStatus {
   implicit val format: Format[BusinessVerificationStatus] = new Format[BusinessVerificationStatus] {
-    val BvPassKey = "PASS"
-    val BvFailKey = "FAIL"
+    val BvPassKey         = "PASS"
+    val BvFailKey         = "FAIL"
     val BvUnchallengedKey = "UNCHALLENGED"
-    val BvCtEnrolledKey = "CT_ENROLLED"
-    val BvSaEnrolledKey = "SA_ENROLLED"
+    val BvCtEnrolledKey   = "CT_ENROLLED"
+    val BvSaEnrolledKey   = "SA_ENROLLED"
 
     override def writes(bvState: BusinessVerificationStatus): JsValue =
       bvState match {
-        case BvPass => JsString(BvPassKey)
-        case BvFail => JsString(BvFailKey)
+        case BvPass         => JsString(BvPassKey)
+        case BvFail         => JsString(BvFailKey)
         case BvUnchallenged => JsString(BvUnchallengedKey)
-        case BvCtEnrolled => JsString(BvCtEnrolledKey)
-        case BvSaEnrolled => JsString(BvSaEnrolledKey)
+        case BvCtEnrolled   => JsString(BvCtEnrolledKey)
+        case BvSaEnrolled   => JsString(BvSaEnrolledKey)
       }
 
     override def reads(json: JsValue): JsResult[BusinessVerificationStatus] =
       json.validate[String].map {
-        case BvPassKey => BvPass
-        case BvFailKey => BvFail
+        case BvPassKey         => BvPass
+        case BvFailKey         => BvFail
         case BvUnchallengedKey => BvUnchallenged
-        case BvCtEnrolledKey => BvCtEnrolled
-        case BvSaEnrolledKey => BvSaEnrolled
+        case BvCtEnrolledKey   => BvCtEnrolled
+        case BvSaEnrolledKey   => BvSaEnrolled
       }
   }
 

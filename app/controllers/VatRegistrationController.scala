@@ -30,39 +30,41 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class VatRegistrationController @Inject()(val registrationService: VatRegistrationService,
-                                          val submissionService: SubmissionService,
-                                          val authConnector: AuthConnector,
-                                          controllerComponents: ControllerComponents
-                                         )(implicit val executionContext: ExecutionContext)
-  extends BackendController(controllerComponents) with Authorisation with FutureInstances {
+class VatRegistrationController @Inject() (
+  val registrationService: VatRegistrationService,
+  val submissionService: SubmissionService,
+  val authConnector: AuthConnector,
+  controllerComponents: ControllerComponents
+)(implicit val executionContext: ExecutionContext)
+    extends BackendController(controllerComponents)
+    with Authorisation
+    with FutureInstances {
 
-  def submitVATRegistration(regId: String): Action[JsValue] = Action.async(parse.json) {
-    implicit request =>
-      isAuthenticated { internalId =>
-        val userHeaders = (request.body \ "userHeaders").asOpt[Map[String, String]].getOrElse(Map.empty)
-        val lang = (request.body \ "lang").asOpt[String].getOrElse("en")
+  def submitVATRegistration(regId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    isAuthenticated { internalId =>
+      val userHeaders = (request.body \ "userHeaders").asOpt[Map[String, String]].getOrElse(Map.empty)
+      val lang        = (request.body \ "lang").asOpt[String].getOrElse("en")
 
-        registrationService.getStatus(internalId, regId).flatMap {
-          case `locked` => Future.successful(TooManyRequests)
-          case `submitted` => Future.successful(Ok)
-          case `duplicateSubmission` => Future.successful(Conflict)
-          case `contact` => Future.successful(UnprocessableEntity)
-          case _ => submissionService.submitVatRegistration(internalId, regId, userHeaders, lang).map {
-            case Right(VatSubmissionSuccess(_)) =>
+      registrationService.getStatus(internalId, regId).flatMap {
+        case `locked`              => Future.successful(TooManyRequests)
+        case `submitted`           => Future.successful(Ok)
+        case `duplicateSubmission` => Future.successful(Conflict)
+        case `contact`             => Future.successful(UnprocessableEntity)
+        case _                     =>
+          submissionService.submitVatRegistration(internalId, regId, userHeaders, lang).map {
+            case Right(VatSubmissionSuccess(_))             =>
               Ok
             case Left(VatSubmissionFailure(BAD_REQUEST, e)) =>
               errorLog(s"[VatRegistrationController][submitVATRegistration] errored with $e")
               BadRequest
-            case Left(VatSubmissionFailure(CONFLICT, e)) =>
+            case Left(VatSubmissionFailure(CONFLICT, e))    =>
               errorLog(s"[VatRegistrationController][submitVATRegistration] errored with $e")
               Conflict
-            case _ =>
+            case _                                          =>
               InternalServerError
           }
-        }
       }
+    }
   }
-
 
 }

@@ -26,20 +26,25 @@ import utils.LoggingUtils
 import javax.inject.Singleton
 
 @Singleton
-class ComplianceAuditBlockBuilder extends LoggingUtils{
+class ComplianceAuditBlockBuilder extends LoggingUtils {
 
-  def buildComplianceBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] = {
+  def buildComplianceBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
     vatScheme.business match {
-      case Some(business) => business.labourCompliance map (labourCompliance =>
-        jsonObject(
-          optional("numOfWorkersSupplied" -> labourCompliance.numOfWorkersSupplied),
-          optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
-          optional("supplyWorkers" -> labourCompliance.supplyWorkers)
-        ))
-      case None =>
-        errorLog("[ComplianceAuditBlockBuilder][buildComplianceBlock] - Couldn't build audit compliance block due to missing business data")
-        throw new InternalServerException("[ComplianceBlockBuilder] Couldn't build audit compliance block due to missing business data")
+      case Some(business) =>
+        business.labourCompliance map (labourCompliance =>
+          jsonObject(
+            optional("numOfWorkersSupplied"    -> labourCompliance.numOfWorkersSupplied),
+            optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
+            optional("supplyWorkers"           -> labourCompliance.supplyWorkers)
+          )
+        )
+      case None           =>
+        errorLog(
+          "[ComplianceAuditBlockBuilder][buildComplianceBlock] - Couldn't build audit compliance block due to missing business data"
+        )
+        throw new InternalServerException(
+          "[ComplianceBlockBuilder] Couldn't build audit compliance block due to missing business data"
+        )
     }
-  }
 
 }

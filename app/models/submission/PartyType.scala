@@ -59,24 +59,24 @@ case object NETP extends PartyType // Pseudo party type for NETPs, submission st
 object PartyType {
 
   val stati: Map[PartyType, String] = Map(
-    UkCompany -> "50",
-    NonUkEstablished -> "51",
+    UkCompany               -> "50",
+    NonUkEstablished        -> "51",
     LtdLiabilityPartnership -> "52",
-    CharitableOrg -> "53",
-    RegSociety -> "54",
-    NonUkNonEstablished -> "55",
-    GovOrg -> "56",
-    CorpSole -> "57",
-    ScotPartnership -> "58",
-    ScotLtdPartnership -> "59",
-    Trust -> "60",
-    Partnership -> "61",
-    LtdPartnership -> "62",
-    UnincorpAssoc -> "63",
-    TaxGroups -> "64",
-    AdminDivision -> "65",
-    Individual -> "Z1",
-    NETP -> "NETP"
+    CharitableOrg           -> "53",
+    RegSociety              -> "54",
+    NonUkNonEstablished     -> "55",
+    GovOrg                  -> "56",
+    CorpSole                -> "57",
+    ScotPartnership         -> "58",
+    ScotLtdPartnership      -> "59",
+    Trust                   -> "60",
+    Partnership             -> "61",
+    LtdPartnership          -> "62",
+    UnincorpAssoc           -> "63",
+    TaxGroups               -> "64",
+    AdminDivision           -> "65",
+    Individual              -> "Z1",
+    NETP                    -> "NETP"
   )
 
   val inverseStati = stati.map(_.swap)
@@ -85,8 +85,8 @@ object PartyType {
 
   def toJsString(value: PartyType): JsString = JsString(stati(value))
 
-  implicit val writes = Writes[PartyType] { partyType => toJsString(partyType) }
-  implicit val reads = Reads[PartyType] { partyType => partyType.validate[String] map fromString }
-  implicit val format = Format[PartyType](reads, writes)
+  implicit val writes: Writes[PartyType] = Writes[PartyType](partyType => toJsString(partyType))
+  implicit val reads: Reads[PartyType]   = Reads[PartyType](partyType => partyType.validate[String] map fromString)
+  implicit val format: Format[PartyType] = Format[PartyType](reads, writes)
 
 }

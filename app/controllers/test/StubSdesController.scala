@@ -31,13 +31,14 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class StubSdesController @Inject()(cc: ControllerComponents,
-                                   httpClient: HttpClientV2,
-                                   config: BackendConfig)
-                                  (implicit executionContext: ExecutionContext) extends BackendController(cc) with Logging with HttpReadsHttpResponse {
+class StubSdesController @Inject() (cc: ControllerComponents, httpClient: HttpClientV2, config: BackendConfig)(implicit
+  executionContext: ExecutionContext
+) extends BackendController(cc)
+    with Logging
+    with HttpReadsHttpResponse {
 
   def notificationStub: Action[SdesNotification] = Action.async(parse.json[SdesNotification]) { implicit request =>
-    val url = config.vatRegistrationUrl + controllers.routes.SdesController.sdesCallback.url
+    val url     = config.vatRegistrationUrl + controllers.routes.SdesController.sdesCallback.url
     val payload = SdesCallback(
       notification = "FileProcessed",
       filename = request.body.file.name,
@@ -50,7 +51,8 @@ class StubSdesController @Inject()(cc: ControllerComponents,
       failureReason = None
     )
 
-    httpClient.post(url"$url")
+    httpClient
+      .post(url"$url")
       .withBody(Json.toJson(payload))
       .execute[HttpResponse]
       .map(_ => NoContent)

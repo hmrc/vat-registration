@@ -18,12 +18,14 @@ package models.api.vatapplication
 
 import play.api.libs.json.{Format, Json}
 
-case class OverseasCompliance(goodsToOverseas: Option[Boolean],
-                              goodsToEu: Option[Boolean],
-                              storingGoodsForDispatch: Option[StoringGoodsForDispatch],
-                              usingWarehouse: Option[Boolean],
-                              fulfilmentWarehouseNumber: Option[String],
-                              fulfilmentWarehouseName: Option[String])
+case class OverseasCompliance(
+  goodsToOverseas: Option[Boolean],
+  goodsToEu: Option[Boolean],
+  storingGoodsForDispatch: Option[StoringGoodsForDispatch],
+  usingWarehouse: Option[Boolean],
+  fulfilmentWarehouseNumber: Option[String],
+  fulfilmentWarehouseName: Option[String]
+)
 
 object OverseasCompliance {
   implicit val format: Format[OverseasCompliance] = Json.format[OverseasCompliance]

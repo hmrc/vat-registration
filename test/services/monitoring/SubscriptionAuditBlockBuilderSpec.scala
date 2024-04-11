@@ -93,7 +93,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
   )
 
   "buildSubscriptionBlock" should {
-    val testDate = LocalDate.of(2020, 2, 2)
+    val testDate                  = LocalDate.of(2020, 2, 2)
     val testVatApplicationDetails = VatApplication(
       None,
       None,
@@ -126,9 +126,11 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
 
     "build a minimal subscription json when minimum data is provided" in {
       val vatScheme = testVatScheme.copy(
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None)
-        )),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(mandatoryRegistration = false, None, None, None)
+          )
+        ),
         business = Some(testBusiness.copy(businessActivities = Some(Nil))),
         vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
         flatRateScheme = Some(validEmptyFlatRateScheme)
@@ -141,9 +143,11 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
 
     "build a minimal subscription json when no Flat Rate Scheme is provided" in {
       val vatScheme = testVatScheme.copy(
-        eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(
-          threshold = Threshold(mandatoryRegistration = false, None, None, None)
-        )),
+        eligibilitySubmissionData = Some(
+          testEligibilitySubmissionData.copy(
+            threshold = Threshold(mandatoryRegistration = false, None, None, None)
+          )
+        ),
         business = Some(testBusiness.copy(businessActivities = Some(Nil))),
         vatApplication = Some(testVatApplicationDetails.copy(appliedForExemption = Some(true))),
         flatRateScheme = None
@@ -162,13 +166,15 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
         flatRateScheme = Some(invalidEmptyFlatRateScheme)
       )
 
-      intercept[InternalServerException](TestService.buildSubscriptionBlock(vatScheme))
-        .message mustBe "[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true"
+      intercept[InternalServerException](
+        TestService.buildSubscriptionBlock(vatScheme)
+      ).message mustBe "[SubscriptionBlockBuilder] FRS scheme data missing when joinFrs is true"
     }
 
     "fail if the scheme is missing all data" in {
-      intercept[InternalServerException](TestService.buildSubscriptionBlock(testVatScheme))
-        .message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
+      intercept[InternalServerException](
+        TestService.buildSubscriptionBlock(testVatScheme)
+      ).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: EligibilitySubmissionData found - false, " +
         "VatApplication found - false, Business found - false."
     }
@@ -178,8 +184,9 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
         eligibilitySubmissionData = Some(testEligibilitySubmissionData)
       )
 
-      intercept[InternalServerException](TestService.buildSubscriptionBlock(vatScheme))
-        .message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
+      intercept[InternalServerException](
+        TestService.buildSubscriptionBlock(vatScheme)
+      ).message mustBe "[SubscriptionBlockBuilder] Could not build subscription block " +
         "for submission because some of the data is missing: EligibilitySubmissionData found - true, " +
         "VatApplication found - false, Business found - false."
     }

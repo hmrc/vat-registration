@@ -23,20 +23,22 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class EligibilitySubmissionData(threshold: Threshold,
-                                     appliedForException: Option[Boolean],
-                                     partyType: PartyType,
-                                     registrationReason: RegistrationReason,
-                                     togcCole: Option[TogcCole] = None,
-                                     isTransactor: Boolean,
-                                     calculatedDate: Option[LocalDate] = None,
-                                     fixedEstablishmentInManOrUk: Boolean)
+case class EligibilitySubmissionData(
+  threshold: Threshold,
+  appliedForException: Option[Boolean],
+  partyType: PartyType,
+  registrationReason: RegistrationReason,
+  togcCole: Option[TogcCole] = None,
+  isTransactor: Boolean,
+  calculatedDate: Option[LocalDate] = None,
+  fixedEstablishmentInManOrUk: Boolean
+)
 
 object EligibilitySubmissionData {
-  val sellingGoodsAndServices = "selling-goods-and-services"
-  val takingOverBusiness = "taking-over-business"
+  val sellingGoodsAndServices       = "selling-goods-and-services"
+  val takingOverBusiness            = "taking-over-business"
   val changingLegalEntityOfBusiness = "changing-legal-entity"
-  val settingUpVatGroup = "setting-up-vat-group"
+  val settingUpVatGroup             = "setting-up-vat-group"
   val ukEstablishedOverseasExporter = "overseas-exporter"
 
   val registeringOwnBusiness = "own"
@@ -51,45 +53,55 @@ object EligibilitySubmissionData {
         (json \ "registeringBusiness").validate[String] and
         json.validateOpt[TogcCole](TogcCole.eligibilityDataJsonReads).orElse(JsSuccess(None)) and
         (json \ "fixedEstablishment").validate[Boolean]
-      ) ((threshold, exception, businessEntity, registrationReason, registeringBusiness, optTogcCole, fixedEstablishmentInManOrUk) =>
-      EligibilitySubmissionData(
+    )(
+      (
         threshold,
         exception,
         businessEntity,
-        registrationReason match {
-          case `sellingGoodsAndServices` => threshold match {
-            case Threshold(true, _, _, _, Some(_)) =>
-              NonUk
-            case Threshold(false, _, _, _, _) =>
-              Voluntary
-            case Threshold(true, forwardLook1, _, forwardLook2, _)
-              if forwardLook1.contains(threshold.earliestDate) || forwardLook2.contains(threshold.earliestDate) =>
-              ForwardLook
-            case _ =>
-              BackwardLook
-          }
-          case `takingOverBusiness` | `changingLegalEntityOfBusiness` => TransferOfAGoingConcern
-          case `settingUpVatGroup` => GroupRegistration
-          case `ukEstablishedOverseasExporter` => SuppliesOutsideUk
-        },
+        registrationReason,
+        registeringBusiness,
         optTogcCole,
-        registeringBusiness match {
-          case `registeringOwnBusiness` => false
-          case `registeringSomeoneElse` => true
-        },
-        (threshold, optTogcCole) match {
-          case (_, Some(TogcCole(dateOfTransfer, _, _, _, _))) =>
-            Some(dateOfTransfer)
-          case (Threshold(true, _, _, _, Some(thresholdOverseas)), _) =>
-            Some(thresholdOverseas)
-          case (Threshold(true, optPrevThirtyDays, optNextTwelveMonths, optNextThirtyDays, _), _)
-            if List(optPrevThirtyDays, optNextTwelveMonths, optNextThirtyDays).flatten.nonEmpty =>
-            Some(threshold.earliestDate)
-          case _ =>
-            None
-        },
         fixedEstablishmentInManOrUk
-      )
+      ) =>
+        EligibilitySubmissionData(
+          threshold,
+          exception,
+          businessEntity,
+          registrationReason match {
+            case `sellingGoodsAndServices`                              =>
+              threshold match {
+                case Threshold(true, _, _, _, Some(_)) =>
+                  NonUk
+                case Threshold(false, _, _, _, _)      =>
+                  Voluntary
+                case Threshold(true, forwardLook1, _, forwardLook2, _)
+                    if forwardLook1.contains(threshold.earliestDate) || forwardLook2.contains(threshold.earliestDate) =>
+                  ForwardLook
+                case _                                 =>
+                  BackwardLook
+              }
+            case `takingOverBusiness` | `changingLegalEntityOfBusiness` => TransferOfAGoingConcern
+            case `settingUpVatGroup`                                    => GroupRegistration
+            case `ukEstablishedOverseasExporter`                        => SuppliesOutsideUk
+          },
+          optTogcCole,
+          registeringBusiness match {
+            case `registeringOwnBusiness` => false
+            case `registeringSomeoneElse` => true
+          },
+          (threshold, optTogcCole) match {
+            case (_, Some(TogcCole(dateOfTransfer, _, _, _, _)))        =>
+              Some(dateOfTransfer)
+            case (Threshold(true, _, _, _, Some(thresholdOverseas)), _) =>
+              Some(thresholdOverseas)
+            case (Threshold(true, optPrevThirtyDays, optNextTwelveMonths, optNextThirtyDays, _), _)
+                if List(optPrevThirtyDays, optNextTwelveMonths, optNextThirtyDays).flatten.nonEmpty =>
+              Some(threshold.earliestDate)
+            case _                                                      =>
+              None
+          },
+          fixedEstablishmentInManOrUk
+        )
     )
   }
 
@@ -102,9 +114,13 @@ object EligibilitySubmissionData {
       (__ \ "isTransactor").formatWithDefault[Boolean](false) and
       (__ \ "calculatedDate").formatNullable[LocalDate] and
       OFormat(
-        (__ \ "fixedEstablishmentInManOrUk").read[Boolean].orElse((__ \ "partyType").read[PartyType].map(partyType => !Seq(NonUkNonEstablished, NETP).contains(partyType))),
+        (__ \ "fixedEstablishmentInManOrUk")
+          .read[Boolean]
+          .orElse(
+            (__ \ "partyType").read[PartyType].map(partyType => !Seq(NonUkNonEstablished, NETP).contains(partyType))
+          ),
         (__ \ "fixedEstablishmentInManOrUk").write[Boolean]
       ) // TODO replace this explicit format with (__ \ "fixedEstablishmentInManOrUk").format[Boolean] 28 days after this is deployed, this ensures that users with old data are not impacted
-    ) (EligibilitySubmissionData.apply, unlift(EligibilitySubmissionData.unapply))
+  )(EligibilitySubmissionData.apply, unlift(EligibilitySubmissionData.unapply))
 
 }

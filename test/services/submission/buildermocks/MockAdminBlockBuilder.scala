@@ -31,8 +31,7 @@ trait MockAdminBlockBuilder extends MockitoSugar {
 
   val mockAdminBlockBuilder: AdminBlockBuilder = mock[AdminBlockBuilder]
 
-  def mockBuildAdminBlock(vatScheme: VatScheme)
-                         (response: JsObject): OngoingStubbing[JsObject] =
+  def mockBuildAdminBlock(vatScheme: VatScheme)(response: JsObject): OngoingStubbing[JsObject] =
     when(mockAdminBlockBuilder.buildAdminBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]]))
       .thenReturn(response)
 

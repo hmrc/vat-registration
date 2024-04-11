@@ -34,17 +34,18 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
   implicit val request: Request[_] = FakeRequest()
 
-  lazy val customerIdentificationBlockWithBPJson: JsObject = Json.parse(
-    """
+  lazy val customerIdentificationBlockWithBPJson: JsObject = Json
+    .parse("""
       |{
       |    "tradingName": "trading-name",
       |    "tradersPartyType": "50",
       |    "primeBPSafeID": "testBpSafeId"
       |}
-      |""".stripMargin).as[JsObject]
+      |""".stripMargin)
+    .as[JsObject]
 
-  def customerIdentificationBlockJson(idVerificationStatusCode: Int): JsObject = Json.parse(
-    s"""
+  def customerIdentificationBlockJson(idVerificationStatusCode: Int): JsObject = Json
+    .parse(s"""
        |{
        |    "tradingName": "trading-name",
        |    "tradersPartyType": "50",
@@ -64,82 +65,83 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
        |      }
        |    ]
        |}
-       |""".stripMargin).as[JsObject]
+       |""".stripMargin)
+    .as[JsObject]
 
   val soleTraderBlockJson = Json.obj(
     "tradersPartyType" -> "Z1",
-    "tradingName" -> testTradingName,
-    "customerID" -> Json.arr(
+    "tradingName"      -> testTradingName,
+    "customerID"       -> Json.arr(
       Json.obj(
-        "idType" -> "NINO",
-        "idValue" -> testNino,
+        "idType"                -> "NINO",
+        "idValue"               -> testNino,
         "IDsVerificationStatus" -> "1"
       ),
       Json.obj(
-        "idType" -> "UTR",
-        "idValue" -> testUtr,
+        "idType"                -> "UTR",
+        "idValue"               -> testUtr,
         "IDsVerificationStatus" -> "1"
       )
     ),
-    "name" -> Json.obj(
+    "name"             -> Json.obj(
       "firstName" -> testFirstName,
-      "lastName" -> testLastName
+      "lastName"  -> testLastName
     ),
-    "dateOfBirth" -> testDateOfBirth
+    "dateOfBirth"      -> testDateOfBirth
   )
 
   val netpBlockJson: JsObject = Json.obj(
     "tradersPartyType" -> "Z1",
-    "tradingName" -> testTradingName,
-    "customerID" -> Json.arr(
+    "tradingName"      -> testTradingName,
+    "customerID"       -> Json.arr(
       Json.obj(
-        "idType" -> "UTR",
-        "idValue" -> testUtr,
+        "idType"                -> "UTR",
+        "idValue"               -> testUtr,
         "IDsVerificationStatus" -> "1"
       ),
       Json.obj(
-        "idType" -> "TEMPNI",
-        "idValue" -> testTrn,
+        "idType"                -> "TEMPNI",
+        "idValue"               -> testTrn,
         "IDsVerificationStatus" -> "1"
       )
     ),
-    "name" -> Json.obj(
+    "name"             -> Json.obj(
       "firstName" -> testFirstName,
-      "lastName" -> testLastName
+      "lastName"  -> testLastName
     ),
-    "dateOfBirth" -> testDateOfBirth
+    "dateOfBirth"      -> testDateOfBirth
   )
 
   val netpBlockJsonWithOverseas: JsObject = Json.obj(
     "tradersPartyType" -> "Z1",
-    "tradingName" -> testTradingName,
-    "customerID" -> Json.arr(
+    "tradingName"      -> testTradingName,
+    "customerID"       -> Json.arr(
       Json.obj(
-        "idType" -> "UTR",
-        "idValue" -> testUtr,
-        "IDsVerificationStatus" -> "1"
+        "idType"                 -> "UTR",
+        "idValue"                -> testUtr,
+        "IDsVerificationStatus"  -> "1"
       ),
       Json.obj(
-        "idType" -> "TEMPNI",
-        "idValue" -> testTrn,
-        "IDsVerificationStatus" -> "1"
+        "idType"                 -> "TEMPNI",
+        "idValue"                -> testTrn,
+        "IDsVerificationStatus"  -> "1"
       ),
       Json.obj(
-        "idType" -> "OTHER",
-        "idValue" -> "1234",
+        "idType"                 -> "OTHER",
+        "idValue"                -> "1234",
         "countryOfIncorporation" -> "FR",
-        "IDsVerificationStatus" -> "1"
+        "IDsVerificationStatus"  -> "1"
       )
     ),
-    "name" -> Json.obj(
+    "name"             -> Json.obj(
       "firstName" -> testFirstName,
-      "lastName" -> testLastName
+      "lastName"  -> testLastName
     ),
-    "dateOfBirth" -> testDateOfBirth
+    "dateOfBirth"      -> testDateOfBirth
   )
 
-  Json.parse(
-    s"""
+  Json
+    .parse(s"""
        |{
        |    "tradingName": "trading-name",
        |    "tradersPartyType": "Z1",
@@ -156,17 +158,19 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
        |      }
        |    ]
        |}
-       |""".stripMargin).as[JsObject]
+       |""".stripMargin)
+    .as[JsObject]
 
   "buildCustomerIdentificationBlock" should {
     "build the correct json for a sole trader entity type with given business verification type" in new Setup {
 
       private def verifySoleTraderEntity(businessVerificationStatus: BusinessVerificationStatus) = {
-        val appDetails = validApplicantDetails.copy(
+        val appDetails      = validApplicantDetails.copy(
           entity = Some(testSoleTraderEntity.copy(businessVerification = Some(businessVerificationStatus)))
         )
         val eligibilityData = testEligibilitySubmissionData.copy(partyType = Individual)
-        val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
+        val vatScheme       =
+          testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe soleTraderBlockJson
@@ -178,32 +182,40 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
 
     "build the correct json for a NETP entity type" in new Setup {
-      val appDetails = validApplicantDetails.copy(
-        entity = Some(testSoleTraderEntity.copy(
-          nino = None,
-          trn = Some(testTrn)
-        ))
+      val appDetails      = validApplicantDetails.copy(
+        entity = Some(
+          testSoleTraderEntity.copy(
+            nino = None,
+            trn = Some(testTrn)
+          )
+        )
       )
       val eligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
-      val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
+      val vatScheme       =
+        testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
 
       val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
       result mustBe netpBlockJson
     }
 
     "build the correct json for a NETP entity type with overseas details" in new Setup {
-      val appDetails = validApplicantDetails.copy(
-        entity = Some(testSoleTraderEntity.copy(
-          nino = None,
-          trn = Some(testTrn),
-          overseas = Some(OverseasIdentifierDetails(
-            taxIdentifier = "1234",
-            country = "FR"
-          ))
-        ))
+      val appDetails      = validApplicantDetails.copy(
+        entity = Some(
+          testSoleTraderEntity.copy(
+            nino = None,
+            trn = Some(testTrn),
+            overseas = Some(
+              OverseasIdentifierDetails(
+                taxIdentifier = "1234",
+                country = "FR"
+              )
+            )
+          )
+        )
       )
       val eligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
-      val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
+      val vatScheme       =
+        testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
 
       val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
       result mustBe netpBlockJsonWithOverseas
@@ -211,15 +223,19 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
 
     "return Status Code 1" when {
       "the businessVerificationStatus is BvPass" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvPass), registration = FailedStatus)))
-        val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
+        val appDetails = validApplicantDetails.copy(entity =
+          Some(testLtdCoEntity.copy(businessVerification = Some(BvPass), registration = FailedStatus))
+        )
+        val vatScheme  = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe customerIdentificationBlockJson(1)
       }
       "the businessVerificationStatus is CtEnrolled" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), registration = FailedStatus)))
-        val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
+        val appDetails = validApplicantDetails.copy(entity =
+          Some(testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), registration = FailedStatus))
+        )
+        val vatScheme  = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe customerIdentificationBlockJson(1)
@@ -227,8 +243,10 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return Status Code 2" when {
       "the identifiersMatch is false" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged), identifiersMatch = false)))
-        val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
+        val appDetails = validApplicantDetails.copy(entity =
+          Some(testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged), identifiersMatch = false))
+        )
+        val vatScheme  = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe customerIdentificationBlockJson(2)
@@ -240,8 +258,9 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
         result mustBe customerIdentificationBlockJson(3)
       }
       "businessVerification is not called" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged))))
-        val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
+        val appDetails =
+          validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvUnchallenged))))
+        val vatScheme  = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe customerIdentificationBlockJson(3)
@@ -249,15 +268,19 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
     }
     "return the BP Safe ID" when {
       "businessVerificationStatus is Pass" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvPass), bpSafeId = Some(testBpSafeId))))
-        val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
+        val appDetails = validApplicantDetails.copy(entity =
+          Some(testLtdCoEntity.copy(businessVerification = Some(BvPass), bpSafeId = Some(testBpSafeId)))
+        )
+        val vatScheme  = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe customerIdentificationBlockWithBPJson
       }
       "businessVerification is CT-Enrolled" in new Setup {
-        val appDetails = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), bpSafeId = Some(testBpSafeId))))
-        val vatScheme = testFullVatScheme.copy(applicantDetails = Some(appDetails))
+        val appDetails = validApplicantDetails.copy(entity =
+          Some(testLtdCoEntity.copy(businessVerification = Some(BvCtEnrolled), bpSafeId = Some(testBpSafeId)))
+        )
+        val vatScheme  = testFullVatScheme.copy(applicantDetails = Some(appDetails))
 
         val result: JsObject = service.buildCustomerIdentificationBlock(vatScheme)
         result mustBe customerIdentificationBlockWithBPJson

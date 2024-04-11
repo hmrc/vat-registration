@@ -50,87 +50,89 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
 
   "buildRootBlock" when {
     "All required blocks are present in the vat scheme" when {
-      "forward look" should {
+      "forward look"            should {
         "return the root JSON block when BP Safe ID is missing" in {
 
           val res = model(rootBlockTestVatScheme)
 
           res.detail mustBe Json.obj(
-            "authProviderId" -> "testProviderID",
-            "journeyId" -> "testRegId",
-            "userType" -> "Organisation",
-            "formBundleId" -> "testFormBundleId",
-            "registrationReason" -> "Forward Look",
+            "authProviderId"           -> "testProviderID",
+            "journeyId"                -> "testRegId",
+            "userType"                 -> "Organisation",
+            "formBundleId"             -> "testFormBundleId",
+            "registrationReason"       -> "Forward Look",
             "registrationRelevantDate" -> "2020-10-07",
-            "messageType" -> "SubscriptionCreate",
-            "customerStatus" -> "2",
-            "eoriRequested" -> true,
-            "corporateBodyRegistered" -> Json.obj(
-              "dateOfIncorporation" -> testDateOFIncorp,
+            "messageType"              -> "SubscriptionCreate",
+            "customerStatus"           -> "2",
+            "eoriRequested"            -> true,
+            "corporateBodyRegistered"  -> Json.obj(
+              "dateOfIncorporation"    -> testDateOFIncorp,
               "countryOfIncorporation" -> "GB"
             ),
-            "idsVerificationStatus" -> "3",
-            "cidVerification" -> "1",
-            "userEnteredDetails" -> Json.obj(
+            "idsVerificationStatus"    -> "3",
+            "cidVerification"          -> "1",
+            "userEnteredDetails"       -> Json.obj(
               "user" -> "answers"
             )
           )
         }
         "return the root JSON block when BP Safe ID is present" in {
-          val applicantDetailsWithSafeId = validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId))))
-          val res = model(rootBlockTestVatScheme.copy(applicantDetails = Some(applicantDetailsWithSafeId)))
+          val applicantDetailsWithSafeId =
+            validApplicantDetails.copy(entity = Some(testLtdCoEntity.copy(bpSafeId = Some(testBpSafeId))))
+          val res                        = model(rootBlockTestVatScheme.copy(applicantDetails = Some(applicantDetailsWithSafeId)))
 
           res.detail mustBe Json.obj(
-            "authProviderId" -> "testProviderID",
-            "journeyId" -> "testRegId",
-            "userType" -> "Organisation",
-            "formBundleId" -> "testFormBundleId",
-            "registrationReason" -> "Forward Look",
+            "authProviderId"           -> "testProviderID",
+            "journeyId"                -> "testRegId",
+            "userType"                 -> "Organisation",
+            "formBundleId"             -> "testFormBundleId",
+            "registrationReason"       -> "Forward Look",
             "registrationRelevantDate" -> "2020-10-07",
-            "messageType" -> "SubscriptionCreate",
-            "customerStatus" -> "2",
-            "eoriRequested" -> true,
-            "corporateBodyRegistered" -> Json.obj(
-              "dateOfIncorporation" -> testDateOFIncorp,
+            "messageType"              -> "SubscriptionCreate",
+            "customerStatus"           -> "2",
+            "eoriRequested"            -> true,
+            "corporateBodyRegistered"  -> Json.obj(
+              "dateOfIncorporation"    -> testDateOFIncorp,
               "countryOfIncorporation" -> "GB"
             ),
-            "idsVerificationStatus" -> "0",
-            "cidVerification" -> "1",
+            "idsVerificationStatus"    -> "0",
+            "cidVerification"          -> "1",
             "businessPartnerReference" -> testBpSafeId,
-            "userEnteredDetails" -> Json.obj(
+            "userEnteredDetails"       -> Json.obj(
               "user" -> "answers"
             )
           )
         }
       }
-      "backward look" should {
+      "backward look"           should {
         "return the correct json" in {
           val threshold = testMandatoryThreshold.copy(
             thresholdNextThirtyDays = Some(LocalDate.of(2021, 1, 12)),
             thresholdPreviousThirtyDays = Some(LocalDate.of(2021, 1, 12))
           )
 
-          val eligibilityData = testEligibilitySubmissionData.copy(threshold = threshold, registrationReason = BackwardLook)
-          val res = model(rootBlockTestVatScheme.copy(eligibilitySubmissionData = Some(eligibilityData)))
+          val eligibilityData =
+            testEligibilitySubmissionData.copy(threshold = threshold, registrationReason = BackwardLook)
+          val res             = model(rootBlockTestVatScheme.copy(eligibilitySubmissionData = Some(eligibilityData)))
 
           res.detail mustBe Json.obj(
-            "authProviderId" -> "testProviderID",
-            "journeyId" -> "testRegId",
-            "userType" -> "Organisation",
-            "formBundleId" -> "testFormBundleId",
-            "registrationReason" -> "Backward Look",
+            "authProviderId"           -> "testProviderID",
+            "journeyId"                -> "testRegId",
+            "userType"                 -> "Organisation",
+            "formBundleId"             -> "testFormBundleId",
+            "registrationReason"       -> "Backward Look",
             "registrationRelevantDate" -> "2020-12-01",
-            "userType" -> "Organisation",
-            "messageType" -> "SubscriptionCreate",
-            "customerStatus" -> "2",
-            "eoriRequested" -> true,
-            "corporateBodyRegistered" -> Json.obj(
-              "dateOfIncorporation" -> testDateOFIncorp,
+            "userType"                 -> "Organisation",
+            "messageType"              -> "SubscriptionCreate",
+            "customerStatus"           -> "2",
+            "eoriRequested"            -> true,
+            "corporateBodyRegistered"  -> Json.obj(
+              "dateOfIncorporation"    -> testDateOFIncorp,
               "countryOfIncorporation" -> "GB"
             ),
-            "idsVerificationStatus" -> "3",
-            "cidVerification" -> "1",
-            "userEnteredDetails" -> Json.obj(
+            "idsVerificationStatus"    -> "3",
+            "cidVerification"          -> "1",
+            "userEnteredDetails"       -> Json.obj(
               "user" -> "answers"
             )
           )
@@ -138,27 +140,28 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
       }
       "registering voluntarily" should {
         "return the correct json" in {
-          val eligibilityData = testEligibilitySubmissionData.copy(threshold = testVoluntaryThreshold, registrationReason = Voluntary)
-          val res = model(rootBlockTestVatScheme.copy(eligibilitySubmissionData = Some(eligibilityData)))
+          val eligibilityData =
+            testEligibilitySubmissionData.copy(threshold = testVoluntaryThreshold, registrationReason = Voluntary)
+          val res             = model(rootBlockTestVatScheme.copy(eligibilitySubmissionData = Some(eligibilityData)))
 
           res.detail mustBe Json.obj(
-            "authProviderId" -> "testProviderID",
-            "journeyId" -> "testRegId",
-            "userType" -> "Organisation",
-            "formBundleId" -> "testFormBundleId",
-            "registrationReason" -> "Voluntary",
+            "authProviderId"           -> "testProviderID",
+            "journeyId"                -> "testRegId",
+            "userType"                 -> "Organisation",
+            "formBundleId"             -> "testFormBundleId",
+            "registrationReason"       -> "Voluntary",
             "registrationRelevantDate" -> "2018-01-01",
-            "messageType" -> "SubscriptionCreate",
-            "userType" -> "Organisation",
-            "customerStatus" -> "2",
-            "eoriRequested" -> true,
-            "corporateBodyRegistered" -> Json.obj(
-              "dateOfIncorporation" -> testDateOFIncorp,
+            "messageType"              -> "SubscriptionCreate",
+            "userType"                 -> "Organisation",
+            "customerStatus"           -> "2",
+            "eoriRequested"            -> true,
+            "corporateBodyRegistered"  -> Json.obj(
+              "dateOfIncorporation"    -> testDateOFIncorp,
               "countryOfIncorporation" -> "GB"
             ),
-            "idsVerificationStatus" -> "3",
-            "cidVerification" -> "1",
-            "userEnteredDetails" -> Json.obj(
+            "idsVerificationStatus"    -> "3",
+            "cidVerification"          -> "1",
+            "userEnteredDetails"       -> Json.obj(
               "user" -> "answers"
             )
           )
@@ -172,7 +175,7 @@ class SubmissionAuditModelSpec extends VatRegSpec with SubmissionAuditFixture {
         }
       }
     }
-    "the applicant details block is missing in the vat scheme" should {
+    "the applicant details block is missing in the vat scheme"           should {
       "throw an exception" in {
         intercept[InternalServerException] {
           model(rootBlockTestVatScheme.copy(applicantDetails = None))

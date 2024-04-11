@@ -18,27 +18,26 @@ package models.sdes
 
 import play.api.libs.json.{Json, OFormat}
 
-case class SdesNotification(informationType: String,
-                            file: FileDetails,
-                            audit: AuditDetals)
+case class SdesNotification(informationType: String, file: FileDetails, audit: AuditDetals)
 
 object SdesNotification {
   implicit val format: OFormat[SdesNotification] = Json.format[SdesNotification]
 }
 
-case class FileDetails(recipientOrSender: String,
-                       name: String,
-                       location: String,
-                       checksum: Checksum,
-                       size: Int,
-                       properties: List[Property]) extends PropertyExtractor
+case class FileDetails(
+  recipientOrSender: String,
+  name: String,
+  location: String,
+  checksum: Checksum,
+  size: Int,
+  properties: List[Property]
+) extends PropertyExtractor
 
 object FileDetails {
   implicit val format: OFormat[FileDetails] = Json.format[FileDetails]
 }
 
-case class Checksum(algorithm: String,
-                    value: String)
+case class Checksum(algorithm: String, value: String)
 
 object Checksum {
   implicit val format: OFormat[Checksum] = Json.format[Checksum]

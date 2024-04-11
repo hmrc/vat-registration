@@ -27,20 +27,22 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class EligibilityController @Inject()(val eligibilityService: EligibilityService,
-                                      val authConnector: AuthConnector,
-                                      controllerComponents: ControllerComponents)
-                                     (implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
+class EligibilityController @Inject() (
+  val eligibilityService: EligibilityService,
+  val authConnector: AuthConnector,
+  controllerComponents: ControllerComponents
+)(implicit val executionContext: ExecutionContext)
+    extends BackendController(controllerComponents)
+    with Authorisation {
 
-  def updateEligibilityData(regId: String): Action[JsValue] = Action.async[JsValue](parse.json) {
-    implicit request =>
-      isAuthenticated { internalId =>
-        withJsonBody[JsObject] { eligibilityData =>
-          eligibilityService.updateEligibilityData(internalId, regId, eligibilityData).map {
-            case Some(json) => Ok(json)
-            case None => NotFound
-          }
+  def updateEligibilityData(regId: String): Action[JsValue] = Action.async[JsValue](parse.json) { implicit request =>
+    isAuthenticated { internalId =>
+      withJsonBody[JsObject] { eligibilityData =>
+        eligibilityService.updateEligibilityData(internalId, regId, eligibilityData).map {
+          case Some(json) => Ok(json)
+          case None       => NotFound
         }
       }
+    }
   }
 }

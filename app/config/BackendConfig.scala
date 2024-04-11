@@ -25,30 +25,32 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
 @Singleton
-class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
-                              val runModeConfiguration: Configuration) extends FeatureSwitching {
+class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeConfiguration: Configuration)
+    extends FeatureSwitching {
 
   def loadConfig(key: String): String = servicesConfig.getString(key)
 
-  lazy val vatRegistrationUrl: String = servicesConfig.baseUrl("vat-registration")
-  lazy val integrationFrameworkBaseUrl: String = servicesConfig.getString("microservice.services.integration-framework.url")
+  lazy val vatRegistrationUrl: String          = servicesConfig.baseUrl("vat-registration")
+  lazy val integrationFrameworkBaseUrl: String =
+    servicesConfig.getString("microservice.services.integration-framework.url")
 
   def vatSubmissionUrl: String = {
     val submissionEndpointUri = "/vat/subscription"
 
     if (isEnabled(StubSubmission)) {
       s"$vatRegistrationUrl/vatreg/test-only$submissionEndpointUri"
-    }
-    else {
+    } else {
       integrationFrameworkBaseUrl + submissionEndpointUri
     }
   }
 
-  lazy val urlHeaderEnvironment: String = servicesConfig.getString("microservice.services.integration-framework.environment")
-  lazy val urlHeaderAuthorization: String = s"Bearer ${servicesConfig.getString("microservice.services.integration-framework.authorization-token")}"
-  lazy val nonRepudiationUrl: String = servicesConfig.baseUrl("non-repudiation")
+  lazy val urlHeaderEnvironment: String   =
+    servicesConfig.getString("microservice.services.integration-framework.environment")
+  lazy val urlHeaderAuthorization: String =
+    s"Bearer ${servicesConfig.getString("microservice.services.integration-framework.authorization-token")}"
+  lazy val nonRepudiationUrl: String      = servicesConfig.baseUrl("non-repudiation")
 
-  val nrsConfig = runModeConfiguration.get[Configuration]("microservice.services.non-repudiation")
+  val nrsConfig                             = runModeConfiguration.get[Configuration]("microservice.services.non-repudiation")
   lazy val nrsRetries: List[FiniteDuration] =
     Retrying.fibonacciDelays(getFiniteDuration(nrsConfig), nrsConfig.get[Int]("numberOfRetries"))
 
@@ -57,7 +59,7 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
 
     Duration.create(string) match {
       case f: FiniteDuration => f
-      case _ => throw new RuntimeException(s"Not a finite duration '$string' for $path")
+      case _                 => throw new RuntimeException(s"Not a finite duration '$string' for $path")
     }
   }
 
@@ -66,8 +68,7 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
 
     if (isEnabled(StubSubmission)) {
       s"$vatRegistrationUrl/vatreg/test-only$endpoint"
-    }
-    else {
+    } else {
       nonRepudiationUrl + endpoint
     }
   }
@@ -77,25 +78,23 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
 
     if (isEnabled(StubSubmission)) {
       s"$vatRegistrationUrl/vatreg/test-only$endpoint"
-    }
-    else {
+    } else {
       nonRepudiationUrl + endpoint
     }
   }
 
   lazy val nonRepudiationApiKey: String = servicesConfig.getString("microservice.services.non-repudiation.api-key")
 
-  lazy val expiryInSeconds: Int = servicesConfig.getInt("cache.expiryInSeconds")
+  lazy val expiryInSeconds: Int                 = servicesConfig.getInt("cache.expiryInSeconds")
   lazy val upscanRepositoryExpiryInSeconds: Int = servicesConfig.getInt("cache.upscan.expiryInSeconds")
-  lazy val sdesUrl: String = servicesConfig.baseUrl("sdes")
+  lazy val sdesUrl: String                      = servicesConfig.baseUrl("sdes")
 
   def sdesNotificationUrl: String = {
     val endpoint = "/notification/fileready"
 
     if (isEnabled(StubSubmission)) {
       s"$vatRegistrationUrl/vatreg/test-only$endpoint"
-    }
-    else {
+    } else {
       sdesUrl + endpoint
     }
   }
@@ -105,8 +104,8 @@ class BackendConfig @Inject()(val servicesConfig: ServicesConfig,
   def sendEmailUrl: String = s"$emailBaseUrl/hmrc/email"
 
   lazy val sdesAuthorizationToken: String = servicesConfig.getString("microservice.services.sdes.api-key")
-  lazy val sdesInformationType = servicesConfig.getString("microservice.services.sdes.informationType")
-  lazy val sdesRecipientOrSender = servicesConfig.getString("microservice.services.sdes.recipientOrSender")
+  lazy val sdesInformationType            = servicesConfig.getString("microservice.services.sdes.informationType")
+  lazy val sdesRecipientOrSender          = servicesConfig.getString("microservice.services.sdes.recipientOrSender")
 
   lazy val emailCheck: List[String] = servicesConfig.getString("constants.emailCheck").split(',').toList
 }

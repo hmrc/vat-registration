@@ -17,7 +17,7 @@
 package utils
 
 import org.slf4j.{Logger, LoggerFactory}
-import play.api.{LoggerLike, MarkerContext}
+import play.api.LoggerLike
 import play.api.mvc.Request
 import uk.gov.hmrc.http.{HeaderNames, SessionKeys}
 
@@ -33,17 +33,17 @@ trait LoggingUtils extends LoggerLike {
 
   lazy val identifiers: Request[_] => String =
     request => Seq(trueClientIp(request), sessionId(request)).flatten.foldLeft("")(_ + _)
-    
+
   lazy val handleRegId: String => String =
     regId => if (regId.nonEmpty) s"(regId: $regId)" else ""
 
-  def infoLog(message: => String, regId: String = "")(implicit mc: MarkerContext, request: Request[_]): Unit =
+  def infoLog(message: => String, regId: String = "")(implicit request: Request[_]): Unit =
     logger.info(s"$message ${handleRegId(regId)} (${identifiers(request)})")
 
-  def warnLog(message: => String, regId: String = "")(implicit mc: MarkerContext, request: Request[_]): Unit =
+  def warnLog(message: => String, regId: String = "")(implicit request: Request[_]): Unit =
     logger.warn(s"$message ${handleRegId(regId)} (${identifiers(request)})")
 
-  def errorLog(message: => String, regId: String = "")(implicit mc: MarkerContext, request: Request[_]): Unit =
+  def errorLog(message: => String, regId: String = "")(implicit request: Request[_]): Unit =
     logger.error(s"$message ${handleRegId(regId)} (${identifiers(request)})")
 
 }

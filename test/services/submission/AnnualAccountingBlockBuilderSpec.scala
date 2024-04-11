@@ -26,8 +26,8 @@ class AnnualAccountingBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
     val service: AnnualAccountingBlockBuilder = new AnnualAccountingBlockBuilder
   }
 
-  val annualAccountingBlockJson: JsObject = Json.parse(
-    s"""
+  val annualAccountingBlockJson: JsObject = Json
+    .parse(s"""
       {"submissionType":"1",
        |"customerRequest":{
        |   "paymentMethod":"01",
@@ -37,7 +37,8 @@ class AnnualAccountingBlockBuilderSpec extends VatRegSpec with VatRegistrationFi
        |   "reqStartDate":"2020-10-07"
        |   }
        |}
-       |""".stripMargin).as[JsObject]
+       |""".stripMargin)
+    .as[JsObject]
 
   "buildAnnualAccountingBlock" should {
     "return the correct json" when {

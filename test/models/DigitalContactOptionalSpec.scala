@@ -22,12 +22,10 @@ import play.api.libs.json._
 
 class ContactSpec extends BaseSpec with JsonFormatValidation {
 
-
   "Creating a Contact model from Json" should {
     "complete successfully" when {
       "from full Json" in {
-        val json = Json.parse(
-          s"""
+        val json                 = Json.parse(s"""
              |{
              |  "email":"test@test.com",
              |  "tel":"12345678910"
@@ -39,8 +37,7 @@ class ContactSpec extends BaseSpec with JsonFormatValidation {
       }
 
       "from partial Json" in {
-        val json = Json.parse(
-          s"""
+        val json                 = Json.parse(s"""
              |{
              |  "tel":"12345678910"
              |}
@@ -51,8 +48,7 @@ class ContactSpec extends BaseSpec with JsonFormatValidation {
       }
 
       "Json is empty" in {
-        val json = Json.parse(
-          s"""
+        val json = Json.parse(s"""
              |{}
         """.stripMargin)
 

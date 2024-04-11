@@ -19,9 +19,7 @@ package models.api
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class SicCode(id: String,
-                   description: String,
-                   descriptionCy: String = "")
+case class SicCode(id: String, description: String, descriptionCy: String = "")
 
 object SicCode {
 
@@ -29,5 +27,5 @@ object SicCode {
     (__ \ "code").format[String] and
       (__ \ "desc").format[String] and
       (__ \ "descCy").formatWithDefault[String]("")
-    ) (SicCode.apply, unlift(SicCode.unapply))
+  )(SicCode.apply, unlift(SicCode.unapply))
 }

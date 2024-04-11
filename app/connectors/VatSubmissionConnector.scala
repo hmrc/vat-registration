@@ -26,12 +26,15 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class VatSubmissionConnector @Inject()(appConfig: BackendConfig,
-                                       http: HttpClientV2
-                                      )(implicit executionContext: ExecutionContext) {
+class VatSubmissionConnector @Inject() (appConfig: BackendConfig, http: HttpClientV2)(implicit
+  executionContext: ExecutionContext
+) {
 
-  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit hc: HeaderCarrier): Future[VatSubmissionResponse] =
-    http.post(url"${appConfig.vatSubmissionUrl}")
+  def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[VatSubmissionResponse] =
+    http
+      .post(url"${appConfig.vatSubmissionUrl}")
       .withBody(submissionData)
       .setHeader("Authorization" -> appConfig.urlHeaderAuthorization)
       .setHeader("Environment" -> appConfig.urlHeaderEnvironment)

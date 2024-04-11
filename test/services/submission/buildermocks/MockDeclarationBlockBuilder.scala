@@ -32,6 +32,10 @@ trait MockDeclarationBlockBuilder extends MockitoSugar {
   val mockDeclarationBlockBuilder = mock[DeclarationBlockBuilder]
 
   def mockBuildDeclarationBlock(vatScheme: VatScheme)(response: JsObject): OngoingStubbing[JsObject] =
-    when(mockDeclarationBlockBuilder.buildDeclarationBlock(ArgumentMatchers.eq(vatScheme))(ArgumentMatchers.any[Request[_]])) thenReturn response
+    when(
+      mockDeclarationBlockBuilder.buildDeclarationBlock(ArgumentMatchers.eq(vatScheme))(
+        ArgumentMatchers.any[Request[_]]
+      )
+    ) thenReturn response
 
 }

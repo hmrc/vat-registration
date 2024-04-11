@@ -1,7 +1,7 @@
 GET         /api/feature-switches                                  featureswitch.api.controllers.FeatureSwitchApiController.getFeatureSwitches()
 POST        /api/feature-switches                                  featureswitch.api.controllers.FeatureSwitchApiController.updateFeatureSwitches()
 
-DELETE      /registrations                                         controllers.test.DeleteAllRegistrationsController.deleteAllRegistrations
+DELETE      /registrations                                         controllers.test.DeleteAllRegistrationsController.deleteAllRegistrations()
 
 POST        /vat/subscription                                      controllers.test.StubVatSubmissionController.processSubmission
 POST        /submission                                            controllers.test.StubNrsController.processSubmission

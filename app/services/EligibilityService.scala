@@ -28,52 +28,72 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EligibilityService @Inject()(val registrationRepository: VatSchemeRepository) extends LoggingUtils {
+class EligibilityService @Inject() (val registrationRepository: VatSchemeRepository) extends LoggingUtils {
 
-  def updateEligibilityData(internalId: String, regId: String, eligibilityData: JsObject)(implicit ex: ExecutionContext, request: Request[_]): Future[Option[JsObject]] = {
-    eligibilityData.validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads).fold(
-      invalid => throw JsResultException(invalid),
-      eligibilitySubmissionData => for {
-        _ <- registrationRepository.getSection[EligibilitySubmissionData](internalId, regId, EligibilitySectionId.repoKey).flatMap {
-          case Some(oldEligibilitySubmissionData) =>
-            removeInvalidFields(internalId, regId, eligibilitySubmissionData, oldEligibilitySubmissionData)
-          case None =>
-            Future.successful()
-        }
-        _ <- registrationRepository.upsertSection[EligibilitySubmissionData](internalId, regId, EligibilitySectionId.repoKey, eligibilitySubmissionData)
-        _ <- logEligibilityPayload(regId, eligibilitySubmissionData)
-        result <- registrationRepository.upsertSection[JsObject](internalId, regId, EligibilityJsonSectionId.repoKey, eligibilityData)
-      } yield result
+  def updateEligibilityData(internalId: String, regId: String, eligibilityData: JsObject)(implicit
+    ex: ExecutionContext,
+    request: Request[_]
+  ): Future[Option[JsObject]] =
+    eligibilityData
+      .validate[EligibilitySubmissionData](EligibilitySubmissionData.eligibilityReads)
+      .fold(
+        invalid => throw JsResultException(invalid),
+        eligibilitySubmissionData =>
+          for {
+            _      <- registrationRepository
+                        .getSection[EligibilitySubmissionData](internalId, regId, EligibilitySectionId.repoKey)
+                        .flatMap {
+                          case Some(oldEligibilitySubmissionData) =>
+                            removeInvalidFields(internalId, regId, eligibilitySubmissionData, oldEligibilitySubmissionData)
+                          case None                               =>
+                            Future.successful()
+                        }
+            _      <- registrationRepository.upsertSection[EligibilitySubmissionData](
+                        internalId,
+                        regId,
+                        EligibilitySectionId.repoKey,
+                        eligibilitySubmissionData
+                      )
+            _      <- logEligibilityPayload(regId, eligibilitySubmissionData)
+            result <- registrationRepository
+                        .upsertSection[JsObject](internalId, regId, EligibilityJsonSectionId.repoKey, eligibilityData)
+          } yield result
+      )
+
+  private def logEligibilityPayload(regId: String, eligibilitySubmissionData: EligibilitySubmissionData)(implicit
+    request: Request[_]
+  ): Future[Unit] = {
+
+    infoLog(
+      jsonObject(
+        "logInfo"      -> "EligibilityPayloadLog",
+        "regId"        -> regId,
+        "partyType"    -> eligibilitySubmissionData.partyType.toString,
+        "regReason"    -> eligibilitySubmissionData.registrationReason.toString,
+        "isTransactor" -> eligibilitySubmissionData.isTransactor
+      ).toString()
     )
-  }
-
-  private def logEligibilityPayload(regId: String,
-                                    eligibilitySubmissionData: EligibilitySubmissionData)(implicit request: Request[_]): Future[Unit] = {
-
-    infoLog(jsonObject(
-      "logInfo" -> "EligibilityPayloadLog",
-      "regId" -> regId,
-      "partyType" -> eligibilitySubmissionData.partyType.toString,
-      "regReason" -> eligibilitySubmissionData.registrationReason.toString,
-      "isTransactor" -> eligibilitySubmissionData.isTransactor
-    ).toString())
 
     Future.successful()
   }
 
   // scalastyle:off
-  private def removeInvalidFields(internalId: String,
-                                  regId: String,
-                                  eligibilityData: EligibilitySubmissionData,
-                                  oldEligibilityData: EligibilitySubmissionData
-                                 )(implicit executionContext: ExecutionContext): Future[Option[VatScheme]] = {
-
-    registrationRepository.getRegistration(internalId, regId).flatMap {
-      case Some(vatScheme) =>
-        oldEligibilityData match {
-          case EligibilitySubmissionData(_, _, oldPartyType, _, _, _, _, oldFixedEstablishment)
-            if !oldPartyType.equals(eligibilityData.partyType) || !oldFixedEstablishment.equals(eligibilityData.fixedEstablishmentInManOrUk) =>
-            registrationRepository.upsertRegistration(internalId, regId, vatScheme.copy(
+  private def removeInvalidFields(
+    internalId: String,
+    regId: String,
+    eligibilityData: EligibilitySubmissionData,
+    oldEligibilityData: EligibilitySubmissionData
+  )(implicit executionContext: ExecutionContext): Future[Option[VatScheme]] =
+    registrationRepository.getRegistration(internalId, regId).flatMap { case Some(vatScheme) =>
+      oldEligibilityData match {
+        case EligibilitySubmissionData(_, _, oldPartyType, _, _, _, _, oldFixedEstablishment)
+            if !oldPartyType.equals(
+              eligibilityData.partyType
+            ) || !oldFixedEstablishment == eligibilityData.fixedEstablishmentInManOrUk =>
+          registrationRepository.upsertRegistration(
+            internalId,
+            regId,
+            vatScheme.copy(
               bankAccount = None,
               flatRateScheme = None,
               eligibilityJson = None,
@@ -86,31 +106,35 @@ class EligibilityService @Inject()(val registrationRepository: VatSchemeReposito
               otherBusinessInvolvements = None,
               business = None,
               vatApplication = None
-            ))
+            )
+          )
 
-          case EligibilitySubmissionData(_, _, _, _, _, oldTransactorFlag, _, _)
-            if !oldTransactorFlag.equals(eligibilityData.isTransactor) || eligibilityData.appliedForException.contains(true) =>
+        case EligibilitySubmissionData(_, _, _, _, _, oldTransactorFlag, _, _)
+            if !oldTransactorFlag == eligibilityData.isTransactor || eligibilityData.appliedForException
+              .contains(true) =>
+          val vatApplicationWithClearedExemption = if (eligibilityData.appliedForException.contains(true)) {
+            vatScheme.vatApplication.map(_.copy(appliedForExemption = None))
+          } else {
+            vatScheme.vatApplication
+          }
 
-            val vatApplicationWithClearedExemption = if (eligibilityData.appliedForException.contains(true)) {
-              vatScheme.vatApplication.map(_.copy(appliedForExemption = None))
-            } else {
-              vatScheme.vatApplication
-            }
+          val clearedTransactor = if (oldTransactorFlag != eligibilityData.isTransactor) {
+            None
+          } else {
+            vatScheme.transactorDetails
+          }
 
-            val clearedTransactor = if (oldTransactorFlag != eligibilityData.isTransactor) {
-              None
-            } else {
-              vatScheme.transactorDetails
-            }
-
-            registrationRepository.upsertRegistration(internalId, regId, vatScheme.copy(
+          registrationRepository.upsertRegistration(
+            internalId,
+            regId,
+            vatScheme.copy(
               transactorDetails = clearedTransactor,
               vatApplication = vatApplicationWithClearedExemption
-            ))
+            )
+          )
 
-          case _ =>
-            Future.successful(Some(vatScheme))
-        }
+        case _ =>
+          Future.successful(Some(vatScheme))
+      }
     }
-  }
 }

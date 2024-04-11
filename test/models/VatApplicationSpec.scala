@@ -24,10 +24,10 @@ import java.time.LocalDate
 
 class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
 
-  val testTurnover = 10000.5
-  val testDate: LocalDate = LocalDate.now()
-  val testWarehouseNumber = "test12345678"
-  val testWarehouseName = "testWarehouseName"
+  val testTurnover                               = 10000.5
+  val testDate: LocalDate                        = LocalDate.now()
+  val testWarehouseNumber                        = "test12345678"
+  val testWarehouseName                          = "testWarehouseName"
   val testNorthernIrelandProtocol: NIPCompliance = NIPCompliance(
     Some(ConditionalValue(answer = true, Some(testTurnover))),
     Some(ConditionalValue(answer = false, None))
@@ -84,50 +84,54 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
     None
   )
 
-  val testOverseasVatApplication: VatApplication = testQuarterlyVatApplication.copy(overseasCompliance = Some(OverseasCompliance(
-    goodsToOverseas = Some(true),
-    goodsToEu = Some(true),
-    storingGoodsForDispatch = Some(StoringWithinUk),
-    usingWarehouse = Some(true),
-    fulfilmentWarehouseNumber = Some(testWarehouseNumber),
-    fulfilmentWarehouseName = Some(testWarehouseName)
-  )))
+  val testOverseasVatApplication: VatApplication = testQuarterlyVatApplication.copy(overseasCompliance =
+    Some(
+      OverseasCompliance(
+        goodsToOverseas = Some(true),
+        goodsToEu = Some(true),
+        storingGoodsForDispatch = Some(StoringWithinUk),
+        usingWarehouse = Some(true),
+        fulfilmentWarehouseNumber = Some(testWarehouseNumber),
+        fulfilmentWarehouseName = Some(testWarehouseName)
+      )
+    )
+  )
 
   val validMonthlyVatApplicationJson: JsObject = Json.obj(
-    "eoriRequested" -> true,
-    "tradeVatGoodsOutsideUk" -> true,
-    "turnoverEstimate" -> testTurnover,
-    "zeroRatedSupplies" -> testTurnover,
-    "claimVatRefunds" -> true,
-    "returnsFrequency" -> Json.toJson[ReturnsFrequency](Monthly),
-    "staggerStart" -> Json.toJson[Stagger](MonthlyStagger),
-    "startDate" -> testDate,
+    "eoriRequested"           -> true,
+    "tradeVatGoodsOutsideUk"  -> true,
+    "turnoverEstimate"        -> testTurnover,
+    "zeroRatedSupplies"       -> testTurnover,
+    "claimVatRefunds"         -> true,
+    "returnsFrequency"        -> Json.toJson[ReturnsFrequency](Monthly),
+    "staggerStart"            -> Json.toJson[Stagger](MonthlyStagger),
+    "startDate"               -> testDate,
     "northernIrelandProtocol" -> Json.obj(
-      "goodsToEU" -> Json.obj(
+      "goodsToEU"   -> Json.obj(
         "answer" -> true,
-        "value" -> testTurnover
+        "value"  -> testTurnover
       ),
       "goodsFromEU" -> Json.obj(
         "answer" -> false
       )
     ),
-    "hasTaxRepresentative" -> false,
-    "currentlyTrading" -> false
+    "hasTaxRepresentative"    -> false,
+    "currentlyTrading"        -> false
   )
 
   val validQuarterlyVatApplicationJson: JsObject = Json.obj(
-    "eoriRequested" -> true,
-    "tradeVatGoodsOutsideUk" -> true,
-    "turnoverEstimate" -> testTurnover,
-    "zeroRatedSupplies" -> testTurnover,
-    "claimVatRefunds" -> false,
-    "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
-    "staggerStart" -> Json.toJson[Stagger](JanuaryStagger),
-    "startDate" -> testDate,
+    "eoriRequested"           -> true,
+    "tradeVatGoodsOutsideUk"  -> true,
+    "turnoverEstimate"        -> testTurnover,
+    "zeroRatedSupplies"       -> testTurnover,
+    "claimVatRefunds"         -> false,
+    "returnsFrequency"        -> Json.toJson[ReturnsFrequency](Quarterly),
+    "staggerStart"            -> Json.toJson[Stagger](JanuaryStagger),
+    "startDate"               -> testDate,
     "northernIrelandProtocol" -> Json.obj(
-      "goodsToEU" -> Json.obj(
+      "goodsToEU"   -> Json.obj(
         "answer" -> true,
-        "value" -> testTurnover
+        "value"  -> testTurnover
       ),
       "goodsFromEU" -> Json.obj(
         "answer" -> false
@@ -137,22 +141,22 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
 
   def validAnnualVatApplicationJson(startDate: Option[LocalDate] = Some(testDate)): JsObject =
     Json.obj(
-      "eoriRequested" -> true,
-      "tradeVatGoodsOutsideUk" -> true,
-      "turnoverEstimate" -> testTurnover,
-      "zeroRatedSupplies" -> testTurnover,
-      "claimVatRefunds" -> false,
-      "returnsFrequency" -> Json.toJson[ReturnsFrequency](Annual),
-      "staggerStart" -> Json.toJson[Stagger](JanDecStagger),
-      "startDate" -> startDate,
+      "eoriRequested"           -> true,
+      "tradeVatGoodsOutsideUk"  -> true,
+      "turnoverEstimate"        -> testTurnover,
+      "zeroRatedSupplies"       -> testTurnover,
+      "claimVatRefunds"         -> false,
+      "returnsFrequency"        -> Json.toJson[ReturnsFrequency](Annual),
+      "staggerStart"            -> Json.toJson[Stagger](JanDecStagger),
+      "startDate"               -> startDate,
       "annualAccountingDetails" -> Json.obj(
-        "paymentMethod" -> Json.toJson[PaymentMethod](BankGIRO),
+        "paymentMethod"    -> Json.toJson[PaymentMethod](BankGIRO),
         "paymentFrequency" -> Json.toJson[PaymentFrequency](MonthlyPayment)
       ),
       "northernIrelandProtocol" -> Json.obj(
-        "goodsToEU" -> Json.obj(
+        "goodsToEU"   -> Json.obj(
           "answer" -> true,
-          "value" -> testTurnover
+          "value"  -> testTurnover
         ),
         "goodsFromEU" -> Json.obj(
           "answer" -> false
@@ -161,21 +165,21 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
     )
 
   val invalidVatApplicationJson: JsObject = Json.obj(
-    "eoriRequested" -> true,
-    "tradeVatGoodsOutsideUk" -> true,
-    "turnoverEstimate" -> testTurnover,
-    "zeroRatedSupplies" -> testTurnover,
-    "returnsFrequency" -> "invalidFrequency",
-    "staggerStart" -> "invalidStagger",
-    "startDate" -> testDate,
+    "eoriRequested"           -> true,
+    "tradeVatGoodsOutsideUk"  -> true,
+    "turnoverEstimate"        -> testTurnover,
+    "zeroRatedSupplies"       -> testTurnover,
+    "returnsFrequency"        -> "invalidFrequency",
+    "staggerStart"            -> "invalidStagger",
+    "startDate"               -> testDate,
     "annualAccountingDetails" -> Json.obj(
-      "paymentMethod" -> Json.toJson[PaymentMethod](BankGIRO),
+      "paymentMethod"    -> Json.toJson[PaymentMethod](BankGIRO),
       "paymentFrequency" -> Json.toJson[PaymentFrequency](MonthlyPayment)
     ),
     "northernIrelandProtocol" -> Json.obj(
-      "goodsToEU" -> Json.obj(
+      "goodsToEU"   -> Json.obj(
         "answer" -> true,
-        "value" -> testTurnover
+        "value"  -> testTurnover
       ),
       "goodsFromEU" -> Json.obj(
         "answer" -> false
@@ -184,26 +188,26 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   )
 
   val validOverseasJson: JsObject = Json.obj(
-    "eoriRequested" -> true,
-    "tradeVatGoodsOutsideUk" -> true,
-    "turnoverEstimate" -> testTurnover,
-    "zeroRatedSupplies" -> testTurnover,
-    "claimVatRefunds" -> false,
-    "returnsFrequency" -> Json.toJson[ReturnsFrequency](Quarterly),
-    "staggerStart" -> Json.toJson[Stagger](JanuaryStagger),
-    "startDate" -> testDate,
-    "overseasCompliance" -> Json.obj(
-      "goodsToOverseas" -> true,
-      "goodsToEu" -> true,
-      "storingGoodsForDispatch" -> Json.toJson[StoringGoodsForDispatch](StoringWithinUk),
-      "usingWarehouse" -> true,
+    "eoriRequested"           -> true,
+    "tradeVatGoodsOutsideUk"  -> true,
+    "turnoverEstimate"        -> testTurnover,
+    "zeroRatedSupplies"       -> testTurnover,
+    "claimVatRefunds"         -> false,
+    "returnsFrequency"        -> Json.toJson[ReturnsFrequency](Quarterly),
+    "staggerStart"            -> Json.toJson[Stagger](JanuaryStagger),
+    "startDate"               -> testDate,
+    "overseasCompliance"      -> Json.obj(
+      "goodsToOverseas"           -> true,
+      "goodsToEu"                 -> true,
+      "storingGoodsForDispatch"   -> Json.toJson[StoringGoodsForDispatch](StoringWithinUk),
+      "usingWarehouse"            -> true,
       "fulfilmentWarehouseNumber" -> testWarehouseNumber,
-      "fulfilmentWarehouseName" -> testWarehouseName
+      "fulfilmentWarehouseName"   -> testWarehouseName
     ),
     "northernIrelandProtocol" -> Json.obj(
-      "goodsToEU" -> Json.obj(
+      "goodsToEU"   -> Json.obj(
         "answer" -> true,
-        "value" -> testTurnover
+        "value"  -> testTurnover
       ),
       "goodsFromEU" -> Json.obj(
         "answer" -> false
@@ -226,7 +230,9 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
       }
 
       "full annual json is present without startDate" in {
-        Json.fromJson[VatApplication](validAnnualVatApplicationJson(None)) mustBe JsSuccess(testAnnualVatApplication.copy(startDate = None))
+        Json.fromJson[VatApplication](validAnnualVatApplicationJson(None)) mustBe JsSuccess(
+          testAnnualVatApplication.copy(startDate = None)
+        )
       }
 
       "full overseas json is present" in {
@@ -237,9 +243,9 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
     "fails" when {
       "json is invalid" in {
         val result = Json.fromJson[VatApplication](invalidVatApplicationJson)
-        result shouldHaveErrors(
+        result shouldHaveErrors (
           __ \ "returnsFrequency" -> JsonValidationError("Could not parse payment frequency"),
-          __ \ "staggerStart" -> JsonValidationError("Could not parse Stagger")
+          __ \ "staggerStart"     -> JsonValidationError("Could not parse Stagger")
         )
       }
     }

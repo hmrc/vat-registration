@@ -27,9 +27,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class StubVatSubmissionController @Inject()(schemaValidationService: SchemaValidationService,
-                                            apiSchema: API1364,
-                                            cc: ControllerComponents) extends BackendController(cc) with LoggingUtils {
+class StubVatSubmissionController @Inject() (
+  schemaValidationService: SchemaValidationService,
+  apiSchema: API1364,
+  cc: ControllerComponents
+) extends BackendController(cc)
+    with LoggingUtils {
 
   val processSubmission: Action[JsValue] = Action.async(parse.json) { implicit request =>
     infoLog(s"[StubVatSubmissionController][processSubmission] Received submission: ${Json.prettyPrint(request.body)}")
@@ -37,8 +40,10 @@ class StubVatSubmissionController @Inject()(schemaValidationService: SchemaValid
     schemaValidationService.validate(apiSchema, request.body.toString()) match {
       case map if map.isEmpty =>
         Future.successful(Ok(Json.stringify(Json.obj("formBundle" -> "123412341234"))))
-      case errorMap =>
-        errorLog(s"[StubVatSubmissionController][processSubmission] Bad request errors:\n ${Json.prettyPrint(Json.toJson(errorMap))}")
+      case errorMap           =>
+        errorLog(
+          s"[StubVatSubmissionController][processSubmission] Bad request errors:\n ${Json.prettyPrint(Json.toJson(errorMap))}"
+        )
         Future.successful(BadRequest(Json.obj("failures" -> Json.arr(Json.obj("code" -> "INVALID_PAYLOAD")))))
     }
   }

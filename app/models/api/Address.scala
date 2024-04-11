@@ -25,14 +25,16 @@ object Country {
   implicit val format: Format[Country] = Json.format[Country]
 }
 
-case class Address(line1: String,
-                   line2: Option[String] = None,
-                   line3: Option[String] = None,
-                   line4: Option[String] = None,
-                   line5: Option[String] = None,
-                   postcode: Option[String] = None,
-                   country: Option[Country] = None,
-                   addressValidated: Option[Boolean] = None)
+case class Address(
+  line1: String,
+  line2: Option[String] = None,
+  line3: Option[String] = None,
+  line4: Option[String] = None,
+  line5: Option[String] = None,
+  postcode: Option[String] = None,
+  country: Option[Country] = None,
+  addressValidated: Option[Boolean] = None
+)
 
 object Address {
 
@@ -45,12 +47,13 @@ object Address {
       (__ \ "line4").formatNullable[String] and
       (__ \ "line5").formatNullable[String] and
       (__ \ "postcode").formatNullable[String] and
-      (__ \ "countryCode").formatNullable[String]
+      (__ \ "countryCode")
+        .formatNullable[String]
         .inmap[Option[Country]](
           optCode => optCode.map(code => Country(Some(code), None)),
           optCountry => optCountry.flatMap(country => country.code)
         ) and
       (__ \ "addressValidated").formatNullable[Boolean]
-    ) (Address.apply, unlift(Address.unapply))
+  )(Address.apply, unlift(Address.unapply))
 
 }

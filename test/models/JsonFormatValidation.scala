@@ -26,7 +26,7 @@ trait JsonFormatValidation extends PlaySpec {
 
     def resultsIn(t: T): Assertion = res match {
       case JsSuccess(deserialisedT, _) => deserialisedT mustBe t
-      case JsError(errors) => fail(s"found errors: $errors when expected: $t")
+      case JsError(errors)             => fail(s"found errors: $errors when expected: $t")
     }
 
     def shouldHaveErrors(expectedErrors: (JsPath, JsonValidationError)*): Unit = {
@@ -36,7 +36,7 @@ trait JsonFormatValidation extends PlaySpec {
         case JsError(errors) =>
           errors.size mustBe errorMap.size
           for ((path, validationErrors) <- errors) {
-            errorMap.keySet must contain(path)
+            errorMap.keySet  must contain(path)
             validationErrors must contain(errorMap(path))
           }
       }

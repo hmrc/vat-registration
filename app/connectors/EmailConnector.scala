@@ -28,19 +28,22 @@ import scala.concurrent.{ExecutionContext, Future}
 import utils.LoggingUtils
 
 @Singleton
-class EmailConnector @Inject()(httpClient: HttpClientV2)
-                              (implicit ec: ExecutionContext, appConfig: BackendConfig) extends HttpReadsHttpResponse with LoggingUtils {
+class EmailConnector @Inject() (httpClient: HttpClientV2)(implicit ec: ExecutionContext, appConfig: BackendConfig)
+    extends HttpReadsHttpResponse
+    with LoggingUtils {
 
-  def sendEmail(email: String, template: String, params: Map[String, String], force: Boolean)
-               (implicit hc: HeaderCarrier, request: Request[_]): Future[EmailResponse] =
-
-    httpClient.post(url"${appConfig.sendEmailUrl}")
+  def sendEmail(email: String, template: String, params: Map[String, String], force: Boolean)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): Future[EmailResponse] =
+    httpClient
+      .post(url"${appConfig.sendEmailUrl}")
       .withBody(
         Json.obj(
-          "to" -> Json.arr(email),
+          "to"         -> Json.arr(email),
           "templateId" -> template,
           "parameters" -> Json.toJson(params),
-          "force" -> force
+          "force"      -> force
         )
       )
       .execute[HttpResponse]
@@ -48,7 +51,7 @@ class EmailConnector @Inject()(httpClient: HttpClientV2)
         res.status match {
           case ACCEPTED =>
             EmailSent
-          case status =>
+          case status   =>
             warnLog(s"Unexpected status returned from Email service: $status")
             EmailFailedToSend
         }
@@ -61,4 +64,3 @@ sealed trait EmailResponse
 case object EmailSent extends EmailResponse
 
 case object EmailFailedToSend extends EmailResponse
-

@@ -25,7 +25,7 @@ trait FeatureSwitchRegistry {
   def apply(name: String): FeatureSwitch =
     get(name) match {
       case Some(switch) => switch
-      case None => throw new IllegalArgumentException("Invalid feature switch: " + name)
+      case None         => throw new IllegalArgumentException("Invalid feature switch: " + name)
     }
 
   def get(name: String): Option[FeatureSwitch] = switches find (_.configName == name)

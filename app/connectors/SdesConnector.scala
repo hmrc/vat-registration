@@ -27,12 +27,13 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SdesConnector @Inject()(httpClient: HttpClientV2,
-                              config: BackendConfig)
-                             (implicit executionContext: ExecutionContext) extends HttpReadsHttpResponse {
+class SdesConnector @Inject() (httpClient: HttpClientV2, config: BackendConfig)(implicit
+  executionContext: ExecutionContext
+) extends HttpReadsHttpResponse {
 
   def notifySdes(payload: SdesNotification)(implicit hc: HeaderCarrier): Future[SdesNotificationResult] =
-    httpClient.post(url"${config.sdesNotificationUrl}")
+    httpClient
+      .post(url"${config.sdesNotificationUrl}")
       .withBody(Json.toJson(payload)(SdesNotification.format))
       .setHeader("x-client-id" -> config.sdesAuthorizationToken)
       .setHeader("Content-Type" -> "application/json")

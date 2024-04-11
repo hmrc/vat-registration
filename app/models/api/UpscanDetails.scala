@@ -20,43 +20,46 @@ import play.api.libs.json._
 
 import java.time.LocalDateTime
 
-case class UpscanDetails(registrationId: Option[String],
-                         reference: String,
-                         attachmentType: Option[AttachmentType],
-                         downloadUrl: Option[String] = None,
-                         fileStatus: FileStatus,
-                         uploadDetails: Option[UploadDetails] = None,
-                         failureDetails: Option[FailureDetails] = None)
+case class UpscanDetails(
+  registrationId: Option[String],
+  reference: String,
+  attachmentType: Option[AttachmentType],
+  downloadUrl: Option[String] = None,
+  fileStatus: FileStatus,
+  uploadDetails: Option[UploadDetails] = None,
+  failureDetails: Option[FailureDetails] = None
+)
 
 object UpscanDetails {
   implicit val format: OFormat[UpscanDetails] = Json.format[UpscanDetails]
 }
 
-case class UploadDetails(fileName: String,
-                         fileMimeType: String,
-                         uploadTimestamp: LocalDateTime,
-                         checksum: String,
-                         size: Int)
+case class UploadDetails(
+  fileName: String,
+  fileMimeType: String,
+  uploadTimestamp: LocalDateTime,
+  checksum: String,
+  size: Int
+)
 
 object UploadDetails {
   implicit val format: OFormat[UploadDetails] = Json.format[UploadDetails]
 
   val mimeTypeMapping: Map[String, String] = Map(
-    "application/pdf" -> ".pdf",
-    "application/msword" -> ".doc",
+    "application/pdf"                                                         -> ".pdf",
+    "application/msword"                                                      -> ".doc",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> ".docx",
-    "application/vnd.ms-excel" -> ".xls",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" -> ".xlsx",
-    "image/bmp" -> ".bmp",
-    "image/gif" -> ".gif",
-    "image/png" -> ".png",
-    "image/jpeg" -> ".jpeg",
-    "text/plain" -> ".txt"
+    "application/vnd.ms-excel"                                                -> ".xls",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"       -> ".xlsx",
+    "image/bmp"                                                               -> ".bmp",
+    "image/gif"                                                               -> ".gif",
+    "image/png"                                                               -> ".png",
+    "image/jpeg"                                                              -> ".jpeg",
+    "text/plain"                                                              -> ".txt"
   )
 }
 
-case class FailureDetails(failureReason: String,
-                          message: String)
+case class FailureDetails(failureReason: String, message: String)
 
 object FailureDetails {
   implicit val format: OFormat[FailureDetails] = Json.format[FailureDetails]
@@ -84,14 +87,14 @@ object FileStatus {
 
   val reads: Reads[FileStatus] = for {
     value <- JsPath.read[String].map {
-      case InProgress.value => InProgress
-      case Failed.value => Failed
-      case Ready.value => Ready
-    }
+               case InProgress.value => InProgress
+               case Failed.value     => Failed
+               case Ready.value      => Ready
+             }
   } yield value
 
-  val writes: Writes[FileStatus] = Writes {
-    status: FileStatus => JsString(status.value)
+  val writes: Writes[FileStatus] = Writes { status: FileStatus =>
+    JsString(status.value)
   }
 
   implicit val format: Format[FileStatus] = Format(

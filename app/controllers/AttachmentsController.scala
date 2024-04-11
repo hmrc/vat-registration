@@ -27,10 +27,13 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class AttachmentsController @Inject()(controllerComponents: ControllerComponents,
-                                      val authConnector: AuthConnector,
-                                      attachmentsService: AttachmentsService
-                                     )(implicit val executionContext: ExecutionContext) extends BackendController(controllerComponents) with Authorisation {
+class AttachmentsController @Inject() (
+  controllerComponents: ControllerComponents,
+  val authConnector: AuthConnector,
+  attachmentsService: AttachmentsService
+)(implicit val executionContext: ExecutionContext)
+    extends BackendController(controllerComponents)
+    with Authorisation {
 
   def getAttachmentList(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>

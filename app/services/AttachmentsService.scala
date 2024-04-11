@@ -27,48 +27,61 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AttachmentsService @Inject()(val registrationRepository: VatSchemeRepository,
-                                   upscanMongoRepository: UpscanMongoRepository
-                                  )(implicit executionContext: ExecutionContext) {
+class AttachmentsService @Inject() (
+  val registrationRepository: VatSchemeRepository,
+  upscanMongoRepository: UpscanMongoRepository
+)(implicit executionContext: ExecutionContext) {
 
   def getAttachmentList(internalId: String, regId: String)(implicit request: Request[_]): Future[List[AttachmentType]] =
     registrationRepository.getRegistration(internalId, regId).map {
       case Some(vatScheme) =>
         mandatoryAttachmentList(vatScheme) match {
-          case Nil if vatScheme.attachments.exists(_.method.isDefined) => // Only triggered when users change answers, this drops the old invalid ones.
+          case Nil
+              if vatScheme.attachments.exists(
+                _.method.isDefined
+              ) => // Only triggered when users change answers, this drops the old invalid ones.
             upscanMongoRepository.deleteAllUpscanDetails(regId)
             if (vatScheme.attachments.exists(_.additionalPartnersDocuments.isEmpty)) {
               registrationRepository.deleteSection(internalId, regId, AttachmentsSectionId.repoKey)
             } else {
               val updatedAttachments = vatScheme.attachments
-                .map(_.copy(method = None, supplyVat1614a = None, supplyVat1614h = None, supplySupportingDocuments = None))
+                .map(
+                  _.copy(method = None, supplyVat1614a = None, supplyVat1614h = None, supplySupportingDocuments = None)
+                )
                 .getOrElse(Attachments())
               registrationRepository.upsertSection(internalId, regId, AttachmentsSectionId.repoKey, updatedAttachments)
             }
             Nil
           case list => list
         }
-      case None =>
+      case None            =>
         List.empty[AttachmentType]
     }
 
-  def getIncompleteAttachments(internalId: String, regId: String)(implicit request: Request[_]): Future[List[AttachmentType]] = {
+  def getIncompleteAttachments(internalId: String, regId: String)(implicit
+    request: Request[_]
+  ): Future[List[AttachmentType]] =
     for {
-      attachmentList <- getAttachmentList(internalId, regId)
-      requiredAttachments = attachmentList.flatMap {
-        case IdentityEvidence => List(PrimaryIdentityEvidence, ExtraIdentityEvidence, ExtraIdentityEvidence)
-        case TransactorIdentityEvidence => List(PrimaryTransactorIdentityEvidence, ExtraTransactorIdentityEvidence, ExtraTransactorIdentityEvidence)
-        case attachmentType => List(attachmentType)
-      }
-      upscanDetails <- upscanMongoRepository.getAllUpscanDetails(regId)
-      completeAttachments = upscanDetails.collect {
-        case UpscanDetails(_, _, Some(attachmentType), _, Ready, _, _) => attachmentType
-      }
+      attachmentList       <- getAttachmentList(internalId, regId)
+      requiredAttachments   = attachmentList.flatMap {
+                                case IdentityEvidence           =>
+                                  List(PrimaryIdentityEvidence, ExtraIdentityEvidence, ExtraIdentityEvidence)
+                                case TransactorIdentityEvidence =>
+                                  List(
+                                    PrimaryTransactorIdentityEvidence,
+                                    ExtraTransactorIdentityEvidence,
+                                    ExtraTransactorIdentityEvidence
+                                  )
+                                case attachmentType             => List(attachmentType)
+                              }
+      upscanDetails        <- upscanMongoRepository.getAllUpscanDetails(regId)
+      completeAttachments   = upscanDetails.collect { case UpscanDetails(_, _, Some(attachmentType), _, Ready, _, _) =>
+                                attachmentType
+                              }
       incompleteAttachments = requiredAttachments.diff(completeAttachments)
     } yield incompleteAttachments
-  }
 
-  def mandatoryAttachmentList(vatScheme: VatScheme): List[AttachmentType] = {
+  def mandatoryAttachmentList(vatScheme: VatScheme): List[AttachmentType] =
     List(
       getTransactorIdentityEvidenceAttachment(vatScheme),
       getIdentityEvidenceAttachment(vatScheme),
@@ -77,52 +90,50 @@ class AttachmentsService @Inject()(val registrationRepository: VatSchemeReposito
       getTaxRepresentativeAttachment(vatScheme),
       getVat5LAttachment(vatScheme)
     ).flatten
-  }
 
-  def optionalAttachmentList(vatScheme: VatScheme): List[AttachmentType] = {
+  def optionalAttachmentList(vatScheme: VatScheme): List[AttachmentType] =
     List(
       if (vatScheme.attachments.flatMap(_.supplyVat1614a).contains(true)) Some(Attachment1614a) else None,
       if (vatScheme.attachments.flatMap(_.supplyVat1614h).contains(true)) Some(Attachment1614h) else None,
-      if (vatScheme.attachments.flatMap(_.supplySupportingDocuments).contains(true)) Some(LandPropertyOtherDocs) else None
+      if (vatScheme.attachments.flatMap(_.supplySupportingDocuments).contains(true)) Some(LandPropertyOtherDocs)
+      else None
     ).flatten
-  }
 
   private def getIdentityEvidenceAttachment(vatScheme: VatScheme): Option[IdentityEvidence.type] = {
-    val unverifiedPersonalDetails = vatScheme.applicantDetails.exists(data => !data.personalDetails.exists(_.identifiersMatch))
+    val unverifiedPersonalDetails =
+      vatScheme.applicantDetails.exists(data => !data.personalDetails.exists(_.identifiersMatch))
     if (unverifiedPersonalDetails) Some(IdentityEvidence) else None
   }
 
   private def getTransactorIdentityEvidenceAttachment(vatScheme: VatScheme): Option[TransactorIdentityEvidence.type] = {
-    val needIdentityDocuments = vatScheme.transactorDetails.exists(data => !data.personalDetails.exists(_.identifiersMatch))
+    val needIdentityDocuments =
+      vatScheme.transactorDetails.exists(data => !data.personalDetails.exists(_.identifiersMatch))
     if (needIdentityDocuments) Some(TransactorIdentityEvidence) else None
   }
 
-  private def getVat2Attachment(vatScheme: VatScheme): Option[VAT2.type] = {
+  private def getVat2Attachment(vatScheme: VatScheme): Option[VAT2.type] =
     vatScheme.attachments.flatMap(_.additionalPartnersDocuments) match {
-      case Some(true) => Some(VAT2)
+      case Some(true)  => Some(VAT2)
       case Some(false) => None
-      case _ =>
+      case _           =>
         val allPartnershipsExceptLLP = List(Partnership, LtdPartnership, ScotPartnership, ScotLtdPartnership)
-        val needVat2ForPartnership = vatScheme.eligibilitySubmissionData.exists(data => allPartnershipsExceptLLP.contains(data.partyType))
+        val needVat2ForPartnership   =
+          vatScheme.eligibilitySubmissionData.exists(data => allPartnershipsExceptLLP.contains(data.partyType))
         if (needVat2ForPartnership) Some(VAT2) else None
     }
-  }
 
-  private def getVat51Attachment(vatScheme: VatScheme): Option[VAT51.type] = {
+  private def getVat51Attachment(vatScheme: VatScheme): Option[VAT51.type] =
     vatScheme.eligibilitySubmissionData.map(_.registrationReason) match {
       case Some(GroupRegistration) => Some(VAT51)
-      case _ => None
+      case _                       => None
     }
-  }
 
-  private def getTaxRepresentativeAttachment(vatScheme: VatScheme): Option[TaxRepresentativeAuthorisation.type] = {
+  private def getTaxRepresentativeAttachment(vatScheme: VatScheme): Option[TaxRepresentativeAuthorisation.type] =
     vatScheme.vatApplication.flatMap(_.hasTaxRepresentative) match {
       case Some(hasTaxRepresentative) if hasTaxRepresentative => Some(TaxRepresentativeAuthorisation)
-      case _ => None
+      case _                                                  => None
     }
-  }
 
-  private def getVat5LAttachment(vatScheme: VatScheme): Option[VAT5L.type] = {
+  private def getVat5LAttachment(vatScheme: VatScheme): Option[VAT5L.type] =
     if (vatScheme.business.exists(_.hasLandAndProperty.contains(true))) Some(VAT5L) else None
-  }
 }

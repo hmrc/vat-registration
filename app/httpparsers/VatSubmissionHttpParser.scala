@@ -22,48 +22,65 @@ import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 object VatSubmissionHttpParser {
 
-  val codeKey = "code"
-  val failuresKey = "failures"
-  val invalidPayloadKey = "INVALID_PAYLOAD"
-  val invalidSessionIdKey = "INVALID_SESSIONID"
-  val invalidCredentialIdKey = "INVALID_CREDENTIALID"
+  val codeKey                 = "code"
+  val failuresKey             = "failures"
+  val invalidPayloadKey       = "INVALID_PAYLOAD"
+  val invalidSessionIdKey     = "INVALID_SESSIONID"
+  val invalidCredentialIdKey  = "INVALID_CREDENTIALID"
   val invalidCorrelationIdKey = "INVALID_CORRELATIONID"
-  val formBundleIdKey = "formBundle"
+  val formBundleIdKey         = "formBundle"
 
   type VatSubmissionResponse = Either[VatSubmissionFailure, VatSubmissionSuccess]
 
   implicit object VatSubmissionHttpReads extends HttpReads[VatSubmissionResponse] {
-    override def read(method: String, url: String, response: HttpResponse): VatSubmissionResponse = {
+    override def read(method: String, url: String, response: HttpResponse): VatSubmissionResponse =
       response.status match {
-        case OK =>
-          (response.json \ formBundleIdKey).validate[String].asEither
+        case OK          =>
+          (response.json \ formBundleIdKey)
+            .validate[String]
+            .asEither
             .map(VatSubmissionSuccess)
-            .left.map(_ => VatSubmissionFailure(OK, "VAT submission API - no form bundle ID in response"))
+            .left
+            .map(_ => VatSubmissionFailure(OK, "VAT submission API - no form bundle ID in response"))
         case BAD_REQUEST =>
           (response.json \ failuresKey).validate[JsArray] match {
             case JsSuccess(array, _) =>
-              Left(VatSubmissionFailure(BAD_REQUEST, s"VAT Submission API - errors: ${parseFailureCodes(array).mkString(", ")}"))
-            case _ =>
-              Left(VatSubmissionFailure(BAD_REQUEST, s"Unexpected response from VAT Submission API - status = ${response.status}"))
+              Left(
+                VatSubmissionFailure(
+                  BAD_REQUEST,
+                  s"VAT Submission API - errors: ${parseFailureCodes(array).mkString(", ")}"
+                )
+              )
+            case _                   =>
+              Left(
+                VatSubmissionFailure(
+                  BAD_REQUEST,
+                  s"Unexpected response from VAT Submission API - status = ${response.status}"
+                )
+              )
           }
-        case CONFLICT =>
+        case CONFLICT    =>
           Left(VatSubmissionFailure(CONFLICT, "VAT Submission API - application already in progress"))
-        case _ =>
-          Left(VatSubmissionFailure(response.status, s"Unexpected response from VAT Submission API - status = ${response.status}"))
+        case _           =>
+          Left(
+            VatSubmissionFailure(
+              response.status,
+              s"Unexpected response from VAT Submission API - status = ${response.status}"
+            )
+          )
       }
-    }
 
     private def parseFailureCodes(array: JsArray): List[String] = array.value.map { failureJson =>
       (failureJson \ codeKey).validate[String] match {
-        case JsSuccess(`invalidPayloadKey`, _) =>
+        case JsSuccess(`invalidPayloadKey`, _)       =>
           "Invalid Payload"
-        case JsSuccess(`invalidSessionIdKey`, _) =>
+        case JsSuccess(`invalidSessionIdKey`, _)     =>
           "Invalid Session ID"
-        case JsSuccess(`invalidCredentialIdKey`, _) =>
+        case JsSuccess(`invalidCredentialIdKey`, _)  =>
           "Invalid Credential ID"
         case JsSuccess(`invalidCorrelationIdKey`, _) =>
           "Invalid Correlation ID"
-        case _ =>
+        case _                                       =>
           "Unexpected Bad Request error reason"
       }
     }.toList

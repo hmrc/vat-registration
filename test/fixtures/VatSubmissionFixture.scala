@@ -20,8 +20,7 @@ import play.api.libs.json.{JsValue, Json}
 
 trait VatSubmissionFixture {
 
-  val vatSubmissionJson: JsValue = Json.parse(
-    """
+  val vatSubmissionJson: JsValue = Json.parse("""
       |{
       |  "messageType": "SubmissionCreate",
       |  "customerIdentification": {
@@ -155,8 +154,7 @@ trait VatSubmissionFixture {
       |  }
       |}""".stripMargin)
 
-  val vatSubmissionVoluntaryJson: JsValue = Json.parse(
-    """
+  val vatSubmissionVoluntaryJson: JsValue = Json.parse("""
       |{
       |  "messageType": "SubmissionCreate",
       |  "customerIdentification": {

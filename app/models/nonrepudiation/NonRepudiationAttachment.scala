@@ -18,11 +18,13 @@ package models.nonrepudiation
 
 import play.api.libs.json.{Json, OFormat}
 
-case class NonRepudiationAttachment(attachmentUrl: String,
-                                    attachmentId: String,
-                                    attachmentSha256Checksum: String,
-                                    attachmentContentType: String,
-                                    nrSubmissionId: String)
+case class NonRepudiationAttachment(
+  attachmentUrl: String,
+  attachmentId: String,
+  attachmentSha256Checksum: String,
+  attachmentContentType: String,
+  nrSubmissionId: String
+)
 
 object NonRepudiationAttachment {
   implicit val format: OFormat[NonRepudiationAttachment] = Json.format[NonRepudiationAttachment]

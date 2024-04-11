@@ -47,20 +47,21 @@ import utils.IdGenerator
 
 import scala.concurrent.Future
 
-class SubmissionServiceSpec extends VatRegSpec
-  with SubmissionAuditFixture
-  with VatSubmissionFixture
-  with ApplicativeSyntax
-  with FutureInstances
-  with MockAuditService
-  with Eventually
-  with MockAttachmentsService
-  with MockSubmissionPayloadBuilder
-  with MockSubmissionAuditBlockBuilder
-  with MockSchemaValidationService
-  with MockEmailService
-  with FeatureSwitching
-  with MockSdesService {
+class SubmissionServiceSpec
+    extends VatRegSpec
+    with SubmissionAuditFixture
+    with VatSubmissionFixture
+    with ApplicativeSyntax
+    with FutureInstances
+    with MockAuditService
+    with Eventually
+    with MockAttachmentsService
+    with MockSubmissionPayloadBuilder
+    with MockSubmissionAuditBlockBuilder
+    with MockSchemaValidationService
+    with MockEmailService
+    with FeatureSwitching
+    with MockSdesService {
 
   val apiSchema = app.injector.instanceOf[API1364]
   class Setup {
@@ -68,7 +69,6 @@ class SubmissionServiceSpec extends VatRegSpec
     object TestIdGenerator extends IdGenerator {
       override def createId: String = "TestCorrelationId"
     }
-
 
     val service: SubmissionService = new SubmissionService(
       registrationRepository = mockRegistrationMongoRepository,
@@ -88,37 +88,51 @@ class SubmissionServiceSpec extends VatRegSpec
     )
   }
 
-  val testCorrelationId = "testCorrelationId"
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val testCorrelationId                                     = "testCorrelationId"
+  implicit val hc: HeaderCarrier                            = HeaderCarrier()
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "testUrl")
 
   "submitVatRegistration" when {
     "successfully submit and return an acknowledgment reference" in new Setup {
       when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
-      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(ArgumentMatchers.any[Request[_]]))
+      when(
+        mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(
+          ArgumentMatchers.any[Request[_]]
+        )
+      )
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.submitted))
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
-        SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)
+        SubmissionAuditModel(
+          detailBlockAnswers,
+          testFullVatScheme,
+          testProviderId,
+          Organisation,
+          None,
+          testFormBundleId
+        )
       )
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
-      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme)).thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
+        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
       mockSendRegistrationReceivedEmail(testInternalId, testRegId, "en")(Future.successful(EmailSent))
 
       val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
 
-      when(mockNonRepudiationService.submitNonRepudiation(
-        ArgumentMatchers.eq(testRegId),
-        ArgumentMatchers.eq(testSubmissionPayload),
-        ArgumentMatchers.eq(testDateTime),
-        ArgumentMatchers.eq(testFormBundleId),
-        ArgumentMatchers.eq(testUserHeaders),
-        ArgumentMatchers.any[Boolean]
-      )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))).thenReturn(Future.successful(Some(testNonRepudiationSubmissionId)))
+      when(
+        mockNonRepudiationService.submitNonRepudiation(
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testSubmissionPayload),
+          ArgumentMatchers.eq(testDateTime),
+          ArgumentMatchers.eq(testFormBundleId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.any[Boolean]
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+      ).thenReturn(Future.successful(Some(testNonRepudiationSubmissionId)))
 
       mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
         Future.successful(
@@ -133,7 +147,9 @@ class SubmissionServiceSpec extends VatRegSpec
       mockAttachmentList(testFullVatScheme)(List[AttachmentType]())
       mockOptionalAttachmentList(testFullVatScheme)(List[AttachmentType]())
 
-      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe Right(VatSubmissionSuccess(testFormBundleId))
+      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe Right(
+        VatSubmissionSuccess(testFormBundleId)
+      )
 
       eventually(timeout(Span(5, Seconds))) {
         verify(mockNonRepudiationService, atLeastOnce()).submitNonRepudiation(
@@ -144,45 +160,59 @@ class SubmissionServiceSpec extends VatRegSpec
           ArgumentMatchers.eq(testUserHeaders),
           ArgumentMatchers.any[Boolean]
         )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-        verifyAudit(SubmissionAuditModel(
-          detailBlockAnswers,
-          testFullVatScheme,
-          testProviderId,
-          testAffinityGroup,
-          None,
-          testFormBundleId
-        ))
+        verifyAudit(
+          SubmissionAuditModel(
+            detailBlockAnswers,
+            testFullVatScheme,
+            testProviderId,
+            testAffinityGroup,
+            None,
+            testFormBundleId
+          )
+        )
       }
     }
 
     "fail the submission on BAD_REQUEST and validate the failures" in new Setup {
       when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
-      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(ArgumentMatchers.any[Request[_]]))
+      when(
+        mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(
+          ArgumentMatchers.any[Request[_]]
+        )
+      )
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Left(VatSubmissionFailure(BAD_REQUEST, ""))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.failed))
-      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme)).thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
+        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
       mockValidate(vatSubmissionVoluntaryJson.toString())(Map("suppressedErrors" -> List("/suppressed/error")))
       mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
       mockAttachmentList(testFullVatScheme)(List[AttachmentType]())
       mockOptionalAttachmentList(testFullVatScheme)(List[AttachmentType]())
 
-      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe Left(VatSubmissionFailure(BAD_REQUEST, ""))
+      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe Left(
+        VatSubmissionFailure(BAD_REQUEST, "")
+      )
     }
 
     "throw a bad request exception BAD_REQUEST if the schema validator returns an unknown error" in new Setup {
       when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
-      when(mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(ArgumentMatchers.any[Request[_]]))
+      when(
+        mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(
+          ArgumentMatchers.any[Request[_]]
+        )
+      )
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
       when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Left(VatSubmissionFailure(BAD_REQUEST, ""))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.failed))
-      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme)).thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
+        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
       mockValidate(vatSubmissionVoluntaryJson.toString())(Map("unknownErrors" -> List("/new/error")))
       mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
       mockAttachmentList(testFullVatScheme)(List[AttachmentType]())
@@ -203,9 +233,20 @@ class SubmissionServiceSpec extends VatRegSpec
           Some(testCredentials)
         )
       )
-      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
+        SubmissionAuditModel(
+          detailBlockAnswers,
+          testFullVatScheme,
+          testProviderId,
+          Organisation,
+          None,
+          testFormBundleId
+        )
+      )
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testRegId, testCorrelationId)) mustBe Right(VatSubmissionSuccess(testFormBundleId))
+      await(service.submit(vatSubmissionJson.as[JsObject], testRegId, testCorrelationId)) mustBe Right(
+        VatSubmissionSuccess(testFormBundleId)
+      )
     }
 
     "return a 502 response and successfully audit when submission fails with a 502" in new Setup {
@@ -216,9 +257,20 @@ class SubmissionServiceSpec extends VatRegSpec
           Some(testCredentials)
         )
       )
-      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(SubmissionAuditModel(detailBlockAnswers, testFullVatScheme, testProviderId, Organisation, None, testFormBundleId))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
+        SubmissionAuditModel(
+          detailBlockAnswers,
+          testFullVatScheme,
+          testProviderId,
+          Organisation,
+          None,
+          testFormBundleId
+        )
+      )
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testRegId, testCorrelationId)) mustBe Right(VatSubmissionSuccess(testFormBundleId))
+      await(service.submit(vatSubmissionJson.as[JsObject], testRegId, testCorrelationId)) mustBe Right(
+        VatSubmissionSuccess(testFormBundleId)
+      )
     }
   }
 
