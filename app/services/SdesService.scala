@@ -26,10 +26,10 @@ import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentTo
 import models.sdes._
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
-import services.SdesService.fileReceived
+import services.SdesService.{fileProcessed, fileReceived}
 import services.monitoring.AuditService
 import uk.gov.hmrc.http.HeaderCarrier
-import utils.{IdGenerator, LoggingUtils}
+import utils.{AlertLogging, IdGenerator, PagerDutyKeys}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,7 +43,7 @@ class SdesService @Inject() (
   auditService: AuditService,
   idGenerator: IdGenerator
 )(implicit executionContext: ExecutionContext, appConfig: BackendConfig)
-    extends LoggingUtils {
+    extends AlertLogging {
 
   def notifySdes(regId: String, formBundleId: String, nrsSubmissionId: Option[String], providerId: String)(implicit
     hc: HeaderCarrier,
@@ -111,13 +111,15 @@ class SdesService @Inject() (
                   case res: SdesNotificationSuccess                          =>
                     infoLog(s"[SdesService][notifySdes] SDES notification sent for $reference")
                     res
-                  case res @ SdesNotificationFailure(body, status)           =>
-                    errorLog(s"[SdesService][notifySdes] SDES notification failed with status: $status and body: $body")
+                  case res @ SdesNotificationFailure(status, body)           =>
+                    pagerduty(
+                      PagerDutyKeys.NOTIFY_SDES_FAILED,
+                      Some(s"[SdesService][notifySdes] SDES notification failed with status: $status and body: $body"))
                     res
                   case res @ SdesNotificationUnexpectedFailure(status, body) =>
-                    errorLog(
-                      s"[SdesService][notifySdes] SDES notification failed with an unexpected status: $status and body: $body"
-                    )
+                    pagerduty(
+                      PagerDutyKeys.NOTIFY_SDES_FAILED,
+                      Some(s"[SdesService][notifySdes] SDES notification failed with an unexpected status: $status and body: $body"))
                     res
                 }
             }
@@ -156,25 +158,39 @@ class SdesService @Inject() (
             )
           case NonRepudiationAttachmentFailed(body, status)     =>
             auditService.audit(NonRepudiationAttachmentFailureAudit(sdesCallback, status))
-            errorLog(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
+            pagerduty(
+              PagerDutyKeys.NRS_NOTIFICATION_FAILED,
+              Some(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
+            )
         }
       case (Some(_), Some(attachmentId), Some(_), Some(_), Some(_), None) =>
+        if (sdesCallback.notification != fileProcessed) {
+          pagerduty(
+            PagerDutyKeys.UNEXPECTED_SDES_CALLBACK_STATUS,
+            Some(s"[SdesService] Expected SDES callback status FileProcessed for $attachmentId, but was ${sdesCallback.notification}")
+          )
+        }
         infoLog(
-          s"[SdesService] Not sending attachment NRS payload for $attachmentId as SDES notification type was ${sdesCallback.notification}"
+          s"[SdesService] Not sending attachment NRS payload for $attachmentId. SDES notification type was ${sdesCallback.notification}"
         )
         Future.successful(auditService.audit(SdesCallbackNotSentToNrsAudit(sdesCallback)))
       case (_, Some(attachmentId), _, _, _, Some(failureReason))          =>
-        warnLog(
-          s"[SdesService] Not sending attachment NRS payload as callback for $attachmentId failed with reason: $failureReason"
-        )
+        pagerduty(
+          PagerDutyKeys.SDES_CALLBACK_FAILED,
+          Some(s"[SdesService] Not sending attachment NRS payload as callback for $attachmentId failed with reason: $failureReason"))
         Future.successful(auditService.audit(SdesCallbackFailureAudit(sdesCallback)))
       case (Some(_), Some(_), Some(_), None, Some(_), _)                  =>
         Future.successful(
-          warnLog("[SdesService] Not sending attachment NRS payload as NRS failed for the Registration Submission")
+          pagerduty(
+            PagerDutyKeys.SDES_NRS_SUBMISSION_ID_MISSING,
+            Some("[SdesService] Not sending attachment NRS payload as NRS failed for the Registration Submission")
+          )
         )
-      case _                                                              =>
+      case _ =>
         Future.successful(
-          warnLog("[SdesService] Could not send attachment NRS payload due to missing data in the callback")
+          pagerduty(
+            PagerDutyKeys.INVALID_SDES_PAYLOAD_RECEIVED,
+            Some("[SdesService] Could not send attachment NRS payload due to missing data in the callback"))
         )
     }
   }
@@ -200,4 +216,5 @@ class SdesService @Inject() (
 
 object SdesService {
   val fileReceived = "FileReceived"
+  val fileProcessed = "FileProcessed"
 }
