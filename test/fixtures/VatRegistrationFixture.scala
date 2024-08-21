@@ -20,6 +20,7 @@ import enums.VatRegStatus
 import models._
 import models.api._
 import models.api.vatapplication._
+import models.nonrepudiation.NonRepudiationAttachment
 import models.submission._
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Credentials
@@ -33,6 +34,7 @@ trait VatRegistrationFixture {
   lazy val testRole                    = Director
   lazy val testArn                     = "testArn"
   lazy val testRegId                   = "testRegId"
+  val testNrAttachmentId                   = "testNrAttachmentId"
   lazy val testInternalId              = "INT-123-456-789"
   lazy val testAckReference            = "BRPY000000000001"
   lazy val testDate: LocalDate         = LocalDate.of(2018, 1, 1)
@@ -460,6 +462,34 @@ trait VatRegistrationFixture {
         Some(testCredentialStrength) ~
         testLoginTimes
   }
+
+  val testNonRepudiationAttachment: NonRepudiationAttachment = NonRepudiationAttachment(
+    attachmentUrl = "downloadUrl",
+    attachmentId = "testReference",
+    attachmentSha256Checksum = "checksum",
+    attachmentContentType = "fileMimeType",
+    nrSubmissionId = "testNonRepudiationSubmissionId",
+  )
+
+  val testEmptyUpscanDetails: UpscanDetails = UpscanDetails(
+    Some(testRegId),
+    "testReference",
+    Some(PrimaryIdentityEvidence),
+    None,
+    InProgress,
+    None,
+    None,
+  )
+
+  val testUpscanDetails: UpscanDetails = UpscanDetails(
+    Some(testRegId),
+    "testReference",
+    Some(PrimaryIdentityEvidence),
+    Some("downloadUrl"),
+    InProgress,
+    Some(UploadDetails("fileName", "fileMimeType", LocalDateTime.MIN, "checksum", 1)),
+    None,
+  )
 
   val testPersonalDetails = PersonalDetails(
     testName,

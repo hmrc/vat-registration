@@ -16,6 +16,7 @@
 
 package models.nonrepudiation
 
+import models.api.UpscanDetails
 import models.sdes.PropertyExtractor.{attachmentReferenceKey, formBundleKey, nrsSubmissionKey}
 import models.sdes.SdesCallback
 import play.api.libs.json.{JsValue, Json}
@@ -44,36 +45,32 @@ object NonRepudiationAuditing {
     )
   }
 
-  case class NonRepudiationAttachmentSuccessAudit(sdesCallback: SdesCallback, nrAttachmentId: String)
+  case class NonRepudiationAttachmentSuccessAudit(upscanDetails: UpscanDetails, nrSubmissionId: String, nrAttachmentId: String, correlationId: String)
       extends AuditModel {
     override val auditType: String       = "SubmitAttachmentToNrs"
     override val transactionName: String = "submit-attachment-to-nrs"
     override val detail: JsValue         = jsonObject(
-      "nrSubmissionId"    -> sdesCallback.getPropertyValue(nrsSubmissionKey),
-      "filename"          -> sdesCallback.filename,
-      "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
-      "checksum"          -> sdesCallback.checksum,
-      "correlationID"     -> sdesCallback.correlationID,
-      "availableUntil"    -> sdesCallback.correlationID,
-      "nrAttachmentId"    -> nrAttachmentId,
-      "attachmentId"      -> sdesCallback.getPropertyValue(attachmentReferenceKey),
-      "formBundleId"      -> sdesCallback.getPropertyValue(formBundleKey)
+      "nrSubmissionId"    -> nrSubmissionId,
+      "upscanAttachmentId"       -> upscanDetails.reference,
+      "attachmentUrl"            -> upscanDetails.downloadUrl,
+      "checksum"                 -> upscanDetails.uploadDetails.map(_.checksum),
+      "correlationId"            -> correlationId,
+      "attachmentContentType"    -> upscanDetails.uploadDetails.map(_.fileMimeType),
+      "nrAttachmentId"           -> nrAttachmentId,
     )
   }
 
-  case class NonRepudiationAttachmentFailureAudit(sdesCallback: SdesCallback, status: Int) extends AuditModel {
+  case class NonRepudiationAttachmentFailureAudit(upscanDetails: UpscanDetails, status: Int, nrSubmissionId: String, correlationId: String) extends AuditModel {
     override val auditType: String       = "SubmitAttachmentToNRSError"
     override val transactionName: String = "submit-attachment-to-nrs"
     override val detail: JsValue         = jsonObject(
-      "nrSubmissionId"    -> sdesCallback.getPropertyValue(nrsSubmissionKey),
-      "filename"          -> sdesCallback.filename,
-      "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
-      "checksum"          -> sdesCallback.checksum,
-      "correlationID"     -> sdesCallback.correlationID,
-      "availableUntil"    -> sdesCallback.correlationID,
-      "attachmentId"      -> sdesCallback.getPropertyValue(attachmentReferenceKey),
-      "formBundleId"      -> sdesCallback.getPropertyValue(formBundleKey),
-      "statusCode"        -> status
+      "nrSubmissionId"    -> nrSubmissionId,
+      "upscanAttachmentId"       -> upscanDetails.reference,
+      "attachmentUrl"            -> upscanDetails.downloadUrl,
+      "checksum"                 -> upscanDetails.uploadDetails.map(_.checksum),
+      "correlationId"            -> correlationId,
+      "attachmentContentType"    -> upscanDetails.uploadDetails.map(_.fileMimeType),
+      "statusCode"               -> status
     )
   }
 }

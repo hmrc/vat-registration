@@ -21,13 +21,10 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.monitoring.MockAuditService
 import mocks.{MockSdesConnector, MockUpscanMongoRepository}
-import models.api.{PrimaryIdentityEvidence, Ready, UploadDetails, UpscanDetails}
-import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
-import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
+import models.api.{InProgress, PrimaryIdentityEvidence, Ready, UploadDetails, UpscanDetails, VAT51}
 import models.sdes.PropertyExtractor._
-import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentToNrsAudit, SdesFileSubmissionAudit}
+import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentToNrsAudit, SdesFileReceivedCallbackAudit, SdesFileSubmissionAudit}
 import models.sdes._
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.{verify, verifyNoInteractions, when}
 import org.scalatest.concurrent.Eventually.eventually
 import play.api.mvc.{AnyContent, Request}
@@ -268,29 +265,13 @@ class SdesServiceSpec
   }
 
   "processCallback" must {
-    "call and audit NRS success if callback is successful" in {
-      val testNrAttachmentId = "testNrAttachmentId"
-      val testNrsPayload     = NonRepudiationAttachment(
-        attachmentUrl = testDownloadUrl,
-        attachmentId = testReference,
-        attachmentSha256Checksum = testChecksum,
-        attachmentContentType = testMimeType,
-        nrSubmissionId = testNrsId
-      )
-
-      when(
-        mockNonRepudiationConnector.submitAttachmentNonRepudiation(
-          ArgumentMatchers.eq(testNrsPayload)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-      ).thenReturn(Future.successful(NonRepudiationAttachmentAccepted(testNrAttachmentId)))
+    "call and audit SDES if callback is successful" in {
 
       await(TestService.processCallback(testCallback(None)))
 
       eventually {
-        verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
-          ArgumentMatchers.eq(testNrsPayload)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-        verifyAudit(NonRepudiationAttachmentSuccessAudit(testCallback(None), testNrAttachmentId))
+        verifyNoInteractions(mockNonRepudiationConnector)
+        verifyAudit(SdesFileReceivedCallbackAudit(testCallback(None)))
       }
     }
 
@@ -313,31 +294,6 @@ class SdesServiceSpec
       eventually {
         verifyNoInteractions(mockNonRepudiationConnector)
         verifyAudit(SdesCallbackNotSentToNrsAudit(testFileProcessedCallback))
-      }
-    }
-
-    "call and audit NRS failure if callback is successful" in {
-      val testNrsPayload = NonRepudiationAttachment(
-        attachmentUrl = testDownloadUrl,
-        attachmentId = testReference,
-        attachmentSha256Checksum = testChecksum,
-        attachmentContentType = testMimeType,
-        nrSubmissionId = testNrsId
-      )
-
-      when(
-        mockNonRepudiationConnector.submitAttachmentNonRepudiation(
-          ArgumentMatchers.eq(testNrsPayload)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-      ).thenReturn(Future.successful(NonRepudiationAttachmentFailed("", BAD_REQUEST)))
-
-      await(TestService.processCallback(testCallback(None)))
-
-      eventually {
-        verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
-          ArgumentMatchers.eq(testNrsPayload)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-        verifyAudit(NonRepudiationAttachmentFailureAudit(testCallback(None), BAD_REQUEST))
       }
     }
 

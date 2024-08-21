@@ -25,10 +25,11 @@ import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
 import mocks.monitoring.MockAuditService
-import mocks.{MockAttachmentsService, MockEmailService, MockSchemaValidationService, MockSdesService}
+import mocks._
 import models.api._
 import models.api.schemas.API1364
 import models.monitoring.SubmissionAuditModel
+import models.nonrepudiation.NonRepudiationAttachmentAccepted
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._
@@ -48,7 +49,7 @@ import utils.IdGenerator
 import scala.concurrent.Future
 
 class SubmissionServiceSpec
-    extends VatRegSpec
+  extends VatRegSpec
     with SubmissionAuditFixture
     with VatSubmissionFixture
     with ApplicativeSyntax
@@ -56,6 +57,7 @@ class SubmissionServiceSpec
     with MockAuditService
     with Eventually
     with MockAttachmentsService
+    with MockUpscanService
     with MockSubmissionPayloadBuilder
     with MockSubmissionAuditBlockBuilder
     with MockSchemaValidationService
@@ -64,6 +66,7 @@ class SubmissionServiceSpec
     with MockSdesService {
 
   val apiSchema = app.injector.instanceOf[API1364]
+
   class Setup {
 
     object TestIdGenerator extends IdGenerator {
@@ -77,6 +80,8 @@ class SubmissionServiceSpec
       submissionPayloadBuilder = mockSubmissionPayloadBuilder,
       submissionAuditBlockBuilder = mockSubmissionAuditBlockBuilder,
       attachmentsService = mockAttachmentService,
+      upscanService = mockUpscanService,
+      nonRepudiationConnector = mockNonRepudiationConnector,
       sdesService = mockSdesService,
       idGenerator = TestIdGenerator,
       auditService = mockAuditService,
@@ -88,8 +93,8 @@ class SubmissionServiceSpec
     )
   }
 
-  val testCorrelationId                                     = "testCorrelationId"
-  implicit val hc: HeaderCarrier                            = HeaderCarrier()
+  val testCorrelationId = "testCorrelationId"
+  implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "testUrl")
 
   "submitVatRegistration" when {
@@ -134,6 +139,16 @@ class SubmissionServiceSpec
         )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
       ).thenReturn(Future.successful(Some(testNonRepudiationSubmissionId)))
 
+      when(
+        mockUpscanService.getAllUpscanDetails(ArgumentMatchers.eq(testRegId))(ArgumentMatchers.eq(request))
+      ).thenReturn(Future.successful(Seq(testUpscanDetails)))
+
+      when(
+        mockNonRepudiationConnector.submitAttachmentNonRepudiation(
+          ArgumentMatchers.eq(testNonRepudiationAttachment)
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+      ).thenReturn(Future.successful(NonRepudiationAttachmentAccepted(testNrAttachmentId)))
+
       mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
         Future.successful(
           Some(testCredentials) ~ Some(testAffinityGroup) ~ None
@@ -160,14 +175,16 @@ class SubmissionServiceSpec
           ArgumentMatchers.eq(testUserHeaders),
           ArgumentMatchers.any[Boolean]
         )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+        verify(mockUpscanService).getAllUpscanDetails(ArgumentMatchers.eq(testRegId))(ArgumentMatchers.eq(request))
+        verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(ArgumentMatchers.eq(testNonRepudiationAttachment))(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
         verifyAudit(
-          SubmissionAuditModel(
-            detailBlockAnswers,
-            testFullVatScheme,
-            testProviderId,
-            testAffinityGroup,
-            None,
-            testFormBundleId
+            SubmissionAuditModel(
+              detailBlockAnswers,
+              testFullVatScheme,
+              testProviderId,
+              testAffinityGroup,
+              None,
+              testFormBundleId
           )
         )
       }

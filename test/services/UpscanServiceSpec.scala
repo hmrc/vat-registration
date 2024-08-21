@@ -28,15 +28,6 @@ import scala.concurrent.Future
 class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
 
   val testReference                    = "testReference"
-  val testUpscanDetails: UpscanDetails = UpscanDetails(
-    Some(testRegId),
-    testReference,
-    Some(PrimaryIdentityEvidence),
-    None,
-    InProgress,
-    None,
-    None
-  )
 
   object TestService extends UpscanService(mockUpscanMongoRepository)
 
@@ -44,11 +35,11 @@ class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
 
   "getUpscanDetails" must {
     "return UpscanDetails if they are found" in {
-      mockGetUpscanDetails(testReference)(Future.successful(Some(testUpscanDetails)))
+      mockGetUpscanDetails(testReference)(Future.successful(Some(testEmptyUpscanDetails)))
 
       val res = await(TestService.getUpscanDetails(testReference))
 
-      res mustBe Some(testUpscanDetails)
+      res mustBe Some(testEmptyUpscanDetails)
     }
     "return None if no details were found" in {
       mockGetUpscanDetails(testReference)(Future.successful(None))
@@ -61,11 +52,11 @@ class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
 
   "getAllUpscanDetails" must {
     "return a list of UpscanDetails if they are found" in {
-      mockGetAllUpscanDetails(testRegId)(Future.successful(Seq(testUpscanDetails)))
+      mockGetAllUpscanDetails(testRegId)(Future.successful(Seq(testEmptyUpscanDetails)))
 
       val res = await(TestService.getAllUpscanDetails(testRegId))
 
-      res mustBe Seq(testUpscanDetails)
+      res mustBe Seq(testEmptyUpscanDetails)
     }
     "return an empty list if no details were found" in {
       mockGetAllUpscanDetails(testRegId)(Future.successful(Seq()))
@@ -78,21 +69,21 @@ class UpscanServiceSpec extends VatRegSpec with MockUpscanMongoRepository {
 
   "createUpscanDetails" must {
     "return the inserted object" in {
-      mockUpsertUpscanDetails(testUpscanDetails)(Future.successful(testUpscanDetails))
+      mockUpsertUpscanDetails(testEmptyUpscanDetails)(Future.successful(testEmptyUpscanDetails))
 
       val res = await(TestService.createUpscanDetails(testRegId, UpscanCreate(testReference, PrimaryIdentityEvidence)))
 
-      res mustBe testUpscanDetails
+      res mustBe testEmptyUpscanDetails
     }
   }
 
   "upsertUpscanDetails" must {
     "return the inserted object" in {
-      mockUpsertUpscanDetails(testUpscanDetails)(Future.successful(testUpscanDetails))
+      mockUpsertUpscanDetails(testEmptyUpscanDetails)(Future.successful(testEmptyUpscanDetails))
 
-      val res = await(TestService.upsertUpscanDetails(testUpscanDetails))
+      val res = await(TestService.upsertUpscanDetails(testEmptyUpscanDetails))
 
-      res mustBe testUpscanDetails
+      res mustBe testEmptyUpscanDetails
     }
   }
 
