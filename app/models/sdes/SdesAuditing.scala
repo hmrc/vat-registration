@@ -90,21 +90,4 @@ object SdesAuditing {
       "formBundleId"      -> callback.getPropertyValue(formBundleKey)
     )
   }
-
-  case class SdesFileReceivedCallbackAudit(sdesCallback: SdesCallback) extends AuditModel {
-    override val auditType: String = "SDESCallbackFileReceived"
-    override val transactionName: String = "sdes-callback-file-received"
-    override val detail: JsValue = jsonObject(
-      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
-      "attachmentUrl" -> sdesCallback.getPropertyValue(locationKey),
-      "filename" -> sdesCallback.filename,
-      "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
-      "checksum" -> sdesCallback.checksum,
-      "correlationID" -> sdesCallback.correlationID,
-      "availableUntil" -> sdesCallback.availableUntil,
-      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
-      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey)
-    )
-  }
-
 }

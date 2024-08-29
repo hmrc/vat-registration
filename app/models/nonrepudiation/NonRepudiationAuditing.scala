@@ -45,32 +45,35 @@ object NonRepudiationAuditing {
     )
   }
 
-  case class NonRepudiationAttachmentSuccessAudit(upscanDetails: UpscanDetails, nrSubmissionId: String, nrAttachmentId: String, correlationId: String)
+  case class NonRepudiationAttachmentSuccessAudit(sdesCallback: SdesCallback, nrAttachmentId: String)
       extends AuditModel {
     override val auditType: String       = "SubmitAttachmentToNrs"
     override val transactionName: String = "submit-attachment-to-nrs"
     override val detail: JsValue         = jsonObject(
-      "nrSubmissionId"    -> nrSubmissionId,
-      "upscanAttachmentId"       -> upscanDetails.reference,
-      "attachmentUrl"            -> upscanDetails.downloadUrl,
-      "checksum"                 -> upscanDetails.uploadDetails.map(_.checksum),
-      "correlationId"            -> correlationId,
-      "attachmentContentType"    -> upscanDetails.uploadDetails.map(_.fileMimeType),
-      "nrAttachmentId"           -> nrAttachmentId,
+      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
+      "filename" -> sdesCallback.filename,
+      "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
+      "checksum" -> sdesCallback.checksum,
+      "correlationID" -> sdesCallback.correlationID,
+      "availableUntil" -> sdesCallback.correlationID,
+      "nrAttachmentId" -> nrAttachmentId,
+      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey)
     )
   }
 
-  case class NonRepudiationAttachmentFailureAudit(upscanDetails: UpscanDetails, status: Int, nrSubmissionId: String, correlationId: String) extends AuditModel {
+  case class NonRepudiationAttachmentFailureAudit(sdesCallback: SdesCallback, status: Int) extends AuditModel {
     override val auditType: String       = "SubmitAttachmentToNRSError"
     override val transactionName: String = "submit-attachment-to-nrs"
     override val detail: JsValue         = jsonObject(
-      "nrSubmissionId"    -> nrSubmissionId,
-      "upscanAttachmentId"       -> upscanDetails.reference,
-      "attachmentUrl"            -> upscanDetails.downloadUrl,
-      "checksum"                 -> upscanDetails.uploadDetails.map(_.checksum),
-      "correlationId"            -> correlationId,
-      "attachmentContentType"    -> upscanDetails.uploadDetails.map(_.fileMimeType),
-      "statusCode"               -> status
-    )
+      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
+      "filename" -> sdesCallback.filename,
+      "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
+      "checksum" -> sdesCallback.checksum,
+      "correlationID" -> sdesCallback.correlationID,
+      "availableUntil" -> sdesCallback.correlationID,
+      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey),
+      "statusCode" -> status    )
   }
 }

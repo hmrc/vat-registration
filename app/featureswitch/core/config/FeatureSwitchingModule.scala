@@ -37,3 +37,13 @@ case object StubSubmission extends FeatureSwitch {
   override val configName: String  = "feature-switch.submission-stub"
   override val displayName: String = "Use stub for Submission to DES"
 }
+
+case object PostSubmissionDecoupling extends FeatureSwitch {
+  override val configName: String = "feature-switch.post-submission-decoupling"
+  override val displayName: String = "Decouple SDES and NRS integrations"
+}
+
+case object PostSubmissionNonDecoupling extends FeatureSwitch {
+  override val configName: String = "feature-switch.post-submission-non-decoupling"
+  override val displayName: String = "Enable non-decoupled (old) SDES and NRS integrations"
+}

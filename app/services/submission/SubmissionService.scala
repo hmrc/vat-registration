@@ -19,15 +19,13 @@ package services.submission
 import cats.instances.FutureInstances
 import connectors.{NonRepudiationConnector, VatSubmissionConnector}
 import enums.VatRegStatus
-import featureswitch.core.config.FeatureSwitching
+import featureswitch.core.config.{FeatureSwitching, PostSubmissionNonDecoupling, PostSubmissionDecoupling}
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
 import models.api.schemas.API1364
-import models.monitoring.InvalidUpscanAuditModel
 import models.api.vatapplication.Annual
 import models.api.{Attached, PersonalDetails, VatScheme}
 import models.monitoring.SubmissionFailureErrorsAuditModel
-import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.{IntendingTrader, Voluntary}
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
@@ -129,7 +127,7 @@ class SubmissionService @Inject()(
       optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
       _ <- if (digitalAttachments) sdesService.notifySdes(vatScheme.registrationId, formBundleId, optNrsId, providerId)
       else Future.successful()
-      _ <- if (optNrsId.isDefined) notifyNrs(vatScheme.registrationId, optNrsId.get, correlationId) else Future.successful()
+      _ <- if (isEnabled(PostSubmissionDecoupling) && optNrsId.isDefined) notifyNrs(vatScheme.registrationId, optNrsId.get, correlationId) else Future.successful()
     } yield {}
 
   private def notifyNrs(registrationId: String, nrSubmissionId: String, correlationId: String)
@@ -149,25 +147,24 @@ class SubmissionService @Inject()(
             attachmentContentType = optMimeType.get,
             nrSubmissionId = nrSubmissionId
           )
-          nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
-            case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
-              auditService.audit(NonRepudiationAttachmentSuccessAudit(upscanDetails, nrSubmissionId, nrAttachmentId, correlationId))
-              infoLog(
-                s"[SdesService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId"
-              )
-            case NonRepudiationAttachmentFailed(body, status) =>
-              auditService.audit(NonRepudiationAttachmentFailureAudit(upscanDetails, status, nrSubmissionId, correlationId))
-              pagerduty(
-                PagerDutyKeys.NRS_NOTIFICATION_FAILED,
-                Some(s"[SdesService] Attachment NRS submission failed with status: $status and body: $body")
-              )
-          }
+
+            nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
+              case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
+                infoLog(
+                  s"[SubmissionService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId"
+                )
+              case NonRepudiationAttachmentFailed(body, status) =>
+                pagerduty(
+                  PagerDutyKeys.NRS_NOTIFICATION_FAILED,
+                  Some(s"[SubmissionService] Attachment NRS submission failed with status: $status and body: $body")
+                )
+            }
         }
         else {
           pagerduty(
             PagerDutyKeys.INVALID_UPSCAN_DETAILS_RECEIVED,
-            Some(s"[SdesService] Not sending attachment NRS payload for $attachmentId as incomplete upscan details were received"))
-          Future.successful(auditService.audit(InvalidUpscanAuditModel(upscanDetails)))
+            Some(s"[SubmissionService] Not sending attachment NRS payload for $attachmentId as incomplete upscan details were received"))
+          Future.successful()
         }
       }
       }

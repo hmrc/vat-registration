@@ -20,7 +20,7 @@ import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
 import connectors.EmailSent
 import enums.VatRegStatus
-import featureswitch.core.config.FeatureSwitching
+import featureswitch.core.config.{FeatureSwitching, PostSubmissionDecoupling, PostSubmissionNonDecoupling}
 import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
@@ -98,7 +98,9 @@ class SubmissionServiceSpec
   implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "testUrl")
 
   "submitVatRegistration" when {
-    "successfully submit and return an acknowledgment reference" in new Setup {
+    "successfully submit and return an acknowledgment reference and send attachments to NRS" in new Setup {
+      enable(PostSubmissionDecoupling)
+      disable(PostSubmissionNonDecoupling)
       when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
       when(
@@ -185,6 +187,89 @@ class SubmissionServiceSpec
               testAffinityGroup,
               None,
               testFormBundleId
+          )
+        )
+      }
+    }
+
+    "successfully submit and return an acknowledgment reference" in new Setup {
+      disable(PostSubmissionDecoupling)
+      enable(PostSubmissionNonDecoupling)
+      when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
+        .thenReturn(Future.successful(Some(testFullVatScheme)))
+      when(
+        mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(
+          ArgumentMatchers.any[Request[_]]
+        )
+      )
+        .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+        .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
+      when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
+        .thenReturn(Future.successful(VatRegStatus.submitted))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
+        SubmissionAuditModel(
+          detailBlockAnswers,
+          testFullVatScheme,
+          testProviderId,
+          Organisation,
+          None,
+          testFormBundleId
+        )
+      )
+      when(mockTimeMachine.timestamp).thenReturn(testDateTime)
+      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
+        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+      mockSendRegistrationReceivedEmail(testInternalId, testRegId, "en")(Future.successful(EmailSent))
+
+      val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+
+      when(
+        mockNonRepudiationService.submitNonRepudiation(
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testSubmissionPayload),
+          ArgumentMatchers.eq(testDateTime),
+          ArgumentMatchers.eq(testFormBundleId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.any[Boolean]
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+      ).thenReturn(Future.successful(Some(testNonRepudiationSubmissionId)))
+
+      mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
+        Future.successful(
+          Some(testCredentials) ~ Some(testAffinityGroup) ~ None
+        )
+      )
+      mockAuthorise(Retrievals.credentials)(
+        Future.successful(
+          Some(testCredentials)
+        )
+      )
+      mockAttachmentList(testFullVatScheme)(List[AttachmentType]())
+      mockOptionalAttachmentList(testFullVatScheme)(List[AttachmentType]())
+
+      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe Right(
+        VatSubmissionSuccess(testFormBundleId)
+      )
+
+      eventually(timeout(Span(5, Seconds))) {
+        verify(mockNonRepudiationService, atLeastOnce()).submitNonRepudiation(
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testSubmissionPayload),
+          ArgumentMatchers.eq(testDateTime),
+          ArgumentMatchers.eq(testFormBundleId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.any[Boolean]
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+        verifyNoInteractions(mockNonRepudiationConnector)
+        verifyAudit(
+          SubmissionAuditModel(
+            detailBlockAnswers,
+            testFullVatScheme,
+            testProviderId,
+            testAffinityGroup,
+            None,
+            testFormBundleId
           )
         )
       }
