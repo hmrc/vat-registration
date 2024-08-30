@@ -16,6 +16,7 @@
 
 package models.nonrepudiation
 
+import models.api.UpscanDetails
 import models.sdes.PropertyExtractor.{attachmentReferenceKey, formBundleKey, nrsSubmissionKey}
 import models.sdes.SdesCallback
 import play.api.libs.json.{JsValue, Json}
@@ -49,15 +50,15 @@ object NonRepudiationAuditing {
     override val auditType: String       = "SubmitAttachmentToNrs"
     override val transactionName: String = "submit-attachment-to-nrs"
     override val detail: JsValue         = jsonObject(
-      "nrSubmissionId"    -> sdesCallback.getPropertyValue(nrsSubmissionKey),
-      "filename"          -> sdesCallback.filename,
+      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
+      "filename" -> sdesCallback.filename,
       "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
-      "checksum"          -> sdesCallback.checksum,
-      "correlationID"     -> sdesCallback.correlationID,
-      "availableUntil"    -> sdesCallback.correlationID,
-      "nrAttachmentId"    -> nrAttachmentId,
-      "attachmentId"      -> sdesCallback.getPropertyValue(attachmentReferenceKey),
-      "formBundleId"      -> sdesCallback.getPropertyValue(formBundleKey)
+      "checksum" -> sdesCallback.checksum,
+      "correlationID" -> sdesCallback.correlationID,
+      "availableUntil" -> sdesCallback.correlationID,
+      "nrAttachmentId" -> nrAttachmentId,
+      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey)
     )
   }
 
@@ -65,15 +66,14 @@ object NonRepudiationAuditing {
     override val auditType: String       = "SubmitAttachmentToNRSError"
     override val transactionName: String = "submit-attachment-to-nrs"
     override val detail: JsValue         = jsonObject(
-      "nrSubmissionId"    -> sdesCallback.getPropertyValue(nrsSubmissionKey),
-      "filename"          -> sdesCallback.filename,
+      "nrSubmissionId" -> sdesCallback.getPropertyValue(nrsSubmissionKey),
+      "filename" -> sdesCallback.filename,
       "checksumAlgorithm" -> sdesCallback.checksumAlgorithm,
-      "checksum"          -> sdesCallback.checksum,
-      "correlationID"     -> sdesCallback.correlationID,
-      "availableUntil"    -> sdesCallback.correlationID,
-      "attachmentId"      -> sdesCallback.getPropertyValue(attachmentReferenceKey),
-      "formBundleId"      -> sdesCallback.getPropertyValue(formBundleKey),
-      "statusCode"        -> status
-    )
+      "checksum" -> sdesCallback.checksum,
+      "correlationID" -> sdesCallback.correlationID,
+      "availableUntil" -> sdesCallback.correlationID,
+      "attachmentId" -> sdesCallback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId" -> sdesCallback.getPropertyValue(formBundleKey),
+      "statusCode" -> status    )
   }
 }

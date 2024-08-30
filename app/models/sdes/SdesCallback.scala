@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDateTime
 
-case class SdesCallback(
+case class  SdesCallback(
   notification: String,
   filename: String,
   correlationID: String,

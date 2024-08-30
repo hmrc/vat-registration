@@ -17,13 +17,14 @@
 package services
 
 import config.BackendConfig
+import featureswitch.core.config.{FeatureSwitching, PostSubmissionDecoupling, PostSubmissionNonDecoupling}
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.monitoring.MockAuditService
 import mocks.{MockSdesConnector, MockUpscanMongoRepository}
 import models.api.{PrimaryIdentityEvidence, Ready, UploadDetails, UpscanDetails}
-import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
-import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
+import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted}
+import models.nonrepudiation.NonRepudiationAuditing.NonRepudiationAttachmentSuccessAudit
 import models.sdes.PropertyExtractor._
 import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentToNrsAudit, SdesFileSubmissionAudit}
 import models.sdes._
@@ -44,7 +45,8 @@ class SdesServiceSpec
     with VatRegistrationFixture
     with MockUpscanMongoRepository
     with MockSdesConnector
-    with MockAuditService {
+    with MockAuditService
+    with FeatureSwitching {
 
   val testCorrelationid = "testCorrelationid"
 
@@ -269,8 +271,11 @@ class SdesServiceSpec
 
   "processCallback" must {
     "call and audit NRS success if callback is successful" in {
+      enable(PostSubmissionNonDecoupling)
+      disable(PostSubmissionDecoupling)
+
       val testNrAttachmentId = "testNrAttachmentId"
-      val testNrsPayload     = NonRepudiationAttachment(
+      val testNrsPayload = NonRepudiationAttachment(
         attachmentUrl = testDownloadUrl,
         attachmentId = testReference,
         attachmentSha256Checksum = testChecksum,
@@ -294,6 +299,15 @@ class SdesServiceSpec
       }
     }
 
+    "Not send attachment to NRS if decoupling disabled" in {
+      disable(PostSubmissionNonDecoupling)
+      enable(PostSubmissionDecoupling)
+
+      await(TestService.processCallback(testCallback(None)))
+
+      eventually { verifyNoInteractions(mockNonRepudiationConnector)}
+    }
+
     "Ignore any callbacks other than 'FileReceived'" in {
       val fileProcessed = "FileProcessed"
 
@@ -313,31 +327,6 @@ class SdesServiceSpec
       eventually {
         verifyNoInteractions(mockNonRepudiationConnector)
         verifyAudit(SdesCallbackNotSentToNrsAudit(testFileProcessedCallback))
-      }
-    }
-
-    "call and audit NRS failure if callback is successful" in {
-      val testNrsPayload = NonRepudiationAttachment(
-        attachmentUrl = testDownloadUrl,
-        attachmentId = testReference,
-        attachmentSha256Checksum = testChecksum,
-        attachmentContentType = testMimeType,
-        nrSubmissionId = testNrsId
-      )
-
-      when(
-        mockNonRepudiationConnector.submitAttachmentNonRepudiation(
-          ArgumentMatchers.eq(testNrsPayload)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-      ).thenReturn(Future.successful(NonRepudiationAttachmentFailed("", BAD_REQUEST)))
-
-      await(TestService.processCallback(testCallback(None)))
-
-      eventually {
-        verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
-          ArgumentMatchers.eq(testNrsPayload)
-        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
-        verifyAudit(NonRepudiationAttachmentFailureAudit(testCallback(None), BAD_REQUEST))
       }
     }
 
