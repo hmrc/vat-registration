@@ -346,7 +346,8 @@ trait VatRegistrationFixture {
     confirmInformationDeclaration = Some(true),
     nrsSubmissionPayload = Some(testEncodedPayload),
     business = Some(testBusiness),
-    vatApplication = Some(testVatApplicationDetails)
+    vatApplication = Some(testVatApplicationDetails),
+    attachments = Some(Attachments(method=Some(Attached)))
   )
 
   lazy val validFullBusinessDetails: Business = Business(

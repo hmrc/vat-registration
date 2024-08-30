@@ -20,7 +20,7 @@ import cats.instances.FutureInstances
 import cats.syntax.ApplicativeSyntax
 import connectors.EmailSent
 import enums.VatRegStatus
-import featureswitch.core.config.{FeatureSwitching, PostSubmissionDecoupling, PostSubmissionNonDecoupling}
+import featureswitch.core.config.{FeatureSwitching, PostSubmissionDecoupling, PostSubmissionDecouplingConnector, PostSubmissionNonDecoupling}
 import fixtures.{SubmissionAuditFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
@@ -100,6 +100,7 @@ class SubmissionServiceSpec
   "submitVatRegistration" when {
     "successfully submit and return an acknowledgment reference and send attachments to NRS" in new Setup {
       enable(PostSubmissionDecoupling)
+      enable(PostSubmissionDecouplingConnector)
       disable(PostSubmissionNonDecoupling)
       when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
         .thenReturn(Future.successful(Some(testFullVatScheme)))
@@ -161,7 +162,7 @@ class SubmissionServiceSpec
           Some(testCredentials)
         )
       )
-      mockAttachmentList(testFullVatScheme)(List[AttachmentType]())
+      mockAttachmentList(testFullVatScheme)(List[AttachmentType](VAT51))
       mockOptionalAttachmentList(testFullVatScheme)(List[AttachmentType]())
 
       await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe Right(

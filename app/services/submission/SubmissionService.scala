@@ -19,7 +19,7 @@ package services.submission
 import cats.instances.FutureInstances
 import connectors.{NonRepudiationConnector, VatSubmissionConnector}
 import enums.VatRegStatus
-import featureswitch.core.config.{FeatureSwitching, PostSubmissionNonDecoupling, PostSubmissionDecoupling}
+import featureswitch.core.config.{FeatureSwitching, PostSubmissionDecoupling, PostSubmissionDecouplingConnector}
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
 import models.api.schemas.API1364
@@ -125,9 +125,10 @@ class SubmissionService @Inject()(
         vatScheme.attachments
           .exists(_.method.contains(Attached)) && attachmentsService.mandatoryAttachmentList(vatScheme).nonEmpty
       optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
+      _ <- if (isEnabled(PostSubmissionDecoupling) && optNrsId.isDefined && digitalAttachments)
+        notifyNrs(vatScheme.registrationId, optNrsId.get, correlationId) else Future.successful()
       _ <- if (digitalAttachments) sdesService.notifySdes(vatScheme.registrationId, formBundleId, optNrsId, providerId)
       else Future.successful()
-      _ <- if (isEnabled(PostSubmissionDecoupling) && optNrsId.isDefined) notifyNrs(vatScheme.registrationId, optNrsId.get, correlationId) else Future.successful()
     } yield {}
 
   private def notifyNrs(registrationId: String, nrSubmissionId: String, correlationId: String)
@@ -147,18 +148,20 @@ class SubmissionService @Inject()(
             attachmentContentType = optMimeType.get,
             nrSubmissionId = nrSubmissionId
           )
-
-            nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
-              case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
-                infoLog(
-                  s"[SubmissionService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId"
-                )
-              case NonRepudiationAttachmentFailed(body, status) =>
-                pagerduty(
-                  PagerDutyKeys.NRS_NOTIFICATION_FAILED,
-                  Some(s"[SubmissionService] Attachment NRS submission failed with status: $status and body: $body")
-                )
-            }
+          infoLog(s"[SubmissionService] Sending NRS attachment for NR submission $nrSubmissionId, attachment $attachmentId")
+            if (isEnabled(PostSubmissionDecouplingConnector)) {
+              nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
+                case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
+                  infoLog(
+                    s"[SubmissionService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId"
+                  )
+                case NonRepudiationAttachmentFailed(body, status) =>
+                  pagerduty(
+                    PagerDutyKeys.NRS_NOTIFICATION_FAILED,
+                    Some(s"[SubmissionService] Attachment NRS submission failed with status: $status and body: $body")
+                  )
+              }
+            } else { infoLog(s"[SubmissionService] Not sending NRS attachment as PostSubmissionDecouplingConnector is off. Attachment $attachmentId")}
         }
         else {
           pagerduty(
