@@ -55,6 +55,23 @@ object SdesAuditing {
     )
   }
 
+  case class SdesCallbackSuccessAudit(callback: SdesCallback, attachmentUrl: String) extends AuditModel {
+    override val auditType: String       = "SDESCallbackFileReceived"
+    override val transactionName: String = "sdes-callback-success"
+
+    override val detail: JsValue         = jsonObject(
+      optional("nrSubmissionId" -> callback.getPropertyValue(nrsSubmissionKey)),
+      "attachmentUrl"     -> attachmentUrl,
+      "filename"          -> callback.filename,
+      "checksumAlgorithm" -> callback.checksumAlgorithm,
+      "checksum"          -> callback.checksum,
+      "correlationID"     -> callback.correlationID,
+      "availableUntil"    -> callback.availableUntil,
+      "attachmentId"      -> callback.getPropertyValue(attachmentReferenceKey),
+      "formBundleId"      -> callback.getPropertyValue(formBundleKey)
+    )
+  }
+
   case class SdesCallbackFailureAudit(callback: SdesCallback) extends AuditModel {
     override val auditType: String       = "SDESCallBackFailure"
     override val transactionName: String = "sdes-callback-failure"

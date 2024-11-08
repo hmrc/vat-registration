@@ -18,12 +18,12 @@ package services
 
 import config.BackendConfig
 import connectors.{NonRepudiationConnector, SdesConnector}
-import featureswitch.core.config.{FeatureSwitching, PostSubmissionNonDecoupling, PostSubmissionDecoupling}
+import featureswitch.core.config.{FeatureSwitching, PostSubmissionDecoupling, PostSubmissionNonDecoupling}
 import models.api.{Ready, UploadDetails, UpscanDetails}
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.sdes.PropertyExtractor._
-import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentToNrsAudit, SdesFileSubmissionAudit}
+import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentToNrsAudit, SdesCallbackSuccessAudit, SdesFileSubmissionAudit}
 import models.sdes._
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
@@ -144,7 +144,6 @@ class SdesService @Inject() (
       case (Some(url), Some(attachmentId), Some(mimeType), Some(nrSubmissionId), Some(checksum), None)
         if sdesCallback.notification == fileReceived =>
 
-        if (isEnabled(PostSubmissionDecoupling)) { Future.successful(infoLog(s"[SdesService] Received SDES fileReceived callback for attachment $attachmentId")) }
           val payload = NonRepudiationAttachment(
             attachmentUrl = url,
             attachmentId = attachmentId,
@@ -152,6 +151,11 @@ class SdesService @Inject() (
             attachmentContentType = mimeType,
             nrSubmissionId = nrSubmissionId
           )
+          if (isEnabled(PostSubmissionDecoupling)) {
+            Future.successful(infoLog(s"[SdesService] Received SDES fileReceived callback for attachment $attachmentId"))
+            auditService.audit(SdesCallbackSuccessAudit(sdesCallback, payload.attachmentUrl))
+          }
+
           if (isEnabled(PostSubmissionNonDecoupling)) {
             nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
               case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
@@ -167,7 +171,10 @@ class SdesService @Inject() (
                 )
             }
           }
-          else { Future.successful(infoLog(s"[SdesService] Not sending NRS attachment; PostSubmissionNonDecoupling is off. Attachment $attachmentId")) }
+          else
+          {
+            Future.successful(infoLog(s"[SdesService] Not sending NRS attachment; PostSubmissionNonDecoupling is off. Attachment $attachmentId"))
+          }
 
       case (Some(_), Some(attachmentId), Some(_), Some(_), Some(_), None) =>
         if (sdesCallback.notification != fileProcessed) {

@@ -29,7 +29,7 @@ import mocks._
 import models.api._
 import models.api.schemas.API1364
 import models.monitoring.SubmissionAuditModel
-import models.nonrepudiation.NonRepudiationAttachmentAccepted
+import models.nonrepudiation.{NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito._
@@ -188,6 +188,104 @@ class SubmissionServiceSpec
               testAffinityGroup,
               None,
               testFormBundleId
+          )
+        )
+      }
+    }
+
+    "successfully submit and return an acknowledgment reference and failed to send attachments to NRS" in new Setup {
+      enable(PostSubmissionDecoupling)
+      enable(PostSubmissionDecouplingConnector)
+      disable(PostSubmissionNonDecoupling)
+      when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
+        .thenReturn(Future.successful(Some(testFullVatScheme)))
+      when(
+        mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(
+          ArgumentMatchers.any[Request[_]]
+        )
+      )
+        .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+        .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
+      when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
+        .thenReturn(Future.successful(VatRegStatus.submitted))
+      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
+        SubmissionAuditModel(
+          detailBlockAnswers,
+          testFullVatScheme,
+          testProviderId,
+          Organisation,
+          None,
+          testFormBundleId
+        )
+      )
+      when(mockTimeMachine.timestamp).thenReturn(testDateTime)
+      when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
+        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+      mockSendRegistrationReceivedEmail(testInternalId, testRegId, "en")(Future.successful(EmailSent))
+
+     val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
+
+      when(
+        mockNonRepudiationService.submitNonRepudiation(
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testSubmissionPayload),
+          ArgumentMatchers.eq(testDateTime),
+          ArgumentMatchers.eq(testFormBundleId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.any[Boolean]
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+      ).thenReturn(Future.successful(Some(testNonRepudiationSubmissionId)))
+
+      when(
+        mockUpscanService.getAllUpscanDetails(ArgumentMatchers.eq(testRegId))(ArgumentMatchers.eq(request))
+      ).thenReturn(Future.successful(Seq(testUpscanDetails)))
+
+      val testBody = "testbody"
+      val testStatus = 500
+      when(
+        mockNonRepudiationConnector.submitAttachmentNonRepudiation(
+          ArgumentMatchers.eq(testNonRepudiationAttachment)
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+      ).thenReturn(Future.successful(NonRepudiationAttachmentFailed(testBody, testStatus)))
+
+      mockAuthorise(Retrievals.credentials and Retrievals.affinityGroup and Retrievals.agentCode)(
+        Future.successful(
+          Some(testCredentials) ~ Some(testAffinityGroup) ~ None
+        )
+      )
+      mockAuthorise(Retrievals.credentials)(
+        Future.successful(
+          Some(testCredentials)
+        )
+      )
+
+      mockAttachmentList(testFullVatScheme)(List[AttachmentType](VAT51))
+      mockOptionalAttachmentList(testFullVatScheme)(List[AttachmentType]())
+
+      await(service.submitVatRegistration(testInternalId, testRegId, testUserHeaders, "en")) mustBe Right(
+        VatSubmissionSuccess(testFormBundleId)
+      )
+
+      eventually(timeout(Span(5, Seconds))) {
+        verify(mockNonRepudiationService, times(2)).submitNonRepudiation(
+          ArgumentMatchers.eq(testRegId),
+          ArgumentMatchers.eq(testSubmissionPayload),
+          ArgumentMatchers.eq(testDateTime),
+          ArgumentMatchers.eq(testFormBundleId),
+          ArgumentMatchers.eq(testUserHeaders),
+          ArgumentMatchers.any[Boolean]
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+        verify(mockUpscanService, times(2)).getAllUpscanDetails(ArgumentMatchers.eq(testRegId))(ArgumentMatchers.eq(request))
+        verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(ArgumentMatchers.eq(testNonRepudiationAttachment))(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+        verifyAudit(
+          SubmissionAuditModel(
+            detailBlockAnswers,
+            testFullVatScheme,
+            testProviderId,
+            testAffinityGroup,
+            None,
+            testFormBundleId
           )
         )
       }
