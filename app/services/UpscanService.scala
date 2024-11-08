@@ -19,17 +19,34 @@ package services
 import models.api.{InProgress, UpscanCreate, UpscanDetails}
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
-import utils.LoggingUtils
+import utils.{AlertLogging, LoggingUtils, PagerDutyKeys}
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @Singleton
-class UpscanService @Inject() (upscanMongoRepository: UpscanMongoRepository) extends LoggingUtils {
+class UpscanService @Inject() (upscanMongoRepository: UpscanMongoRepository) extends LoggingUtils with AlertLogging {
 
   def getUpscanDetails(reference: String)(implicit request: Request[_]): Future[Option[UpscanDetails]] = {
     infoLog(s"[UpscanService][getUpscanDetails] attempting to get upscan details from mongo for reference: $reference")
-    upscanMongoRepository.getUpscanDetails(reference)
+
+    upscanMongoRepository.getUpscanDetails(reference).map {
+      case Some(upscanDetails: UpscanDetails) =>
+        infoLog(
+          s"[UpscanService][getUpscanDetails] upscan details successfully retrieved. Attempting to update with " +
+            s"  callback details for the reference: $reference"
+        )
+        Some(upscanDetails)
+      case None =>
+        pagerduty(
+          PagerDutyKeys.NO_DATA_FOUND_IN_UPSCAN_MONGO,
+          Some(s"[UpscanService][getUpscanDetails] Non-existent UpscanDetails for the given reference $reference"))
+        infoLog(
+          s"[UpscanService][getUpscanDetails] upscan details not found for the given references. $reference"
+        )
+        None
+    }
   }
 
   def getAllUpscanDetails(registrationId: String)(implicit request: Request[_]): Future[Seq[UpscanDetails]] = {

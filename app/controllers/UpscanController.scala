@@ -22,11 +22,10 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.UpscanService
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class UpscanController @Inject() (
@@ -77,16 +76,14 @@ class UpscanController @Inject() (
           s"[UpscanController][upscanDetailsCallback] upscan details successfully retrieved. Attempting to update with callback details. " +
             s"regId: ${request.body.registrationId} reference: ${request.body.reference}"
         )
-
         val updatedDetails = request.body.copy(registrationId = details.registrationId)
         upscanService.upsertUpscanDetails(updatedDetails).map(_ => Ok)
-      case None          =>
+      case None =>
         errorLog(
           s"[UpscanController][upscanDetailsCallback] Callback attempted to update non-existent UpscanDetails. " +
             s"regId: ${request.body.registrationId} reference: ${request.body.reference}"
         )
-
-        throw new InternalServerException("[UpscanController] Callback attempted to update non-existent UpscanDetails")
+        Future.successful(NotFound)
     }
   }
 

@@ -26,6 +26,7 @@ import models.api.schemas.API1364
 import models.api.vatapplication.Annual
 import models.api.{Attached, PersonalDetails, VatScheme}
 import models.monitoring.SubmissionFailureErrorsAuditModel
+import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAuditUpscan, NonRepudiationAttachmentSuccessAuditUpscan}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import models.{IntendingTrader, Voluntary}
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
@@ -39,7 +40,7 @@ import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, InternalServerException}
 import utils.JsonUtils.{conditional, jsonObject, optional}
-import utils.{AlertLogging, IdGenerator, LoggingUtils, PagerDutyKeys, TimeMachine}
+import utils.{AlertLogging, IdGenerator, PagerDutyKeys, TimeMachine}
 
 import java.util.Base64
 import javax.inject.{Inject, Singleton}
@@ -121,14 +122,16 @@ class SubmissionService @Inject()(
       (providerId, affinityGroup, optAgentCode) <- retrieveIdentityDetails
       _ <- auditSubmission(formBundleId, vatScheme, providerId, affinityGroup, optAgentCode)
       _ <- emailService.sendRegistrationReceivedEmail(vatScheme.internalId, vatScheme.registrationId, lang)
-      digitalAttachments =
-        vatScheme.attachments
-          .exists(_.method.contains(Attached)) && attachmentsService.mandatoryAttachmentList(vatScheme).nonEmpty
+      digitalAttachments = vatScheme.attachments.exists(_.method.contains(Attached)) && attachmentsService.mandatoryAttachmentList(vatScheme).nonEmpty
       optNrsId <- submitToNrs(formBundleId, vatScheme, userHeaders, digitalAttachments)
-      _ <- if (isEnabled(PostSubmissionDecoupling) && optNrsId.isDefined && digitalAttachments)
-        notifyNrs(vatScheme.registrationId, optNrsId.get, correlationId) else Future.successful()
-      _ <- if (digitalAttachments) sdesService.notifySdes(vatScheme.registrationId, formBundleId, optNrsId, providerId)
-      else Future.successful()
+      _ <- if (isEnabled(PostSubmissionDecoupling) && optNrsId.isDefined && digitalAttachments) {
+              notifyNrs(vatScheme.registrationId, optNrsId.get, correlationId)
+            } else { Future.successful() }
+      _ <- if (digitalAttachments) {
+              sdesService.notifySdes(vatScheme.registrationId, formBundleId, optNrsId, providerId)
+            } else {
+              Future.successful()
+            }
     } yield {}
 
   private def notifyNrs(registrationId: String, nrSubmissionId: String, correlationId: String)
@@ -152,10 +155,15 @@ class SubmissionService @Inject()(
             if (isEnabled(PostSubmissionDecouplingConnector)) {
               nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
                 case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
+                  auditService.audit(NonRepudiationAttachmentSuccessAuditUpscan(payload, nrAttachmentId, correlationId))
                   infoLog(
                     s"[SubmissionService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId"
                   )
                 case NonRepudiationAttachmentFailed(body, status) =>
+                  auditService.audit(NonRepudiationAttachmentFailureAuditUpscan(payload, status, correlationId))
+                  errorLog(
+                    s"[SubmissionService] Attachment NRS submission failed with status: $status and body: $body. CorrelationId: $correlationId"
+                  )
                   pagerduty(
                     PagerDutyKeys.NRS_NOTIFICATION_FAILED,
                     Some(s"[SubmissionService] Attachment NRS submission failed with status: $status and body: $body")
@@ -206,6 +214,7 @@ class SubmissionService @Inject()(
         registrationRepository
           .updateSubmissionStatus(internalId, regId, VatRegStatus.duplicateSubmission)
           .map(_ => None)
+
       case Left(VatSubmissionFailure(BAD_REQUEST, _)) =>
         errorLog(s"[SubmissionService][handleResponse] submission failed due to BAD_REQUEST", regId)
         for {
@@ -233,7 +242,6 @@ class SubmissionService @Inject()(
               }\n"
             )
           }
-
           None
         }
       case Left(VatSubmissionFailure(status, reason)) =>

@@ -23,8 +23,8 @@ import helpers.VatRegSpec
 import mocks.monitoring.MockAuditService
 import mocks.{MockSdesConnector, MockUpscanMongoRepository}
 import models.api.{PrimaryIdentityEvidence, Ready, UploadDetails, UpscanDetails}
-import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted}
-import models.nonrepudiation.NonRepudiationAuditing.NonRepudiationAttachmentSuccessAudit
+import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
+import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAudit, NonRepudiationAttachmentSuccessAudit}
 import models.sdes.PropertyExtractor._
 import models.sdes.SdesAuditing.{SdesCallbackFailureAudit, SdesCallbackNotSentToNrsAudit, SdesFileSubmissionAudit}
 import models.sdes._
@@ -296,6 +296,34 @@ class SdesServiceSpec
           ArgumentMatchers.eq(testNrsPayload)
         )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
         verifyAudit(NonRepudiationAttachmentSuccessAudit(testCallback(None), testNrAttachmentId))
+      }
+    }
+
+    "call and audit NRS failure if callback is failed" in {
+      val testNrAttachmentId = "testNrAttachmentId"
+      val testNrsPayload = NonRepudiationAttachment(
+        attachmentUrl = testDownloadUrl,
+        attachmentId = testReference,
+        attachmentSha256Checksum = testChecksum,
+        attachmentContentType = testMimeType,
+        nrSubmissionId = testNrsId
+      )
+      val testBody = "testbody"
+      val testStatus = 500
+
+      when(
+        mockNonRepudiationConnector.submitAttachmentNonRepudiation(
+          ArgumentMatchers.eq(testNrsPayload)
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+      ).thenReturn(Future.successful(NonRepudiationAttachmentFailed(testBody, testStatus)))
+
+      await(TestService.processCallback(testCallback(None)))
+
+      eventually {
+        verify(mockNonRepudiationConnector).submitAttachmentNonRepudiation(
+          ArgumentMatchers.eq(testNrsPayload)
+        )(ArgumentMatchers.eq(hc), ArgumentMatchers.eq(request))
+        verifyAudit(NonRepudiationAttachmentFailureAudit(testCallback(None), testStatus))
       }
     }
 
