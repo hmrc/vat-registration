@@ -142,6 +142,7 @@ class SubmissionService @Inject()(
         val attachmentId = upscanDetails.reference
         val optMimeType = upscanDetails.uploadDetails.map(_.fileMimeType)
         val optChecksum = upscanDetails.uploadDetails.map(_.checksum)
+        val filename = upscanDetails.uploadDetails.map(_.fileName).get
 
         if(url.isDefined && optChecksum.isDefined && optMimeType.isDefined) {
           val payload = NonRepudiationAttachment(
@@ -155,12 +156,12 @@ class SubmissionService @Inject()(
             if (isEnabled(PostSubmissionDecouplingConnector)) {
               nonRepudiationConnector.submitAttachmentNonRepudiation(payload).map {
                 case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
-                  auditService.audit(NonRepudiationAttachmentSuccessAuditUpscan(payload, nrAttachmentId, correlationId))
+                  auditService.audit(NonRepudiationAttachmentSuccessAuditUpscan(payload, nrAttachmentId, correlationId, filename))
                   infoLog(
                     s"[SubmissionService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId"
                   )
                 case NonRepudiationAttachmentFailed(body, status) =>
-                  auditService.audit(NonRepudiationAttachmentFailureAuditUpscan(payload, status, correlationId))
+                  auditService.audit(NonRepudiationAttachmentFailureAuditUpscan(payload, status, correlationId, filename))
                   errorLog(
                     s"[SubmissionService] Attachment NRS submission failed with status: $status and body: $body. CorrelationId: $correlationId"
                   )

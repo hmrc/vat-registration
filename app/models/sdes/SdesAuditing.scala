@@ -65,7 +65,7 @@ object SdesAuditing {
       "filename"          -> callback.filename,
       "checksumAlgorithm" -> callback.checksumAlgorithm,
       "checksum"          -> callback.checksum,
-      "correlationID"     -> callback.correlationID,
+      "correlationId"     -> callback.correlationID,
       "availableUntil"    -> callback.availableUntil,
       "attachmentId"      -> callback.getPropertyValue(attachmentReferenceKey),
       "formBundleId"      -> callback.getPropertyValue(formBundleKey)
