@@ -77,30 +77,33 @@ object NonRepudiationAuditing {
       "statusCode" -> status    )
   }
 
-  case class NonRepudiationAttachmentSuccessAuditUpscan(payload: NonRepudiationAttachment, nrAttachmentId: String, correlationId: String)
+  case class NonRepudiationAttachmentSuccessAuditUpscan(payload: NonRepudiationAttachment, nrAttachmentId: String, correlationId: String, filename: String)
     extends AuditModel {
     override val auditType: String       = "SubmitAttachmentToNrs"
     override val transactionName: String = "submit-attachment-to-nrs"
     override val detail: JsValue         = jsonObject(
       "nrSubmissionId" -> payload.nrSubmissionId,
+      "filename" -> filename,
       "upscanAttachmentId" -> payload.attachmentId,
       "attachmentUrl" -> payload.attachmentUrl,
       "checksum" -> payload.attachmentSha256Checksum,
-      "correlationID" -> correlationId,
+      "correlationId" -> correlationId,
       "attachmentContentType" -> payload.attachmentContentType,
       "nrAttachmentId" -> nrAttachmentId
     )
   }
 
-  case class NonRepudiationAttachmentFailureAuditUpscan(payload: NonRepudiationAttachment, status: Int, correlationId: String) extends AuditModel {
+  case class NonRepudiationAttachmentFailureAuditUpscan(payload: NonRepudiationAttachment, status: Int, correlationId: String, filename: String)
+                                                                                        extends AuditModel {
     override val auditType: String       = "SubmitAttachmentToNRSError"
     override val transactionName: String = "submit-attachment-to-nrs"
     override val detail: JsValue         = jsonObject(
       "nrSubmissionId" -> payload.nrSubmissionId,
+      "filename" -> filename,
       "upscanAttachmentId" -> payload.attachmentId,
       "attachmentUrl" -> payload.attachmentUrl,
       "checksum" -> payload.attachmentSha256Checksum,
-      "correlationID" -> correlationId,
+      "correlationId" -> correlationId,
       "attachmentContentType" -> payload.attachmentContentType,
       "statusCode" -> status)
   }
