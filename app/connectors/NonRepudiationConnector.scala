@@ -105,7 +105,7 @@ class NonRepudiationConnector @Inject() (httpClient: HttpClientV2, config: Backe
           }
         }
         .recover { case NonFatal(e) =>
-          errorLog(s"[NonRepudiationConnector][submitNonRepudiation] errored with ${e.getMessage}")
+          errorLog(s"[NonRepudiationConnector][submitAttachmentNonRepudiation] errored with ${e.getMessage}")
           NonRepudiationAttachmentFailed(e.getMessage, INTERNAL_SERVER_ERROR)
         }
     }
