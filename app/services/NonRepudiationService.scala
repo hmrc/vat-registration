@@ -92,9 +92,15 @@ class NonRepudiationService @Inject() (
         .map {
           case NonRepudiationSubmissionAccepted(submissionId) =>
             auditService.audit(NonRepudiationSubmissionSuccessAudit(registrationId, submissionId))
+            infoLog(
+              s"[NonRepudiationService][submitNonRepudiation] Successful submission to NRS with nrSubmissionId $submissionId"
+            )
             Some(submissionId)
           case NonRepudiationSubmissionFailed(body, status)   =>
             auditService.audit(NonRepudiationSubmissionFailureAudit(registrationId, status, body))
+            errorLog(
+              s"[NonRepudiationService][submitNonRepudiation] NRS submission failed with status: $status and body: $body"
+            )
             None
         }
   } yield nonRepudiationSubmissionResponse
