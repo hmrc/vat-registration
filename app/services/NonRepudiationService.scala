@@ -30,7 +30,7 @@ import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier, InternalServerException}
-import utils.LoggingUtils
+import utils.{AlertLogging, LoggingUtils, PagerDutyKeys}
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -47,7 +47,8 @@ class NonRepudiationService @Inject() (
   val authConnector: AuthConnector
 )(implicit ec: ExecutionContext)
     extends AuthorisedFunctions
-    with LoggingUtils {
+      with AlertLogging
+      with LoggingUtils {
 
   def submitNonRepudiation(
     registrationId: String,
@@ -100,6 +101,10 @@ class NonRepudiationService @Inject() (
             auditService.audit(NonRepudiationSubmissionFailureAudit(registrationId, status, body))
             errorLog(
               s"[NonRepudiationService][submitNonRepudiation] NRS submission failed with status: $status and body: $body"
+            )
+            pagerduty(
+              PagerDutyKeys.NRS_SUBMISSION_FAILED,
+              Some(s"[NonRepudiationService][submitNonRepudiation] NRS submission failed with status: $status and body: $body")
             )
             None
         }

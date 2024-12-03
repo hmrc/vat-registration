@@ -158,24 +158,24 @@ class SubmissionService @Inject()(
                 case NonRepudiationAttachmentAccepted(nrAttachmentId) =>
                   auditService.audit(NonRepudiationAttachmentSuccessAuditUpscan(payload, nrAttachmentId, correlationId, filename))
                   infoLog(
-                    s"[SubmissionService] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId"
+                    s"[SubmissionService][notifyNrs] Successful attachment NRS submission with id $nrAttachmentId for attachment $attachmentId"
                   )
                 case NonRepudiationAttachmentFailed(body, status) =>
                   auditService.audit(NonRepudiationAttachmentFailureAuditUpscan(payload, status, correlationId, filename))
                   errorLog(
-                    s"[SubmissionService] Attachment NRS submission failed with status: $status and body: $body. CorrelationId: $correlationId"
+                    s"[SubmissionService][notifyNrs] Attachment NRS submission failed with status: $status and body: $body. CorrelationId: $correlationId"
                   )
                   pagerduty(
-                    PagerDutyKeys.NRS_NOTIFICATION_FAILED,
-                    Some(s"[SubmissionService] Attachment NRS submission failed with status: $status and body: $body")
+                    PagerDutyKeys.NRS_ATTACHMENT_NOTIFICATION_FAILED,
+                    Some(s"[SubmissionService][notifyNrs] Attachment NRS submission failed with status: $status and body: $body")
                   )
               }
-            } else { infoLog(s"[SubmissionService] Not sending NRS attachment as PostSubmissionDecouplingConnector is off. Attachment $attachmentId")}
+            } else { infoLog(s"[SubmissionService][notifyNrs] Not sending NRS attachment as PostSubmissionDecouplingConnector is off. Attachment $attachmentId")}
         }
         else {
           pagerduty(
             PagerDutyKeys.INVALID_UPSCAN_DETAILS_RECEIVED,
-            Some(s"[SubmissionService] Not sending attachment NRS payload for $attachmentId as incomplete upscan details were received"))
+            Some(s"[SubmissionService][notifyNrs] Not sending attachment NRS payload for $attachmentId as incomplete upscan details were received"))
           Future.successful()
         }
       }

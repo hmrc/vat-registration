@@ -29,6 +29,8 @@ object PagerDutyKeys extends Enumeration {
   val SDES_NRS_SUBMISSION_ID_MISSING: PagerDutyKeys.Value = Value
   val INVALID_UPSCAN_DETAILS_RECEIVED: PagerDutyKeys.Value = Value
   val NO_DATA_FOUND_IN_UPSCAN_MONGO: PagerDutyKeys.Value = Value
+  val NRS_SUBMISSION_FAILED: PagerDutyKeys.Value = Value
+  val NRS_ATTACHMENT_NOTIFICATION_FAILED: PagerDutyKeys.Value = Value
 }
 
 trait AlertLogging extends LoggingUtils {
