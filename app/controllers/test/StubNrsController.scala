@@ -30,23 +30,23 @@ class StubNrsController @Inject() (cc: ControllerComponents) extends BackendCont
 
   val processSubmission: Action[AnyContent] = Action.async {
     Future.successful(
-      Accepted(
+      /*Accepted(
         Json.obj(
           "nrSubmissionId" -> UUID.randomUUID()
         )
-      )
-      //       InternalServerError("Error in NRS Submissions!!") // remove this after the testing
+      )*/
+            InternalServerError("Error in NRS Submissions!!") // remove this after the testing
     )
   }
 
   val processAttachmentSubmission: Action[AnyContent] = Action.async {
     Future.successful(
-      /*Accepted(
+      Accepted(
        Json.obj(
           "attachmentId" -> UUID.randomUUID()
         )
-      )*/
-      InternalServerError("Error in sending the attachment detail to NRS systems") // remove this after the testing
+      )
+      // InternalServerError("Error in sending the attachment detail to NRS systems") // remove this after the testing
     )
   }
 }
