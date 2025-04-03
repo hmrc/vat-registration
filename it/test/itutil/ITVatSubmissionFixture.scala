@@ -96,7 +96,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true,
         "goodsFromOtherEU" -> testTurnover,
         "goodsSoldToOtherEU" -> testTurnover
@@ -255,7 +255,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true,
         "goodsFromOtherEU" -> testTurnover,
         "goodsSoldToOtherEU" -> testTurnover
@@ -415,7 +415,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true,
         "goodsFromOtherEU" -> testTurnover,
         "goodsSoldToOtherEU" -> testTurnover
@@ -589,7 +589,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true,
         "goodsFromOtherEU" -> testTurnover,
         "goodsSoldToOtherEU" -> testTurnover
@@ -693,7 +693,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true,
         "goodsFromOtherEU" -> testTurnover,
         "goodsSoldToOtherEU" -> testTurnover
@@ -819,7 +819,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true
       )
     ),
@@ -936,7 +936,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true
       )
     ),
@@ -1061,7 +1061,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true
       )
     ),
@@ -1180,7 +1180,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true,
         "goodsFromOtherEU" -> testTurnover,
         "goodsSoldToOtherEU" -> testTurnover
@@ -1286,7 +1286,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
-        "zeroRatedSupplies" -> 12.99,
+        "zeroRatedSupplies" -> testZeroRatedSupplies,
         "VATRepaymentExpected" -> true,
         "goodsFromOtherEU" -> testTurnover,
         "goodsSoldToOtherEU" -> testTurnover
@@ -1387,7 +1387,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         ),
         "yourTurnover" -> Json.obj(
           "turnoverNext12Months" -> testTurnover,
-          "zeroRatedSupplies" -> 12.99,
+          "zeroRatedSupplies" -> testZeroRatedSupplies,
           "VATRepaymentExpected" -> true,
           "goodsFromOtherEU" -> testTurnover,
           "goodsSoldToOtherEU" -> testTurnover
@@ -1477,7 +1477,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     }
   }
 
-  val generalPartnershipCustomerId = Json.obj(
+  val generalPartnershipCustomerId: JsObject = Json.obj(
     "tradersPartyType" -> Json.toJson[PartyType](Partnership),
     "customerID" -> Json.arr(
       Json.obj(
@@ -1491,7 +1491,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     "organisationName" -> testCompanyName
   )
 
-  val limitedPartnershipCustomerId = Json.obj(
+  val limitedPartnershipCustomerId: JsObject = Json.obj(
     "tradersPartyType" -> Json.toJson[PartyType](LtdPartnership),
     "customerID" -> Json.arr(
       Json.obj(
@@ -1531,14 +1531,14 @@ trait ITVatSubmissionFixture extends ITFixtures {
     "organisationName" -> testCompanyName
   )
 
-  val vatGroupCustomerId = Json.obj(
+  val vatGroupCustomerId: JsObject = Json.obj(
     "tradersPartyType" -> Json.toJson[PartyType](TaxGroups),
     "tradingName" -> testBusiness.tradingName.get,
     "shortOrgName" -> testShortOrgName,
     "organisationName" -> testCompanyName
   )
 
-  val ukCompanyLeadPartner = Json.arr(
+  val ukCompanyLeadPartner: JsArray = Json.arr(
     Json.obj(
       "action" -> "1",
       "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
@@ -1578,7 +1578,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
-  val ukCompanyLeadEntity = Json.arr(
+  val ukCompanyLeadEntity: JsArray = Json.arr(
     Json.obj(
       "action" -> "1",
       "entityType" -> Json.toJson[EntitiesArrayType](GroupRepMemberEntity),
@@ -1618,7 +1618,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     )
   )
 
-  val soleTraderLeadPartner = Json.arr(
+  val soleTraderLeadPartner: JsArray = Json.arr(
     Json.obj(
       "action" -> "1",
       "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),

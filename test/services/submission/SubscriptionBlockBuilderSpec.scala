@@ -55,7 +55,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
        | "yourTurnover": {
        |   "VATRepaymentExpected": false,
        |   "turnoverNext12Months": $testTurnover,
-       |   "zeroRatedSupplies": 12.99
+       |   "zeroRatedSupplies": 500
        | },
        | "schemes": {
        |   "startDate": "$testDate",
@@ -91,7 +91,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
        | "yourTurnover": {
        |   "VATRepaymentExpected": false,
        |   "turnoverNext12Months": $testTurnover,
-       |   "zeroRatedSupplies": 12.99
+       |   "zeroRatedSupplies": 500
        | },
        | "businessActivities": {
        |   "SICCodes": {
@@ -119,7 +119,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
        | "yourTurnover": {
        |   "VATRepaymentExpected": false,
        |   "turnoverNext12Months": $testTurnover,
-       |   "zeroRatedSupplies": 12.99
+       |   "zeroRatedSupplies": 500
        | },
        | "businessActivities": {
        |   "SICCodes": {
@@ -139,7 +139,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "yourTurnover"          -> Json.obj(
       "VATRepaymentExpected" -> false,
       "turnoverNext12Months" -> testTurnover,
-      "zeroRatedSupplies"    -> 12.99
+      "zeroRatedSupplies"    -> 500
     ),
     "schemes"               -> Json.obj(
       "startDate"         -> testDate,
@@ -178,7 +178,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
     "yourTurnover"            -> Json.obj(
       "VATRepaymentExpected" -> false,
       "turnoverNext12Months" -> testTurnover,
-      "zeroRatedSupplies"    -> 12.99
+      "zeroRatedSupplies"    -> 500
     ),
     "businessActivities"      -> Json.obj(
       "SICCodes"    -> Json.obj(

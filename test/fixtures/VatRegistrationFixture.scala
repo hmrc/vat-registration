@@ -30,25 +30,25 @@ import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneOffset}
 import java.util.Base64
 
 trait VatRegistrationFixture {
-  lazy val testNino                    = "AB123456A"
-  lazy val testRole                    = Director
-  lazy val testArn                     = "testArn"
-  lazy val testRegId                   = "testRegId"
-  val testNrAttachmentId                   = "testNrAttachmentId"
-  lazy val testInternalId              = "INT-123-456-789"
-  lazy val testAckReference            = "BRPY000000000001"
+  lazy val testNino: String = "AB123456A"
+  lazy val testRole: RoleInTheBusiness = Director
+  lazy val testArn: String = "testArn"
+  lazy val testRegId: String = "testRegId"
+  val testNrAttachmentId: String = "testNrAttachmentId"
+  lazy val testInternalId: String = "INT-123-456-789"
+  lazy val testAckReference: String = "BRPY000000000001"
   lazy val testDate: LocalDate         = LocalDate.of(2018, 1, 1)
   lazy val testDateTime: LocalDateTime = LocalDateTime.of(testDate, LocalTime.MIDNIGHT)
-  lazy val testDateOfBirth             = testDate
-  lazy val testCompanyName             = "testCompanyName"
-  lazy val testCrn                     = "testCrn"
-  lazy val testVrn                     = "testVrn"
-  lazy val testUtr                     = "testUtr"
-  lazy val testChrn                    = "testChrn"
-  lazy val testCasc                    = "testCasc"
-  lazy val testTrn                     = "testTrn"
+  lazy val testDateOfBirth: LocalDate = testDate
+  lazy val testCompanyName: String = "testCompanyName"
+  lazy val testCrn: String = "testCrn"
+  lazy val testVrn: String = "testVrn"
+  lazy val testUtr: String = "testUtr"
+  lazy val testChrn: String = "testChrn"
+  lazy val testCasc: String = "testCasc"
+  lazy val testTrn: String = "testTrn"
   lazy val testDateOFIncorp: LocalDate = LocalDate.of(2020, 1, 2)
-  lazy val testAddress                 = Address(
+  lazy val testAddress: Address = Address(
     "line1",
     Some("line2"),
     None,
@@ -58,34 +58,44 @@ trait VatRegistrationFixture {
     Some(Country(Some("GB"), Some("UK"))),
     addressValidated = Some(true)
   )
-  lazy val testPostcode                = "ZZ1 1ZZ"
-  lazy val testSicCode                 = SicCode("88888", "description", "description")
-  lazy val testName                    = Name(first = Some("Forename"), middle = None, last = "Surname")
-  lazy val testOldName                 = Name(first = Some("Bob"), middle = None, last = "Smith")
-  lazy val testPreviousName            = FormerName(hasFormerName = Some(true), name = Some(testOldName), change = Some(testDate))
-  lazy val testVatScheme: VatScheme    =
+  lazy val testPostcode: String = "ZZ1 1ZZ"
+  lazy val testSicCode: SicCode = SicCode("88888", "description", "description")
+  lazy val testName: Name = Name(first = Some("Forename"), middle = None, last = "Surname")
+  lazy val testOldName: Name = Name(first = Some("Bob"), middle = None, last = "Smith")
+  lazy val testPreviousName: FormerName = FormerName(hasFormerName = Some(true), name = Some(testOldName), change = Some(testDate))
+  protected lazy val testVatScheme: VatScheme    =
     VatScheme(testRegId, internalId = testInternalId, status = VatRegStatus.draft, createdDate = testDate)
-  lazy val exception                   = new Exception("Exception")
-  lazy val testVoluntaryThreshold      = Threshold(mandatoryRegistration = false, None, None, None)
-  lazy val testMandatoryThreshold      = Threshold(
+  lazy val exception: Exception = new Exception("Exception")
+  lazy val testVoluntaryThreshold: Threshold = Threshold(mandatoryRegistration = false, None, None, None)
+  lazy val testMandatoryThreshold: Threshold = Threshold(
     mandatoryRegistration = true,
     Some(LocalDate.of(2020, 10, 7)),
     Some(LocalDate.of(2020, 10, 7)),
     Some(LocalDate.of(2020, 10, 7))
   )
 
-  lazy val testContact                      = Contact(Some("skylake@vilikariet.com"), None, None)
-  lazy val testBankName                     = "Test Bank Account"
-  lazy val testSortCode                     = "010203"
-  lazy val testBankNumber                   = "01023456"
-  lazy val testBankDetails                  = BankAccountDetails(testBankName, testSortCode, testBankNumber, ValidStatus)
-  lazy val testFormerName                   = FormerName(hasFormerName = Some(true), Some(testName), Some(testDate))
-  lazy val testVatApplicationDetails        = VatApplication(
+  lazy val testContact: Contact = Contact(Some("skylake@vilikariet.com"), None, None)
+  lazy val testBankName: String = "Test Bank Account"
+  lazy val testSortCode: String = "010203"
+  lazy val testBankNumber: String = "01023456"
+  lazy val testBankDetails: BankAccountDetails = BankAccountDetails(testBankName, testSortCode, testBankNumber, ValidStatus)
+  lazy val testFormerName: FormerName = FormerName(hasFormerName = Some(true), Some(testName), Some(testDate))
+
+  lazy val testStandardRateSupplies: Int = 1000
+  lazy val testReducedRateSupplies: Int = 2000
+  lazy val testZeroRateSupplies: Int = 500
+  lazy val testTurnover: Int = 3500
+  lazy val testAcceptTurnoverEstimate: Boolean = true
+
+  lazy val testVatApplicationDetails: VatApplication = VatApplication(
     Some(true),
     Some(true),
+    Some(testStandardRateSupplies),
+    Some(testReducedRateSupplies),
+    Some(testZeroRateSupplies),
     Some(testTurnover),
+    Some(testAcceptTurnoverEstimate),
     None,
-    Some(12.99),
     Some(false),
     Some(Quarterly),
     Some(JanuaryStagger),
@@ -96,20 +106,20 @@ trait VatRegistrationFixture {
     None,
     None
   )
-  lazy val zeroRatedSupplies: BigDecimal    = 12.99
-  lazy val testBpSafeId                     = "testBpSafeId"
-  lazy val testFirstName                    = "testFirstName"
-  lazy val testLastName                     = "testLastName"
-  lazy val testWebsite                      = "www.foo.com"
+  lazy val zeroRatedSupplies: BigDecimal    = 500
+  lazy val testBpSafeId: String = "testBpSafeId"
+  lazy val testFirstName: String = "testFirstName"
+  lazy val testLastName: String = "testLastName"
+  lazy val testWebsite: String = "www.foo.com"
   lazy val testProviderId: String           = "testProviderID"
   lazy val testProviderType: String         = "GovernmentGateway"
   lazy val testCredentials: Credentials     = Credentials(testProviderId, testProviderType)
   lazy val testAffinityGroup: AffinityGroup = AffinityGroup.Organisation
-  lazy val testAuthToken                    = "testAuthToken"
+  lazy val testAuthToken: String = "testAuthToken"
 
-  val testTradingName  = "trading-name"
-  val testShortOrgName = "short-org-name"
-  val testUserHeaders  = Map("testKey" -> "testValue")
+  val testTradingName: String = "trading-name"
+  val testShortOrgName: String = "short-org-name"
+  val testUserHeaders: Map[String, String] = Map("testKey" -> "testValue")
 
   lazy val testEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = testMandatoryThreshold,
@@ -121,7 +131,7 @@ trait VatRegistrationFixture {
     fixedEstablishmentInManOrUk = true
   )
 
-  val testLtdCoEntity = IncorporatedEntity(
+  val testLtdCoEntity: IncorporatedEntity = IncorporatedEntity(
     companyName = Some(testCompanyName),
     companyNumber = testCrn,
     ctutr = Some(testUtr),
@@ -132,7 +142,7 @@ trait VatRegistrationFixture {
     chrn = None
   )
 
-  val testSoleTraderEntity = SoleTraderIdEntity(
+  val testSoleTraderEntity: SoleTraderIdEntity = SoleTraderIdEntity(
     testFirstName,
     testLastName,
     testDate,
@@ -210,9 +220,9 @@ trait VatRegistrationFixture {
     previousAddress = None
   )
 
-  lazy val testEmail                                 = "test@test.com"
-  lazy val testTelephone                             = "1234567890"
-  lazy val testOrgName                               = "testOrganisationName"
+  lazy val testEmail: String = "test@test.com"
+  lazy val testTelephone: String = "1234567890"
+  lazy val testOrgName: String = "testOrganisationName"
   lazy val validTransactorDetails: TransactorDetails = TransactorDetails(
     personalDetails = Some(
       PersonalDetails(
@@ -234,42 +244,43 @@ trait VatRegistrationFixture {
     declarationCapacity = Some(DeclarationCapacityAnswer(AuthorisedEmployee))
   )
 
-  lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =
+  protected lazy val otherBusinessActivitiesSicAndCompiliance: List[SicCode] =
     SicCode("00998", "otherBusiness desc 1", "otherBusiness desc 1") :: SicCode(
       "00889",
       "otherBusiness desc 2",
       "otherBusiness desc 2"
     ) :: Nil
 
-  lazy val testBankAccount            = BankAccount(isProvided = true, details = Some(testBankDetails), None)
-  lazy val testBankAccountNotProvided = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup))
+  lazy val testBankAccount: BankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None)
+  lazy val testBankAccountNotProvided: BankAccount = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup))
 
-  lazy val validAASDetails: AASDetails = AASDetails(
+  protected lazy val validAASDetails: AASDetails = AASDetails(
     paymentMethod = Some(StandingOrder),
     paymentFrequency = Some(MonthlyPayment)
   )
 
-  lazy val testTurnover = 10000
-
   lazy val validAASApplicationDeatils: VatApplication = VatApplication(
-    Some(true),
-    Some(true),
-    Some(testTurnover),
-    None,
-    Some(12.99),
+    eoriRequested = Some(true),
+    tradeVatGoodsOutsideUk = Some(true),
+    standardRateSupplies = Some(testStandardRateSupplies),
+    reducedRateSupplies = Some(testReducedRateSupplies),
+    zeroRatedSupplies = Some(testZeroRateSupplies),
+    turnoverEstimate = Some(testTurnover),
+    acceptTurnOverEstimate = Some(testAcceptTurnoverEstimate),
+    appliedForExemption = None,
     claimVatRefunds = Some(false),
-    Some(Annual),
-    Some(JanDecStagger),
-    Some(testDate),
-    Some(validAASDetails),
-    None,
-    None,
-    None,
-    None
+    returnsFrequency = Some(Annual),
+    staggerStart = Some(JanDecStagger),
+    startDate = Some(testDate),
+    annualAccountingDetails = Some(validAASDetails),
+    overseasCompliance = None,
+    northernIrelandProtocol = None,
+    hasTaxRepresentative = None,
+    currentlyTrading = None
   )
 
-  val testWarehouseNumber = "test12345678"
-  val testWarehouseName   = "testWarehouseName"
+  val testWarehouseNumber: String = "test12345678"
+  val testWarehouseName: String = "testWarehouseName"
 
   val testOverseasVatApplicationDetails: VatApplication = testVatApplicationDetails.copy(
     startDate = None,
@@ -299,21 +310,21 @@ trait VatRegistrationFixture {
   lazy val validEmptyFlatRateScheme: FlatRateScheme   = FlatRateScheme(joinFrs = Some(false))
   lazy val invalidEmptyFlatRateScheme: FlatRateScheme = FlatRateScheme(joinFrs = Some(true))
 
-  lazy val testBusinessDescription                = "testBusinessDescription"
+  lazy val testBusinessDescription: String = "testBusinessDescription"
   lazy val testLabourCompliance: ComplianceLabour =
     ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = Some(true))
-  lazy val testSicCode1                           = "12345"
-  lazy val testSicDesc1                           = "testMainSicDesc"
-  lazy val testSicDisplay1                        = "testMainSicDisplay"
-  lazy val testSic1                               = SicCode(testSicCode1, testSicDesc1, testSicDesc1)
-  lazy val testSicCode2                           = "23456"
-  lazy val testSicDesc2                           = "testSicDesc2"
-  lazy val testSicDisplay2                        = "testSicDisplay2"
-  lazy val testSic2                               = SicCode(testSicCode2, testSicDesc2, testSicDesc2)
-  lazy val testSicCode3                           = "34567"
-  lazy val testSicDesc3                           = "testSicDesc3"
-  lazy val testSicDisplay3                        = "testSicDisplay3"
-  lazy val testSic3                               = SicCode(testSicCode3, testSicDesc3, testSicDesc3)
+  lazy val testSicCode1: String = "12345"
+  lazy val testSicDesc1: String = "testMainSicDesc"
+  lazy val testSicDisplay1: String = "testMainSicDisplay"
+  lazy val testSic1: SicCode = SicCode(testSicCode1, testSicDesc1, testSicDesc1)
+  lazy val testSicCode2: String = "23456"
+  lazy val testSicDesc2: String = "testSicDesc2"
+  lazy val testSicDisplay2: String = "testSicDisplay2"
+  lazy val testSic2: SicCode = SicCode(testSicCode2, testSicDesc2, testSicDesc2)
+  lazy val testSicCode3: String = "34567"
+  lazy val testSicDesc3: String = "testSicDesc3"
+  lazy val testSicDisplay3: String = "testSicDisplay3"
+  lazy val testSic3: SicCode = SicCode(testSicCode3, testSicDesc3, testSicDesc3)
   lazy val testBusinessActivities: List[SicCode]  = List(testSic1, testSic2, testSic3)
   lazy val testBusiness: Business                 = Business(
     hasTradingName = Some(true),
@@ -334,8 +345,8 @@ trait VatRegistrationFixture {
     otherBusinessInvolvement = Some(false)
   )
 
-  val testSubmissionPayload      = "testSubmissionPayload"
-  val testEncodedPayload: String =
+  val testSubmissionPayload: String = "testSubmissionPayload"
+  protected val testEncodedPayload: String =
     Base64.getEncoder.encodeToString(testSubmissionPayload.getBytes(StandardCharsets.UTF_8))
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
@@ -385,22 +396,22 @@ trait VatRegistrationFixture {
     import uk.gov.hmrc.auth.core.retrieve._
     import uk.gov.hmrc.auth.core.{ConfidenceLevel, CredentialStrength, User}
 
-    val testInternalId         = "testInternalId"
-    val testExternalId         = "testExternalId"
-    val testAgentCode          = "testAgentCode"
-    val testConfidenceLevel    = ConfidenceLevel.L200
-    val testSautr              = "testSautr"
-    val testAuthName           = uk.gov.hmrc.auth.core.retrieve.Name(Some("testFirstName"), Some("testLastName"))
-    val testAuthDateOfBirth    = LocalDate.now()
-    val testEmail              = "testEmail"
-    val testAgentInformation   =
+    val testInternalId: String = "testInternalId"
+    val testExternalId: String = "testExternalId"
+    val testAgentCode: String = "testAgentCode"
+    val testConfidenceLevel: ConfidenceLevel = ConfidenceLevel.L200
+    val testSautr: String = "testSautr"
+    val testAuthName: Name = uk.gov.hmrc.auth.core.retrieve.Name(Some("testFirstName"), Some("testLastName"))
+    val testAuthDateOfBirth: LocalDate = LocalDate.now()
+    val testEmail: String = "testEmail"
+    val testAgentInformation: AgentInformation =
       AgentInformation(Some("testAgentId"), Some("testAgentCode"), Some("testAgentFriendlyName"))
-    val testGroupIdentifier    = "testGroupIdentifier"
-    val testCredentialRole     = User
-    val testMdtpInformation    = MdtpInformation("testDeviceId", "testSessionId")
-    val testItmpName           = ItmpName(Some("testGivenName"), Some("testMiddleName"), Some("testFamilyName"))
-    val testItmpDateOfBirth    = LocalDate.now()
-    val testItmpAddress        = ItmpAddress(
+    val testGroupIdentifier: String = "testGroupIdentifier"
+    val testCredentialRole: User.type = User
+    val testMdtpInformation: MdtpInformation = MdtpInformation("testDeviceId", "testSessionId")
+    val testItmpName: ItmpName = ItmpName(Some("testGivenName"), Some("testMiddleName"), Some("testFamilyName"))
+    val testItmpDateOfBirth: LocalDate = LocalDate.now()
+    val testItmpAddress: ItmpAddress = ItmpAddress(
       Some("testLine1"),
       None,
       None,
@@ -410,8 +421,8 @@ trait VatRegistrationFixture {
       None,
       None
     )
-    val testCredentialStrength = CredentialStrength.strong
-    val testLoginTimes         =
+    val testCredentialStrength: String = CredentialStrength.strong
+    val testLoginTimes: LoginTimes =
       LoginTimes(LocalDateTime.now.toInstant(ZoneOffset.UTC), Some(LocalDateTime.now.toInstant(ZoneOffset.UTC)))
 
     val testNonRepudiationIdentityData: IdentityData = IdentityData(
@@ -492,7 +503,7 @@ trait VatRegistrationFixture {
     None,
   )
 
-  val testPersonalDetails = PersonalDetails(
+  val testPersonalDetails: PersonalDetails = PersonalDetails(
     testName,
     Some(testNino),
     trn = None,
