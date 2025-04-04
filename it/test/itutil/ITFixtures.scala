@@ -59,6 +59,7 @@ trait ITFixtures {
   val testWarehouseNumber = "tst123456789012"
   val testWarehouseName = "testWarehouseName"
   val testTurnover = 10000
+  val testZeroRatedSupplies = 500
   val testNorthernIrelandProtocol: NIPCompliance = NIPCompliance(
     Some(ConditionalValue(answer = true, Some(testTurnover))),
     Some(ConditionalValue(answer = true, Some(testTurnover)))
@@ -68,9 +69,12 @@ trait ITFixtures {
 
   val testVatApplication: VatApplication = VatApplication(
     Some(true), Some(true),
+    standardRateSupplies = None,
+    reducedRateSupplies = None,
+    zeroRatedSupplies = Some(testZeroRatedSupplies),
     turnoverEstimate = Some(testTurnover),
+    acceptTurnOverEstimate = Some(true),
     appliedForExemption = None,
-    zeroRatedSupplies = Some(12.99),
     claimVatRefunds = Some(true),
     returnsFrequency = Some(Quarterly),
     staggerStart = Some(JanuaryStagger),
@@ -91,7 +95,7 @@ trait ITFixtures {
     Some(true), Some(true),
     turnoverEstimate = Some(testTurnover),
     appliedForExemption = None,
-    zeroRatedSupplies = Some(12.99),
+    zeroRatedSupplies = Some(testZeroRatedSupplies),
     claimVatRefunds = Some(true),
     returnsFrequency = Some(Annual),
     staggerStart = Some(JanDecStagger),
@@ -105,7 +109,7 @@ trait ITFixtures {
 
   lazy val testFirstName = "testFirstName"
   lazy val testLastName = "testLastName"
-  val testFlatRateScheme = FlatRateScheme(
+  val testFlatRateScheme: FlatRateScheme = FlatRateScheme(
     joinFrs = Some(true),
     overBusinessGoods = Some(true),
     estimateTotalSales = Some(BigDecimal(12345678)),
@@ -118,29 +122,29 @@ trait ITFixtures {
   )
   val EstimateValue: Long = 1000L
   val zeroRatedTurnoverEstimate: Long = 1000L
-  val testCountry = Country(Some("GB"), None)
-  val testAddress = Address("line1", Some("line2"), None, None, None, Some("XX XX"), Some(testCountry), addressValidated = Some(true))
-  val testFullAddress = Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some("XX XX"), Some(testCountry), addressValidated = Some(true))
-  val testOverseasAddress = testFullAddress.copy(country = Some(Country(Some("EE"), None)), addressValidated = Some(false))
-  val testContact = Contact(Some("skylake@vilikariet.com"), Some("1234567890"), Some(true))
-  val testNino = "NB686868C"
-  val testTrn = "testTrn"
-  val testRole = Director
-  val testName = Name(first = Some("Forename"), middle = None, last = "Surname")
-  val testProperName = Name(first = Some(testFirstName), middle = None, last = testLastName)
-  val testFormerName = FormerName(hasFormerName = Some(true), name = Some(oldName), change = Some(testDate))
-  val testCompanyName = "testCompanyName"
-  val testDateOfBirth = testDate
-  val testCrn = "testCrn"
-  val testCtUtr = "testCtUtr"
-  val testSaUtr = "testSaUtr"
-  val testDateOfIncorp = LocalDate.of(2020, 1, 2)
-  val testBpSafeId = "testBpSafeId"
-  val testWebsite = "www.foo.com"
+  val testCountry: Country = Country(Some("GB"), None)
+  val testAddress: Address = Address("line1", Some("line2"), None, None, None, Some("XX XX"), Some(testCountry), addressValidated = Some(true))
+  val testFullAddress: Address = Address("line1", Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some("XX XX"), Some(testCountry), addressValidated = Some(true))
+  val testOverseasAddress: Address = testFullAddress.copy(country = Some(Country(Some("EE"), None)), addressValidated = Some(false))
+  val testContact: Contact = Contact(Some("skylake@vilikariet.com"), Some("1234567890"), Some(true))
+  val testNino: String = "NB686868C"
+  val testTrn: String = "testTrn"
+  val testRole: RoleInTheBusiness = Director
+  val testName: Name = Name(first = Some("Forename"), middle = None, last = "Surname")
+  val testProperName: Name = Name(first = Some(testFirstName), middle = None, last = testLastName)
+  val testFormerName: FormerName = FormerName(hasFormerName = Some(true), name = Some(oldName), change = Some(testDate))
+  val testCompanyName: String = "testCompanyName"
+  val testDateOfBirth: LocalDate = testDate
+  val testCrn: String = "testCrn"
+  val testCtUtr: String = "testCtUtr"
+  val testSaUtr: String = "testSaUtr"
+  val testDateOfIncorp: LocalDate = LocalDate.of(2020, 1, 2)
+  val testBpSafeId: String = "testBpSafeId"
+  val testWebsite: String = "www.foo.com"
 
-  lazy val testOrganisationName = "testOrganisationName"
-  lazy val testEmail = "test@test.com"
-  lazy val testTelephone = "1234567890"
+  lazy val testOrganisationName: String = "testOrganisationName"
+  lazy val testEmail: String = "test@test.com"
+  lazy val testTelephone: String = "1234567890"
 
   val testUnregisteredApplicantDetails: ApplicantDetails = ApplicantDetails(
     personalDetails = Some(PersonalDetails(
@@ -232,22 +236,22 @@ trait ITFixtures {
       roleInTheBusiness = Some(OwnerProprietor)
     )
 
-  lazy val testBusinessDescription = "testBusinessDescription"
+  lazy val testBusinessDescription: String = "testBusinessDescription"
   lazy val testLabourCompliance: ComplianceLabour = ComplianceLabour(numOfWorkersSupplied = Some(1000), intermediaryArrangement = None, supplyWorkers = Some(true))
-  lazy val testSicCode1 = "12345"
-  lazy val testSicDesc1 = "testMainSicDesc"
-  lazy val testSicDisplay1 = "testMainSicDisplay"
-  lazy val testSic1 = SicCode(testSicCode1, testSicDesc1, testSicDisplay1)
+  lazy val testSicCode1: String = "12345"
+  lazy val testSicDesc1: String = "testMainSicDesc"
+  lazy val testSicDisplay1: String = "testMainSicDisplay"
+  lazy val testSic1: SicCode = SicCode(testSicCode1, testSicDesc1, testSicDisplay1)
   lazy val testSicCode2 = "23456"
   lazy val testSicDesc2 = "testSicDesc2"
   lazy val testSicDisplay2 = "testSicDisplay2"
-  lazy val testSic2 = SicCode(testSicCode2, testSicDesc2, testSicDisplay2)
+  lazy val testSic2: SicCode = SicCode(testSicCode2, testSicDesc2, testSicDisplay2)
   lazy val testSicCode3 = "34567"
-  lazy val testSicDesc3 = "testSicDesc3"
+  lazy val testSicDesc3: String = "testSicDesc3"
   lazy val testSicDisplay3 = "testSicDisplay3"
-  lazy val testSic3 = SicCode(testSicCode3, testSicDesc3, testSicDisplay3)
+  lazy val testSic3: SicCode = SicCode(testSicCode3, testSicDesc3, testSicDisplay3)
   lazy val testBusinessActivities: List[SicCode] = List(testSic1, testSic2, testSic3)
-  lazy val testBusiness: Business = Business(
+  protected lazy val testBusiness: Business = Business(
     hasTradingName = Some(true),
     tradingName = Some(testTradingName),
     shortOrgName = None,
@@ -266,7 +270,7 @@ trait ITFixtures {
     otherBusinessInvolvement = Some(false)
   )
 
-  val testBankDetails = BankAccountDetails(
+  val testBankDetails: BankAccountDetails = BankAccountDetails(
     name = "testBankName",
     sortCode = "11-11-11",
     number = "01234567",
@@ -274,7 +278,7 @@ trait ITFixtures {
   )
   val testSubmittedSortCode = "111111"
 
-  val testThreshold = Threshold(mandatoryRegistration = true, Some(testDate), Some(testDate), Some(testDate))
+  val testThreshold: Threshold = Threshold(mandatoryRegistration = true, Some(testDate), Some(testDate), Some(testDate))
 
   val testEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = testThreshold,
@@ -327,7 +331,7 @@ trait ITFixtures {
       business = Some(testBusiness)
     )
 
-  val testAgentTransactorDetails = TransactorDetails(
+  val testAgentTransactorDetails: TransactorDetails = TransactorDetails(
     personalDetails = Some(PersonalDetails(
       name = Name(Some(testFirstName), None, testLastName),
       nino = None,
@@ -402,7 +406,7 @@ trait ITFixtures {
       nrsSubmissionPayload = Some(testEncodedPayload)
     )
 
-  val testSoleTraderEntity = SoleTraderIdEntity(
+  val testSoleTraderEntity: SoleTraderIdEntity = SoleTraderIdEntity(
     testFirstName,
     testLastName,
     testDate,
@@ -414,7 +418,7 @@ trait ITFixtures {
     identifiersMatch = true
   )
 
-  val testLtdCoEntity = IncorporatedEntity(
+  val testLtdCoEntity: IncorporatedEntity = IncorporatedEntity(
     companyName = Some(testCompanyName),
     companyNumber = testCrn,
     ctutr = Some(testUtr),
@@ -468,18 +472,18 @@ trait ITFixtures {
 
     val testExternalId = "testExternalId"
     val testAgentCode = "testAgentCode"
-    val testConfidenceLevel = ConfidenceLevel.L200
+    val testConfidenceLevel: ConfidenceLevel = ConfidenceLevel.L200
     val testSautr = "testSautr"
-    val testAuthName = uk.gov.hmrc.auth.core.retrieve.Name(Some("testFirstName"), Some("testLastName"))
-    val testAuthDateOfBirth = LocalDate.now()
-    val testEmail = "testEmail"
-    val testAgentInformation = AgentInformation(Some("testAgentId"), Some("testAgentCode"), Some("testAgentFriendlyName"))
-    val testGroupIdentifier = "testGroupIdentifier"
-    val testCredentialRole = User
-    val testMdtpInformation = MdtpInformation("testDeviceId", "testSessionId")
-    val testItmpName = ItmpName(Some("testGivenName"), Some("testMiddleName"), Some("testFamilyName"))
-    val testItmpDateOfBirth = LocalDate.now()
-    val testItmpAddress = ItmpAddress(
+    val testAuthName: Name = uk.gov.hmrc.auth.core.retrieve.Name(Some("testFirstName"), Some("testLastName"))
+    val testAuthDateOfBirth: LocalDate = LocalDate.now()
+    val testEmail: String = "testEmail"
+    val testAgentInformation: AgentInformation = AgentInformation(Some("testAgentId"), Some("testAgentCode"), Some("testAgentFriendlyName"))
+    val testGroupIdentifier: String = "testGroupIdentifier"
+    val testCredentialRole: User.type = User
+    val testMdtpInformation: MdtpInformation = MdtpInformation("testDeviceId", "testSessionId")
+    val testItmpName: ItmpName = ItmpName(Some("testGivenName"), Some("testMiddleName"), Some("testFamilyName"))
+    val testItmpDateOfBirth: LocalDate = LocalDate.now()
+    val testItmpAddress: ItmpAddress = ItmpAddress(
       Some("testLine1"),
       None,
       None,
@@ -489,8 +493,8 @@ trait ITFixtures {
       None,
       None
     )
-    val testCredentialStrength = CredentialStrength.strong
-    val testLoginTimes = LoginTimes(LocalDateTime.now().toInstant(ZoneOffset.UTC), Some(LocalDateTime.now().toInstant(ZoneOffset.UTC)))
+    val testCredentialStrength: String = CredentialStrength.strong
+    val testLoginTimes: LoginTimes = LoginTimes(LocalDateTime.now().toInstant(ZoneOffset.UTC), Some(LocalDateTime.now().toInstant(ZoneOffset.UTC)))
     lazy val testAffinityGroup: AffinityGroup = AffinityGroup.Organisation
     lazy val testProviderId: String = "testProviderID"
     lazy val testProviderType: String = "GovernmentGateway"
@@ -550,9 +554,12 @@ trait ITFixtures {
 
   val testNetpVatApplication: VatApplication = VatApplication(
     None, None,
+    standardRateSupplies = None,
+    reducedRateSupplies = None,
+    zeroRatedSupplies = Some(testZeroRatedSupplies),
     turnoverEstimate = Some(testTurnover),
+    acceptTurnOverEstimate = Some(true),
     appliedForExemption = None,
-    zeroRatedSupplies = Some(12.99),
     claimVatRefunds = Some(true),
     returnsFrequency = Some(Quarterly),
     staggerStart = Some(JanuaryStagger),
@@ -571,7 +578,7 @@ trait ITFixtures {
     currentlyTrading = None
   )
 
-  val testNetpEntity = SoleTraderIdEntity(
+  val testNetpEntity: SoleTraderIdEntity = SoleTraderIdEntity(
     testFirstName,
     testLastName,
     testDate,
@@ -583,7 +590,7 @@ trait ITFixtures {
     identifiersMatch = true
   )
 
-  val testNetpEntityOverseas = SoleTraderIdEntity(
+  val testNetpEntityOverseas: SoleTraderIdEntity = SoleTraderIdEntity(
     testFirstName,
     testLastName,
     testDate,
@@ -639,7 +646,7 @@ trait ITFixtures {
       partyType = NonUkNonEstablished
     )
 
-  lazy val testNonUkCompanyEntity = MinorEntity(
+  lazy val testNonUkCompanyEntity: MinorEntity = MinorEntity(
     Some(testCompanyName),
     Some(testCtUtr),
     None,
@@ -666,9 +673,9 @@ trait ITFixtures {
       eligibilitySubmissionData = Some(testNonUkCompanyEligibilitySubmissionData)
     )
 
-  val testPersonalDetails = PersonalDetails(testProperName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate), None)
+  val testPersonalDetails: PersonalDetails = PersonalDetails(testProperName, Some(testNino), trn = None, arn = None, identifiersMatch = true, Some(testDate), None)
 
-  lazy val testTransactorDetails = TransactorDetails(
+  lazy val testTransactorDetails: TransactorDetails = TransactorDetails(
     personalDetails = Some(testPersonalDetails),
     isPartOfOrganisation = Some(true),
     organisationName = Some(testOrganisationName),
@@ -679,7 +686,7 @@ trait ITFixtures {
     declarationCapacity = Some(DeclarationCapacityAnswer(AuthorisedEmployee))
   )
 
-  lazy val testOtherBusinessInvolvement = OtherBusinessInvolvement(
+  lazy val testOtherBusinessInvolvement: OtherBusinessInvolvement = OtherBusinessInvolvement(
     businessName = Some(testCompanyName),
     hasVrn = Some(true),
     vrn = Some(testVrn),
@@ -694,7 +701,7 @@ trait ITFixtures {
   val testDownloadUrl = "testDownloadUrl"
   val testFileName = "testFileName"
   val testMimeType = "testMimeType"
-  val testTimeStamp = LocalDateTime.now()
+  val testTimeStamp: LocalDateTime = LocalDateTime.now()
   val testChecksum = "1234567890"
   val testSize = 123
   val testFormBundleId = "123412341234"

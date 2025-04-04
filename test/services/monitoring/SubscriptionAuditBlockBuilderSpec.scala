@@ -49,7 +49,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
        | "yourTurnover": {
        |   "vatRepaymentExpected": false,
        |   "turnoverNext12Months": $testTurnover,
-       |   "zeroRatedSupplies": 12.99
+       |   "zeroRatedSupplies": 500
        | },
        | "schemes": {
        |   "startDate": "2018-01-01",
@@ -81,7 +81,7 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
        | "yourTurnover": {
        |   "vatRepaymentExpected": false,
        |   "turnoverNext12Months": $testTurnover,
-       |   "zeroRatedSupplies": 12.99
+       |   "zeroRatedSupplies": 500
        | },
        | "businessActivities": {
        |   "sicCodes": {
@@ -97,9 +97,12 @@ class SubscriptionAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationF
     val testVatApplicationDetails = VatApplication(
       None,
       None,
-      Some(testTurnover),
+      standardRateSupplies = Some(testTurnover),
+      reducedRateSupplies = None,
+      zeroRatedSupplies = Some(testZeroRateSupplies),
+      turnoverEstimate = Some(testTurnover),
+      acceptTurnOverEstimate = None,
       None,
-      Some(12.99),
       claimVatRefunds = Some(false),
       Some(Quarterly),
       Some(JanuaryStagger),

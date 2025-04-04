@@ -24,10 +24,14 @@ import java.time.LocalDate
 
 class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
 
-  val testTurnover                               = 10000.5
-  val testDate: LocalDate                        = LocalDate.now()
-  val testWarehouseNumber                        = "test12345678"
-  val testWarehouseName                          = "testWarehouseName"
+  lazy val testStandardRateSupplies: Int        = 1000
+  lazy val testReducedRateSupplies: Int         = 2000
+  lazy val testZeroRateSupplies: Int            = 500
+  lazy val testTurnover: Double                 = 10000.5
+  lazy val testAcceptTurnoverEstimate: Boolean  = true
+  val testDate: LocalDate                       = LocalDate.now()
+  val testWarehouseNumber                       = "test12345678"
+  val testWarehouseName                         = "testWarehouseName"
   val testNorthernIrelandProtocol: NIPCompliance = NIPCompliance(
     Some(ConditionalValue(answer = true, Some(testTurnover))),
     Some(ConditionalValue(answer = false, None))
@@ -36,9 +40,12 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   val testMonthlyVatApplication: VatApplication = VatApplication(
     Some(true),
     Some(true),
-    Some(testTurnover),
+    standardRateSupplies = Some(testTurnover),
+    reducedRateSupplies = None,
+    zeroRatedSupplies = None,
+    turnoverEstimate = Some(testTurnover),
+    acceptTurnOverEstimate = Some(true),
     None,
-    Some(testTurnover),
     claimVatRefunds = Some(true),
     Some(Monthly),
     Some(MonthlyStagger),
@@ -53,9 +60,12 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   val testQuarterlyVatApplication: VatApplication = VatApplication(
     Some(true),
     Some(true),
-    Some(testTurnover),
+    standardRateSupplies = Some(testTurnover),
+    reducedRateSupplies = None,
+    zeroRatedSupplies = None,
+    turnoverEstimate = Some(testTurnover),
+    acceptTurnOverEstimate = Some(true),
     None,
-    Some(testTurnover),
     claimVatRefunds = Some(false),
     Some(Quarterly),
     Some(JanuaryStagger),
@@ -70,9 +80,12 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   val testAnnualVatApplication: VatApplication = VatApplication(
     Some(true),
     Some(true),
-    Some(testTurnover),
+    standardRateSupplies = Some(testTurnover),
+    reducedRateSupplies = None,
+    zeroRatedSupplies = None,
+    turnoverEstimate = Some(testTurnover),
+    acceptTurnOverEstimate = Some(true),
     None,
-    Some(testTurnover),
     claimVatRefunds = Some(false),
     Some(Annual),
     Some(JanDecStagger),
@@ -100,8 +113,9 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   val validMonthlyVatApplicationJson: JsObject = Json.obj(
     "eoriRequested"           -> true,
     "tradeVatGoodsOutsideUk"  -> true,
-    "turnoverEstimate"        -> testTurnover,
-    "zeroRatedSupplies"       -> testTurnover,
+    "standardRateSupplies"    -> Some(testTurnover),
+    "turnoverEstimate"        -> Some(testTurnover),
+    "acceptTurnOverEstimate"  -> true,
     "claimVatRefunds"         -> true,
     "returnsFrequency"        -> Json.toJson[ReturnsFrequency](Monthly),
     "staggerStart"            -> Json.toJson[Stagger](MonthlyStagger),
@@ -122,8 +136,9 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   val validQuarterlyVatApplicationJson: JsObject = Json.obj(
     "eoriRequested"           -> true,
     "tradeVatGoodsOutsideUk"  -> true,
-    "turnoverEstimate"        -> testTurnover,
-    "zeroRatedSupplies"       -> testTurnover,
+    "standardRateSupplies"    -> Some(testTurnover),
+    "turnoverEstimate"        -> Some(testTurnover),
+    "acceptTurnOverEstimate"  -> true,
     "claimVatRefunds"         -> false,
     "returnsFrequency"        -> Json.toJson[ReturnsFrequency](Quarterly),
     "staggerStart"            -> Json.toJson[Stagger](JanuaryStagger),
@@ -143,8 +158,9 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
     Json.obj(
       "eoriRequested"           -> true,
       "tradeVatGoodsOutsideUk"  -> true,
-      "turnoverEstimate"        -> testTurnover,
-      "zeroRatedSupplies"       -> testTurnover,
+      "standardRateSupplies"    -> Some(testTurnover),
+      "turnoverEstimate"        -> Some(testTurnover),
+      "acceptTurnOverEstimate"  -> true,
       "claimVatRefunds"         -> false,
       "returnsFrequency"        -> Json.toJson[ReturnsFrequency](Annual),
       "staggerStart"            -> Json.toJson[Stagger](JanDecStagger),
@@ -167,8 +183,9 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   val invalidVatApplicationJson: JsObject = Json.obj(
     "eoriRequested"           -> true,
     "tradeVatGoodsOutsideUk"  -> true,
+    "standardRateSupplies"    -> testTurnover,
     "turnoverEstimate"        -> testTurnover,
-    "zeroRatedSupplies"       -> testTurnover,
+    "acceptTurnOverEstimate"  -> true,
     "returnsFrequency"        -> "invalidFrequency",
     "staggerStart"            -> "invalidStagger",
     "startDate"               -> testDate,
@@ -190,8 +207,9 @@ class VatApplicationSpec extends BaseSpec with JsonFormatValidation {
   val validOverseasJson: JsObject = Json.obj(
     "eoriRequested"           -> true,
     "tradeVatGoodsOutsideUk"  -> true,
+    "standardRateSupplies"    -> testTurnover,
     "turnoverEstimate"        -> testTurnover,
-    "zeroRatedSupplies"       -> testTurnover,
+    "acceptTurnOverEstimate"  -> true,
     "claimVatRefunds"         -> false,
     "returnsFrequency"        -> Json.toJson[ReturnsFrequency](Quarterly),
     "staggerStart"            -> Json.toJson[Stagger](JanuaryStagger),
