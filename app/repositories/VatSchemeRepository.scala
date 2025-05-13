@@ -277,7 +277,7 @@ class VatSchemeRepository @Inject() (
 
   private def internalIdFilter(internalId: String): Bson = equal(internalIdKey, internalId)
   private def registrationIdFilter(registrationId: String): Bson = equal(registrationIdKey, registrationId)
-  private def draftDateFilter: Bson = or(and(exists("status", true), equal("status", "submitted")),
+  private def draftDateFilter: Bson = or(equal("status", "submitted"),
       and(exists("status", true), notEqual ("status", "submitted"), Filters.gte ("createdDate", cutoffDate)))
 
 }
