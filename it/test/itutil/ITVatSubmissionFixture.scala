@@ -125,7 +125,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "annualStagger" -> "YA",
         "paymentFrequency" -> "M",
         "estimatedTurnover" -> testTurnover,
-        "reqStartDate" -> "2017-01-01"
+        "reqStartDate" -> "2025-05-13"
       )
     ),
     "compliance" -> Json.obj(
@@ -285,7 +285,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "annualStagger" -> "YA",
         "paymentFrequency" -> "M",
         "estimatedTurnover" -> testTurnover,
-        "reqStartDate" -> "2017-01-01"
+        "reqStartDate" -> "2025-05-13"
       )
     ),
     "compliance" -> Json.obj(
@@ -444,7 +444,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "annualStagger" -> "YA",
         "paymentFrequency" -> "M",
         "estimatedTurnover" -> testTurnover,
-        "reqStartDate" -> "2017-01-01"
+        "reqStartDate" -> "2025-05-13"
       )
     ),
     "compliance" -> Json.obj(
@@ -1176,7 +1176,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "FRSCategory" -> "123",
         "FRSPercentage" -> 15,
         "limitedCostTrader" -> false,
-        "startDate" -> "2017-01-01"
+        "startDate" -> "2025-05-13"
       ),
       "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> testTurnover,
@@ -1395,7 +1395,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
         "schemes" -> Json.obj(
           "FRSCategory" -> "123",
           "FRSPercentage" -> 15,
-          "startDate" -> "2017-01-01",
+          "startDate" -> "2025-05-13",
           "limitedCostTrader" -> false
         )
       ) ++ {

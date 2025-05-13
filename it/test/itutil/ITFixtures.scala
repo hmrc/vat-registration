@@ -37,7 +37,7 @@ trait ITFixtures {
 
   lazy val testArn = "testArn"
   val testScore = 100
-  val testDate: LocalDate = LocalDate.of(2017, 1, 1)
+  val testDate: LocalDate = LocalDate.of(2025, 5, 13)
   val testUtr = "testUtr"
   val testPostcode = "TF1 1NT"
   val testChrn = "testChrn"
@@ -50,7 +50,8 @@ trait ITFixtures {
     registrationId = testRegId,
     internalId = testInternalid,
     status = VatRegStatus.draft,
-    createdDate = testDate
+    createdDate = testDate,
+
   )
   val oldName = Name(first = Some("Bob"), middle = None, last = "Smith")
   val testTradingName = "trading-name"

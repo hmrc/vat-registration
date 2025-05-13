@@ -108,4 +108,6 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
   lazy val sdesRecipientOrSender          = servicesConfig.getString("microservice.services.sdes.recipientOrSender")
 
   lazy val emailCheck: List[String] = servicesConfig.getString("constants.emailCheck").split(',').toList
+
+  lazy val ttCutOffDate: String = servicesConfig.getString("tt-cutoffDate")
 }

@@ -99,6 +99,7 @@ class SubmissionService @Inject()(
         submissionResponse
     }).recover {
       case exception: BadRequestException =>
+        println("====>>>>>>>>>BADREQUEST====>>>")
         errorLog(s"[SubmissionService][submitVatRegistration] - $exception", regId)
         throw exception
       case exception =>

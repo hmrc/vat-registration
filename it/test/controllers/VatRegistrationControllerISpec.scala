@@ -16,6 +16,7 @@
 
 package controllers
 
+
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMatching, verify}
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import connectors.stubs.SdesNotifyStub.stubSdesNotification
@@ -162,7 +163,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
   }
 
   "PUT /:regID/submit-registration" when {
-    disable(StubSubmission)
+     disable(StubSubmission)
     "the user is a Sole Trader" should {
       "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
         given.user.isAuthorised

@@ -83,11 +83,11 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
         "previousName" -> Json.obj(
           "firstName" -> "Bob",
           "lastName" -> "Smith",
-          "nameChangeDate" -> "2017-01-01"
+          "nameChangeDate" -> "2025-05-13"
         ),
         "currentAddress" -> testFullAddressJson,
         "previousAddress" -> testFullAddressJson,
-        "dateOfBirth" -> "2017-01-01",
+        "dateOfBirth" -> "2025-05-13",
         "communicationDetails" -> Json.obj(
           "emailAddress" -> "skylake@vilikariet.com",
           "telephone" -> "1234567890"
@@ -105,13 +105,13 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
   val fullSubscriptionBlockJson: JsValue =
     Json.obj(
       "overThresholdIn12MonthPeriod" -> true,
-      "overThresholdIn12MonthDate" -> "2017-01-01",
+      "overThresholdIn12MonthDate" -> "2025-05-13",
       "overThresholdInPreviousMonth" -> true,
-      "overThresholdInPreviousMonthDate" -> "2017-01-01",
+      "overThresholdInPreviousMonthDate" -> "2025-05-13",
       "overThresholdInNextMonth" -> true,
-      "overThresholdInNextMonthDate" -> "2017-01-01",
+      "overThresholdInNextMonthDate" -> "2025-05-13",
       "reasonForSubscription" -> Json.obj(
-        "voluntaryOrEarlierDate" -> "2017-01-01",
+        "voluntaryOrEarlierDate" -> "2025-05-13",
         "exemptionOrException" -> "0"
       ),
       "yourTurnover" -> Json.obj(
@@ -122,7 +122,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
         "goodsSoldToOtherEU" -> testTurnover
       ),
       "schemes" -> Json.obj(
-        "startDate" -> "2017-01-01",
+        "startDate" -> "2025-05-13",
         "flatRateSchemeCategory" -> "123",
         "flatRateSchemePercentage" -> 15,
         "limitedCostTrader" -> false
@@ -162,7 +162,7 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
         "annualStagger" -> "YA",
         "paymentFrequency" -> "M",
         "estimatedTurnover" -> testTurnover,
-        "reqStartDate" -> "2017-01-01"
+        "reqStartDate" -> "2025-05-13"
       )
     )
 
@@ -174,8 +174,8 @@ trait SubmissionAuditFixture extends ITVatSubmissionFixture {
     "customerStatus" -> VatRegStatus.submitted,
     "eoriRequested" -> true,
     "corporateBodyRegistered" -> Json.obj(
-      "dateOfIncorporation" -> "2017-01-01",
-      "countryOfIncorporation" -> "2017-01-01"
+      "dateOfIncorporation" -> "2025-05-13",
+      "countryOfIncorporation" -> "2025-05-13"
     ),
     "idsVerificationStatus" -> "1",
     "cidVerification" -> "1",
