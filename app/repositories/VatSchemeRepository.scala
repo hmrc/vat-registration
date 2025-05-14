@@ -22,11 +22,12 @@ import enums.VatRegStatus
 import models.api._
 import models.registration.{AcknowledgementReferenceSectionId, StatusSectionId}
 import org.mongodb.scala.Document
-import org.mongodb.scala.model.Filters.{and, equal}
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Projections.include
 import org.mongodb.scala.model.Updates.{combine, set, unset}
-import org.mongodb.scala.model.{FindOneAndReplaceOptions, IndexModel, IndexOptions, UpdateOptions}
+import org.mongodb.scala.model._
 import play.api.libs.json._
 import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
@@ -41,44 +42,46 @@ import scala.concurrent.{ExecutionContext, Future}
 // scalastyle:off
 @Singleton
 class VatSchemeRepository @Inject() (
-  mongoComponent: MongoComponent,
-  crypto: CryptoSCRS,
-  timeMachine: TimeMachine,
-  backendConfig: BackendConfig
-)(implicit executionContext: ExecutionContext)
-    extends PlayMongoRepository[VatScheme](
-      collectionName = "registration-information",
-      mongoComponent = mongoComponent,
-      domainFormat = VatScheme.format(Some(crypto)),
-      replaceIndexes = true,
-      indexes = Seq(
-        IndexModel(
-          keys = ascending("registrationId"),
-          indexOptions = IndexOptions()
-            .name("RegId")
-            .unique(true)
-        ),
-        IndexModel(
-          keys = ascending("registrationId", "internalId"),
-          indexOptions = IndexOptions()
-            .name("RegIdAndInternalId")
-            .unique(true)
-        ),
-        IndexModel(
-          keys = ascending("timestamp"),
-          indexOptions = IndexOptions()
-            .name("TTL")
-            .unique(false)
-            .expireAfter(backendConfig.expiryInSeconds, TimeUnit.SECONDS)
-        )
+                                      mongoComponent: MongoComponent,
+                                      crypto: CryptoSCRS,
+                                      timeMachine: TimeMachine,
+                                      backendConfig: BackendConfig
+                                    )(implicit executionContext: ExecutionContext)
+  extends PlayMongoRepository[VatScheme](
+    collectionName = "registration-information",
+    mongoComponent = mongoComponent,
+    domainFormat = VatScheme.format(Some(crypto)),
+    replaceIndexes = true,
+    indexes = Seq(
+      IndexModel(
+        keys = ascending("registrationId"),
+        indexOptions = IndexOptions()
+          .name("RegId")
+          .unique(true)
+      ),
+      IndexModel(
+        keys = ascending("registrationId", "internalId"),
+        indexOptions = IndexOptions()
+          .name("RegIdAndInternalId")
+          .unique(true)
+      ),
+      IndexModel(
+        keys = ascending("timestamp"),
+        indexOptions = IndexOptions()
+          .name("TTL")
+          .unique(false)
+          .expireAfter(backendConfig.expiryInSeconds, TimeUnit.SECONDS)
       )
     )
+  )
     with JsonErrorUtil
     with LoggingUtils {
 
   private val acknowledgementRefPrefix = "VRS"
   private val timestampKey             = "timestamp"
   private val internalIdKey            = "internalId"
+  private val registrationIdKey        = "registrationId"
+  private val cutoffDate               = backendConfig.ttCutOffDate
 
   def getInternalId(id: String): Future[Option[String]] =
     collection
@@ -99,7 +102,7 @@ class VatSchemeRepository @Inject() (
       .toFuture()
       .flatMap { _ =>
         collection
-          .updateOne(registrationSelector(regId, Some(intId)), set(timestampKey, timeMachine.timestamp))
+          .updateOne(registrationSelectorNewApp(regId, Some(intId)), set(timestampKey, timeMachine.timestamp))
           .toFuture()
           .map(_ => doc)
       }
@@ -107,7 +110,7 @@ class VatSchemeRepository @Inject() (
 
   def getAllRegistrations(internalId: String): Future[List[JsValue]] =
     collection
-      .find(equal(internalIdKey, internalId))
+      .find(internalIdAndDateFilterSelector(internalId))
       .collect()
       .toFuture()
       .map(_.toList.map(scheme => Json.toJson(scheme)(VatScheme.format())))
@@ -147,8 +150,8 @@ class VatSchemeRepository @Inject() (
       }
 
   def getSection[T](internalId: String, regId: String, section: String)(implicit
-    rds: Reads[T],
-    request: Request[_]
+                                                                        rds: Reads[T],
+                                                                        request: Request[_]
   ): Future[Option[T]] =
     collection
       .find[Document](registrationSelector(regId, Some(internalId)))
@@ -157,14 +160,14 @@ class VatSchemeRepository @Inject() (
       .map {
         case Some(doc) =>
           (Json.parse(doc.toJson()) \ section).validate[T].asOpt
-        case _         =>
+        case _ =>
           warnLog(s"[RegistrationRepository][getSection] No registration exists with regId: $regId")
           None
       }
 
   def upsertSection[T](internalId: String, regId: String, section: String = "", data: T)(implicit
-    writes: Writes[T],
-    request: Request[_]
+                                                                                         writes: Writes[T],
+                                                                                         request: Request[_]
   ): Future[Option[T]] =
     collection
       .updateOne(
@@ -214,17 +217,17 @@ class VatSchemeRepository @Inject() (
       }
 
   def updateSubmissionStatus(internalId: String, regId: String, status: VatRegStatus.Value)(implicit
-    request: Request[_]
+                                                                                            request: Request[_]
   ): Future[Option[VatRegStatus.Value]] = {
     infoLog("[VatSchemeRepository][updateSubmissionStatus] attempting to update submission status", regId)
     upsertSection(internalId, regId, StatusSectionId.repoKey, status)
   }
 
   def finishRegistrationSubmission(
-    regId: String,
-    status: VatRegStatus.Value,
-    formBundleId: String
-  ): Future[VatRegStatus.Value] =
+                                    regId: String,
+                                    status: VatRegStatus.Value,
+                                    formBundleId: String
+                                  ): Future[VatRegStatus.Value] =
     collection
       .updateOne(
         registrationSelector(regId),
@@ -236,9 +239,45 @@ class VatSchemeRepository @Inject() (
       .toFuture()
       .map(_ => status)
 
-  private[repositories] def registrationSelector(regId: String, internalId: Option[String] = None) =
+  private[repositories] def registrationSelector(regId: String, internalId: Option[String] = None) = {
+
+    val baseFilter: Bson = registrationIdFilter(regId)
+
+    val regFilter: Bson = internalId match {
+      case Some(id) =>
+        and(
+          baseFilter,
+          internalIdFilter(id),
+          draftDateFilter
+        )
+      case None =>
+        baseFilter
+    }
+    regFilter
+  }
+
+  private[repositories] def registrationSelectorNewApp(regId: String, internalId: Option[String] = None) = {
     internalId
       .map(intId => and(equal("registrationId", regId), equal("internalId", intId)))
       .getOrElse(equal("registrationId", regId))
+  }
+
+  // Extract the document for a specific user(internalId) provided if its in submitted status or
+  // (any other status & application created on or after the cutOffDate)
+  private def internalIdAndDateFilterSelector(internalId: String) = {
+    val baseFilter: Bson = internalIdFilter(internalId)
+
+    val regFilter: Bson =
+      and (
+        baseFilter,
+        draftDateFilter
+      )
+    regFilter
+  }
+
+  private def internalIdFilter(internalId: String): Bson = equal(internalIdKey, internalId)
+  private def registrationIdFilter(registrationId: String): Bson = equal(registrationIdKey, registrationId)
+  private def draftDateFilter: Bson = or(equal("status", "submitted"),
+      and(exists("status", true), notEqual ("status", "submitted"), Filters.gte ("createdDate", cutoffDate)))
 
 }
