@@ -25,8 +25,8 @@ object AppDependencies {
 
 object CompileDependencies {
   val domainVersion = "9.0.0"
-  val bootstrapVersion = "8.5.0"
-  val hmrcMongoVersion = "1.8.0"
+  val bootstrapVersion = "8.6.0"
+  val hmrcMongoVersion = "2.6.0"
   val catsVersion = "2.8.0"
   val flexmarkVersion = "0.36.8"
 
@@ -53,7 +53,7 @@ object UnitTestDependencies extends CommonTestDependencies {
     "com.github.pjfanning" %% "pekko-mock-scheduler" % "0.6.0" % scope,
     "com.vladsch.flexmark" % "flexmark-all" % flexmarkVersion % scope,
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.14.0" % scope,
-    "uk.gov.hmrc" %% "bootstrap-test-play-30" % "8.5.0" % scope
+    "uk.gov.hmrc" %% "bootstrap-test-play-30" % "8.6.0" % scope
   )
 
   def apply(): Seq[ModuleID] = test
