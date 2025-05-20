@@ -41,11 +41,11 @@ lazy val testSettings = Seq(
   Test / logBuffered                     := false
 )
 
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "2.13.16"
 ThisBuild / majorVersion := 1
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(Seq(PlayScala, SbtGitVersioning, SbtDistributablesPlugin): _*)
+  .enablePlugins(Seq(PlayScala, SbtDistributablesPlugin): _*)
   .settings(routesImport := Seq("models.registration.RegistrationSectionId.urlBinder"))
   .settings(PlayKeys.playDefaultPort := 9896)
   .settings(scalaSettings: _*)
