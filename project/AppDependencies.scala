@@ -53,7 +53,7 @@ object UnitTestDependencies extends CommonTestDependencies {
     "com.github.pjfanning" %% "pekko-mock-scheduler" % "0.6.0" % scope,
     "com.vladsch.flexmark" % "flexmark-all" % flexmarkVersion % scope,
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.14.0" % scope,
-    "uk.gov.hmrc" %% "bootstrap-test-play-30" % "8.6.0" % scope
+    "uk.gov.hmrc" %% "bootstrap-test-play-30" % "10.1.0" % scope
   )
 
   def apply(): Seq[ModuleID] = test
