@@ -24,9 +24,9 @@ object AppDependencies {
 }
 
 object CompileDependencies {
-  val domainVersion = "9.0.0"
-  val bootstrapVersion = "8.6.0"
-  val hmrcMongoVersion = "2.6.0"
+  val domainVersion = "11.0.0"
+  val bootstrapVersion = "10.1.0"
+  val hmrcMongoVersion = "2.7.0"
   val catsVersion = "2.8.0"
   val flexmarkVersion = "0.36.8"
 
