@@ -22,11 +22,10 @@ import repositories.UpscanMongoRepository
 import utils.{AlertLogging, LoggingUtils, PagerDutyKeys}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UpscanService @Inject() (upscanMongoRepository: UpscanMongoRepository) extends LoggingUtils with AlertLogging {
+class UpscanService @Inject() (upscanMongoRepository: UpscanMongoRepository)(implicit val ec: ExecutionContext) extends LoggingUtils with AlertLogging {
 
   def getUpscanDetails(reference: String)(implicit request: Request[_]): Future[Option[UpscanDetails]] = {
     infoLog(s"[UpscanService][getUpscanDetails] attempting to get upscan details from mongo for reference: $reference")
