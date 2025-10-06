@@ -17,7 +17,7 @@
 package services.submission
 
 import models.api.{AttachmentType, VatScheme}
-import models.submission.{NETP, NonUkNonEstablished}
+import models.submission.{Individual, NETP, NonUkNonEstablished}
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
 import services.AttachmentsService
@@ -39,7 +39,8 @@ class AdminBlockBuilder @Inject() (attachmentsService: AttachmentsService) exten
         jsonObject(
           "additionalInformation" -> jsonObject(
             "customerStatus" -> MTDfB,
-            conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
+            conditional(eligibilityData.partyType.equals(NonUkNonEstablished) ||
+              (eligibilityData.partyType.equals(Individual) && !eligibilityData.fixedEstablishmentInManOrUk))(
               "overseasTrader"                                                                        -> !eligibilityData.fixedEstablishmentInManOrUk
             ),
             conditional(vatScheme.business.exists(_.welshLanguage.exists(_ == true)))("welshLanguage" -> true)

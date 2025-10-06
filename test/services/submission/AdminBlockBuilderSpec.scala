@@ -20,7 +20,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockAttachmentsService
 import models.api._
-import models.submission.{NETP, NonUkNonEstablished}
+import models.submission.{Individual, NonUkNonEstablished}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import play.api.libs.json.{JsObject, Json}
@@ -142,7 +142,7 @@ class AdminBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture with 
       "both NETP eligibility and vat application details data are in the database" in {
         val vatScheme = testVatScheme.copy(
           eligibilitySubmissionData =
-            Some(testEligibilitySubmissionData.copy(partyType = NETP, fixedEstablishmentInManOrUk = false)),
+            Some(testEligibilitySubmissionData.copy(partyType = Individual, fixedEstablishmentInManOrUk = false)),
           vatApplication = Some(testVatApplicationDetails),
           attachments = Some(Attachments(Some(Post)))
         )

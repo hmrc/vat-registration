@@ -18,7 +18,7 @@ package services.submission
 
 import models.api.NoUKBankAccount.reasonId
 import models.api._
-import models.submission.{NETP, NonUkNonEstablished}
+import models.submission.{Individual, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
 import uk.gov.hmrc.http.InternalServerException
@@ -53,7 +53,7 @@ class BankDetailsBlockBuilder @Inject() () extends LoggingUtils {
             )
           )
         )
-      case (_, Some(NETP | NonUkNonEstablished))                        =>
+      case (_, Some(Individual | NonUkNonEstablished))                        =>
         Some(
           jsonObject(
             "UK" -> jsonObject(

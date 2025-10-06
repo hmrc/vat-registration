@@ -20,7 +20,7 @@ import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.OverseasIdentifierDetails
 import models.api._
-import models.submission.{Individual, NETP}
+import models.submission.Individual
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
 import play.api.test.FakeRequest
@@ -190,7 +190,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
           )
         )
       )
-      val eligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
+      val eligibilityData = testEligibilitySubmissionData.copy(partyType = Individual)
       val vatScheme       =
         testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
 
@@ -213,7 +213,7 @@ class CustomerIdentificationBlockBuilderSpec extends VatRegSpec with VatRegistra
           )
         )
       )
-      val eligibilityData = testEligibilitySubmissionData.copy(partyType = NETP)
+      val eligibilityData = testEligibilitySubmissionData.copy(partyType = Individual)
       val vatScheme       =
         testFullVatScheme.copy(applicantDetails = Some(appDetails), eligibilitySubmissionData = Some(eligibilityData))
 

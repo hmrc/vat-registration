@@ -19,7 +19,7 @@ package services.submission
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.api._
-import models.submission.NETP
+import models.submission.Individual
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
 import play.api.test.FakeRequest
@@ -117,7 +117,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       "the bank account is missing and user is a NETP" in new Setup {
         val vatScheme = testVatScheme.copy(
           bankAccount = None,
-          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = NETP))
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Individual))
         )
 
         val result: Option[JsObject] = service.buildBankDetailsBlock(vatScheme)

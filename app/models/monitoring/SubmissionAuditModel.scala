@@ -18,7 +18,7 @@ package models.monitoring
 
 import models._
 import models.api.VatScheme
-import models.submission.{IdVerificationStatus, NETP, NonUkNonEstablished}
+import models.submission.{IdVerificationStatus, Individual, NonUkNonEstablished}
 import play.api.libs.json.{JsString, JsValue}
 import services.monitoring.AuditModel
 import uk.gov.hmrc.auth.core.AffinityGroup
@@ -53,7 +53,8 @@ case class SubmissionAuditModel(
           optional("agentReferenceNumber"     -> optAgentReferenceNumber.filterNot(_ == "")),
           "messageType"           -> messageType,
           "customerStatus"        -> MTDfB,
-          conditional(List(NETP, NonUkNonEstablished).contains(eligibilityData.partyType))(
+          conditional(eligibilityData.partyType.equals(NonUkNonEstablished) ||
+            (eligibilityData.partyType.equals(Individual) && !eligibilityData.fixedEstablishmentInManOrUk))(
             "overseasTrader"                  -> !eligibilityData.fixedEstablishmentInManOrUk
           ),
           "eoriRequested"         -> vatApplication.eoriRequested,
