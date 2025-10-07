@@ -56,7 +56,7 @@ class BankAuditBlockBuilder extends LoggingUtils {
         }
       case None
           if vatScheme.eligibilitySubmissionData
-            .exists(data => List(NETP, NonUkNonEstablished).contains(data.partyType)) =>
+            .exists(data => List(Individual, NonUkNonEstablished).contains(data.partyType)) =>
         jsonObject(
           "reasonBankAccNotProvided" -> NoUKBankAccount.overseasAccount
         )

@@ -607,7 +607,7 @@ trait ITFixtures {
   val testNetpEligibilitySubmissionData: EligibilitySubmissionData = EligibilitySubmissionData(
     threshold = Threshold(mandatoryRegistration = true, None, None, None, Some(testDate)),
     appliedForException = None,
-    partyType = NETP,
+    partyType = Individual,
     registrationReason = NonUk,
     isTransactor = false,
     fixedEstablishmentInManOrUk = false

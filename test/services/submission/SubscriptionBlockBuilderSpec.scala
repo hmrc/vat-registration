@@ -22,7 +22,7 @@ import mocks.MockVatSchemeRepository
 import models._
 import models.api._
 import models.api.vatapplication._
-import models.submission.{IdType, NETP, UtrIdType, VrnIdType}
+import models.submission.{IdType, Individual, UtrIdType, VrnIdType}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Request
 import play.api.test.FakeRequest
@@ -277,7 +277,7 @@ class SubscriptionBlockBuilderSpec extends VatRegSpec with VatRegistrationFixtur
               None,
               Some(LocalDate.of(2020, 10, 1))
             ),
-            partyType = NETP,
+            partyType = Individual,
             registrationReason = NonUk
           )
         ),
