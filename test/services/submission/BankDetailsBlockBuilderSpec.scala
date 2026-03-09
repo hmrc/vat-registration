@@ -41,6 +41,15 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
     )
   )
 
+  val bankDetailsWithRollNumberBlockJson: JsObject = Json.obj(
+    "UK" -> Json.obj(
+      "accountName"   -> testBankName,
+      "sortCode"      -> testSortCode,
+      "accountNumber" -> testBankNumber,
+      "rollNumber"    -> testRollNumber
+    )
+  )
+
   val notValidBankDetailsBlockJson: JsObject = Json.obj(
     "UK" -> Json.obj(
       "accountName"         -> testBankName,
@@ -72,6 +81,16 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
         val result: Option[JsObject] = service.buildBankDetailsBlock(vatScheme)
         result mustBe Some(bankDetailsBlockJson)
+      }
+
+      "the applicant has a bank account with roll number" in new Setup {
+        val vatScheme = testVatScheme.copy(
+          bankAccount = Some(testBankAccount.copy(details = Some(testBankDetailsWithRollNumber))),
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData)
+        )
+
+        val result: Option[JsObject] = service.buildBankDetailsBlock(vatScheme)
+        result mustBe Some(bankDetailsWithRollNumberBlockJson)
       }
 
       "the applicant has an indeterminate bank account" in new Setup {

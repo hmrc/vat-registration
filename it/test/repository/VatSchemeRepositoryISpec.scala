@@ -76,7 +76,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
   val testAccountNumber = "12345678"
   val encryptedAccountNumber = "V0g2RXVUcUZpSUk4STgvbGNFdlAydz09"
   val sortCode = "12-34-56"
-  val bankAccountDetails: BankAccountDetails = BankAccountDetails("testAccountName", sortCode, testAccountNumber, ValidStatus)
+  val rollNumber = Some("AB/121212")
+  val bankAccountDetails: BankAccountDetails = BankAccountDetails("testAccountName", sortCode, testAccountNumber, rollNumber, ValidStatus)
   val bankAccount: BankAccount = BankAccount(isProvided = true, Some(bankAccountDetails), None)
 
   val vatSchemeWithEligibilityData = VatScheme(
@@ -96,8 +97,8 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
     staggerStart = Some(JanuaryStagger),
     startDate = Some(testDate),
     northernIrelandProtocol = Some(NIPCompliance(
-      goodsToEU = Some(ConditionalValue(true, Some(testTurnover))),
-      goodsFromEU = Some(ConditionalValue(true, Some(testTurnover)))
+      goodsToEU = Some(ConditionalValue(answer = true, Some(testTurnover))),
+      goodsFromEU = Some(ConditionalValue(answer = true, Some(testTurnover)))
     )),
     appliedForExemption = None,
     annualAccountingDetails = None,
@@ -167,7 +168,7 @@ class VatSchemeRepositoryISpec extends MongoBaseSpec with IntegrationStubbing wi
         Some(updatedScheme) <- repository.getRegistration(testVatScheme.internalId, testVatScheme.registrationId)
       } yield updatedScheme
 
-      val res = await(result)
+      val res: VatScheme = await(result)
 
       res.status mustBe VatRegStatus.submitted
       res.acknowledgementReference must contain(s"VRS$testFormBundleId")

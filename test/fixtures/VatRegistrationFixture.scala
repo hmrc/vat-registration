@@ -78,7 +78,9 @@ trait VatRegistrationFixture {
   lazy val testBankName: String = "Test Bank Account"
   lazy val testSortCode: String = "010203"
   lazy val testBankNumber: String = "01023456"
-  lazy val testBankDetails: BankAccountDetails = BankAccountDetails(testBankName, testSortCode, testBankNumber, ValidStatus)
+  lazy val testRollNumber: String = "AB/121212"
+  lazy val testBankDetails: BankAccountDetails = BankAccountDetails(testBankName, testSortCode, testBankNumber, None, ValidStatus)
+  lazy val testBankDetailsWithRollNumber: BankAccountDetails = BankAccountDetails(testBankName, testSortCode, testBankNumber, Some(testRollNumber), ValidStatus)
   lazy val testFormerName: FormerName = FormerName(hasFormerName = Some(true), Some(testName), Some(testDate))
 
   lazy val testStandardRateSupplies: Int = 1000
