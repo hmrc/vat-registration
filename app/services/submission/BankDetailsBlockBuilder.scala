@@ -32,20 +32,21 @@ class BankDetailsBlockBuilder @Inject() () extends LoggingUtils {
 
   def buildBankDetailsBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
     (vatScheme.bankAccount, vatScheme.partyType) match {
-      case (Some(BankAccount(true, Some(details), _)), Some(partyType)) =>
+      case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) =>
         Some(
           jsonObject(
             "UK" -> jsonObject(
               "accountName"   -> details.name,
               "sortCode"      -> details.sortCode.replaceAll("-", ""),
               "accountNumber" -> details.number,
+              optional("rollNumber" -> details.rollNumber),
               conditional(List(IndeterminateStatus, InvalidStatus).contains(details.status))(
                 "bankDetailsNotValid" -> true
               )
             )
           )
         )
-      case (Some(BankAccount(false, _, Some(reason))), _)               =>
+      case (Some(BankAccount(false, _, Some(reason), _)), _)               =>
         Some(
           jsonObject(
             "UK" -> jsonObject(

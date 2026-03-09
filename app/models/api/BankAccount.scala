@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,16 @@ import auth.CryptoSCRS
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-case class BankAccount(isProvided: Boolean, details: Option[BankAccountDetails], reason: Option[NoUKBankAccount])
+case class BankAccount(isProvided: Boolean,
+                       details: Option[BankAccountDetails],
+                       reason: Option[NoUKBankAccount],
+                       bankAccountType: Option[BankAccountType] = None)
 
-case class BankAccountDetails(name: String, sortCode: String, number: String, status: BankAccountDetailsStatus)
+case class BankAccountDetails(name: String,
+                              sortCode: String,
+                              number: String,
+                              rollNumber: Option[String] = None,
+                              status: BankAccountDetailsStatus)
 
 object BankAccount {
   implicit val format: Format[BankAccount] = Json.format[BankAccount]
@@ -37,14 +44,16 @@ object BankAccountDetailsMongoFormat {
     (__ \ "name").format[String] and
       (__ \ "sortCode").format[String] and
       (__ \ "number").format[String](crypto.rds)(crypto.wts) and
+      (__ \ "rollNumber").formatNullable[String] and
       (__ \ "status").format[BankAccountDetailsStatus]
-  )(BankAccountDetails.apply, unlift(BankAccountDetails.unapply))
+    )(BankAccountDetails.apply, unlift(BankAccountDetails.unapply))
 }
 
 object BankAccountMongoFormat {
   def encryptedFormat(crypto: CryptoSCRS): OFormat[BankAccount] = (
     (__ \ "isProvided").format[Boolean] and
       (__ \ "details").formatNullable[BankAccountDetails](BankAccountDetailsMongoFormat.format(crypto)) and
-      (__ \ "reason").formatNullable[NoUKBankAccount]
-  )(BankAccount.apply, unlift(BankAccount.unapply))
+      (__ \ "reason").formatNullable[NoUKBankAccount] and
+      (__ \ "bankAccountType").formatNullable[BankAccountType]
+    )(BankAccount.apply, unlift(BankAccount.unapply))
 }
