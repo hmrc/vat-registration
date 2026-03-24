@@ -71,6 +71,12 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
     )
   )
 
+  val bankDetailsFailedVerificationBlockJson: JsObject = Json.obj(
+    "UK" -> Json.obj(
+      "reasonBankAccNotProvided" -> NoUKBankAccount.reasonId(FailedVerification)
+    )
+  )
+
   "buildBankDetailsBlock" should {
     "return the correct json" when {
       "the applicant has a bank account" in new Setup {
@@ -131,6 +137,16 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
         val result: Option[JsObject] = service.buildBankDetailsBlock(vatScheme)
         result mustBe Some(bankDetailsNotProvidedBlockJson)
+      }
+
+      "the applicant failed verification on their bank details" in new Setup {
+        val vatScheme = testVatScheme.copy(
+          bankAccount = Some(testfailedVerficationBankAccount),
+          eligibilitySubmissionData = Some(testEligibilitySubmissionData)
+        )
+
+        val result: Option[JsObject] = service.buildBankDetailsBlock(vatScheme)
+        result mustBe Some(bankDetailsFailedVerificationBlockJson)
       }
 
       "the bank account is missing and user is a NETP" in new Setup {

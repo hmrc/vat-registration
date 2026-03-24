@@ -25,6 +25,7 @@ case object OverseasAccount extends NoUKBankAccount
 case object NameChange extends NoUKBankAccount
 case object AccountNotInBusinessName extends NoUKBankAccount
 case object DontWantToProvide extends NoUKBankAccount
+case object FailedVerification extends NoUKBankAccount
 
 object NoUKBankAccount {
 
@@ -38,6 +39,8 @@ object NoUKBankAccount {
   val accountNotInBusinessNameId: String = "6"
   val dontWantToProvide: String          = "DontWantToProvide"
   val dontWantToProvideId: String        = "7"
+  val failedVerification: String         = "FailedVerification"
+  val failedVerificationId: String       = "8"
 
   implicit val reads: Reads[NoUKBankAccount] = Reads[NoUKBankAccount] {
     case JsString(`beingSetup`)               => JsSuccess(BeingSetup)
@@ -45,6 +48,7 @@ object NoUKBankAccount {
     case JsString(`nameChange`)               => JsSuccess(NameChange)
     case JsString(`accountNotInBusinessName`) => JsSuccess(AccountNotInBusinessName)
     case JsString(`dontWantToProvide`)        => JsSuccess(DontWantToProvide)
+    case JsString(`failedVerification`)       => JsSuccess(FailedVerification)
     case _                                    => JsError("Could not parse reason for no UK bank account")
   }
 
@@ -54,6 +58,7 @@ object NoUKBankAccount {
     case NameChange               => JsString(nameChange)
     case AccountNotInBusinessName => JsString(accountNotInBusinessName)
     case DontWantToProvide        => JsString(dontWantToProvide)
+    case FailedVerification       => JsString(failedVerification)
   }
 
   implicit val format: Format[NoUKBankAccount] = Format(reads, writes)
@@ -64,6 +69,7 @@ object NoUKBankAccount {
     case NameChange               => nameChangeId
     case AccountNotInBusinessName => accountNotInBusinessNameId
     case DontWantToProvide        => dontWantToProvideId
+    case FailedVerification       => failedVerificationId
   }
 
 }

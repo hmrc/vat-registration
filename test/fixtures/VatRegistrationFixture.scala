@@ -255,6 +255,7 @@ trait VatRegistrationFixture {
 
   lazy val testBankAccount: BankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None)
   lazy val testBankAccountNotProvided: BankAccount = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup))
+  lazy val testfailedVerficationBankAccount: BankAccount = BankAccount(isProvided = false, details = None, reason = Some(FailedVerification))
 
   protected lazy val validAASDetails: AASDetails = AASDetails(
     paymentMethod = Some(StandingOrder),
