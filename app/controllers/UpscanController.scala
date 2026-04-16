@@ -69,6 +69,16 @@ class UpscanController @Inject() (
     }
   }
 
+
+  /**
+   * This endpoint is not called by the vat-registration-frontend service.
+   *
+   * It is called by upscan-notify by the 'callbackUrl' sent in the body from vat-reg-fe to Upscan.
+   *
+   * PlatOps requested we return 204s for no data rather than 404s. Any non-2XX is interpreted as an error and will cause 30 reattempts.
+   *
+   * https://github.com/hmrc/upscan-notify?tab=readme-ov-file#integrating-with-upscan
+   */
   def upscanDetailsCallback: Action[UpscanDetails] = Action.async(parse.json[UpscanDetails]) { implicit request =>
     upscanService.getUpscanDetails(request.body.reference).flatMap {
       case Some(details) =>
@@ -83,7 +93,7 @@ class UpscanController @Inject() (
           s"[UpscanController][upscanDetailsCallback] Callback attempted to update non-existent UpscanDetails. " +
             s"regId: ${request.body.registrationId} reference: ${request.body.reference}"
         )
-        Future.successful(NotFound)
+        Future.successful(NoContent)
     }
   }
 

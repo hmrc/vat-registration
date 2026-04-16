@@ -138,14 +138,14 @@ class UpscanControllerISpec extends IntegrationStubbing with Matchers {
       res.status mustBe OK
     }
 
-    "return NOT_FOUND if callback attempts to update non-existant upscan details" in new SetupHelper {
+    "return NO_CONTENT if callback attempts to update non-existent upscan details" in new SetupHelper {
       stubAudit(OK)
       stubMergedAudit(OK)
 
       val res: WSResponse = await(client(controllers.routes.UpscanController.upscanDetailsCallback.url)
         .post(testCallbackJson(testReference)))
 
-      res.status mustBe NOT_FOUND
+      res.status mustBe NO_CONTENT
     }
   }
 
