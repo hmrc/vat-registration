@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,27 +27,25 @@ import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
 
-case class VatScheme(
-  registrationId: String,
-  internalId: String,
-  createdDate: LocalDate,
-  status: VatRegStatus.Value,
-  confirmInformationDeclaration: Option[Boolean] = None,
-  applicationReference: Option[String] = None,
-  acknowledgementReference: Option[String] = None,
-  nrsSubmissionPayload: Option[String] = None,
-  eligibilityJson: Option[JsObject] = None,
-  eligibilitySubmissionData: Option[EligibilitySubmissionData] = None,
-  transactorDetails: Option[TransactorDetails] = None,
-  applicantDetails: Option[ApplicantDetails] = None,
-  entities: Option[List[Entity]] = None,
-  business: Option[Business] = None,
-  otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None,
-  vatApplication: Option[VatApplication] = None,
-  bankAccount: Option[BankAccount] = None,
-  flatRateScheme: Option[FlatRateScheme] = None,
-  attachments: Option[Attachments] = None
-) {
+case class VatScheme(registrationId: String,
+                     internalId: String,
+                     createdDate: LocalDate,
+                     status: VatRegStatus.Value,
+                     confirmInformationDeclaration: Option[Boolean] = None,
+                     applicationReference: Option[String] = None,
+                     acknowledgementReference: Option[String] = None,
+                     nrsSubmissionPayload: Option[String] = None,
+                     eligibilityJson: Option[JsObject] = None,
+                     eligibilitySubmissionData: Option[EligibilitySubmissionData] = None,
+                     transactorDetails: Option[TransactorDetails] = None,
+                     applicantDetails: Option[ApplicantDetails] = None,
+                     entities: Option[List[Entity]] = None,
+                     business: Option[Business] = None,
+                     otherBusinessInvolvements: Option[List[OtherBusinessInvolvement]] = None,
+                     vatApplication: Option[VatApplication] = None,
+                     bankAccount: Option[BankAccount] = None,
+                     flatRateScheme: Option[FlatRateScheme] = None,
+                     attachments: Option[Attachments] = None) {
 
   def partyType: Option[PartyType] = eligibilitySubmissionData.map(_.partyType)
 
@@ -61,11 +59,11 @@ object VatScheme {
 
   def exceptionOrExemption(eligibilityData: EligibilitySubmissionData, vatApplication: VatApplication): String =
     (eligibilityData.appliedForException, vatApplication.appliedForExemption) match {
-      case (Some(true), Some(true)) =>
+      case (Some(true), Some(true)) => // TODO add error handling
         throw new InternalServerException("User has applied for both exception and exemption")
-      case (Some(true), _)          => exceptionKey
-      case (_, Some(true))          => exemptionKey
-      case _                        => nonExceptionOrExemptionKey
+      case (Some(true), _) => exceptionKey
+      case (_, Some(true)) => exemptionKey
+      case _               => nonExceptionOrExemptionKey
     }
 
   // scalastyle:off
@@ -95,7 +93,7 @@ object VatScheme {
             (__ \ FlatRateSchemeSectionId.repoKey).readNullable[FlatRateScheme] and
             (__ \ AttachmentsSectionId.repoKey).readNullable[Attachments]
         )(VatScheme.apply _)
-      case _               =>
+      case _ =>
         (
           (__ \ "registrationId").read[String] and
             (__ \ "internalId").read[String] and

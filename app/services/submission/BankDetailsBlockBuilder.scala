@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,58 +16,47 @@
 
 package services.submission
 
+import models.BuildFailure
 import models.api.NoUKBankAccount.reasonId
 import models.api._
 import models.submission.{Individual, NonUkNonEstablished}
 import play.api.libs.json.JsObject
-import play.api.mvc.Request
-import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
-import utils.LoggingUtils
 
-import javax.inject.{Inject, Singleton}
+object BankDetailsBlockBuilder {
 
-@Singleton
-class BankDetailsBlockBuilder @Inject() () extends LoggingUtils {
-
-  def buildBankDetailsBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
+  def buildBankDetailsBlock(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
     (vatScheme.bankAccount, vatScheme.partyType) match {
-      case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) =>
-        Some(
-          jsonObject(
-            "UK" -> jsonObject(
-              "accountName"   -> details.name,
-              "sortCode"      -> details.sortCode.replaceAll("-", ""),
-              "accountNumber" -> details.number,
-              optional("rollNumber" -> details.rollNumber),
-              conditional(List(IndeterminateStatus, InvalidStatus).contains(details.status))(
-                "bankDetailsNotValid" -> true
-              )
-            )
-          )
-        )
-      case (Some(BankAccount(false, _, Some(reason), _)), _)               =>
-        Some(
-          jsonObject(
-            "UK" -> jsonObject(
-              "reasonBankAccNotProvided" -> reasonId(reason)
-            )
-          )
-        )
-      case (_, Some(Individual | NonUkNonEstablished))                        =>
-        Some(
-          jsonObject(
-            "UK" -> jsonObject(
-              "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
-            )
-          )
-        )
-      case _                                                            =>
-        errorLog(
-          "[BankDetailsBlockBuilder][buildBankDetailsBlock] - Could not build bank details block for submission due to missing bank account"
-        )
-        throw new InternalServerException(
-          "Could not build bank details block for submission due to missing bank account"
-        )
+      // yes + bank details + any partyType
+      case (Some(BankAccount(true, Some(bankAccountDetails), _, _)), Some(_)) => // TODO does partyType need to exist
+        Right(buildJsonForBankDetails(bankAccountDetails, bankAccountDetails.status.isInvalid))
+      // no + reason
+      case (Some(BankAccount(false, _, Some(reason), _)), _) =>
+        Right(buildJsonForReasonWithNoBankDetails(reason))
+      case (_, Some(Individual | NonUkNonEstablished)) =>
+        Right(buildJsonForReasonWithNoBankDetails(OverseasAccount))
+      case _ =>
+        Left(
+          BuildFailure(
+            "Unable to build submission model as user has not give bank details, no bank details reason, nor is a NonUK/NonEstablished user "))
     }
+
+  private def buildJsonForBankDetails(bankAccountDetails: BankAccountDetails, detailsAreInvalid: Boolean): JsObject =
+    jsonObject(
+      "UK" -> jsonObject(
+        "accountName"   -> bankAccountDetails.name,
+        "sortCode"      -> bankAccountDetails.sortCode.replaceAll("-", ""),
+        "accountNumber" -> bankAccountDetails.number,
+        optional("rollNumber"                                -> bankAccountDetails.rollNumber),
+        conditional(detailsAreInvalid)("bankDetailsNotValid" -> true)
+      )
+    )
+
+  private def buildJsonForReasonWithNoBankDetails(reason: NoUKBankAccount): JsObject =
+    jsonObject(
+      "UK" -> jsonObject(
+        "reasonBankAccNotProvided" -> reasonId(reason)
+      )
+    )
+
 }

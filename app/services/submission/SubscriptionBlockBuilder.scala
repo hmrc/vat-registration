@@ -30,7 +30,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class SubscriptionBlockBuilder @Inject() () extends LoggingUtils {
 
-  def buildSubscriptionBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
+  def buildSubscriptionBlock(vatScheme: VatScheme)(implicit request: Request[_]): Either[BuildFailure, JsObject] =
     (
       vatScheme.eligibilitySubmissionData,
       vatScheme.vatApplication,

@@ -16,6 +16,7 @@
 
 package services.submission
 
+import models.BuildFailure
 import models.api.{ContactPreference, Email, Letter, VatScheme}
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
@@ -28,7 +29,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class ContactBlockBuilder @Inject() () extends LoggingUtils {
 
-  def buildContactBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
+  def buildContactBlock(vatScheme: VatScheme)(implicit request: Request[_]): Either[BuildFailure, JsObject] =
     (vatScheme.business, vatScheme.applicantDetails) match {
       case (Some(business), Some(applicantDetails)) =>
         Json.obj(

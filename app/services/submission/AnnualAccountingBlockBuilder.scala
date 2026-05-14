@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,42 +17,42 @@
 package services.submission
 
 import models._
-import models.api.VatScheme
-import models.api.vatapplication.Annual
+import models.api.vatapplication.{Annual, VatApplication}
+import models.api.{EligibilitySubmissionData, VatScheme}
 import play.api.libs.json.JsObject
 import utils.JsonUtils.{jsonObject, required}
 
-import javax.inject.{Inject, Singleton}
+import java.time.LocalDate
 
-@Singleton
-class AnnualAccountingBlockBuilder @Inject() () {
+object AnnualAccountingBlockBuilder {
 
   def buildAnnualAccountingBlock(vatScheme: VatScheme): Option[JsObject] =
     (vatScheme.vatApplication, vatScheme.eligibilitySubmissionData) match {
-      case (Some(vatApplication), Some(eligibilitySubmissionData))
-          if vatApplication.returnsFrequency.contains(Annual) =>
-        Some(
-          jsonObject(
-            "submissionType"  -> "1",
-            "customerRequest" -> vatApplication.annualAccountingDetails.map { details =>
-              jsonObject(
-                required("paymentMethod"     -> details.paymentMethod),
-                "annualStagger" -> vatApplication.staggerStart,
-                required("paymentFrequency"  -> details.paymentFrequency),
-                required("estimatedTurnover" -> vatApplication.turnoverEstimate),
-                "reqStartDate"  -> {
-                  eligibilitySubmissionData.registrationReason match {
-                    case Voluntary | SuppliesOutsideUk | IntendingTrader => vatApplication.startDate
-                    case BackwardLook                                    => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
-                    case ForwardLook                                     => Some(eligibilitySubmissionData.threshold.earliestDate)
-                    case NonUk                                           => eligibilitySubmissionData.threshold.thresholdOverseas
-                    case TransferOfAGoingConcern                         => eligibilitySubmissionData.togcCole.map(_.dateOfTransfer)
-                  }
-                }
-              )
-            }
-          )
-        )
+      case (Some(vatApplication), Some(eligibilitySubmissionData)) if vatApplication.returnsFrequency.contains(Annual) =>
+        Some(buildAnnualAccountingModel(vatApplication, eligibilitySubmissionData))
       case _ => None
+    }
+
+  private def buildAnnualAccountingModel(vatApplication: VatApplication, eligibilitySubmissionData: EligibilitySubmissionData): JsObject =
+    jsonObject(
+      "submissionType" -> "1",
+      "customerRequest" -> vatApplication.annualAccountingDetails.map { details =>
+        jsonObject(
+          required("paymentMethod" -> details.paymentMethod),
+          "annualStagger" -> vatApplication.staggerStart,
+          required("paymentFrequency"  -> details.paymentFrequency),
+          required("estimatedTurnover" -> vatApplication.turnoverEstimate),
+          "reqStartDate" -> getReqStartDate(vatApplication, eligibilitySubmissionData)
+        )
+      }
+    )
+
+  private def getReqStartDate(vatApplication: VatApplication, eligibilitySubmissionData: EligibilitySubmissionData): Option[LocalDate] =
+    eligibilitySubmissionData.registrationReason match {
+      case Voluntary | SuppliesOutsideUk | IntendingTrader => vatApplication.startDate
+      case BackwardLook                                    => eligibilitySubmissionData.threshold.thresholdInTwelveMonths
+      case ForwardLook                                     => Some(eligibilitySubmissionData.threshold.earliestDate)
+      case NonUk                                           => eligibilitySubmissionData.threshold.thresholdOverseas
+      case TransferOfAGoingConcern                         => eligibilitySubmissionData.togcCole.map(_.dateOfTransfer)
     }
 }

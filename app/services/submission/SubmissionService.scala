@@ -80,7 +80,7 @@ class SubmissionService @Inject()(
       vatScheme <- registrationRepository
         .getRegistration(internalId, regId)
         .map(
-          _.getOrElse(
+          _.getOrElse(// TODO replace this with error handling
             throw new InternalServerException(
               s"[SubmissionService][submitVatRegistration] Missing VatScheme. regId: $regId"
             )

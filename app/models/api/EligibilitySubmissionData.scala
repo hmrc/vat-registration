@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,14 @@ import play.api.libs.json._
 
 import java.time.LocalDate
 
-case class EligibilitySubmissionData(
-  threshold: Threshold,
-  appliedForException: Option[Boolean],
-  partyType: PartyType,
-  registrationReason: RegistrationReason,
-  togcCole: Option[TogcCole] = None,
-  isTransactor: Boolean,
-  calculatedDate: Option[LocalDate] = None,
-  fixedEstablishmentInManOrUk: Boolean
-)
+case class EligibilitySubmissionData(threshold: Threshold,
+                                     appliedForException: Option[Boolean],
+                                     partyType: PartyType,
+                                     registrationReason: RegistrationReason,
+                                     togcCole: Option[TogcCole] = None,
+                                     isTransactor: Boolean,
+                                     calculatedDate: Option[LocalDate] = None,
+                                     fixedEstablishmentInManOrUk: Boolean)
 
 object EligibilitySubmissionData {
   val sellingGoodsAndServices       = "selling-goods-and-services"
@@ -55,29 +53,29 @@ object EligibilitySubmissionData {
         (json \ "fixedEstablishment").validate[Boolean]
     )(
       (
-        threshold,
-        exception,
-        businessEntity,
-        registrationReason,
-        registeringBusiness,
-        optTogcCole,
-        fixedEstablishmentInManOrUk
+          threshold,
+          exception,
+          businessEntity,
+          registrationReason,
+          registeringBusiness,
+          optTogcCole,
+          fixedEstablishmentInManOrUk
       ) =>
         EligibilitySubmissionData(
           threshold,
           exception,
           businessEntity,
           registrationReason match {
-            case `sellingGoodsAndServices`                              =>
+            case `sellingGoodsAndServices` =>
               threshold match {
                 case Threshold(true, _, _, _, Some(_)) =>
                   NonUk
-                case Threshold(false, _, _, _, _)      =>
+                case Threshold(false, _, _, _, _) =>
                   Voluntary
                 case Threshold(true, forwardLook1, _, forwardLook2, _)
                     if forwardLook1.contains(threshold.earliestDate) || forwardLook2.contains(threshold.earliestDate) =>
                   ForwardLook
-                case _                                 =>
+                case _ =>
                   BackwardLook
               }
             case `takingOverBusiness` | `changingLegalEntityOfBusiness` => TransferOfAGoingConcern
@@ -90,19 +88,18 @@ object EligibilitySubmissionData {
             case `registeringSomeoneElse` => true
           },
           (threshold, optTogcCole) match {
-            case (_, Some(TogcCole(dateOfTransfer, _, _, _, _)))        =>
+            case (_, Some(TogcCole(dateOfTransfer, _, _, _, _))) =>
               Some(dateOfTransfer)
             case (Threshold(true, _, _, _, Some(thresholdOverseas)), _) =>
               Some(thresholdOverseas)
             case (Threshold(true, optPrevThirtyDays, optNextTwelveMonths, optNextThirtyDays, _), _)
                 if List(optPrevThirtyDays, optNextTwelveMonths, optNextThirtyDays).flatten.nonEmpty =>
               Some(threshold.earliestDate)
-            case _                                                      =>
+            case _ =>
               None
           },
           fixedEstablishmentInManOrUk
-        )
-    )
+        ))
   }
 
   implicit val format: Format[EligibilitySubmissionData] = (

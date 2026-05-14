@@ -1,44 +1,18 @@
-/*
- * Copyright 2023 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package services.submission
 
+import models.BuildFailure
 import models.api.VatScheme
 import play.api.libs.json.JsObject
-import play.api.mvc.Request
-import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils.jsonObject
-import utils.LoggingUtils
 
-import javax.inject.{Inject, Singleton}
+object PeriodsBlockBuilder {
 
-@Singleton
-class PeriodsBlockBuilder @Inject() () extends LoggingUtils {
-
-  def buildPeriodsBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
+  def buildPeriodsBlock(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
     vatScheme.vatApplication match {
       case Some(vatApplication) =>
-        jsonObject("customerPreferredPeriodicity" -> vatApplication.staggerStart)
-      case None                 =>
-        errorLog(
-          "[PeriodsBlockBuilder][buildPeriodsBlock] - Couldn't build periods section due to missing vat application section in vat scheme"
-        )
-        throw new InternalServerException(
-          "Couldn't build periods section due to missing vat application section in vat scheme"
-        )
+        Right(jsonObject("customerPreferredPeriodicity" -> vatApplication.staggerStart))
+      case None =>
+        Left(BuildFailure("Unable to build submission model due to missing 'vatApplication'"))
     }
 
 }
