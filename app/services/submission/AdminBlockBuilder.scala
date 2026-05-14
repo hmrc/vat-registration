@@ -16,6 +16,7 @@
 
 package services.submission
 
+import models.BuildFailure
 import models.api.{AttachmentType, VatScheme}
 import models.submission.{Individual, NETP, NonUkNonEstablished}
 import play.api.libs.json.{JsObject, Json}
@@ -32,7 +33,7 @@ class AdminBlockBuilder @Inject() (attachmentsService: AttachmentsService) exten
 
   private val MTDfB = "2"
 
-  def buildAdminBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject = {
+  def buildAdminBlock(vatScheme: VatScheme)(implicit request: Request[_]): Either[BuildFailure, JsObject] = {
     val mandatoryAttachmentList = attachmentsService.mandatoryAttachmentList(vatScheme)
     (vatScheme.eligibilitySubmissionData, vatScheme.vatApplication) match {
       case (Some(eligibilityData), Some(vatApplication)) =>

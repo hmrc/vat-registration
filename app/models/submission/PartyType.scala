@@ -20,45 +20,28 @@ import play.api.libs.json.{Format, JsString, Reads, Writes}
 
 sealed trait PartyType
 
-case object UkCompany extends PartyType
-
-case object NonUkEstablished extends PartyType
-
+case object UkCompany               extends PartyType
+case object NonUkEstablished        extends PartyType
 case object LtdLiabilityPartnership extends PartyType
-
-case object CharitableOrg extends PartyType
-
-case object RegSociety extends PartyType
-
-case object NonUkNonEstablished extends PartyType
-
-case object GovOrg extends PartyType
-
-case object CorpSole extends PartyType
-
-case object ScotPartnership extends PartyType
-
-case object ScotLtdPartnership extends PartyType
-
-case object Trust extends PartyType
-
-case object Partnership extends PartyType
-
-case object LtdPartnership extends PartyType
-
-case object UnincorpAssoc extends PartyType
-
-case object TaxGroups extends PartyType
-
-case object AdminDivision extends PartyType
-
-case object Individual extends PartyType
-
-case object NETP extends PartyType // Pseudo party type for NETPs, submission still has to use Individual ID
+case object CharitableOrg           extends PartyType
+case object RegSociety              extends PartyType
+case object NonUkNonEstablished     extends PartyType
+case object GovOrg                  extends PartyType
+case object CorpSole                extends PartyType
+case object ScotPartnership         extends PartyType
+case object ScotLtdPartnership      extends PartyType
+case object Trust                   extends PartyType
+case object Partnership             extends PartyType
+case object LtdPartnership          extends PartyType
+case object UnincorpAssoc           extends PartyType
+case object TaxGroups               extends PartyType
+case object AdminDivision           extends PartyType
+case object Individual              extends PartyType
+case object NETP                    extends PartyType // Pseudo party type for NETPs, submission still has to use Individual ID
 
 object PartyType {
 
-  val stati: Map[PartyType, String] = Map(
+  val statuses: Map[PartyType, String] = Map(
     UkCompany               -> "50",
     NonUkEstablished        -> "51",
     LtdLiabilityPartnership -> "52",
@@ -79,11 +62,10 @@ object PartyType {
     NETP                    -> "NETP"
   )
 
-  val inverseStati = stati.map(_.swap)
+  private val inverseStatuses = statuses.map(_.swap)
 
-  def fromString(value: String): PartyType = inverseStati(value)
-
-  def toJsString(value: PartyType): JsString = JsString(stati(value))
+  def fromString(value: String): PartyType   = inverseStatuses(value)
+  def toJsString(value: PartyType): JsString = JsString(statuses(value))
 
   implicit val writes: Writes[PartyType] = Writes[PartyType](partyType => toJsString(partyType))
   implicit val reads: Reads[PartyType]   = Reads[PartyType](partyType => partyType.validate[String] map fromString)

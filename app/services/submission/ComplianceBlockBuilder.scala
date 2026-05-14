@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,25 @@
 
 package services.submission
 
+import models.BuildFailure
 import models.api.VatScheme
 import play.api.libs.json.JsObject
-import play.api.mvc.Request
-import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
-import utils.LoggingUtils
 
-import javax.inject.{Inject, Singleton}
+object ComplianceBlockBuilder {
 
-@Singleton
-class ComplianceBlockBuilder @Inject() () extends LoggingUtils {
-
-  def buildComplianceBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
+  def buildComplianceBlock(vatScheme: VatScheme): Either[BuildFailure, Option[JsObject]] =
     vatScheme.business match {
       case Some(business) =>
-        business.labourCompliance map (labourCompliance =>
-          jsonObject(
-            optional("numOfWorkersSupplied"    -> labourCompliance.numOfWorkersSupplied),
-            optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
-            optional("supplyWorkers"           -> labourCompliance.supplyWorkers)
-          )
-        )
-      case _              =>
-        errorLog(
-          "[ComplianceBlockBuilder][buildComplianceBlock] - Couldn't build compliance block due to missing business data"
-        )
-        throw new InternalServerException("Couldn't build compliance block due to missing business data")
+        Right(
+          business.labourCompliance.map(labourCompliance =>
+            jsonObject(
+              optional("numOfWorkersSupplied"    -> labourCompliance.numOfWorkersSupplied),
+              optional("intermediaryArrangement" -> labourCompliance.intermediaryArrangement),
+              optional("supplyWorkers"           -> labourCompliance.supplyWorkers)
+            )))
+      case None =>
+        Left(BuildFailure("Couldn't build compliance block due to missing business data"))
     }
 
 }

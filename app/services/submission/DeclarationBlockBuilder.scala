@@ -16,6 +16,7 @@
 
 package services.submission
 
+import models.BuildFailure
 import models.api.{Address, FormerName, Name, VatScheme}
 import models.submission.{CustomerId, Other}
 import play.api.libs.json.{JsObject, Json}
@@ -30,7 +31,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class DeclarationBlockBuilder @Inject() () extends LoggingUtils {
 
-  def buildDeclarationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
+  def buildDeclarationBlock(vatScheme: VatScheme)(implicit request: Request[_]): Either[BuildFailure, JsObject] =
     (vatScheme.applicantDetails, vatScheme.confirmInformationDeclaration, vatScheme.transactorDetails) match {
       case (Some(applicantDetails), Some(declaration), optTransactorDetails) =>
         jsonObject(

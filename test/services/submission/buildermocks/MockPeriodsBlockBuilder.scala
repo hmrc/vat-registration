@@ -24,7 +24,6 @@ import org.scalatest.Suite
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
-import services.submission.PeriodsBlockBuilder
 
 trait MockPeriodsBlockBuilder extends MockitoSugar {
   self: Suite =>

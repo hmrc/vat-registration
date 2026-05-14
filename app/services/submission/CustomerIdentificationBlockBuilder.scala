@@ -31,7 +31,7 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class CustomerIdentificationBlockBuilder @Inject() () extends LoggingUtils {
 
-  def buildCustomerIdentificationBlock(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
+  def buildCustomerIdentificationBlock(vatScheme: VatScheme)(implicit request: Request[_]): Either[BuildFailure, JsObject] =
     (vatScheme.eligibilitySubmissionData, vatScheme.applicantDetails, vatScheme.business) match {
       case (Some(eligibilityData), Some(applicantDetails), Some(business)) =>
         val entity = applicantDetails.entity.getOrElse {
