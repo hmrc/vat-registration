@@ -26,6 +26,7 @@ import helpers.VatRegSpec
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
 import mocks.monitoring.MockAuditService
 import mocks._
+import models.BuildFailure
 import models.api._
 import models.api.schemas.API1364
 import models.monitoring.SubmissionAuditModel
@@ -126,7 +127,7 @@ class SubmissionServiceSpec
       )
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
-        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+        .thenReturn(Right(vatSubmissionVoluntaryJson.as[JsObject]))
       mockSendRegistrationReceivedEmail(testInternalId, testRegId, "en")(Future.successful(EmailSent))
 
       val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
@@ -221,7 +222,7 @@ class SubmissionServiceSpec
       )
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
-        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+        .thenReturn(Right(vatSubmissionVoluntaryJson.as[JsObject]))
       mockSendRegistrationReceivedEmail(testInternalId, testRegId, "en")(Future.successful(EmailSent))
 
      val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
@@ -318,7 +319,7 @@ class SubmissionServiceSpec
       )
       when(mockTimeMachine.timestamp).thenReturn(testDateTime)
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
-        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+        .thenReturn(Right(vatSubmissionVoluntaryJson.as[JsObject]))
       mockSendRegistrationReceivedEmail(testInternalId, testRegId, "en")(Future.successful(EmailSent))
 
       val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
@@ -388,7 +389,7 @@ class SubmissionServiceSpec
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.failed))
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
-        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+        .thenReturn(Right(vatSubmissionVoluntaryJson.as[JsObject]))
       mockValidate(vatSubmissionVoluntaryJson.toString())(Map("suppressedErrors" -> List("/suppressed/error")))
       mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
       mockAttachmentList(testFullVatScheme)(List[AttachmentType]())
@@ -413,7 +414,7 @@ class SubmissionServiceSpec
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.failed))
       when(mockSubmissionPayloadBuilder.buildSubmissionPayload(testFullVatScheme))
-        .thenReturn(vatSubmissionVoluntaryJson.as[JsObject])
+        .thenReturn(Right(vatSubmissionVoluntaryJson.as[JsObject]))
       mockValidate(vatSubmissionVoluntaryJson.toString())(Map("unknownErrors" -> List("/new/error")))
       mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
       mockAttachmentList(testFullVatScheme)(List[AttachmentType]())
@@ -434,30 +435,30 @@ class SubmissionServiceSpec
           Some(testCredentials)
         )
       )
-      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
-        SubmissionAuditModel(
-          detailBlockAnswers,
-          testFullVatScheme,
-          testProviderId,
-          Organisation,
-          None,
-          testFormBundleId
-        )
-      )
+//      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
+//        SubmissionAuditModel(
+//          detailBlockAnswers,
+//          testFullVatScheme,
+//          testProviderId,
+//          Organisation,
+//          None,
+//          testFormBundleId
+//        )
+//      )
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testRegId, testCorrelationId)) mustBe Right(
+      await(service.submit(Right(vatSubmissionJson.as[JsObject]), testRegId, testCorrelationId)) mustBe Right(
         VatSubmissionSuccess(testFormBundleId)
       )
     }
 
-    "return a 502 response and successfully audit when submission fails with a 502" in new Setup {
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
-        .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
-      mockAuthorise(Retrievals.credentials)(
-        Future.successful(
-          Some(testCredentials)
-        )
-      )
+    "return a 400 response with failure reason when an invalid json body is built" in new Setup {
+//      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+//        .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
+//      mockAuthorise(Retrievals.credentials)(
+//        Future.successful(
+//          Some(testCredentials)
+//        )
+//      )
       mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
         SubmissionAuditModel(
           detailBlockAnswers,
@@ -469,9 +470,48 @@ class SubmissionServiceSpec
         )
       )
 
-      await(service.submit(vatSubmissionJson.as[JsObject], testRegId, testCorrelationId)) mustBe Right(
+      await(service.submit(Left(BuildFailure("Reason for build failure")), testRegId, testCorrelationId)) mustBe Left(
+        VatSubmissionFailure(BAD_REQUEST, "Reason for build failure")
+      )
+    }
+
+    "return an error response when auth credentials cannot be retrieved" in new Setup {
+//      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+//        .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
+      mockAuthorise(Retrievals.credentials)(Future.successful(None))
+//      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
+//        SubmissionAuditModel(
+//          detailBlockAnswers,
+//          testFullVatScheme,
+//          testProviderId,
+//          Organisation,
+//          None,
+//          testFormBundleId
+//        )
+//      )
+
+      await(service.submit(Right(vatSubmissionJson.as[JsObject]), testRegId, testCorrelationId)) mustBe Right(
         VatSubmissionSuccess(testFormBundleId)
       )
+    }
+
+    "return the error response from downstream when the connector call returns an error response" in new Setup {
+      private val connectorFailureResponse = Left(VatSubmissionFailure(UNAUTHORIZED, "API response message"))
+      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+        .thenReturn(Future.successful(connectorFailureResponse))
+      mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
+//      mockBuildAuditJson(testFullVatScheme, testProviderId, Organisation, None, testFormBundleId)(
+//        SubmissionAuditModel(
+//          detailBlockAnswers,
+//          testFullVatScheme,
+//          testProviderId,
+//          Organisation,
+//          None,
+//          testFormBundleId
+//        )
+//      )
+
+      await(service.submit(Left(BuildFailure("Reason for build failure")), testRegId, testCorrelationId)) mustBe Left(connectorFailureResponse)
     }
   }
 

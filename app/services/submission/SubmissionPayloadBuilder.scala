@@ -16,29 +16,32 @@
 
 package services.submission
 
+import models.BuildFailure
 import models.api.VatScheme
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
+import services.submission.BankDetailsBlockBuilder.buildBankDetailsBlock
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class SubmissionPayloadBuilder @Inject() (
-  adminBlockBuilder: AdminBlockBuilder,
-  declarationBlockBuilder: DeclarationBlockBuilder,
-  customerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder,
-  contactBlockBuilder: ContactBlockBuilder,
-  periodsBlockBuilder: PeriodsBlockBuilder,
-  subscriptionBlockBuilder: SubscriptionBlockBuilder,
-  bankDetailsBlockBuilder: BankDetailsBlockBuilder,
-  complianceBlockBuilder: ComplianceBlockBuilder,
-  annualAccountingBlockBuilder: AnnualAccountingBlockBuilder,
-  entitiesBlockBuilder: EntitiesBlockBuilder
-) {
+class SubmissionPayloadBuilder @Inject() (adminBlockBuilder: AdminBlockBuilder,
+                                          declarationBlockBuilder: DeclarationBlockBuilder,
+                                          customerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder,
+                                          contactBlockBuilder: ContactBlockBuilder,
+                                          periodsBlockBuilder: PeriodsBlockBuilder,
+                                          subscriptionBlockBuilder: SubscriptionBlockBuilder,
+                                          complianceBlockBuilder: ComplianceBlockBuilder,
+                                          annualAccountingBlockBuilder: AnnualAccountingBlockBuilder,
+                                          entitiesBlockBuilder: EntitiesBlockBuilder) {
 
-  def buildSubmissionPayload(vatScheme: VatScheme)(implicit request: Request[_]): JsObject =
-    jsonObject(
+  def buildSubmissionPayload(vatScheme: VatScheme)(implicit request: Request[_]): Either[BuildFailure, JsObject] = {
+    // ToDo - DL-19101:
+    //  convert the other builder classes to objects with error handling inside the for-comprehension to match bankDetails
+    for {
+      bankDetails <- buildBankDetailsBlock(vatScheme)
+    } yield jsonObject(
       "messageType"            -> "SubscriptionCreate",
       "admin"                  -> adminBlockBuilder.buildAdminBlock(vatScheme),
       "declaration"            -> declarationBlockBuilder.buildDeclarationBlock(vatScheme),
@@ -46,9 +49,11 @@ class SubmissionPayloadBuilder @Inject() (
       "contact"                -> contactBlockBuilder.buildContactBlock(vatScheme),
       "subscription"           -> subscriptionBlockBuilder.buildSubscriptionBlock(vatScheme),
       "periods"                -> periodsBlockBuilder.buildPeriodsBlock(vatScheme),
-      optional("bankDetails" -> bankDetailsBlockBuilder.buildBankDetailsBlock(vatScheme)),
-      optional("joinAA"      -> annualAccountingBlockBuilder.buildAnnualAccountingBlock(vatScheme)),
-      optional("compliance"  -> complianceBlockBuilder.buildComplianceBlock(vatScheme)),
-      optional("entities"    -> entitiesBlockBuilder.buildEntitiesBlock(vatScheme))
+      "bankDetails"            -> bankDetails,
+      optional("joinAA"     -> annualAccountingBlockBuilder.buildAnnualAccountingBlock(vatScheme)),
+      optional("compliance" -> complianceBlockBuilder.buildComplianceBlock(vatScheme)),
+      optional("entities"   -> entitiesBlockBuilder.buildEntitiesBlock(vatScheme))
     )
+  }
+
 }

@@ -25,7 +25,8 @@ import javax.inject.Singleton
 @Singleton
 class FeatureSwitchingModule extends Module with FeatureSwitchRegistry {
 
-  val switches = Seq(StubSubmission, PostSubmissionDecoupling, PostSubmissionNonDecoupling, PostSubmissionDecouplingConnector)
+  val switches: Seq[FeatureSwitch] =
+    Seq(StubSubmission, PostSubmissionDecoupling, PostSubmissionNonDecoupling, PostSubmissionDecouplingConnector, SubmitBarsInvalidBankDetailsToAPI)
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     Seq(
@@ -39,16 +40,21 @@ case object StubSubmission extends FeatureSwitch {
 }
 
 case object PostSubmissionDecoupling extends FeatureSwitch {
-  override val configName: String = "feature-switch.post-submission-decoupling"
+  override val configName: String  = "feature-switch.post-submission-decoupling"
   override val displayName: String = "Decouple SDES and NRS integrations"
 }
 
 case object PostSubmissionNonDecoupling extends FeatureSwitch {
-  override val configName: String = "feature-switch.post-submission-non-decoupling"
+  override val configName: String  = "feature-switch.post-submission-non-decoupling"
   override val displayName: String = "Enable non-decoupled (old) SDES and NRS integrations"
 }
 
 case object PostSubmissionDecouplingConnector extends FeatureSwitch {
-  override val configName: String = "feature-switch.post-submission-decoupling-connector"
+  override val configName: String  = "feature-switch.post-submission-decoupling-connector"
   override val displayName: String = "Enable connector calls for decoupled SDES and NRS integrations"
+}
+
+case object SubmitBarsInvalidBankDetailsToAPI extends FeatureSwitch {
+  override val configName: String  = "feature-switch.submit-invalid-bars-bank-details-to-api"
+  override val displayName: String = "Submit bank details to API even if they've failed the BARS check"
 }

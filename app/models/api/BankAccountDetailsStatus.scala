@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package models.api
 import play.api.libs.json.{Format, JsString}
 
 sealed trait BankAccountDetailsStatus
-case object ValidStatus extends BankAccountDetailsStatus
-case object InvalidStatus extends BankAccountDetailsStatus
+case object ValidStatus         extends BankAccountDetailsStatus
+case object InvalidStatus       extends BankAccountDetailsStatus
 case object IndeterminateStatus extends BankAccountDetailsStatus
 
 object BankAccountDetailsStatus {
 
-  val map: Map[BankAccountDetailsStatus, String]        = Map(
+  val map: Map[BankAccountDetailsStatus, String] = Map(
     ValidStatus         -> "yes",
     InvalidStatus       -> "no",
     IndeterminateStatus -> "indeterminate"
@@ -37,4 +37,5 @@ object BankAccountDetailsStatus {
 
   implicit val format: Format[BankAccountDetailsStatus] =
     Format[BankAccountDetailsStatus](_.validate[String] map fromString, toJsString)
+
 }

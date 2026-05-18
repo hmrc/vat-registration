@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,61 @@
 
 package services.submission
 
+import featureswitch.core.config.{FeatureSwitching, SubmitBarsInvalidBankDetailsToAPI}
+import models.BuildFailure
 import models.api.NoUKBankAccount.reasonId
 import models.api._
 import models.submission.{Individual, NonUkNonEstablished}
 import play.api.libs.json.JsObject
-import play.api.mvc.Request
-import uk.gov.hmrc.http.InternalServerException
 import utils.JsonUtils._
-import utils.LoggingUtils
 
-import javax.inject.{Inject, Singleton}
+object BankDetailsBlockBuilder extends FeatureSwitching {
 
-@Singleton
-class BankDetailsBlockBuilder @Inject() () extends LoggingUtils {
+  def buildBankDetailsBlock(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
+    if (isEnabled(SubmitBarsInvalidBankDetailsToAPI)) buildBankDetailsBlockNew(vatScheme) else buildBankDetailsBlockOld(vatScheme)
 
-  def buildBankDetailsBlock(vatScheme: VatScheme)(implicit request: Request[_]): Option[JsObject] =
+  private def buildBankDetailsBlockNew(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
+    if (vatScheme.partyTypeIsIndividualOrNonUkNonEstablished) {
+      Right(buildJsonForBankDetailsAndOrReason(bankAccountDetails = None, reason = Some(OverseasAccount)))
+    } else {
+      vatScheme.bankAccount match {
+        // yes -> bank details -> success = bank + valid
+        case Some(BankAccount(true, Some(bankAccountDetails), None, _)) =>
+          Right(buildJsonForBankDetailsAndOrReason(Some(bankAccountDetails), reason = None))
+        // yes -> bank details -> 3x fail = bank + invalid + lockout-fail-reason
+        case Some(BankAccount(true, Some(bankAccountDetails), Some(DontWantToProvide), _)) =>
+          Right(buildJsonForBankDetailsAndOrReason(Some(bankAccountDetails), Some(DontWantToProvide)))
+        // yes -> bank details -> fail -> back -> no -> reason = bank + invalid + reason
+        case Some(BankAccount(false, Some(bankAccountDetails), Some(reason), _)) =>
+          Right(buildJsonForBankDetailsAndOrReason(Some(bankAccountDetails), Some(reason)))
+        // yes -> bank details -> success -> back -> no -> reason = reason
+        // no  -> reason = reason
+        case Some(BankAccount(false, None, Some(reason), _)) =>
+          Right(buildJsonForBankDetailsAndOrReason(bankAccountDetails = None, Some(reason)))
+        case _ =>
+          Left(
+            BuildFailure(
+              "Unable to build submission model as user has not give bank details, nor bank details reason, nor is a NonUK/NonEstablished user"))
+      }
+
+    }
+
+  private def buildJsonForBankDetailsAndOrReason(bankAccountDetails: Option[BankAccountDetails], reason: Option[NoUKBankAccount]): JsObject =
+    jsonObject(
+      "UK" -> jsonObject(
+        optional("accountName"                                                          -> bankAccountDetails.map(_.name)),
+        optional("sortCode"                                                             -> bankAccountDetails.map(_.sortCode.replaceAll("-", ""))),
+        optional("accountNumber"                                                        -> bankAccountDetails.map(_.number)),
+        optional("rollNumber"                                                           -> bankAccountDetails.flatMap(_.rollNumber)),
+        conditional(bankAccountDetails.exists(_.statusIsInvalid))("bankDetailsNotValid" -> true),
+        optional("reasonBankAccNotProvided"                                             -> reason.map(reasonId))
+      )
+    )
+
+  private def buildBankDetailsBlockOld(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
     (vatScheme.bankAccount, vatScheme.partyType) match {
       case (Some(BankAccount(true, Some(details), _, _)), Some(partyType)) =>
-        Some(
+        Right(
           jsonObject(
             "UK" -> jsonObject(
               "accountName"   -> details.name,
@@ -46,28 +83,26 @@ class BankDetailsBlockBuilder @Inject() () extends LoggingUtils {
             )
           )
         )
-      case (Some(BankAccount(false, _, Some(reason), _)), _)               =>
-        Some(
+      case (Some(BankAccount(false, _, Some(reason), _)), _) =>
+        Right(
           jsonObject(
             "UK" -> jsonObject(
               "reasonBankAccNotProvided" -> reasonId(reason)
             )
           )
         )
-      case (_, Some(Individual | NonUkNonEstablished))                        =>
-        Some(
+      case (_, Some(Individual | NonUkNonEstablished)) =>
+        Right(
           jsonObject(
             "UK" -> jsonObject(
               "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
             )
           )
         )
-      case _                                                            =>
-        errorLog(
-          "[BankDetailsBlockBuilder][buildBankDetailsBlock] - Could not build bank details block for submission due to missing bank account"
-        )
-        throw new InternalServerException(
-          "Could not build bank details block for submission due to missing bank account"
-        )
+      case _ =>
+        Left(
+          BuildFailure(
+            "Unable to build submission model as user has not give bank details, nor bank details reason, nor is a NonUK/NonEstablished user"))
     }
+
 }

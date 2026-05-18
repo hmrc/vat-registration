@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package utils
 
-import play.api.libs.json.{Format, JsObject, JsValue, Writes}
+import play.api.libs.json.{JsObject, JsValue, Writes}
 
 object JsonUtils {
 
@@ -31,17 +31,17 @@ object JsonUtils {
   def optional[T](field: (String, Option[T]))(implicit writer: Writes[T]): JsonField =
     field match {
       case (key, Some(value)) =>
-        JsonField(Some(field._1 -> writer.writes(value)))
-      case (key, None)        =>
+        JsonField(Some(key -> writer.writes(value)))
+      case (_, None) =>
         JsonField(None)
     }
 
   def required[T](field: (String, Option[T]))(implicit writer: Writes[T]): JsonField =
     field match {
-      case (_, Some(value)) =>
-        JsonField(Some(field._1 -> writer.writes(value)))
-      case (_, None)        =>
-        throw new IllegalStateException(s"Field '${field._1}' was missing but is required")
+      case (key, Some(value)) =>
+        JsonField(Some(key -> writer.writes(value)))
+      case (key, None) =>
+        throw new IllegalStateException(s"Field '$key' was missing but is required")
     }
 
   def optionalRequiredIf[T](condition: => Boolean)(field: (String, Option[T]))(implicit writer: Writes[T]): JsonField =
@@ -56,11 +56,6 @@ object JsonUtils {
     else JsonField(None)
 
   def conditional[T](condition: => Boolean)(field: (String, T))(implicit writer: Writes[T]): JsonField =
-    if (condition) JsonField(Some(field._1 -> writer.writes(field._2)))
-    else JsonField(None)
+    if (condition) JsonField(Some(field._1 -> writer.writes(field._2))) else JsonField(None)
 
-  def canParseTo[A](implicit fmt: Format[A]): PartialFunction[JsValue, A] = new PartialFunction[JsValue, A] {
-    def apply(js: JsValue): A             = js.validate[A].get
-    def isDefinedAt(js: JsValue): Boolean = js.validate[A].isSuccess
-  }
 }

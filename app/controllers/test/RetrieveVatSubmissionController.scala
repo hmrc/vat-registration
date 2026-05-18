@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +17,40 @@
 package controllers.test
 
 import auth.Authorisation
+import models.BuildFailure
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import repositories.VatSchemeRepository
 import services.submission.SubmissionPayloadBuilder
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.InternalServerException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class RetrieveVatSubmissionController @Inject() (
-  cc: ControllerComponents,
-  submissionPayloadBuilder: SubmissionPayloadBuilder,
-  val authConnector: AuthConnector,
-  val resourceConn: VatSchemeRepository
-)(implicit val executionContext: ExecutionContext)
+class RetrieveVatSubmissionController @Inject() (cc: ControllerComponents,
+                                                 submissionPayloadBuilder: SubmissionPayloadBuilder,
+                                                 val authConnector: AuthConnector,
+                                                 val resourceConn: VatSchemeRepository)(implicit val executionContext: ExecutionContext)
     extends BackendController(cc)
     with Authorisation {
 
   def retrieveSubmissionJson(regId: String): Action[AnyContent] = Action.async { implicit request =>
     isAuthenticated { internalId =>
-      for {
-        vatScheme <- resourceConn
-                       .getRegistration(internalId, regId)
-                       .map(_.getOrElse(throw new InternalServerException("Missing VatScheme")))
-        payload    = submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
-      } yield Ok(payload)
+      val submissionPayload = resourceConn.getRegistration(internalId, regId).map {
+        case Some(vatScheme) =>
+          submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
+        case None =>
+          Left(BuildFailure("Unable to find VatScheme for InternalId: $internalId and RegId: $regId"))
+      }
+
+      submissionPayload map {
+        case Right(payload) =>
+          Ok(payload)
+        case Left(failure) =>
+          errorLog(s"[RetrieveVatSubmissionController] Failed to retrieve submission json with reason: ${failure.reason}")
+          InternalServerError
+      }
     }
   }
 

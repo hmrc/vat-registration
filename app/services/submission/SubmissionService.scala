@@ -28,7 +28,7 @@ import models.api.{Attached, PersonalDetails, VatScheme}
 import models.monitoring.SubmissionFailureErrorsAuditModel
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationAttachmentFailureAuditUpscan, NonRepudiationAttachmentSuccessAuditUpscan}
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
-import models.{IntendingTrader, Voluntary}
+import models.{BuildFailure, IntendingTrader, Voluntary}
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
@@ -184,7 +184,7 @@ class SubmissionService @Inject()(
     }
   }
 
-  private[services] def submit(submission: JsObject, regId: String, correlationId: String)(implicit
+  private[services] def submit(submission: Either[BuildFailure, JsObject], regId: String, correlationId: String)(implicit
                                                                                            hc: HeaderCarrier,
                                                                                            request: Request[_]
   ): Future[VatSubmissionResponse] = {
@@ -193,9 +193,17 @@ class SubmissionService @Inject()(
       s"[SubmissionService][submit] attempting to submit. VAT Submission API Correlation Id: $correlationId",
       regId
     )
-    authorised().retrieve(credentials) { case Some(credentials) =>
-      infoLog(s"[SubmissionService][submit] credentials retrieved from auth", regId)
-      vatSubmissionConnector.submit(submission, correlationId, credentials.providerId)
+    submission match {
+      case Left(buildFailure) =>
+        // ToDo - DL-19101: Once error handling is finished in the builder, move this logic out of the submit method
+        errorLog(s"[SubmissionService][submit] Failed to submit as submission body was unable to be built, for reason: ${buildFailure.reason}." +
+          s"\nReturning 400", regId)
+        Future.successful(Left(VatSubmissionFailure(BAD_REQUEST, buildFailure.reason)))
+      case Right(submissionModel) =>
+        authorised().retrieve(credentials) { case Some(credentials) =>
+          infoLog(s"[SubmissionService][submit] credentials retrieved from auth", regId)
+          vatSubmissionConnector.submit(submissionModel, correlationId, credentials.providerId)
+        }
     }
   }
 

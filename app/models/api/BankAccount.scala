@@ -23,13 +23,11 @@ import play.api.libs.json._
 case class BankAccount(isProvided: Boolean,
                        details: Option[BankAccountDetails],
                        reason: Option[NoUKBankAccount],
-                       bankAccountType: Option[BankAccountType] = None)
+                       bankAccountType: Option[BankAccountType])
 
-case class BankAccountDetails(name: String,
-                              sortCode: String,
-                              number: String,
-                              rollNumber: Option[String] = None,
-                              status: BankAccountDetailsStatus)
+case class BankAccountDetails(name: String, sortCode: String, number: String, rollNumber: Option[String], status: BankAccountDetailsStatus) {
+    def statusIsInvalid: Boolean = status != ValidStatus
+}
 
 object BankAccount {
   implicit val format: Format[BankAccount] = Json.format[BankAccount]
@@ -46,7 +44,7 @@ object BankAccountDetailsMongoFormat {
       (__ \ "number").format[String](crypto.rds)(crypto.wts) and
       (__ \ "rollNumber").formatNullable[String] and
       (__ \ "status").format[BankAccountDetailsStatus]
-    )(BankAccountDetails.apply, unlift(BankAccountDetails.unapply))
+  )(BankAccountDetails.apply, unlift(BankAccountDetails.unapply))
 }
 
 object BankAccountMongoFormat {
@@ -55,5 +53,5 @@ object BankAccountMongoFormat {
       (__ \ "details").formatNullable[BankAccountDetails](BankAccountDetailsMongoFormat.format(crypto)) and
       (__ \ "reason").formatNullable[NoUKBankAccount] and
       (__ \ "bankAccountType").formatNullable[BankAccountType]
-    )(BankAccount.apply, unlift(BankAccount.unapply))
+  )(BankAccount.apply, unlift(BankAccount.unapply))
 }
