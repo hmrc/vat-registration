@@ -253,8 +253,8 @@ trait VatRegistrationFixture {
       "otherBusiness desc 2"
     ) :: Nil
 
-  lazy val testBankAccount: BankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None)
-  lazy val testBankAccountNotProvided: BankAccount = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup))
+  lazy val testBankAccount: BankAccount = BankAccount(isProvided = true, details = Some(testBankDetails), None, None)
+  lazy val testBankAccountNotProvided: BankAccount = BankAccount(isProvided = false, details = None, reason = Some(BeingSetup), None)
 
   protected lazy val validAASDetails: AASDetails = AASDetails(
     paymentMethod = Some(StandingOrder),

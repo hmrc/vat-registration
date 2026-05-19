@@ -635,7 +635,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
       }
     }
 
-    "return INTERNAL_SERVER_ERROR if the VAT scheme is missing data" in new Setup {
+    "return BAD_REQUEST if the VAT scheme is missing data" in new Setup {
       given.user.isAuthorised
       insertIntoDb(testEmptyVatScheme(testRegId))
 
@@ -643,7 +643,7 @@ class VatRegistrationControllerISpec extends IntegrationStubbing with FeatureSwi
         .put(Json.obj())
       )
 
-      res.status mustBe INTERNAL_SERVER_ERROR
+      res.status mustBe BAD_REQUEST
     }
 
     "return INTERNAL_SERVER_ERROR if the subscription API is unavailable" in new Setup {

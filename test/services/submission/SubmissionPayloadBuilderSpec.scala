@@ -16,8 +16,11 @@
 
 package services.submission
 
+import featureswitch.core.config.{FeatureSwitching, SubmitBarsInvalidBankDetailsToAPI}
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
+import models.BuildFailure
+import models.api.Business
 import models.submission.{EntitiesArrayType, Individual, PartnerEntity, PartyType}
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
@@ -32,12 +35,12 @@ class SubmissionPayloadBuilderSpec
     with MockCustomerIdentificationBlockBuilder
     with MockContactBlockBuilder
     with MockPeriodsBlockBuilder
-    with MockBankDetailsBlockBuilder
     with MockComplianceBlockBuilder
     with MockSubscriptionBlockBuilder
     with MockDeclarationBlockBuilder
     with MockAnnualAccountingBlockBuilder
-    with MockEntitiesBlockBuilder {
+    with MockEntitiesBlockBuilder
+    with FeatureSwitching {
 
   implicit val request: Request[_] = FakeRequest()
 
@@ -49,17 +52,21 @@ class SubmissionPayloadBuilderSpec
         mockContactBlockBuilder,
         mockPeriodsBlockBuilder,
         mockSubscriptionBlockBuilder,
-        mockBankDetailsBlockBuilder,
         mockComplianceBlockBuilder,
         mockAnnualAccountingBlockBuilder,
         mockEntitiesBlockBuilder
       )
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    enable(SubmitBarsInvalidBankDetailsToAPI)
+  }
+
   val testAdminBlockJson: JsObject = Json.obj(
     "additionalInformation" -> Json.obj(
       "customerStatus" -> "2"
     ),
-    "attachments"           -> Json.obj(
+    "attachments" -> Json.obj(
       "EORIrequested" -> true
     )
   )
@@ -69,23 +76,23 @@ class SubmissionPayloadBuilderSpec
       "confirmInformationDeclaration" -> true,
       "declarationCapacity"           -> "03"
     ),
-    "applicantDetails"   -> Json.obj(
+    "applicantDetails" -> Json.obj(
       "roleInBusiness" -> "Director",
-      "name"           -> Json.obj(
+      "name" -> Json.obj(
         "firstName" -> "Test",
         "lastName"  -> "Name"
       ),
-      "dateOfBirth"    -> "2000-10-20",
-      "currAddress"    -> Json.obj(
+      "dateOfBirth" -> "2000-10-20",
+      "currAddress" -> Json.obj(
         "line1"       -> "line1",
         "line2"       -> "line2",
         "postCode"    -> "ZZ1 1ZZ",
         "countryCode" -> "GB"
       ),
-      "commDetails"    -> Json.obj(
+      "commDetails" -> Json.obj(
         "email" -> "email@email.com"
       ),
-      "identifiers"    -> Json.arr(
+      "identifiers" -> Json.arr(
         Json.obj(
           "idValue"               -> "AB123456A",
           "idType"                -> "NINO",
@@ -104,7 +111,7 @@ class SubmissionPayloadBuilderSpec
   )
 
   val testContactBlockJson: JsObject = Json.obj(
-    "address"     -> Json.obj(
+    "address" -> Json.obj(
       "line1"       -> "line1",
       "line2"       -> "line2",
       "postCode"    -> "ZZ1 1ZZ",
@@ -127,7 +134,7 @@ class SubmissionPayloadBuilderSpec
     )
   )
 
-  val testComplianceJson: JsObject = Json.obj(
+  val testComplianceBlockJson: JsObject = Json.obj(
     "numOfWorkersSupplied"    -> 1,
     "intermediaryArrangement" -> true,
     "supplyWorkers"           -> true
@@ -135,7 +142,7 @@ class SubmissionPayloadBuilderSpec
 
   val testSubscriptionBlockJson: JsObject = Json.obj(
     "subscription" -> Json.obj(
-      "reasonForSubscription"   -> Json.obj(
+      "reasonForSubscription" -> Json.obj(
         "registrationReason"     -> "0016",
         "relevantDate"           -> "2020-10-07",
         "voluntaryOrEarlierDate" -> "2020-02-02",
@@ -146,21 +153,21 @@ class SubmissionPayloadBuilderSpec
         "dateOfIncorporation"       -> "2020-01-02",
         "countryOfIncorporation"    -> "GB"
       ),
-      "businessActivities"      -> Json.obj(
+      "businessActivities" -> Json.obj(
         "description" -> "testDescription",
-        "SICCodes"    -> Json.obj(
+        "SICCodes" -> Json.obj(
           "primaryMainCode" -> "12345",
           "mainCode2"       -> "00002",
           "mainCode3"       -> "00003",
           "mainCode4"       -> "00004"
         )
       ),
-      "yourTurnover"            -> Json.obj(
+      "yourTurnover" -> Json.obj(
         "turnoverNext12Months" -> 123456,
         "zeroRatedSupplies"    -> 12.99,
         "VATRepaymentExpected" -> true
       ),
-      "schemes"                 -> Json.obj(
+      "schemes" -> Json.obj(
         "FRSCategory"       -> "testCategory",
         "FRSPercentage"     -> 15,
         "startDate"         -> "2020-02-02",
@@ -170,7 +177,7 @@ class SubmissionPayloadBuilderSpec
   )
 
   val testAnnualAccountingBlockJson: JsObject = Json.obj(
-    "submissionType"  -> "01",
+    "submissionType" -> "01",
     "customerRequest" -> Json.obj(
       "paymentMethod"      -> "",
       "annualStagger"      -> "",
@@ -182,9 +189,9 @@ class SubmissionPayloadBuilderSpec
 
   val testEntitiesBlockJson = Json.arr(
     Json.obj(
-      "action"                 -> 1,
-      "entityType"             -> Json.toJson[EntitiesArrayType](PartnerEntity),
-      "partyType"              -> Json.toJson[PartyType](Individual),
+      "action"     -> 1,
+      "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
+      "partyType"  -> Json.toJson[PartyType](Individual),
       "businessContactDetails" -> Json.obj(
         "address"   -> Json.toJson(testAddress),
         "telephone" -> "testPhone"
@@ -202,59 +209,92 @@ class SubmissionPayloadBuilderSpec
     "bankDetails"            -> testBankDetailsBlockJson,
     "periods"                -> testPeriodsBlockJson,
     "joinAA"                 -> testAnnualAccountingBlockJson,
-    "compliance"             -> testComplianceJson,
+    "compliance"             -> testComplianceBlockJson,
     "entities"               -> testEntitiesBlockJson
   )
-
+  enable(SubmitBarsInvalidBankDetailsToAPI)
   "buildSubmissionPayload" should {
-    "return a submission json object" when {
+    "return a submission json object in a Right" when {
       "all required pieces of data are available in the database" in {
-        mockBuildAdminBlock(testVatScheme)(testAdminBlockJson)
-        mockBuildDeclarationBlock(testVatScheme)(testDeclarationBlockJson)
-        mockBuildCustomerIdentificationBlock(testVatScheme)(testCustomerIdentificationBlockJson)
-        mockBuildContactBlock(testVatScheme)(testContactBlockJson)
-        mockBuildSubscriptionBlock(testVatScheme)(testSubscriptionBlockJson)
-        mockBuildBankDetailsBlock(testVatScheme)(Some(testBankDetailsBlockJson))
-        mockBuildComplianceBlock(testVatScheme)(Some(testComplianceJson))
-        mockBuildPeriodsBlock(testVatScheme)(testPeriodsBlockJson)
-        mockBuildAnnualAccountingBlock(testVatScheme)(Some(testAnnualAccountingBlockJson))
-        mockBuildEntitiesBlock(testVatScheme)(Some(testEntitiesBlockJson))
+        mockBuildAdminBlock(testFullVatScheme)(testAdminBlockJson)
+        mockBuildDeclarationBlock(testFullVatScheme)(testDeclarationBlockJson)
+        mockBuildCustomerIdentificationBlock(testFullVatScheme)(testCustomerIdentificationBlockJson)
+        mockBuildContactBlock(testFullVatScheme)(testContactBlockJson)
+        mockBuildSubscriptionBlock(testFullVatScheme)(testSubscriptionBlockJson)
+        mockBuildPeriodsBlock(testFullVatScheme)(testPeriodsBlockJson)
+        mockBuildAnnualAccountingBlock(testFullVatScheme)(Some(testAnnualAccountingBlockJson))
+        mockBuildComplianceBlock(testFullVatScheme)(Some(testComplianceBlockJson))
+        mockBuildEntitiesBlock(testFullVatScheme)(Some(testEntitiesBlockJson))
 
-        val result = TestBuilder.buildSubmissionPayload(testVatScheme)
+        val result = TestBuilder.buildSubmissionPayload(testFullVatScheme)
 
-        result mustBe expectedJson
+        result mustBe Right(expectedJson)
       }
+
+      "there are no annual accounting answers in the database" in {
+        val vatSchemeWithoutAnnualAccounting = testFullVatScheme.copy(business = None)
+        mockBuildAdminBlock(vatSchemeWithoutAnnualAccounting)(testAdminBlockJson)
+        mockBuildDeclarationBlock(vatSchemeWithoutAnnualAccounting)(testDeclarationBlockJson)
+        mockBuildCustomerIdentificationBlock(vatSchemeWithoutAnnualAccounting)(testCustomerIdentificationBlockJson)
+        mockBuildContactBlock(vatSchemeWithoutAnnualAccounting)(testContactBlockJson)
+        mockBuildSubscriptionBlock(vatSchemeWithoutAnnualAccounting)(testSubscriptionBlockJson)
+        mockBuildPeriodsBlock(vatSchemeWithoutAnnualAccounting)(testPeriodsBlockJson)
+        mockBuildComplianceBlock(vatSchemeWithoutAnnualAccounting)(Some(testComplianceBlockJson))
+        mockBuildEntitiesBlock(vatSchemeWithoutAnnualAccounting)(Some(testEntitiesBlockJson))
+
+        mockBuildAnnualAccountingBlock(vatSchemeWithoutAnnualAccounting)(None)
+
+        val result = TestBuilder.buildSubmissionPayload(vatSchemeWithoutAnnualAccounting)
+
+        result mustBe Right(expectedJson - "joinAA")
+      }
+
       "there are no compliance answers in the database" in {
-        mockBuildAdminBlock(testVatScheme)(testAdminBlockJson)
-        mockBuildDeclarationBlock(testVatScheme)(testDeclarationBlockJson)
-        mockBuildCustomerIdentificationBlock(testVatScheme)(testCustomerIdentificationBlockJson)
-        mockBuildContactBlock(testVatScheme)(testContactBlockJson)
-        mockBuildSubscriptionBlock(testVatScheme)(testSubscriptionBlockJson)
-        mockBuildBankDetailsBlock(testVatScheme)(Some(testBankDetailsBlockJson))
-        mockBuildComplianceBlock(testVatScheme)(None)
-        mockBuildPeriodsBlock(testVatScheme)(testPeriodsBlockJson)
-        mockBuildAnnualAccountingBlock(testVatScheme)(Some(testAnnualAccountingBlockJson))
+        val vatSchemeWithoutBusinessCompliance = testFullVatScheme.copy(business = None)
+        mockBuildAdminBlock(vatSchemeWithoutBusinessCompliance)(testAdminBlockJson)
+        mockBuildDeclarationBlock(vatSchemeWithoutBusinessCompliance)(testDeclarationBlockJson)
+        mockBuildCustomerIdentificationBlock(vatSchemeWithoutBusinessCompliance)(testCustomerIdentificationBlockJson)
+        mockBuildContactBlock(vatSchemeWithoutBusinessCompliance)(testContactBlockJson)
+        mockBuildSubscriptionBlock(vatSchemeWithoutBusinessCompliance)(testSubscriptionBlockJson)
+        mockBuildPeriodsBlock(vatSchemeWithoutBusinessCompliance)(testPeriodsBlockJson)
+        mockBuildAnnualAccountingBlock(vatSchemeWithoutBusinessCompliance)(Some(testAnnualAccountingBlockJson))
+        mockBuildEntitiesBlock(vatSchemeWithoutBusinessCompliance)(Some(testEntitiesBlockJson))
 
-        val result = TestBuilder.buildSubmissionPayload(testVatScheme)
+        mockBuildComplianceBlock(vatSchemeWithoutBusinessCompliance)(None)
 
-        result mustBe expectedJson - "compliance"
+        val result = TestBuilder.buildSubmissionPayload(vatSchemeWithoutBusinessCompliance)
+
+        result mustBe Right(expectedJson - "compliance")
       }
-      "the entities section is not present" in {
-        mockBuildAdminBlock(testVatScheme)(testAdminBlockJson)
-        mockBuildDeclarationBlock(testVatScheme)(testDeclarationBlockJson)
-        mockBuildCustomerIdentificationBlock(testVatScheme)(testCustomerIdentificationBlockJson)
-        mockBuildContactBlock(testVatScheme)(testContactBlockJson)
-        mockBuildSubscriptionBlock(testVatScheme)(testSubscriptionBlockJson)
-        mockBuildBankDetailsBlock(testVatScheme)(Some(testBankDetailsBlockJson))
-        mockBuildComplianceBlock(testVatScheme)(Some(testComplianceJson))
-        mockBuildPeriodsBlock(testVatScheme)(testPeriodsBlockJson)
-        mockBuildAnnualAccountingBlock(testVatScheme)(Some(testAnnualAccountingBlockJson))
-        mockBuildEntitiesBlock(testVatScheme)(None)
 
+      "the entities section is not present" in {
+        val vatSchemeWithoutEntities = testFullVatScheme.copy(entities = None)
+        mockBuildAdminBlock(vatSchemeWithoutEntities)(testAdminBlockJson)
+        mockBuildDeclarationBlock(vatSchemeWithoutEntities)(testDeclarationBlockJson)
+        mockBuildCustomerIdentificationBlock(vatSchemeWithoutEntities)(testCustomerIdentificationBlockJson)
+        mockBuildContactBlock(vatSchemeWithoutEntities)(testContactBlockJson)
+        mockBuildSubscriptionBlock(vatSchemeWithoutEntities)(testSubscriptionBlockJson)
+        mockBuildPeriodsBlock(vatSchemeWithoutEntities)(testPeriodsBlockJson)
+        mockBuildComplianceBlock(vatSchemeWithoutEntities)(Some(testComplianceBlockJson))
+        mockBuildAnnualAccountingBlock(vatSchemeWithoutEntities)(Some(testAnnualAccountingBlockJson))
+
+        mockBuildEntitiesBlock(vatSchemeWithoutEntities)(None)
+
+        val result = TestBuilder.buildSubmissionPayload(vatSchemeWithoutEntities)
+
+        result mustBe Right(expectedJson - "entities")
+      }
+    }
+
+    "return a BuildFailure in a Left" when {
+      "BankDetailsBlockBuilder returns a failure" in {
         val result = TestBuilder.buildSubmissionPayload(testVatScheme)
 
-        result mustBe expectedJson - "entities"
+        result mustBe Left(
+          BuildFailure(
+            "Unable to build submission model as user has not give bank details, nor bank details reason, nor is a NonUK/NonEstablished user"))
       }
     }
   }
+
 }

@@ -16,6 +16,7 @@
 
 package services.submission.buildermocks
 
+import models.BuildFailure
 import models.api.VatScheme
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -31,7 +32,7 @@ trait MockSubmissionPayloadBuilder extends MockitoSugar {
 
   val mockSubmissionPayloadBuilder: SubmissionPayloadBuilder = mock[SubmissionPayloadBuilder]
 
-  def mockBuildSubmissionPayload(vatScheme: VatScheme)(response: JsObject): OngoingStubbing[JsObject] =
+  def mockBuildSubmissionPayload(vatScheme: VatScheme)(response: Either[BuildFailure, JsObject]): OngoingStubbing[Either[BuildFailure, JsObject]] =
     when(
       mockSubmissionPayloadBuilder.buildSubmissionPayload(ArgumentMatchers.eq(vatScheme))(
         ArgumentMatchers.any[Request[_]]

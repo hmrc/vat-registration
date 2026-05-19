@@ -56,6 +56,7 @@ class BankAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           name = "Test Bank Account",
           sortCode = "01-02-03",
           number = "01023456",
+          rollNumber = None,
           status = ValidStatus
         )
 

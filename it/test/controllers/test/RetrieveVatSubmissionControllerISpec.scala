@@ -17,7 +17,6 @@
 package controllers.test
 
 import itutil.{IntegrationSpecBase, IntegrationStubbing}
-import models.BuildFailure
 import play.api.libs.json.JsObject
 import play.api.libs.ws.WSResponse
 import play.api.mvc.Request
@@ -28,8 +27,8 @@ import services.submission.SubmissionPayloadBuilder
 import scala.concurrent.Future
 
 class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with IntegrationStubbing {
-  implicit val request: Request[_] = FakeRequest()
-  val url = s"/vatreg/test-only/submissions/$testRegId/submission-payload"
+  implicit val request: Request[_]      = FakeRequest()
+  val url                               = s"/vatreg/test-only/submissions/$testRegId/submission-payload"
   val builder: SubmissionPayloadBuilder = app.injector.instanceOf[SubmissionPayloadBuilder]
 
   "/test-only/submissions/:regId/submission-payload" must {
@@ -37,7 +36,7 @@ class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with Inte
       given.user.isAuthorised
       insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner)
 
-      val expectedJson: Either[BuildFailure, JsObject] = builder.buildSubmissionPayload(testFullVatSchemeWithUnregisteredBusinessPartner)
+      val expectedJson: JsObject  = builder.buildSubmissionPayload(testFullVatSchemeWithUnregisteredBusinessPartner).getOrElse(JsObject.empty)
       val res: Future[WSResponse] = client(url).get()
 
       whenReady(res) { result =>
@@ -53,7 +52,7 @@ class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with Inte
         val res: Future[WSResponse] = client(url).get()
 
         whenReady(res) { result =>
-          result.status mustBe InternalServerError
+          result.status mustBe INTERNAL_SERVER_ERROR
         }
       }
 
@@ -63,7 +62,7 @@ class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with Inte
         val res: Future[WSResponse] = client(url).get()
 
         whenReady(res) { result =>
-          result.status mustBe InternalServerError
+          result.status mustBe INTERNAL_SERVER_ERROR
         }
       }
     }
@@ -75,7 +74,7 @@ class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with Inte
         val res: Future[WSResponse] = client(url).get()
 
         whenReady(res) { result =>
-          result.status mustBe InternalServerError
+          result.status mustBe FORBIDDEN
         }
       }
     }

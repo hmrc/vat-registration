@@ -275,6 +275,7 @@ trait ITFixtures {
     name = "testBankName",
     sortCode = "11-11-11",
     number = "01234567",
+    rollNumber = None,
     status = ValidStatus
   )
   val testSubmittedSortCode = "111111"
@@ -305,7 +306,7 @@ trait ITFixtures {
   lazy val testVatScheme: VatScheme = VatScheme(testRegId, internalId = testInternalid, status = VatRegStatus.draft, createdDate = testDate)
 
   lazy val testFullVatScheme: VatScheme = testVatScheme.copy(
-    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
+    bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
     flatRateScheme = Some(testFlatRateScheme),
     applicantDetails = Some(testUnregisteredApplicantDetails),
     eligibilitySubmissionData = Some(testEligibilitySubmissionData),
@@ -321,7 +322,7 @@ trait ITFixtures {
       internalId = testInternalid,
       createdDate = testDate,
       vatApplication = Some(testAASVatApplicationDetails),
-      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
+      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
       status = VatRegStatus.draft,
@@ -358,7 +359,7 @@ trait ITFixtures {
       createdDate = testDate,
       transactorDetails = Some(testAgentTransactorDetails),
       vatApplication = Some(testAASVatApplicationDetails),
-      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None)),
+      bankAccount = Some(BankAccount(isProvided = true, Some(testBankDetails), None, None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(testFlatRateScheme),
       status = VatRegStatus.draft,
@@ -375,7 +376,7 @@ trait ITFixtures {
       internalId = testInternalid,
       createdDate = testDate,
       vatApplication = Some(testVatApplication),
-      bankAccount = Some(BankAccount(isProvided = false, None, Some(BeingSetup))),
+      bankAccount = Some(BankAccount(isProvided = false, None, Some(BeingSetup), None)),
       acknowledgementReference = Some("ackRef"),
       flatRateScheme = Some(FlatRateScheme(joinFrs = Some(false))),
       status = VatRegStatus.draft,
@@ -713,7 +714,7 @@ trait ITFixtures {
     informationType = "1655996667080",
     file = FileDetails(
       recipientOrSender = "400063095160",
-      name = s"$testFormBundleId-$testFileName",
+      name = s"$testFormBundleId-1-$testFileName",
       location = testDownloadUrl,
       checksum = Checksum(
         algorithm = checksumAlgorithm,

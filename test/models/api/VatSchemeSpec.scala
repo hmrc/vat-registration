@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import models.Voluntary
+import models.registration._
 import models.submission._
 import play.api.libs.json._
-import models.api.vatapplication.VatApplication
-import models.registration._
 import uk.gov.hmrc.http.InternalServerException
 
 import java.time.LocalDate
@@ -77,15 +76,15 @@ class VatSchemeSpec extends VatRegSpec with VatRegistrationFixture {
     }
   }
 
-  private val baseVatSchema = VatScheme("regId", "internalId", LocalDate.of(2020, 2, 2), VatRegStatus.draft)
+  private val baseVatSchema = VatScheme("registrationId", "internalId", LocalDate.of(2020, 2, 2), VatRegStatus.draft)
 
-  def eligibilitySubmissionData(partyType: PartyType) =
+  private def eligibilitySubmissionData(partyType: PartyType) =
     EligibilitySubmissionData(Threshold(true), None, partyType = partyType, Voluntary, None, true, None, true)
 
   "partyType" should {
     "return the eligibilitySubmissionData.partyType in a Some when present" in {
       val testModelIndividual = baseVatSchema.copy(eligibilitySubmissionData = Some(eligibilitySubmissionData(Individual)))
-      val testModelAdmin = baseVatSchema.copy(eligibilitySubmissionData = Some(eligibilitySubmissionData(AdminDivision)))
+      val testModelAdmin      = baseVatSchema.copy(eligibilitySubmissionData = Some(eligibilitySubmissionData(AdminDivision)))
 
       testModelIndividual.partyType mustBe Some(Individual)
       testModelAdmin.partyType mustBe Some(AdminDivision)
@@ -119,7 +118,7 @@ class VatSchemeSpec extends VatRegSpec with VatRegistrationFixture {
       }
       "partyType is not 'Individual' or 'NonUkNonEstablished'" in {
         val testModelRegSociety = baseVatSchema.copy(eligibilitySubmissionData = Some(eligibilitySubmissionData(RegSociety)))
-        val testModelGovOrg = baseVatSchema.copy(eligibilitySubmissionData = Some(eligibilitySubmissionData(GovOrg)))
+        val testModelGovOrg     = baseVatSchema.copy(eligibilitySubmissionData = Some(eligibilitySubmissionData(GovOrg)))
 
         testModelRegSociety.partyTypeIsIndividualOrNonUkNonEstablished mustBe false
         testModelGovOrg.partyTypeIsIndividualOrNonUkNonEstablished mustBe false
@@ -127,40 +126,55 @@ class VatSchemeSpec extends VatRegSpec with VatRegistrationFixture {
     }
   }
 
-  private val baseDate = LocalDate.of(2020, 2, 2)
-
-  /** Minimal JSON that satisfies the reads when no partyType is present */
-  private def baseJson(extraFields: (String, JsValue)*): JsObject =
-    Json.obj(
-      "registrationId" -> "registrationId",
-      "internalId" -> "internalId",
-      "createdDate" -> "2020-02-02",
-      "status" -> "draft"
-    ) ++ JsObject(extraFields)
-
-  /** Minimal JSON with an eligibility block that contains a partyType */
-  private def baseJsonWithPartyType(partyType: PartyType, extraFields: (String, JsValue)*): JsObject =
-    baseJson(extraFields: _*) ++ Json.obj(
-      EligibilitySectionId.repoKey -> Json.obj("partyType" -> Json.toJson(partyType))
-    )
-
   "VatScheme" must {
     "read from Json" when {
-      "eligibilitySubmissionData is null, so no model is created" in {
-        val minimalJson = Json.obj(
-          "registrationId" -> "registrationId",
-          "internalId" -> "internalId",
-          "status" -> "draft"
+      "given full json fields with a eligibilitySubmissionData with a partyType" in {
+        val fullJson = Json.obj(
+          "registrationId"                -> "regId",
+          "internalId"                    -> "internalId",
+          "createdDate"                   -> "2020-02-02",
+          "status"                        -> "draft",
+          "confirmInformationDeclaration" -> true,
+          "applicationReference"          -> "applicationReference",
+          "acknowledgementReference"      -> "acknowledgementReference",
+          "nrsSubmissionPayload"          -> "nrsSubmissionPayload",
+          "nrsSubmissionPayload"          -> "nrsSubmissionPayload",
+          "eligibilitySubmissionData" -> Json.obj(
+            "partyType"                   -> Json.toJson[PartyType](Individual),
+            "threshold"                   -> Json.obj("mandatoryRegistration" -> true),
+            "registrationReason"          -> "0018",
+            "isTransactor"                -> false,
+            "fixedEstablishmentInManOrUk" -> true
+          )
+        )
+        val expectedModel = VatScheme(
+          registrationId = "regId",
+          internalId = "internalId",
+          createdDate = LocalDate.of(2020, 2, 2),
+          status = VatRegStatus.draft,
+          confirmInformationDeclaration = Some(true),
+          applicationReference = Some("applicationReference"),
+          acknowledgementReference = Some("acknowledgementReference"),
+          nrsSubmissionPayload = Some("nrsSubmissionPayload"),
+          eligibilitySubmissionData = Some(
+            EligibilitySubmissionData(
+              threshold = Threshold(mandatoryRegistration = true),
+              appliedForException = None,
+              partyType = Individual,
+              registrationReason = Voluntary,
+              isTransactor = false,
+              fixedEstablishmentInManOrUk = true
+            ))
         )
 
-        minimalJson.as[VatScheme](VatScheme.reads()) mustBe null
+        fullJson.as[VatScheme](VatScheme.reads()) mustBe expectedModel
       }
 
       "given the minimal Json for a VatScheme with no partyType and no createdDate, creating a default LocalDate.MIN" in {
         val minimalJson = Json.obj(
           "registrationId" -> "registrationId",
-          "internalId" -> "internalId",
-          "status" -> "draft"
+          "internalId"     -> "internalId",
+          "status"         -> "draft"
         )
         val expectedModel = VatScheme("registrationId", "internalId", LocalDate.MIN, VatRegStatus.draft)
 
@@ -170,14 +184,14 @@ class VatSchemeSpec extends VatRegSpec with VatRegistrationFixture {
       "return a JsError" when {
         "registrationId is missing" in {
           val json = Json.obj(
-            "internalId" -> "internalId",
+            "internalId"            -> "internalId",
             StatusSectionId.repoKey -> Json.toJson(VatRegStatus.draft)
           )
           Json.fromJson[VatScheme](json)(VatScheme.reads()) mustBe a[JsError]
         }
         "internalId is missing" in {
           val json = Json.obj(
-            "registrationId" -> "registrationId",
+            "registrationId"        -> "registrationId",
             StatusSectionId.repoKey -> Json.toJson(VatRegStatus.draft)
           )
           Json.fromJson[VatScheme](json)(VatScheme.reads()) mustBe a[JsError]
@@ -185,21 +199,20 @@ class VatSchemeSpec extends VatRegSpec with VatRegistrationFixture {
         "status is missing" in {
           val json = Json.obj(
             "registrationId" -> "registrationId",
-            "internalId" -> "internalId"
+            "internalId"     -> "internalId"
           )
           Json.fromJson[VatScheme](json)(VatScheme.reads()) mustBe a[JsError]
         }
       }
     }
 
-
     "write to Json" when {
       "VatScheme model has the minimum fields" in {
         val expectedMinimalJson = Json.obj(
           "registrationId" -> "registrationId",
-          "internalId" -> "internalId",
-          "status" -> "draft",
-          "createdDate" -> "2022-02-02"
+          "internalId"     -> "internalId",
+          "createdDate"    -> "2020-02-02",
+          "status"         -> "draft"
         )
 
         Json.toJson(baseVatSchema)(VatScheme.writes()) mustBe expectedMinimalJson

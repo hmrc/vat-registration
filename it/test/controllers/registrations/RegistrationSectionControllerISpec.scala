@@ -42,7 +42,7 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
       }
 
       "return OK with decrypted json for a decryptable section" in new SetupHelper {
-        val testBankAccount: BankAccount = BankAccount(isProvided = true, Some(testBankDetails), None)
+        val testBankAccount: BankAccount = BankAccount(isProvided = true, Some(testBankDetails), None, None)
 
         given.user.isAuthorised
         insertIntoDb(testVatScheme.copy(bankAccount = Some(testBankAccount)))
@@ -72,9 +72,9 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         given.user.isAuthorised
         insertIntoDb(testVatScheme.copy(transactorDetails = Some(testTransactorDetails)))
 
-        val res = await(client(url(testSectionId)).put(
-          Json.toJson(testTransactorDetails.copy(personalDetails = Some(testPersonalDetails.copy(trn = Some(testTrn))))))
-        )
+        val res = await(
+          client(url(testSectionId)).put(
+            Json.toJson(testTransactorDetails.copy(personalDetails = Some(testPersonalDetails.copy(trn = Some(testTrn)))))))
 
         res.status mustBe OK
         res.json mustBe Json.toJson(testTransactorDetails.copy(personalDetails = Some(testPersonalDetails.copy(trn = Some(testTrn)))))
@@ -94,9 +94,11 @@ class RegistrationSectionControllerISpec extends IntegrationStubbing {
         given.user.isAuthorised
         insertIntoDb(testVatScheme.copy(transactorDetails = Some(testTransactorDetails)))
 
-        val res = await(client(url(testSectionId)).put(Json.obj(
-          "isPartOfOrganisation" -> "notBoolean"
-        )))
+        val res = await(
+          client(url(testSectionId)).put(
+            Json.obj(
+              "isPartOfOrganisation" -> "notBoolean"
+            )))
 
         res.status mustBe BAD_REQUEST
       }
