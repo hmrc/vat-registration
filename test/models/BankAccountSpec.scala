@@ -116,6 +116,14 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
        |}
 """.stripMargin)
 
+  private val baseBankAccountDetails = BankAccountDetails(
+    name = "myName",
+    sortCode = "00-11-22",
+    number = "12345678",
+    rollNumber = None,
+    status = ValidStatus
+  )
+
   "Creating a BankAccount model from Json" should {
     implicit val format: Format[BankAccount] = BankAccount.format
     "complete successfully" when {
@@ -307,13 +315,26 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
     }
   }
 
-  private val baseBankAccountDetails = BankAccountDetails(
-    name = "myName",
-    sortCode = "00-11-22",
-    number = "12345678",
-    rollNumber = None,
-    status = ValidStatus
-  )
+  "invalidBuildReason" should {
+    "return 'isProvided = true but details are not defined'" when {
+      "isProvided = true but details are not defined" in {
+        BankAccount(isProvided = true, details = None, None, None).invalidBuildReason mustBe "isProvided = true but details are not defined"
+      }
+    }
+    "return 'isProvided = false but reason is not defined'" when {
+      "isProvided = false but reason is not defined" in {
+        BankAccount(isProvided = false, None, reason = None, None).invalidBuildReason mustBe "isProvided = false but reason is not defined"
+      }
+    }
+    "return 'failure reason unknown'" when {
+      "isProvided = true and details are defined" in {
+        BankAccount(isProvided = true, details = Some(baseBankAccountDetails), None, None).invalidBuildReason mustBe "failure reason unknown"
+      }
+      "isProvided = false and reason is defined" in {
+        BankAccount(isProvided = false, None, reason = Some(BeingSetup), None).invalidBuildReason mustBe "failure reason unknown"
+      }
+    }
+  }
 
   "BankAccountDetails" when {
     "reading from Json" must {
@@ -410,18 +431,18 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
     }
   }
 
-  "statusIsInvalid" should {
+  "statusIsNotValid" should {
     "return true" when {
       "status is Invalid" in {
-        baseBankAccountDetails.copy(status = InvalidStatus).statusIsInvalid mustBe true
+        baseBankAccountDetails.copy(status = InvalidStatus).statusIsNotValid mustBe true
       }
       "status is Indeterminate" in {
-        baseBankAccountDetails.copy(status = IndeterminateStatus).statusIsInvalid mustBe true
+        baseBankAccountDetails.copy(status = IndeterminateStatus).statusIsNotValid mustBe true
       }
     }
     "return false" when {
       "status is Valid" in {
-        baseBankAccountDetails.copy(status = ValidStatus).statusIsInvalid mustBe false
+        baseBankAccountDetails.copy(status = ValidStatus).statusIsNotValid mustBe false
       }
     }
   }

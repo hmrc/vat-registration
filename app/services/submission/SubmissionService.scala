@@ -104,7 +104,7 @@ class SubmissionService @Inject() (
       case exception =>
         registrationRepository.updateSubmissionStatus(internalId, regId, VatRegStatus.failedRetryable)
         errorLog(s"[SubmissionService][submitVatRegistration] - $exception", regId)
-        throw exception // throws here due to build failure
+        throw exception
 
     }
   }

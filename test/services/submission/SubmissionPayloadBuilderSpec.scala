@@ -292,7 +292,7 @@ class SubmissionPayloadBuilderSpec
 
         result mustBe Left(
           BuildFailure(
-            "Unable to build submission model as user has not give bank details, nor bank details reason, nor is a NonUK/NonEstablished user"))
+            "[BankDetailsBlockBuilder] Unable to build submission model: No BankAccount model"))
       }
     }
   }

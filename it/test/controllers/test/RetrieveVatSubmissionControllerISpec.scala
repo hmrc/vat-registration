@@ -58,6 +58,7 @@ class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with Inte
 
       "the submission builder returns a BuildFailure" in new SetupHelper {
         given.user.isAuthorised
+        insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner.copy(business = None))
 
         val res: Future[WSResponse] = client(url).get()
 

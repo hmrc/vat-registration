@@ -41,7 +41,7 @@ class RetrieveVatSubmissionController @Inject() (cc: ControllerComponents,
         case Some(vatScheme) =>
           submissionPayloadBuilder.buildSubmissionPayload(vatScheme)
         case None =>
-          Left(BuildFailure("Unable to find VatScheme for InternalId: $internalId and RegId: $regId"))
+          Left(BuildFailure(s"[RetrieveVatSubmissionController] Unable to find VatScheme for InternalId: $internalId and RegId: $regId"))
       }
 
       submissionPayload map {

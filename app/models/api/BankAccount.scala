@@ -23,10 +23,19 @@ import play.api.libs.json._
 case class BankAccount(isProvided: Boolean,
                        details: Option[BankAccountDetails],
                        reason: Option[NoUKBankAccount],
-                       bankAccountType: Option[BankAccountType])
+                       bankAccountType: Option[BankAccountType]) {
+  def invalidBuildReason: String =
+    if (isProvided && details.isEmpty) {
+      "isProvided = true but details are not defined"
+    } else if (!isProvided && reason.isEmpty) {
+      "isProvided = false but reason is not defined"
+    } else {
+      "failure reason unknown"
+    }
+}
 
 case class BankAccountDetails(name: String, sortCode: String, number: String, rollNumber: Option[String], status: BankAccountDetailsStatus) {
-    def statusIsInvalid: Boolean = status != ValidStatus
+  def statusIsNotValid: Boolean = status != ValidStatus
 }
 
 object BankAccount {
