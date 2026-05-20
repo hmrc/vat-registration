@@ -27,23 +27,57 @@ import services.submission.SubmissionPayloadBuilder
 import scala.concurrent.Future
 
 class RetrieveVatSubmissionControllerISpec extends IntegrationSpecBase with IntegrationStubbing {
-  implicit val request: Request[_] = FakeRequest()
-  val url = s"/vatreg/test-only/submissions/$testRegId/submission-payload"
+  implicit val request: Request[_]      = FakeRequest()
+  val url                               = s"/vatreg/test-only/submissions/$testRegId/submission-payload"
   val builder: SubmissionPayloadBuilder = app.injector.instanceOf[SubmissionPayloadBuilder]
 
   "/test-only/submissions/:regId/submission-payload" must {
-    "return OK with the submission Json" in new SetupHelper {
+    "return an OK with the submission Json payload when successful" in new SetupHelper {
       given.user.isAuthorised
       insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner)
 
-      val expectedJson: JsObject = builder.buildSubmissionPayload(testFullVatSchemeWithUnregisteredBusinessPartner)
+      val expectedJson: JsObject  = builder.buildSubmissionPayload(testFullVatSchemeWithUnregisteredBusinessPartner).getOrElse(JsObject.empty)
       val res: Future[WSResponse] = client(url).get()
 
       whenReady(res) { result =>
         result.status mustBe OK
         result.json mustBe expectedJson
       }
+    }
 
+    "return an InternalServerError" when {
+      "registration ID does not match any data" in new SetupHelper {
+        given.user.isAuthorised
+
+        val res: Future[WSResponse] = client(url).get()
+
+        whenReady(res) { result =>
+          result.status mustBe INTERNAL_SERVER_ERROR
+        }
+      }
+
+      "the submission builder returns a BuildFailure" in new SetupHelper {
+        given.user.isAuthorised
+        insertIntoDb(testFullVatSchemeWithUnregisteredBusinessPartner.copy(business = None))
+
+        val res: Future[WSResponse] = client(url).get()
+
+        whenReady(res) { result =>
+          result.status mustBe INTERNAL_SERVER_ERROR
+        }
+      }
+    }
+
+    "return a Forbidden" when {
+      "user ID is not authorised" in new SetupHelper {
+        given.user.isNotAuthorised
+
+        val res: Future[WSResponse] = client(url).get()
+
+        whenReady(res) { result =>
+          result.status mustBe FORBIDDEN
+        }
+      }
     }
   }
 
