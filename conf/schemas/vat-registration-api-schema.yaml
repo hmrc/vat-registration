@@ -511,11 +511,11 @@ components:
           pattern: '^[A-Za-z0-9 ''’‘()\[\]{}<>!«»"ʺ˝ˮ?/\\+=%#*&$€£_\-@¥.,:;]{1,60}$'
         accountNumber:
           type: string
-          pattern: '^[0-9]{8}$'
+          pattern: '^[0-9]{6,8}$'
         sortCode:
           type: string
           pattern: '^[0-9]{6}$'
-        buildSocietyRollNumber:
+        rollNumber:
           type: string
           pattern: '^[A-Za-z0-9]{1,20}$'
         bankDetailsNotValid:

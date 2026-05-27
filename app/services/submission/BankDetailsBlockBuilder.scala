@@ -31,22 +31,30 @@ object BankDetailsBlockBuilder extends FeatureSwitching {
 
   private def buildBankDetailsBlockNew(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
     vatScheme.bankAccount match {
+      case Some(BankAccount(_, Some(bankAccountDetails), _, _)) if bankAccountDetails.status.isEmpty =>
+        Left(BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: bank details have not yet been BARS checked"))
+
       // overseas-account = reason + no-bank
       case _ if vatScheme.partyTypeIsIndividualOrNonUkNonEstablished =>
         Right(buildJsonForBankDetailsAndOrReason(bankAccountDetails = None, reason = Some(OverseasAccount)))
+
       // yes -> bank-details -> success = bank + valid
       case Some(BankAccount(true, Some(bankAccountDetails), None, _)) =>
         Right(buildJsonForBankDetailsAndOrReason(Some(bankAccountDetails), reason = None))
+
       // yes -> bank-details -> 3x fail = bank + invalid + lockout-fail-reason
       case Some(BankAccount(true, Some(bankAccountDetails), Some(DontWantToProvide), _)) =>
         Right(buildJsonForBankDetailsAndOrReason(Some(bankAccountDetails), Some(DontWantToProvide)))
+
       // yes -> bank-details -> fail -> back -> no -> reason = bank + invalid + reason
       case Some(BankAccount(false, Some(bankAccountDetails), Some(reason), _)) =>
         Right(buildJsonForBankDetailsAndOrReason(Some(bankAccountDetails), Some(reason)))
+
       // yes -> bank-details -> success -> back -> no -> reason = reason
       // no  -> reason = reason
       case Some(BankAccount(false, None, Some(reason), _)) =>
         Right(buildJsonForBankDetailsAndOrReason(bankAccountDetails = None, Some(reason)))
+
       case invalidDetails =>
         Left(
           BuildFailure(
@@ -75,10 +83,8 @@ object BankDetailsBlockBuilder extends FeatureSwitching {
               "accountName"   -> details.name,
               "sortCode"      -> details.sortCode.replaceAll("-", ""),
               "accountNumber" -> details.number,
-              optional("rollNumber" -> details.rollNumber),
-              conditional(List(IndeterminateStatus, InvalidStatus).contains(details.status))(
-                "bankDetailsNotValid" -> true
-              )
+              optional("rollNumber"                                       -> details.rollNumber),
+              conditional(details.statusIsNotValid)("bankDetailsNotValid" -> true)
             )
           )
         )

@@ -20,7 +20,6 @@ import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, SubmitBarsInvalidBankDetailsToAPI}
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
-import models.api.BankAccountType.Personal
 import models.api._
 import models.submission.Individual
 import models.{BuildFailure, Voluntary}
@@ -39,13 +38,13 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
   "buildBankDetailsBlock" when {
     "SubmitBarsInvalidBankDetailsToAPI switch it ON" should {
-      def bankAccountDetailsWithStatus(status: BankAccountDetailsStatus) =
+      def bankAccountDetailsWithStatus(status: Option[BankAccountDetailsStatus]) =
         BankAccountDetails("name", "sort-Code", "accountNumber", Some("rollNumber"), status)
 
       "return a Right with Json containing bank details and no reason or invalid flag" when {
         "user is submitting valid bank details" in new SwitchOn {
           val bankAccountDetails: BankAccount =
-            BankAccount(isProvided = true, Some(bankAccountDetailsWithStatus(ValidStatus)), reason = None, Some(Personal))
+            BankAccount(isProvided = true, Some(bankAccountDetailsWithStatus(Some(ValidStatus))), reason = None, None)
           val vatSchemeWithValidBankDetails: VatScheme = baseVatScheme.copy(bankAccount = Some(bankAccountDetails))
           val expectedJson: JsObject = jsonObject(
             "UK" -> jsonObject(
@@ -63,7 +62,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       "return a Right with Json containing bank details with an invalid flag, and the 'DontWantToProvide' (ID: 7) reason" when {
         "user fails bars 3 times and has been locked out" in new SwitchOn {
           val invalidBankDetailsWithLockoutReason: BankAccount =
-            BankAccount(isProvided = true, Some(bankAccountDetailsWithStatus(InvalidStatus)), reason = Some(DontWantToProvide), Some(Personal))
+            BankAccount(isProvided = true, Some(bankAccountDetailsWithStatus(Some(InvalidStatus))), reason = Some(DontWantToProvide), None)
           val vatSchemeWithInvalidBankDetailsAndLockoutReason: VatScheme = baseVatScheme.copy(bankAccount = Some(invalidBankDetailsWithLockoutReason))
           val expectedJson: JsObject = jsonObject(
             "UK" -> jsonObject(
@@ -83,10 +82,10 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       "return a Right with Json containing bank details with an invalid flag, and their chosen reason" when {
         "user fails bars and then changes their mind to give a reason" in new SwitchOn {
           val invalidBankDetailsWithReasonToNotProvide: BankAccount =
-            BankAccount(isProvided = false, Some(bankAccountDetailsWithStatus(InvalidStatus)), reason = Some(BeingSetup), Some(Personal))
+            BankAccount(isProvided = false, Some(bankAccountDetailsWithStatus(Some(InvalidStatus))), reason = Some(BeingSetup), None)
           val vatSchemeWithInvalidBankDetailsAndReason: VatScheme = baseVatScheme.copy(bankAccount = Some(invalidBankDetailsWithReasonToNotProvide))
           val indeterminateBankDetailsWithReasonToNotProvide: BankAccount =
-            BankAccount(isProvided = false, Some(bankAccountDetailsWithStatus(IndeterminateStatus)), reason = Some(BeingSetup), Some(Personal))
+            BankAccount(isProvided = false, Some(bankAccountDetailsWithStatus(Some(IndeterminateStatus))), reason = Some(BeingSetup), None)
           val vatSchemeWithIndeterminateBankDetailsAndReason: VatScheme =
             baseVatScheme.copy(bankAccount = Some(indeterminateBankDetailsWithReasonToNotProvide))
           val expectedJson: JsObject = jsonObject(
@@ -108,7 +107,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
       "return a Right with Json containing only their chosen reason" when {
         "user chooses to submit a reason and has not failed any BARS checks" in new SwitchOn {
           val invalidBankDetailsWithLockoutReason: BankAccount =
-            BankAccount(isProvided = false, details = None, reason = Some(AccountNotInBusinessName), Some(Personal))
+            BankAccount(isProvided = false, details = None, reason = Some(AccountNotInBusinessName), None)
           val vatSchemeWithInvalidBankDetailsAndLockoutReason: VatScheme = baseVatScheme.copy(bankAccount = Some(invalidBankDetailsWithLockoutReason))
           val expectedJson: JsObject                                     = jsonObject("UK" -> jsonObject("reasonBankAccNotProvided" -> "6"))
 
@@ -149,6 +148,14 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: isProvided = false but reason is not defined")
 
           buildBankDetailsBlock(vatSchemeWithMissingReason) mustBe Left(buildFailure)
+        }
+        "bank details are provided but there is no status" in new SwitchOn {
+          val missingStatus: BankAccount            = BankAccount(isProvided = false, details = Some(bankAccountDetailsWithStatus(None)), None, None)
+          val vatSchemeWithMissingStatus: VatScheme = baseVatScheme.copy(bankAccount = Some(missingStatus))
+          val buildFailure: BuildFailure =
+            BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: bank details have not yet been BARS checked")
+
+          buildBankDetailsBlock(vatSchemeWithMissingStatus) mustBe Left(buildFailure)
         }
       }
     }
@@ -215,7 +222,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
         "the applicant has an indeterminate bank account" in new SwitchOff {
           val vatScheme: VatScheme = testVatScheme.copy(
-            bankAccount = Some(testBankAccount.copy(details = Some(testBankDetails.copy(status = IndeterminateStatus)))),
+            bankAccount = Some(testBankAccount.copy(details = Some(testBankDetails.copy(status = Some(IndeterminateStatus))))),
             eligibilitySubmissionData = Some(testEligibilitySubmissionData)
           )
 
@@ -225,7 +232,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
         "the applicant has an invalid bank account" in new SwitchOff {
           val vatScheme: VatScheme = testVatScheme.copy(
-            bankAccount = Some(testBankAccount.copy(details = Some(testBankDetails.copy(status = InvalidStatus)))),
+            bankAccount = Some(testBankAccount.copy(details = Some(testBankDetails.copy(status = Some(InvalidStatus))))),
             eligibilitySubmissionData = Some(testEligibilitySubmissionData)
           )
 

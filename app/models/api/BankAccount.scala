@@ -34,8 +34,8 @@ case class BankAccount(isProvided: Boolean,
     }
 }
 
-case class BankAccountDetails(name: String, sortCode: String, number: String, rollNumber: Option[String], status: BankAccountDetailsStatus) {
-  def statusIsNotValid: Boolean = status != ValidStatus
+case class BankAccountDetails(name: String, sortCode: String, number: String, rollNumber: Option[String], status: Option[BankAccountDetailsStatus]) {
+  def statusIsNotValid: Boolean = status.exists(_ != ValidStatus)
 }
 
 object BankAccount {
@@ -52,7 +52,7 @@ object BankAccountDetailsMongoFormat {
       (__ \ "sortCode").format[String] and
       (__ \ "number").format[String](crypto.rds)(crypto.wts) and
       (__ \ "rollNumber").formatNullable[String] and
-      (__ \ "status").format[BankAccountDetailsStatus]
+      (__ \ "status").formatNullable[BankAccountDetailsStatus]
   )(BankAccountDetails.apply, unlift(BankAccountDetails.unapply))
 }
 

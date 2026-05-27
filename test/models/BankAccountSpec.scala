@@ -19,7 +19,6 @@ package models
 import auth.CryptoSCRS
 import com.typesafe.config.ConfigFactory
 import helpers.VatRegSpec
-import models.api.BankAccountType.Personal
 import models.api._
 import org.mockito.Mockito._
 import play.api.Configuration
@@ -35,7 +34,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
         sortCode = "00-99-22",
         number = "12345678",
         rollNumber = None,
-        status = ValidStatus
+        status = Some(ValidStatus)
       )
     ),
     reason = None,
@@ -69,7 +68,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
         sortCode = "00-99-22",
         number = "12345678",
         rollNumber = Some("AB/121212"),
-        status = ValidStatus
+        status = Some(ValidStatus)
       )),
     reason = None,
     bankAccountType = None
@@ -96,11 +95,11 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
         sortCode = "00-99-22",
         number = "12345678",
         rollNumber = None,
-        status = ValidStatus
+        status = Some(ValidStatus)
       )
     ),
     reason = None,
-    bankAccountType = Some(BankAccountType.Business)
+    bankAccountType = None
   )
 
   val fullBankAccountWithTypeJson: JsValue = Json.parse(s"""
@@ -121,7 +120,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
     sortCode = "00-11-22",
     number = "12345678",
     rollNumber = None,
-    status = ValidStatus
+    status = None
   )
 
   "Creating a BankAccount model from Json" should {
@@ -135,9 +134,6 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       }
       "from full Json with roll number" in {
         Json.fromJson[BankAccount](fullBankAccountWithRollNumberJson) mustBe JsSuccess(fullBankAccountWithRollNumberModel)
-      }
-      "from full Json with bank account type" in {
-        Json.fromJson[BankAccount](fullBankAccountWithTypeJson) mustBe JsSuccess(fullBankAccountWithTypeModel)
       }
     }
 
@@ -220,10 +216,6 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       "full model with roll number is given" in {
         Json.toJson[BankAccount](fullBankAccountWithRollNumberModel) mustBe fullBankAccountWithRollNumberJson
       }
-
-      "full model with bank account type is given" in {
-        Json.toJson[BankAccount](fullBankAccountWithTypeModel) mustBe fullBankAccountWithTypeJson
-      }
     }
   }
 
@@ -249,7 +241,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
           sortCode = "00-99-22",
           number = "12345678",
           rollNumber = None,
-          status = ValidStatus
+          status = Some(ValidStatus)
         )
       ),
       reason = None,
@@ -268,7 +260,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
          |}
       """.stripMargin)
 
-    val bankAccountWithRollNumberAndType = BankAccount(
+    val bankAccountWithRollNumber = BankAccount(
       isProvided = true,
       Some(
         BankAccountDetails(
@@ -276,14 +268,14 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
           sortCode = "00-99-22",
           number = "12345678",
           rollNumber = Some("AB/121212"),
-          status = ValidStatus
+          status = Some(ValidStatus)
         )
       ),
       reason = None,
-      bankAccountType = Some(Personal)
+    bankAccountType = None
     )
 
-    val encryptedJsonWithRollNumberAndType = Json.parse(s"""
+    val encryptedJsonWithRollNumber = Json.parse(s"""
          |{
          | "isProvided":true,
          | "details":{
@@ -292,8 +284,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
          |   "number":"V3BrR3VxdHB2YzBYb1BrbHk3UGJzdz09",
          |   "rollNumber":"AB/121212",
          |   "status":${Json.toJson[BankAccountDetailsStatus](ValidStatus)}
-         | },
-         | "bankAccountType":"personal"
+         | }
          |}
   """.stripMargin)
 
@@ -306,12 +297,12 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
       readResult mustBe bankAccount
     }
     "write from a BankAccount with roll number and type to correct Json with encrypted account number" in {
-      val writeResult = Json.toJson(bankAccountWithRollNumberAndType)(encryptionFormat)
-      writeResult mustBe encryptedJsonWithRollNumberAndType
+      val writeResult = Json.toJson(bankAccountWithRollNumber)(encryptionFormat)
+      writeResult mustBe encryptedJsonWithRollNumber
     }
     "read from a Json object with roll number and type with encrypted account number to correct BankAccount" in {
-      val readResult = Json.fromJson(encryptedJsonWithRollNumberAndType)(encryptionFormat).get
-      readResult mustBe bankAccountWithRollNumberAndType
+      val readResult = Json.fromJson(encryptedJsonWithRollNumber)(encryptionFormat).get
+      readResult mustBe bankAccountWithRollNumber
     }
   }
 
@@ -339,7 +330,7 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
   "BankAccountDetails" when {
     "reading from Json" must {
       "return a valid model" when {
-        "all values including rollNumber are present" in {
+        "all values including rollNumber and status are present" in {
           val fullJson = Json.parse("""
               |{
               |  "name": "myName",
@@ -350,19 +341,18 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
               |}
               |""".stripMargin)
 
-          fullJson.as[BankAccountDetails] mustBe baseBankAccountDetails.copy(rollNumber = Some("myRollNumber"), status = ValidStatus)
+          fullJson.as[BankAccountDetails] mustBe baseBankAccountDetails.copy(rollNumber = Some("myRollNumber"), status = Some(ValidStatus))
         }
-        "all values except rollNumber are present" in {
+        "all values except rollNumber and status are present" in {
           val fullJson = Json.parse("""
               |{
               |  "name": "myName",
               |  "sortCode": "00-11-22",
-              |  "number": "12345678",
-              |  "status": "yes"
+              |  "number": "12345678"
               |}
               |""".stripMargin)
 
-          fullJson.as[BankAccountDetails] mustBe baseBankAccountDetails.copy(status = ValidStatus)
+          fullJson.as[BankAccountDetails] mustBe baseBankAccountDetails
         }
       }
 
@@ -389,25 +379,17 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
               |  "status": "yes"
               |}
               |""".stripMargin)
-          val jsonWithMissingStatus = Json.parse("""
-              |{
-              |  "name": "myName",
-              |  "sortCode": "00-11-22",
-              |  "number": "12345678"
-              |}
-              |""".stripMargin)
 
           Json.fromJson[BankAccountDetails](jsonWithMissingName) shouldHaveErrors (__ \ "name"         -> JsonValidationError("error.path.missing"))
           Json.fromJson[BankAccountDetails](jsonWithMissingSortCode) shouldHaveErrors (__ \ "sortCode" -> JsonValidationError("error.path.missing"))
           Json.fromJson[BankAccountDetails](jsonWithMissingNumber) shouldHaveErrors (__ \ "number"     -> JsonValidationError("error.path.missing"))
-          Json.fromJson[BankAccountDetails](jsonWithMissingStatus) shouldHaveErrors (__ \ "status"     -> JsonValidationError("error.path.missing"))
         }
       }
     }
 
     "writing to Json" must {
       "convert the model successfully" in {
-        val jsonWithRollNumber = Json.parse("""
+        val jsonWithRollNumberAndStatus = Json.parse("""
             |{
             |  "name": "myName",
             |  "sortCode": "00-11-22",
@@ -416,17 +398,16 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
             |  "status": "yes"
             |}
             |""".stripMargin)
-        val jsonWithoutRollNumber = Json.parse("""
+        val jsonWithoutRollNumberOrStatus = Json.parse("""
             |{
             |  "name": "myName",
             |  "sortCode": "00-11-22",
-            |  "number": "12345678",
-            |  "status": "yes"
+            |  "number": "12345678"
             |}
             |""".stripMargin)
 
-        Json.toJson(baseBankAccountDetails.copy(rollNumber = Some("myRollNumber"))) mustBe jsonWithRollNumber
-        Json.toJson(baseBankAccountDetails.copy(rollNumber = None)) mustBe jsonWithoutRollNumber
+        Json.toJson(baseBankAccountDetails.copy(rollNumber = Some("myRollNumber"), status = Some(ValidStatus))) mustBe jsonWithRollNumberAndStatus
+        Json.toJson(baseBankAccountDetails.copy(rollNumber = None, status = None)) mustBe jsonWithoutRollNumberOrStatus
       }
     }
   }
@@ -434,15 +415,15 @@ class BankAccountSpec extends VatRegSpec with JsonFormatValidation {
   "statusIsNotValid" should {
     "return true" when {
       "status is Invalid" in {
-        baseBankAccountDetails.copy(status = InvalidStatus).statusIsNotValid mustBe true
+        baseBankAccountDetails.copy(status = Some(InvalidStatus)).statusIsNotValid mustBe true
       }
       "status is Indeterminate" in {
-        baseBankAccountDetails.copy(status = IndeterminateStatus).statusIsNotValid mustBe true
+        baseBankAccountDetails.copy(status = Some(IndeterminateStatus)).statusIsNotValid mustBe true
       }
     }
     "return false" when {
       "status is Valid" in {
-        baseBankAccountDetails.copy(status = ValidStatus).statusIsNotValid mustBe false
+        baseBankAccountDetails.copy(status = Some(ValidStatus)).statusIsNotValid mustBe false
       }
     }
   }

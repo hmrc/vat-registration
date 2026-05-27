@@ -1,16 +1,16 @@
-GET         /api/feature-switches                                  featureswitch.api.controllers.FeatureSwitchApiController.getFeatureSwitches()
-POST        /api/feature-switches                                  featureswitch.api.controllers.FeatureSwitchApiController.updateFeatureSwitches()
+GET           /api/feature-switches                         featureswitch.api.controllers.FeatureSwitchApiController.getFeatureSwitches()
+POST          /api/feature-switches                         featureswitch.api.controllers.FeatureSwitchApiController.updateFeatureSwitches()
 
-DELETE      /registrations                                         controllers.test.DeleteAllRegistrationsController.deleteAllRegistrations()
+DELETE        /registrations                                controllers.test.DeleteAllRegistrationsController.deleteAllRegistrations()
 
-POST        /vat/subscription                                      controllers.test.StubVatSubmissionController.processSubmission
-POST        /submission                                            controllers.test.StubNrsController.processSubmission
-POST        /attachment                                            controllers.test.StubNrsController.processAttachmentSubmission
+POST          /vat/subscription                             controllers.test.StubVatSubmissionController.processSubmission
+POST          /submission                                   controllers.test.StubNrsController.processSubmission
+POST          /attachment                                   controllers.test.StubNrsController.processAttachmentSubmission
 
-GET         /submissions/:regId/submission-payload                 controllers.test.RetrieveVatSubmissionController.retrieveSubmissionJson(regId)
+GET           /submissions/:regId/submission-payload        controllers.test.RetrieveVatSubmissionController.retrieveSubmissionJson(regId)
 
-POST        /notification/fileready                                controllers.test.StubSdesController.notificationStub
+POST          /notification/fileready                       controllers.test.StubSdesController.notificationStub
 
-POST        /setup-data/:regId                          controllers.test.SetupDataController.setUpData(regId: String)
+POST          /setup-data/:regId                            controllers.test.SetupDataController.setUpData(regId: String)
 
-POST       /setup-upscan/:regId                         controllers.test.SetupDataController.setUpUpscan(regId: String)
+POST          /setup-upscan/:regId                          controllers.test.SetupDataController.setUpUpscan(regId: String)

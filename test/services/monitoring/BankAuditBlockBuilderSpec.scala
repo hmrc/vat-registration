@@ -57,7 +57,7 @@ class BankAuditBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture {
           sortCode = "01-02-03",
           number = "01023456",
           rollNumber = None,
-          status = ValidStatus
+          status = Some(ValidStatus)
         )
 
         val testScheme = testVatScheme.copy(bankAccount = Some(testBankAccount).map(_.copy(details = Some(testBank))))

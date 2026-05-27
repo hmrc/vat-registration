@@ -276,7 +276,7 @@ trait ITFixtures {
     sortCode = "11-11-11",
     number = "01234567",
     rollNumber = None,
-    status = ValidStatus
+    status = Some(ValidStatus)
   )
   val testSubmittedSortCode = "111111"
 

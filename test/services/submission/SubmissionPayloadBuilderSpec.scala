@@ -20,7 +20,6 @@ import featureswitch.core.config.{FeatureSwitching, SubmitBarsInvalidBankDetails
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import models.BuildFailure
-import models.api.Business
 import models.submission.{EntitiesArrayType, Individual, PartnerEntity, PartyType}
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
