@@ -43,7 +43,8 @@ A full VAT registration journey can be created from stubs to avoid filling in ea
 5. Click the stub link for [localhost](http://localhost:9895/register-for-vat/test-only/vat-stub) or [staging](https://www.staging.tax.service.gov.uk/register-for-vat/test-only/vat-stub) again.
 
 ### Stubbing BARS API Response
-When `StubBars` switch is on, response is stubbed by [BankAccountReputationStubController.verifyBankDetails()](app/controllers/test/BankAccountReputationStubController.scala).
+When `StubBars` switch is on,
+response is stubbed by the vat-registration-frontend's `BankAccountReputationStubController.verifyBankDetails()` method.
 
 Response status is determined by the first 2 digits of the sort code:
 - 11 XX XX -> `Invalid`
