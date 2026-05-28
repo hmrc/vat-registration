@@ -16,6 +16,7 @@
 
 package services.submission
 
+import config.BackendConfig
 import featureswitch.core.config.{FeatureSwitching, SubmitBarsInvalidBankDetailsToAPI}
 import models.BuildFailure
 import models.api.NoUKBankAccount.reasonId
@@ -24,7 +25,10 @@ import models.submission.{Individual, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import utils.JsonUtils._
 
-object BankDetailsBlockBuilder extends FeatureSwitching {
+import javax.inject.{Inject, Singleton}
+
+@Singleton
+class BankDetailsBlockBuilder @Inject()(implicit val appConfig: BackendConfig) extends FeatureSwitching {
 
   def buildBankDetailsBlock(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
     if (isEnabled(SubmitBarsInvalidBankDetailsToAPI)) buildBankDetailsBlockNew(vatScheme) else buildBankDetailsBlockOld(vatScheme)
@@ -68,7 +72,7 @@ object BankDetailsBlockBuilder extends FeatureSwitching {
         optional("accountName"                                                           -> bankAccountDetails.map(_.name)),
         optional("sortCode"                                                              -> bankAccountDetails.map(_.sortCode.replaceAll("-", ""))),
         optional("accountNumber"                                                         -> bankAccountDetails.map(_.number)),
-        optional("rollNumber"                                                            -> bankAccountDetails.flatMap(_.rollNumber)),
+        optional("buildSocietyRollNumber"                                                            -> bankAccountDetails.flatMap(_.rollNumber)),
         conditional(bankAccountDetails.exists(_.statusIsNotValid))("bankDetailsNotValid" -> true),
         optional("reasonBankAccNotProvided"                                              -> reason.map(reasonId))
       )
@@ -83,7 +87,7 @@ object BankDetailsBlockBuilder extends FeatureSwitching {
               "accountName"   -> details.name,
               "sortCode"      -> details.sortCode.replaceAll("-", ""),
               "accountNumber" -> details.number,
-              optional("rollNumber"                                       -> details.rollNumber),
+              optional("buildSocietyRollNumber"                                       -> details.rollNumber),
               conditional(details.statusIsNotValid)("bankDetailsNotValid" -> true)
             )
           )

@@ -405,7 +405,8 @@ trait ITFixtures {
     testFullVatScheme.copy(
       applicantDetails = Some(testRegisteredSoleTraderApplicantDetailsNoBpSafeId),
       eligibilitySubmissionData = Some(testEligibilitySubmissionDataSoleTrader),
-      nrsSubmissionPayload = Some(testEncodedPayload)
+      nrsSubmissionPayload = Some(testEncodedPayload),
+      bankAccount = Some(BankAccount(isProvided = false, None, Some(OverseasAccount), None))
     )
 
   val testSoleTraderEntity: SoleTraderIdEntity = SoleTraderIdEntity(

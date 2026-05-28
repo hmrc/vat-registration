@@ -24,7 +24,6 @@ import models.api._
 import models.submission.Individual
 import models.{BuildFailure, Voluntary}
 import play.api.libs.json.{JsObject, Json}
-import services.submission.BankDetailsBlockBuilder.buildBankDetailsBlock
 import utils.JsonUtils.jsonObject
 
 import java.time.LocalDate
@@ -35,6 +34,8 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
   trait SwitchOn  { enable(SubmitBarsInvalidBankDetailsToAPI)  }
   trait SwitchOff { disable(SubmitBarsInvalidBankDetailsToAPI) }
+
+  private val builder: BankDetailsBlockBuilder = new BankDetailsBlockBuilder
 
   "buildBankDetailsBlock" when {
     "SubmitBarsInvalidBankDetailsToAPI switch it ON" should {
@@ -48,14 +49,14 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val vatSchemeWithValidBankDetails: VatScheme = baseVatScheme.copy(bankAccount = Some(bankAccountDetails))
           val expectedJson: JsObject = jsonObject(
             "UK" -> jsonObject(
-              "accountName"   -> "name",
-              "sortCode"      -> "sortCode",
-              "accountNumber" -> "accountNumber",
-              "rollNumber"    -> "rollNumber"
+              "accountName"            -> "name",
+              "sortCode"               -> "sortCode",
+              "accountNumber"          -> "accountNumber",
+              "buildSocietyRollNumber" -> "rollNumber"
             )
           )
 
-          buildBankDetailsBlock(vatSchemeWithValidBankDetails) mustBe Right(expectedJson)
+          builder.buildBankDetailsBlock(vatSchemeWithValidBankDetails) mustBe Right(expectedJson)
         }
       }
 
@@ -69,13 +70,13 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
               "accountName"              -> "name",
               "sortCode"                 -> "sortCode",
               "accountNumber"            -> "accountNumber",
-              "rollNumber"               -> "rollNumber",
+              "buildSocietyRollNumber"   -> "rollNumber",
               "bankDetailsNotValid"      -> true,
               "reasonBankAccNotProvided" -> "7"
             )
           )
 
-          buildBankDetailsBlock(vatSchemeWithInvalidBankDetailsAndLockoutReason) mustBe Right(expectedJson)
+          builder.buildBankDetailsBlock(vatSchemeWithInvalidBankDetailsAndLockoutReason) mustBe Right(expectedJson)
         }
       }
 
@@ -93,14 +94,14 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
               "accountName"              -> "name",
               "sortCode"                 -> "sortCode",
               "accountNumber"            -> "accountNumber",
-              "rollNumber"               -> "rollNumber",
+              "buildSocietyRollNumber"   -> "rollNumber",
               "bankDetailsNotValid"      -> true,
               "reasonBankAccNotProvided" -> "1"
             )
           )
 
-          buildBankDetailsBlock(vatSchemeWithInvalidBankDetailsAndReason) mustBe Right(expectedJson)
-          buildBankDetailsBlock(vatSchemeWithIndeterminateBankDetailsAndReason) mustBe Right(expectedJson)
+          builder.buildBankDetailsBlock(vatSchemeWithInvalidBankDetailsAndReason) mustBe Right(expectedJson)
+          builder.buildBankDetailsBlock(vatSchemeWithIndeterminateBankDetailsAndReason) mustBe Right(expectedJson)
         }
       }
 
@@ -111,7 +112,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val vatSchemeWithInvalidBankDetailsAndLockoutReason: VatScheme = baseVatScheme.copy(bankAccount = Some(invalidBankDetailsWithLockoutReason))
           val expectedJson: JsObject                                     = jsonObject("UK" -> jsonObject("reasonBankAccNotProvided" -> "6"))
 
-          buildBankDetailsBlock(vatSchemeWithInvalidBankDetailsAndLockoutReason) mustBe Right(expectedJson)
+          builder.buildBankDetailsBlock(vatSchemeWithInvalidBankDetailsAndLockoutReason) mustBe Right(expectedJson)
         }
       }
 
@@ -122,7 +123,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val vatSchemeForIndividual: VatScheme = baseVatScheme.copy(eligibilitySubmissionData = Some(eligibilitySubmissionData))
           val expectedJson: JsObject            = jsonObject("UK" -> jsonObject("reasonBankAccNotProvided" -> "3"))
 
-          buildBankDetailsBlock(vatSchemeForIndividual) mustBe Right(expectedJson)
+          builder.buildBankDetailsBlock(vatSchemeForIndividual) mustBe Right(expectedJson)
         }
       }
 
@@ -131,7 +132,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val vatSchemeWithMissingBankAccountData: VatScheme = baseVatScheme.copy(bankAccount = None)
           val buildFailure: BuildFailure = BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: No BankAccount model")
 
-          buildBankDetailsBlock(vatSchemeWithMissingBankAccountData) mustBe Left(buildFailure)
+          builder.buildBankDetailsBlock(vatSchemeWithMissingBankAccountData) mustBe Left(buildFailure)
         }
         "'isProvided' = true but there are no bank details" in new SwitchOn {
           val missingBankDetails: BankAccount            = BankAccount(isProvided = true, details = None, None, None)
@@ -139,7 +140,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val buildFailure: BuildFailure =
             BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: isProvided = true but details are not defined")
 
-          buildBankDetailsBlock(vatSchemeWithMissingBankDetails) mustBe Left(buildFailure)
+          builder.buildBankDetailsBlock(vatSchemeWithMissingBankDetails) mustBe Left(buildFailure)
         }
         "'isProvided' = false but there is no reason given" in new SwitchOn {
           val missingReason: BankAccount            = BankAccount(isProvided = false, details = None, None, None)
@@ -147,7 +148,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val buildFailure: BuildFailure =
             BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: isProvided = false but reason is not defined")
 
-          buildBankDetailsBlock(vatSchemeWithMissingReason) mustBe Left(buildFailure)
+          builder.buildBankDetailsBlock(vatSchemeWithMissingReason) mustBe Left(buildFailure)
         }
         "bank details are provided but there is no status" in new SwitchOn {
           val missingStatus: BankAccount            = BankAccount(isProvided = false, details = Some(bankAccountDetailsWithStatus(None)), None, None)
@@ -155,7 +156,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val buildFailure: BuildFailure =
             BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: bank details have not yet been BARS checked")
 
-          buildBankDetailsBlock(vatSchemeWithMissingStatus) mustBe Left(buildFailure)
+          builder.buildBankDetailsBlock(vatSchemeWithMissingStatus) mustBe Left(buildFailure)
         }
       }
     }
@@ -172,10 +173,10 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
 
       val bankDetailsWithRollNumberBlockJson: JsObject = Json.obj(
         "UK" -> Json.obj(
-          "accountName"   -> testBankName,
-          "sortCode"      -> testSortCode,
-          "accountNumber" -> testBankNumber,
-          "rollNumber"    -> testRollNumber
+          "accountName"            -> testBankName,
+          "sortCode"               -> testSortCode,
+          "accountNumber"          -> testBankNumber,
+          "buildSocietyRollNumber" -> testRollNumber
         )
       )
 
@@ -206,7 +207,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             eligibilitySubmissionData = Some(testEligibilitySubmissionData)
           )
 
-          val result: Either[BuildFailure, JsObject] = buildBankDetailsBlock(vatScheme)
+          val result: Either[BuildFailure, JsObject] = builder.buildBankDetailsBlock(vatScheme)
           result mustBe Right(bankDetailsBlockJson)
         }
 
@@ -216,7 +217,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             eligibilitySubmissionData = Some(testEligibilitySubmissionData)
           )
 
-          val result: Either[BuildFailure, JsObject] = buildBankDetailsBlock(vatScheme)
+          val result: Either[BuildFailure, JsObject] = builder.buildBankDetailsBlock(vatScheme)
           result mustBe Right(bankDetailsWithRollNumberBlockJson)
         }
 
@@ -226,7 +227,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             eligibilitySubmissionData = Some(testEligibilitySubmissionData)
           )
 
-          val result: Either[BuildFailure, JsObject] = buildBankDetailsBlock(vatScheme)
+          val result: Either[BuildFailure, JsObject] = builder.buildBankDetailsBlock(vatScheme)
           result mustBe Right(notValidBankDetailsBlockJson)
         }
 
@@ -236,7 +237,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             eligibilitySubmissionData = Some(testEligibilitySubmissionData)
           )
 
-          val result: Either[BuildFailure, JsObject] = buildBankDetailsBlock(vatScheme)
+          val result: Either[BuildFailure, JsObject] = builder.buildBankDetailsBlock(vatScheme)
           result mustBe Right(notValidBankDetailsBlockJson)
         }
 
@@ -246,7 +247,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             eligibilitySubmissionData = Some(testEligibilitySubmissionData)
           )
 
-          val result: Either[BuildFailure, JsObject] = buildBankDetailsBlock(vatScheme)
+          val result: Either[BuildFailure, JsObject] = builder.buildBankDetailsBlock(vatScheme)
           result mustBe Right(bankDetailsBlockJson)
         }
 
@@ -256,7 +257,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             eligibilitySubmissionData = Some(testEligibilitySubmissionData)
           )
 
-          val result: Either[BuildFailure, JsObject] = buildBankDetailsBlock(vatScheme)
+          val result: Either[BuildFailure, JsObject] = builder.buildBankDetailsBlock(vatScheme)
           result mustBe Right(bankDetailsNotProvidedBlockJson)
         }
 
@@ -266,7 +267,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
             eligibilitySubmissionData = Some(testEligibilitySubmissionData.copy(partyType = Individual))
           )
 
-          val result: Either[BuildFailure, JsObject] = buildBankDetailsBlock(vatScheme)
+          val result: Either[BuildFailure, JsObject] = builder.buildBankDetailsBlock(vatScheme)
           result mustBe Right(bankDetailsOverseasNotProvidedBlockJson)
         }
       }
@@ -280,7 +281,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val buildFailure: BuildFailure = BuildFailure(
             "[BankDetailsBlockBuilder] Unable to build submission model as user has not given bank details, nor bank details reason, nor is a NonUK/NonEstablished user")
 
-          buildBankDetailsBlock(vatScheme) mustBe Left(buildFailure)
+          builder.buildBankDetailsBlock(vatScheme) mustBe Left(buildFailure)
         }
 
         "the bank account is missing" in new SwitchOff {
@@ -291,7 +292,7 @@ class BankDetailsBlockBuilderSpec extends VatRegSpec with VatRegistrationFixture
           val buildFailure: BuildFailure = BuildFailure(
             "[BankDetailsBlockBuilder] Unable to build submission model as user has not given bank details, nor bank details reason, nor is a NonUK/NonEstablished user")
 
-          buildBankDetailsBlock(vatScheme) mustBe Left(buildFailure)
+          builder.buildBankDetailsBlock(vatScheme) mustBe Left(buildFailure)
         }
       }
     }

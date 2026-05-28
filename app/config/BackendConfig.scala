@@ -28,6 +28,8 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeConfiguration: Configuration)
     extends FeatureSwitching {
 
+  implicit val appConfig: BackendConfig = this
+
   def loadConfig(key: String): String = servicesConfig.getString(key)
 
   lazy val vatRegistrationUrl: String          = servicesConfig.baseUrl("vat-registration")

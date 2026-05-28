@@ -20,8 +20,12 @@ import featureswitch.core.config.{FeatureSwitching, SubmitBarsInvalidBankDetails
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import models.BuildFailure
+import models.api.VatScheme
 import models.submission.{EntitiesArrayType, Individual, PartnerEntity, PartyType}
-import play.api.libs.json.{JsObject, Json}
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.when
+import org.mockito.stubbing.OngoingStubbing
+import play.api.libs.json.{JsArray, JsObject, Json}
 import play.api.mvc.Request
 import play.api.test.FakeRequest
 import services.submission.buildermocks._
@@ -41,6 +45,8 @@ class SubmissionPayloadBuilderSpec
     with MockEntitiesBlockBuilder
     with FeatureSwitching {
 
+  private val mockBankDetailsBlockBuilder: BankDetailsBlockBuilder = mock[BankDetailsBlockBuilder]
+
   implicit val request: Request[_] = FakeRequest()
 
   object TestBuilder
@@ -49,6 +55,7 @@ class SubmissionPayloadBuilderSpec
         mockDeclarationBlockBuilder,
         mockCustomerIdentificationBlockBuilder,
         mockContactBlockBuilder,
+        mockBankDetailsBlockBuilder,
         mockPeriodsBlockBuilder,
         mockSubscriptionBlockBuilder,
         mockComplianceBlockBuilder,
@@ -186,7 +193,7 @@ class SubmissionPayloadBuilderSpec
     )
   )
 
-  val testEntitiesBlockJson = Json.arr(
+  val testEntitiesBlockJson: JsArray = Json.arr(
     Json.obj(
       "action"     -> 1,
       "entityType" -> Json.toJson[EntitiesArrayType](PartnerEntity),
@@ -215,6 +222,7 @@ class SubmissionPayloadBuilderSpec
   "buildSubmissionPayload" should {
     "return a submission json object in a Right" when {
       "all required pieces of data are available in the database" in {
+        mockBuildBankDetailsBlock(testFullVatScheme)(Right(testBankDetailsBlockJson))
         mockBuildAdminBlock(testFullVatScheme)(testAdminBlockJson)
         mockBuildDeclarationBlock(testFullVatScheme)(testDeclarationBlockJson)
         mockBuildCustomerIdentificationBlock(testFullVatScheme)(testCustomerIdentificationBlockJson)
@@ -232,6 +240,7 @@ class SubmissionPayloadBuilderSpec
 
       "there are no annual accounting answers in the database" in {
         val vatSchemeWithoutAnnualAccounting = testFullVatScheme.copy(business = None)
+        mockBuildBankDetailsBlock(vatSchemeWithoutAnnualAccounting)(Right(testBankDetailsBlockJson))
         mockBuildAdminBlock(vatSchemeWithoutAnnualAccounting)(testAdminBlockJson)
         mockBuildDeclarationBlock(vatSchemeWithoutAnnualAccounting)(testDeclarationBlockJson)
         mockBuildCustomerIdentificationBlock(vatSchemeWithoutAnnualAccounting)(testCustomerIdentificationBlockJson)
@@ -250,6 +259,7 @@ class SubmissionPayloadBuilderSpec
 
       "there are no compliance answers in the database" in {
         val vatSchemeWithoutBusinessCompliance = testFullVatScheme.copy(business = None)
+        mockBuildBankDetailsBlock(vatSchemeWithoutBusinessCompliance)(Right(testBankDetailsBlockJson))
         mockBuildAdminBlock(vatSchemeWithoutBusinessCompliance)(testAdminBlockJson)
         mockBuildDeclarationBlock(vatSchemeWithoutBusinessCompliance)(testDeclarationBlockJson)
         mockBuildCustomerIdentificationBlock(vatSchemeWithoutBusinessCompliance)(testCustomerIdentificationBlockJson)
@@ -268,6 +278,7 @@ class SubmissionPayloadBuilderSpec
 
       "the entities section is not present" in {
         val vatSchemeWithoutEntities = testFullVatScheme.copy(entities = None)
+        mockBuildBankDetailsBlock(vatSchemeWithoutEntities)(Right(testBankDetailsBlockJson))
         mockBuildAdminBlock(vatSchemeWithoutEntities)(testAdminBlockJson)
         mockBuildDeclarationBlock(vatSchemeWithoutEntities)(testDeclarationBlockJson)
         mockBuildCustomerIdentificationBlock(vatSchemeWithoutEntities)(testCustomerIdentificationBlockJson)
@@ -287,13 +298,16 @@ class SubmissionPayloadBuilderSpec
 
     "return a BuildFailure in a Left" when {
       "BankDetailsBlockBuilder returns a failure" in {
+        val expectedBuildFailureResponse = Left(BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: No BankAccount model"))
+        mockBuildBankDetailsBlock(testVatScheme)(expectedBuildFailureResponse)
         val result = TestBuilder.buildSubmissionPayload(testVatScheme)
 
-        result mustBe Left(
-          BuildFailure(
-            "[BankDetailsBlockBuilder] Unable to build submission model: No BankAccount model"))
+        result mustBe expectedBuildFailureResponse
       }
     }
   }
+
+  def mockBuildBankDetailsBlock(vatScheme: VatScheme)(response: Either[BuildFailure, JsObject]): OngoingStubbing[Either[BuildFailure, JsObject]] =
+    when(mockBankDetailsBlockBuilder.buildBankDetailsBlock(ArgumentMatchers.eq(vatScheme))).thenReturn(response)
 
 }
