@@ -16,13 +16,14 @@
 
 package featureswitch.api.services
 
+import config.BackendConfig
 import featureswitch.core.config.{FeatureSwitchRegistry, FeatureSwitching}
 import featureswitch.core.models.FeatureSwitchSetting
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class FeatureSwitchService @Inject() (featureSwitchRegistry: FeatureSwitchRegistry) extends FeatureSwitching {
+class FeatureSwitchService @Inject() (featureSwitchRegistry: FeatureSwitchRegistry)(implicit val appConfig: BackendConfig) extends FeatureSwitching {
 
   def getFeatureSwitches: Seq[FeatureSwitchSetting] =
     featureSwitchRegistry.switches.map(switch =>

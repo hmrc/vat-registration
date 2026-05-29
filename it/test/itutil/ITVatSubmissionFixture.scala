@@ -704,7 +704,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "bankDetails" -> Json.obj(
       "UK" -> Json.obj(
-        "reasonBankAccNotProvided" -> "1"
+        "reasonBankAccNotProvided" -> "3"
       )
     ),
     "compliance" -> Json.obj(
@@ -1191,9 +1191,7 @@ trait ITVatSubmissionFixture extends ITFixtures {
     ),
     "bankDetails" -> Json.obj(
       "UK" -> Json.obj(
-        "accountName" -> "testBankName",
-        "accountNumber" -> "01234567",
-        "sortCode" -> "111111"
+        "reasonBankAccNotProvided" -> "3"
       )
     ),
     "compliance" -> Json.obj(

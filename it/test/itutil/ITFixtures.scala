@@ -276,7 +276,7 @@ trait ITFixtures {
     sortCode = "11-11-11",
     number = "01234567",
     rollNumber = None,
-    status = ValidStatus
+    status = Some(ValidStatus)
   )
   val testSubmittedSortCode = "111111"
 
@@ -405,7 +405,8 @@ trait ITFixtures {
     testFullVatScheme.copy(
       applicantDetails = Some(testRegisteredSoleTraderApplicantDetailsNoBpSafeId),
       eligibilitySubmissionData = Some(testEligibilitySubmissionDataSoleTrader),
-      nrsSubmissionPayload = Some(testEncodedPayload)
+      nrsSubmissionPayload = Some(testEncodedPayload),
+      bankAccount = Some(BankAccount(isProvided = false, None, Some(OverseasAccount), None))
     )
 
   val testSoleTraderEntity: SoleTraderIdEntity = SoleTraderIdEntity(

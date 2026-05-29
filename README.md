@@ -35,6 +35,7 @@ The service will come to life  @
 http://localhost:9896/
 
 # Further Documentation
+[Bank Details Journey, BARS Checks and Stubbing](BARS_AND_STUBBING.md)
 
 [Documentation of TEST endpoints](test-endpoints.md)
 

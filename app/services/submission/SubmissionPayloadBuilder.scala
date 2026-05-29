@@ -20,7 +20,6 @@ import models.BuildFailure
 import models.api.VatScheme
 import play.api.libs.json.JsObject
 import play.api.mvc.Request
-import services.submission.BankDetailsBlockBuilder.buildBankDetailsBlock
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
@@ -30,6 +29,7 @@ class SubmissionPayloadBuilder @Inject() (adminBlockBuilder: AdminBlockBuilder,
                                           declarationBlockBuilder: DeclarationBlockBuilder,
                                           customerIdentificationBlockBuilder: CustomerIdentificationBlockBuilder,
                                           contactBlockBuilder: ContactBlockBuilder,
+                                          bankDetailsBlockBuilder: BankDetailsBlockBuilder,
                                           periodsBlockBuilder: PeriodsBlockBuilder,
                                           subscriptionBlockBuilder: SubscriptionBlockBuilder,
                                           complianceBlockBuilder: ComplianceBlockBuilder,
@@ -40,7 +40,7 @@ class SubmissionPayloadBuilder @Inject() (adminBlockBuilder: AdminBlockBuilder,
     // ToDo - DL-19101:
     //  convert the other builder classes to objects with error handling inside the for-comprehension to match bankDetails
     for {
-      bankDetails <- buildBankDetailsBlock(vatScheme)
+      bankDetails <- bankDetailsBlockBuilder.buildBankDetailsBlock(vatScheme)
     } yield jsonObject(
       "messageType"            -> "SubscriptionCreate",
       "admin"                  -> adminBlockBuilder.buildAdminBlock(vatScheme),

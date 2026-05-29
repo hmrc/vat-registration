@@ -17,6 +17,7 @@
 package services.submission
 
 import cats.instances.FutureInstances
+import config.BackendConfig
 import connectors.{NonRepudiationConnector, VatSubmissionConnector}
 import enums.VatRegStatus
 import featureswitch.core.config.{FeatureSwitching, PostSubmissionDecoupling, PostSubmissionDecouplingConnector}
@@ -64,7 +65,7 @@ class SubmissionService @Inject() (
     schemaValidationService: SchemaValidationService,
     apiSchema: API1364,
     val authConnector: AuthConnector
-)(implicit executionContext: ExecutionContext)
+)(implicit executionContext: ExecutionContext, val appConfig: BackendConfig)
     extends FutureInstances
     with AuthorisedFunctions
     with AlertLogging

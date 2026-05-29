@@ -37,7 +37,7 @@ trait VatRegSpec
     with GuiceOneAppPerSuite
     with FutureAssertions {
 
-  val backendConfig: BackendConfig                = app.injector.instanceOf[BackendConfig]
+  implicit val backendConfig: BackendConfig                = app.injector.instanceOf[BackendConfig]
   implicit val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   override def beforeEach(): Unit = {
