@@ -17,7 +17,7 @@
 package services.submission
 
 import models.api.{AttachmentType, VatScheme}
-import models.submission.{Individual, NETP, NonUkNonEstablished}
+import models.submission.{Individual, NonUkNonEstablished}
 import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.Request
 import services.AttachmentsService
