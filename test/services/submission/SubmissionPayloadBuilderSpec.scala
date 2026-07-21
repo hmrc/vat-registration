@@ -61,9 +61,6 @@ class SubmissionPayloadBuilderSpec
         mockEntitiesBlockBuilder
       )
 
-//  override def beforeEach(): Unit =
-//    super.beforeEach()
-
   val testAdminBlockJson: JsObject = Json.obj(
     "additionalInformation" -> Json.obj(
       "customerStatus" -> "2"
