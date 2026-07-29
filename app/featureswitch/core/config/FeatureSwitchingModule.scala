@@ -26,7 +26,7 @@ import javax.inject.Singleton
 class FeatureSwitchingModule extends Module with FeatureSwitchRegistry {
 
   val switches: Seq[FeatureSwitch] =
-    Seq(StubSubmission, PostSubmissionDecoupling, PostSubmissionNonDecoupling, PostSubmissionDecouplingConnector, SubmitBarsInvalidBankDetailsToAPI)
+    Seq(StubSubmission, PostSubmissionDecoupling, PostSubmissionNonDecoupling, PostSubmissionDecouplingConnector)
 
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     Seq(
@@ -52,9 +52,4 @@ case object PostSubmissionNonDecoupling extends FeatureSwitch {
 case object PostSubmissionDecouplingConnector extends FeatureSwitch {
   override val configName: String  = "feature-switch.post-submission-decoupling-connector"
   override val displayName: String = "Enable connector calls for decoupled SDES and NRS integrations"
-}
-
-case object SubmitBarsInvalidBankDetailsToAPI extends FeatureSwitch {
-  override val configName: String  = "feature-switch.submit-invalid-bars-bank-details-to-api"
-  override val displayName: String = "Submit bank details to API even if they've failed the BARS check"
 }

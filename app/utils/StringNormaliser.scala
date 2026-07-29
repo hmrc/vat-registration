@@ -21,7 +21,7 @@ import java.text.Normalizer.Form
 
 object StringNormaliser {
 
-  val characterConversions: Map[Char, String] = Map(
+  private val characterConversions: Map[Char, String] = Map(
     'æ' -> "ae",
     'Æ' -> "AE",
     'œ' -> "oe",
@@ -48,7 +48,7 @@ object StringNormaliser {
 
   def normaliseString(string: String): String = Normalizer
     .normalize(string, Form.NFD)
-    .map(char => characterConversions.getOrElse(char, char))
+    .map(char => characterConversions.getOrElse(char, char.toString))
     .mkString
     .replaceAll("\\p{M}", "")
 

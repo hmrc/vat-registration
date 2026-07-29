@@ -46,7 +46,7 @@ class EligibilityService @Inject() (val registrationRepository: VatSchemeReposit
                           case Some(oldEligibilitySubmissionData) =>
                             removeInvalidFields(internalId, regId, eligibilitySubmissionData, oldEligibilitySubmissionData)
                           case None                               =>
-                            Future.successful()
+                            Future.successful(())
                         }
             _      <- registrationRepository.upsertSection[EligibilitySubmissionData](
                         internalId,
@@ -74,7 +74,7 @@ class EligibilityService @Inject() (val registrationRepository: VatSchemeReposit
       ).toString()
     )
 
-    Future.successful()
+    Future.successful(())
   }
 
   // scalastyle:off

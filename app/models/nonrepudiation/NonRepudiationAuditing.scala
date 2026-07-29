@@ -16,7 +16,6 @@
 
 package models.nonrepudiation
 
-import models.api.UpscanDetails
 import models.sdes.PropertyExtractor.{attachmentReferenceKey, formBundleKey, nrsSubmissionKey}
 import models.sdes.SdesCallback
 import play.api.libs.json.{JsValue, Json}

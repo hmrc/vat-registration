@@ -16,7 +16,6 @@
 
 package services.submission
 
-import featureswitch.core.config.{FeatureSwitching, SubmitBarsInvalidBankDetailsToAPI}
 import fixtures.{VatRegistrationFixture, VatSubmissionFixture}
 import helpers.VatRegSpec
 import models.BuildFailure
@@ -42,8 +41,7 @@ class SubmissionPayloadBuilderSpec
     with MockSubscriptionBlockBuilder
     with MockDeclarationBlockBuilder
     with MockAnnualAccountingBlockBuilder
-    with MockEntitiesBlockBuilder
-    with FeatureSwitching {
+    with MockEntitiesBlockBuilder {
 
   private val mockBankDetailsBlockBuilder: BankDetailsBlockBuilder = mock[BankDetailsBlockBuilder]
 
@@ -62,11 +60,6 @@ class SubmissionPayloadBuilderSpec
         mockAnnualAccountingBlockBuilder,
         mockEntitiesBlockBuilder
       )
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    enable(SubmitBarsInvalidBankDetailsToAPI)
-  }
 
   val testAdminBlockJson: JsObject = Json.obj(
     "additionalInformation" -> Json.obj(
@@ -218,7 +211,7 @@ class SubmissionPayloadBuilderSpec
     "compliance"             -> testComplianceBlockJson,
     "entities"               -> testEntitiesBlockJson
   )
-  enable(SubmitBarsInvalidBankDetailsToAPI)
+
   "buildSubmissionPayload" should {
     "return a submission json object in a Right" when {
       "all required pieces of data are available in the database" in {

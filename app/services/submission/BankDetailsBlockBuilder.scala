@@ -17,23 +17,19 @@
 package services.submission
 
 import config.BackendConfig
-import featureswitch.core.config.{FeatureSwitching, SubmitBarsInvalidBankDetailsToAPI}
+import featureswitch.core.config.FeatureSwitching
 import models.BuildFailure
 import models.api.NoUKBankAccount.reasonId
 import models.api._
-import models.submission.{Individual, NonUkNonEstablished}
 import play.api.libs.json.JsObject
 import utils.JsonUtils._
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class BankDetailsBlockBuilder @Inject()(implicit val appConfig: BackendConfig) extends FeatureSwitching {
+class BankDetailsBlockBuilder @Inject() (implicit val appConfig: BackendConfig) extends FeatureSwitching {
 
   def buildBankDetailsBlock(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
-    if (isEnabled(SubmitBarsInvalidBankDetailsToAPI)) buildBankDetailsBlockNew(vatScheme) else buildBankDetailsBlockOld(vatScheme)
-
-  private def buildBankDetailsBlockNew(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
     vatScheme.bankAccount match {
       case Some(BankAccount(_, Some(bankAccountDetails), _, _)) if bankAccountDetails.status.isEmpty =>
         Left(BuildFailure("[BankDetailsBlockBuilder] Unable to build submission model: bank details have not yet been BARS checked"))
@@ -72,45 +68,10 @@ class BankDetailsBlockBuilder @Inject()(implicit val appConfig: BackendConfig) e
         optional("accountName"                                                           -> bankAccountDetails.map(_.name)),
         optional("sortCode"                                                              -> bankAccountDetails.map(_.sortCode.replaceAll("-", ""))),
         optional("accountNumber"                                                         -> bankAccountDetails.map(_.number)),
-        optional("buildSocietyRollNumber"                                                            -> bankAccountDetails.flatMap(_.rollNumber)),
+        optional("buildSocietyRollNumber"                                                -> bankAccountDetails.flatMap(_.rollNumber)),
         conditional(bankAccountDetails.exists(_.statusIsNotValid))("bankDetailsNotValid" -> true),
         optional("reasonBankAccNotProvided"                                              -> reason.map(reasonId))
       )
     )
-
-  private def buildBankDetailsBlockOld(vatScheme: VatScheme): Either[BuildFailure, JsObject] =
-    (vatScheme.bankAccount, vatScheme.partyType) match {
-      case (Some(BankAccount(true, Some(details), _, _)), Some(_)) =>
-        Right(
-          jsonObject(
-            "UK" -> jsonObject(
-              "accountName"   -> details.name,
-              "sortCode"      -> details.sortCode.replaceAll("-", ""),
-              "accountNumber" -> details.number,
-              optional("buildSocietyRollNumber"                                       -> details.rollNumber),
-              conditional(details.statusIsNotValid)("bankDetailsNotValid" -> true)
-            )
-          )
-        )
-      case (Some(BankAccount(false, _, Some(reason), _)), _) =>
-        Right(
-          jsonObject(
-            "UK" -> jsonObject(
-              "reasonBankAccNotProvided" -> reasonId(reason)
-            )
-          )
-        )
-      case (_, Some(Individual | NonUkNonEstablished)) =>
-        Right(
-          jsonObject(
-            "UK" -> jsonObject(
-              "reasonBankAccNotProvided" -> reasonId(OverseasAccount)
-            )
-          )
-        )
-      case _ =>
-        Left(BuildFailure(
-          "[BankDetailsBlockBuilder] Unable to build submission model as user has not given bank details, nor bank details reason, nor is a NonUK/NonEstablished user"))
-    }
 
 }

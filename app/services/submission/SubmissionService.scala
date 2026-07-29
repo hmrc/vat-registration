@@ -128,12 +128,12 @@ class SubmissionService @Inject() (
       _ <-
         if (isEnabled(PostSubmissionDecoupling) && optNrsId.isDefined && digitalAttachments) {
           notifyNrs(vatScheme.registrationId, optNrsId.get, correlationId)
-        } else { Future.successful() }
+        } else { Future.successful(()) }
       _ <-
         if (digitalAttachments) {
           sdesService.notifySdes(vatScheme.registrationId, formBundleId, optNrsId, providerId)
         } else {
-          Future.successful()
+          Future.successful(())
         }
     } yield {}
 
@@ -183,7 +183,7 @@ class SubmissionService @Inject() (
             PagerDutyKeys.INVALID_UPSCAN_DETAILS_RECEIVED,
             Some(s"[SubmissionService][notifyNrs] Not sending attachment NRS payload for $attachmentId as incomplete upscan details were received")
           )
-          Future.successful()
+          Future.successful(())
         }
       }
     }
