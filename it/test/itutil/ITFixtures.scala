@@ -477,7 +477,6 @@ trait ITFixtures {
     val testAgentCode = "testAgentCode"
     val testConfidenceLevel: ConfidenceLevel = ConfidenceLevel.L200
     val testSautr = "testSautr"
-    val testAuthName: Name = uk.gov.hmrc.auth.core.retrieve.Name(Some("testFirstName"), Some("testLastName"))
     val testAuthDateOfBirth: LocalDate = LocalDate.now()
     val testEmail: String = "testEmail"
     val testAgentInformation: AgentInformation = AgentInformation(Some("testAgentId"), Some("testAgentCode"), Some("testAgentFriendlyName"))
@@ -511,7 +510,6 @@ trait ITFixtures {
       testConfidenceLevel,
       Some(testNino),
       Some(testSautr),
-      Some(testAuthName),
       Some(testAuthDateOfBirth),
       Some(testEmail),
       testAgentInformation,
@@ -541,7 +539,6 @@ trait ITFixtures {
         testConfidenceLevel ~
         Some(testNino) ~
         Some(testSautr) ~
-        Some(testAuthName) ~
         Some(testAuthDateOfBirth) ~
         Some(testEmail) ~
         testAgentInformation ~

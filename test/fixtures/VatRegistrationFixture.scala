@@ -403,7 +403,6 @@ trait VatRegistrationFixture {
     val testAgentCode: String = "testAgentCode"
     val testConfidenceLevel: ConfidenceLevel = ConfidenceLevel.L200
     val testSautr: String = "testSautr"
-    val testAuthName: Name = uk.gov.hmrc.auth.core.retrieve.Name(Some("testFirstName"), Some("testLastName"))
     val testAuthDateOfBirth: LocalDate = LocalDate.now()
     val testEmail: String = "testEmail"
     val testAgentInformation: AgentInformation =
@@ -435,7 +434,6 @@ trait VatRegistrationFixture {
       testConfidenceLevel,
       Some(testNino),
       Some(testSautr),
-      Some(testAuthName),
       Some(testAuthDateOfBirth),
       Some(testEmail),
       testAgentInformation,
@@ -463,7 +461,6 @@ trait VatRegistrationFixture {
         testConfidenceLevel ~
         Some(testNino) ~
         Some(testSautr) ~
-        Some(testAuthName) ~
         Some(testAuthDateOfBirth) ~
         Some(testEmail) ~
         testAgentInformation ~
