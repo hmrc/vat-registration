@@ -19,8 +19,6 @@ package services
 import connectors.NonRepudiationConnector
 import models.nonrepudiation.NonRepudiationAuditing.{NonRepudiationSubmissionFailureAudit, NonRepudiationSubmissionSuccessAudit}
 import models.nonrepudiation.{IdentityData, NonRepudiationMetadata, NonRepudiationSubmissionAccepted, NonRepudiationSubmissionFailed}
-
-import java.time.LocalDate
 import play.api.mvc.Request
 import repositories.UpscanMongoRepository
 import services.NonRepudiationService._
@@ -34,59 +32,60 @@ import utils.{AlertLogging, LoggingUtils, PagerDutyKeys}
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import java.util.Base64
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class NonRepudiationService @Inject() (
-  nonRepudiationConnector: NonRepudiationConnector,
-  upscanMongoRepository: UpscanMongoRepository,
-  auditService: AuditService,
-  val authConnector: AuthConnector
+    nonRepudiationConnector: NonRepudiationConnector,
+    upscanMongoRepository: UpscanMongoRepository,
+    auditService: AuditService,
+    val authConnector: AuthConnector
 )(implicit ec: ExecutionContext)
     extends AuthorisedFunctions
-      with AlertLogging
-      with LoggingUtils {
+    with AlertLogging
+    with LoggingUtils {
 
   def submitNonRepudiation(
-    registrationId: String,
-    payloadString: String,
-    submissionTimestamp: LocalDateTime,
-    formBundleId: String,
-    userHeaders: Map[String, String],
-    digitalAttachments: Boolean = false
+      registrationId: String,
+      payloadString: String,
+      submissionTimestamp: LocalDateTime,
+      formBundleId: String,
+      userHeaders: Map[String, String],
+      digitalAttachments: Boolean = false
   )(implicit hc: HeaderCarrier, request: Request[_]): Future[Option[String]] = for {
-    identityData                     <- retrieveIdentityData()
-    payloadChecksum                   = MessageDigest
-                                          .getInstance("SHA-256")
-                                          .digest(payloadString.getBytes(StandardCharsets.UTF_8))
-                                          .map("%02x".format(_))
-                                          .mkString
-    userAuthToken                     = hc.authorization match {
-                                          case Some(Authorization(authToken)) => authToken
-                                          case _                              =>
-                                            errorLog("[NonRepudiationService][submitNonRepudiation] - No auth token available for NRS")
-                                            throw new InternalServerException("No auth token available for NRS")
-                                        }
-    digitalAttachmentIds             <- if (digitalAttachments) {
-                                          upscanMongoRepository.getAllUpscanDetails(registrationId).map(_.map(_.reference))
-                                        } else {
-                                          Future.successful(Nil)
-                                        }
-    nonRepudiationMetadata            = NonRepudiationMetadata(
-                                          "vrs",
-                                          "vat-registration",
-                                          "application/json",
-                                          payloadChecksum,
-                                          submissionTimestamp,
-                                          identityData,
-                                          userAuthToken,
-                                          userHeaders,
-                                          Map("formBundleId" -> formBundleId)
-                                        )
-    encodedPayloadString              = Base64.getEncoder.encodeToString(payloadString.getBytes(StandardCharsets.UTF_8))
+    identityData <- retrieveIdentityData()
+    payloadChecksum = MessageDigest
+      .getInstance("SHA-256")
+      .digest(payloadString.getBytes(StandardCharsets.UTF_8))
+      .map("%02x".format(_))
+      .mkString
+    userAuthToken = hc.authorization match {
+      case Some(Authorization(authToken)) => authToken
+      case _ =>
+        errorLog("[NonRepudiationService][submitNonRepudiation] - No auth token available for NRS")
+        throw new InternalServerException("No auth token available for NRS")
+    }
+    digitalAttachmentIds <-
+      if (digitalAttachments) {
+        upscanMongoRepository.getAllUpscanDetails(registrationId).map(_.map(_.reference))
+      } else {
+        Future.successful(Nil)
+      }
+    nonRepudiationMetadata = NonRepudiationMetadata(
+      "vrs",
+      "vat-registration",
+      "application/json",
+      payloadChecksum,
+      submissionTimestamp,
+      identityData,
+      userAuthToken,
+      userHeaders,
+      Map("formBundleId" -> formBundleId)
+    )
+    encodedPayloadString = Base64.getEncoder.encodeToString(payloadString.getBytes(StandardCharsets.UTF_8))
     nonRepudiationSubmissionResponse <-
       nonRepudiationConnector
         .submitNonRepudiation(encodedPayloadString, nonRepudiationMetadata, digitalAttachmentIds)
@@ -97,7 +96,7 @@ class NonRepudiationService @Inject() (
               s"[NonRepudiationService][submitNonRepudiation] Successful submission to NRS with nrSubmissionId $submissionId"
             )
             Some(submissionId)
-          case NonRepudiationSubmissionFailed(body, status)   =>
+          case NonRepudiationSubmissionFailed(body, status) =>
             auditService.audit(NonRepudiationSubmissionFailureAudit(registrationId, status, body))
             errorLog(
               s"[NonRepudiationService][submitNonRepudiation] NRS submission failed with status: $status and body: $body"
@@ -116,7 +115,7 @@ class NonRepudiationService @Inject() (
           externalId ~ agentCode ~
           credentials ~ confidenceLevel ~
           nino ~ saUtr ~
-          name ~ dateOfBirth ~
+          dateOfBirth ~
           email ~ agentInfo ~
           groupId ~ credentialRole ~
           mdtpInfo ~ itmpName ~
@@ -130,7 +129,6 @@ class NonRepudiationService @Inject() (
           confidenceLevel = confidenceLevel,
           nino = nino,
           saUtr = saUtr,
-          optionalName = name,
           dateOfBirth = dateOfBirth,
           email = email,
           agentInformation = agentInfo,
@@ -153,7 +151,7 @@ object NonRepudiationService {
       ~ Option[String] ~ Option[String]
       ~ Option[Credentials] ~ ConfidenceLevel
       ~ Option[String] ~ Option[String]
-      ~ Option[Name] ~ Option[LocalDate]
+      ~ Option[LocalDate]
       ~ Option[String] ~ AgentInformation
       ~ Option[String] ~ Option[CredentialRole]
       ~ Option[MdtpInformation] ~ Option[ItmpName]
@@ -165,7 +163,7 @@ object NonRepudiationService {
       Retrievals.externalId and Retrievals.agentCode and
       Retrievals.credentials and Retrievals.confidenceLevel and
       Retrievals.nino and Retrievals.saUtr and
-      Retrievals.name and Retrievals.dateOfBirth and
+      Retrievals.dateOfBirth and
       Retrievals.email and Retrievals.agentInformation and
       Retrievals.groupIdentifier and Retrievals.credentialRole and
       Retrievals.mdtpInformation and Retrievals.itmpName and
