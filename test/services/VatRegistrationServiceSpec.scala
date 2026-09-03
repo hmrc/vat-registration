@@ -16,114 +16,153 @@
 
 package services
 
+import config.BackendConfig
 import enums.VatRegStatus
 import fixtures.VatRegistrationFixture
 import helpers.VatRegSpec
 import mocks.MockVatSchemeRepository
+import models.api.{ApplicantDetails, Contact, TransactorDetails, VatScheme}
 import org.mockito.Mockito._
-import play.api.test.Helpers._
-import uk.gov.hmrc.http.HeaderCarrier
 import play.api.mvc.Request
 import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.http.InternalServerException
+import uk.gov.hmrc.play.bootstrap.tools.LogCapturing
+
 import scala.concurrent.Future
 
-class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository {
+class VatRegistrationServiceSpec extends VatRegSpec with VatRegistrationFixture with MockVatSchemeRepository with LogCapturing {
+
+  private val mockAppConfig                = mock[BackendConfig]
+  private implicit val request: Request[_] = FakeRequest()
 
   class Setup {
-    lazy val service: VatRegistrationService = new VatRegistrationService(mockVatSchemeRepository, backendConfig)
+    lazy val service: VatRegistrationService = new VatRegistrationService(mockVatSchemeRepository, mockAppConfig)
   }
-
-  implicit val hc: HeaderCarrier   = HeaderCarrier()
-  implicit val request: Request[_] = FakeRequest()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(mockVatSchemeRepository)
   }
 
-  "call to getStatus" should {
-    "return a correct status" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(testVatScheme)))
+  private def buildVatScheme(applicantDetails: Option[ApplicantDetails], transactorDetails: Option[TransactorDetails]): VatScheme =
+    testVatScheme.copy(applicantDetails = applicantDetails, transactorDetails = transactorDetails)
 
-      await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.draft
+  when(mockAppConfig.emailCheck).thenReturn(List("@badDomain.com"))
+
+  "checkForRisks" should {
+    "return a Right" when {
+      "all four details exist and their checks pass" in new Setup {
+        private val safeEmail =
+          "example@safeDomain.com"
+        private val safeApplicantDetails = validApplicantDetails.copy(
+          personalDetails = Some(testPersonalDetails.copy(score = Some(service.unsafeScore - 1))),
+          contact = Contact(Some(safeEmail)))
+        private val safeTransactorDetails = validTransactorDetails.copy(
+          personalDetails = Some(testPersonalDetails.copy(score = Some(service.unsafeScore + 1))),
+          email = Some(safeEmail))
+
+        private val safeDetails =
+          buildVatScheme(applicantDetails = Some(safeApplicantDetails), transactorDetails = Some(safeTransactorDetails))
+
+        service.checkForRisks(safeDetails) mustBe Right(())
+      }
+
+      "the relevant details are empty" in new Setup {
+        private val emptyDetails =
+          buildVatScheme(applicantDetails = None, transactorDetails = None)
+
+        service.checkForRisks(emptyDetails) mustBe Right(())
+      }
     }
 
-    "return correct status when if applicant details cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(
-        Future.successful(
-          Some(
-            testVatScheme.copy(applicantDetails =
-              Some(validApplicantDetails.copy(personalDetails = Some(testPersonalDetails)))
-            )
-          )
-        )
-      )
+    "return a Left with a list of descriptions for any failed checks" in new Setup {
+      private val badEmail =
+        "example@badDomain.com"
+      private val unsafePersonalDetails =
+        testPersonalDetails.copy(score = Some(service.unsafeScore))
+      private val unsafeApplicantDetails =
+        validApplicantDetails.copy(personalDetails = Some(unsafePersonalDetails), contact = Contact(Some(badEmail)))
+      private val unsafeTransactorDetails =
+        validTransactorDetails.copy(personalDetails = Some(unsafePersonalDetails), email = Some(badEmail))
 
-      await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
-      verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
+      private val allFourBadDetails =
+        buildVatScheme(applicantDetails = Some(unsafeApplicantDetails), transactorDetails = Some(unsafeTransactorDetails))
+
+      service.checkForRisks(allFourBadDetails) mustBe Left(
+        Seq(
+          "Applicant personal details score was 100",
+          "Transactor personal details score was 100",
+          "Applicant email (example@badDomain.com) has an unaccepted domain",
+          "Transactor email (example@badDomain.com) has an unaccepted domain"
+        ))
+    }
+  }
+
+  "getStatus" should {
+    "return the registration's status" when {
+      "data is fetched from the repository and none of the checks fail" in new Setup {
+        private val status = VatRegStatus.submitted
+        private val safeSubmittedVatScheme = testVatScheme.copy(
+          status = status,
+          applicantDetails = None,
+          transactorDetails = None
+        )
+
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(safeSubmittedVatScheme)))
+
+        await(service.getStatus(testInternalId, testRegId)) mustBe status
+      }
     }
 
-    "return correct status when if transactor details cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(
-        Future.successful(
-          Some(
-            testVatScheme.copy(transactorDetails =
-              Some(validTransactorDetails.copy(personalDetails = Some(testPersonalDetails)))
-            )
-          )
-        )
-      )
+    "return a 'contact' status and log the failure(s)" when {
+      "one check fails" in new Setup {
+        private val badEmail                = "example@badDomain.com"
+        private val unsafeTransactorDetails = validTransactorDetails.copy(email = Some(badEmail))
+        private val unsafeSubmittedVatScheme =
+          testVatScheme.copy(status = VatRegStatus.submitted, transactorDetails = Some(unsafeTransactorDetails))
 
-      await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
-      verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(unsafeSubmittedVatScheme)))
+
+        withCaptureOfLoggingFrom(service) { logs =>
+          await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
+
+          logs.exists(_.getMessage.contains("Transactor email (example@badDomain.com) has an unaccepted domain")) mustBe true
+        }
+      }
+
+      "multiple checks fail" in new Setup {
+        private val badEmail              = "example@badDomain.com"
+        private val unsafePersonalDetails = testPersonalDetails.copy(score = Some(service.unsafeScore))
+        private val unsafeTransactorDetails =
+          validTransactorDetails.copy(personalDetails = Some(unsafePersonalDetails), email = Some(badEmail))
+        private val unsafeSubmittedVatScheme =
+          testVatScheme.copy(status = VatRegStatus.submitted, transactorDetails = Some(unsafeTransactorDetails))
+
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(Some(unsafeSubmittedVatScheme)))
+
+        withCaptureOfLoggingFrom(service) { logs =>
+          await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
+
+          logs.exists(
+            _.getMessage.contains(
+              "- Transactor personal details score was 100,\n" +
+                "- Transactor email (example@badDomain.com) has an unaccepted domain"
+            )) mustBe true
+        }
+      }
     }
 
-    "return correct status when if either transactor/applicant details cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(
-        Future.successful(
-          Some(
-            testVatScheme.copy(
-              transactorDetails = Some(validTransactorDetails.copy(personalDetails = Some(testPersonalDetails))),
-              applicantDetails =
-                Some(validApplicantDetails.copy(personalDetails = Some(testPersonalDetails.copy(score = Some(0)))))
-            )
-          )
-        )
-      )
+    "throw an InternalServerException and log the failure" when {
+      "the repository returns no data" in new Setup {
+        mockGetRegistration(testInternalId, testRegId)(Future.successful(None))
 
-      await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
-      verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
-    }
+        withCaptureOfLoggingFrom(service) { logs =>
+          intercept[InternalServerException](await(service.getStatus(testInternalId, testRegId)))
 
-    "return correct status when transactor email cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(
-        Future.successful(
-          Some(
-            testVatScheme.copy(
-              transactorDetails = Some(validTransactorDetails.copy(email = Some("email@fake.contact.me")))
-            )
-          )
-        )
-      )
-
-      await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
-      verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
-    }
-
-    "return correct status when applicant email cannot be processed" in new Setup {
-      mockGetRegistration(testInternalId, testRegId)(
-        Future.successful(
-          Some(
-            testVatScheme.copy(
-              applicantDetails =
-                Some(validApplicantDetails.copy(contact = testContact.copy(email = Some("email@fake2.contact.me"))))
-            )
-          )
-        )
-      )
-
-      await(service.getStatus(testInternalId, testRegId)) mustBe VatRegStatus.contact
-      verify(mockVatSchemeRepository).updateSubmissionStatus(testInternalId, testRegId, VatRegStatus.contact)
+          logs.exists(_.getMessage.contains(s"- No VAT registration document found for $testRegId")) mustBe true
+        }
+      }
     }
   }
 
