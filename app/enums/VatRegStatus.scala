@@ -19,13 +19,13 @@ package enums
 import play.api.libs.json._
 
 object VatRegStatus extends Enumeration {
-  val draft               = Value
-  val locked              = Value
-  val submitted           = Value
-  val failed              = Value
-  val failedRetryable     = Value
-  val duplicateSubmission = Value
-  val contact             = Value
+  val draft: Value               = Value
+  val locked: Value              = Value
+  val submitted: Value           = Value
+  val failed: Value              = Value
+  val failedRetryable: Value     = Value
+  val duplicateSubmission: Value = Value
+  val contact: Value             = Value
 
   implicit val format: Format[VatRegStatus.Value] = Format(
     Reads[VatRegStatus.Value](json => json.validate[String].map(VatRegStatus.withName)),
