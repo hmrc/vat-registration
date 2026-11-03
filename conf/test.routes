@@ -3,7 +3,8 @@ POST          /api/feature-switches                         featureswitch.api.co
 
 DELETE        /registrations                                controllers.test.DeleteAllRegistrationsController.deleteAllRegistrations()
 
-POST          /vat/subscription                             controllers.test.StubVatSubmissionController.processSubmission
+POST          /vat/subscription                             controllers.test.StubIfsVatSubmissionController.processSubmission
+POST          /etmp/RESTAdapter/vat/subscription            controllers.test.StubHipVatSubmissionController.processSubmission
 POST          /submission                                   controllers.test.StubNrsController.processSubmission
 POST          /attachment                                   controllers.test.StubNrsController.processAttachmentSubmission
 

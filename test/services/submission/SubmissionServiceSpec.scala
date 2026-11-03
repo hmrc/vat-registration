@@ -28,7 +28,7 @@ import mocks._
 import mocks.monitoring.MockAuditService
 import models.BuildFailure
 import models.api._
-import models.api.schemas.API1364
+import models.api.schemas.{API1364, EPID1835}
 import models.monitoring.SubmissionAuditModel
 import models.nonrepudiation.{NonRepudiationAttachmentAccepted, NonRepudiationAttachmentFailed}
 import org.mockito.ArgumentMatchers
@@ -67,7 +67,8 @@ class SubmissionServiceSpec
     with FeatureSwitching
     with MockSdesService {
 
-  val apiSchema = app.injector.instanceOf[API1364]
+  val ifsApiSchema = app.injector.instanceOf[API1364]
+  val hipApiSchema = app.injector.instanceOf[EPID1835]
 
   class Setup {
 
@@ -77,7 +78,8 @@ class SubmissionServiceSpec
 
     val service: SubmissionService = new SubmissionService(
       registrationRepository = mockRegistrationMongoRepository,
-      vatSubmissionConnector = mockVatSubmissionConnector,
+      ifsVatSubmissionConnector = mockIfsVatSubmissionConnector,
+      hipVatSubmissionConnector = mockHipVatSubmissionConnector,
       nonRepudiationService = mockNonRepudiationService,
       submissionPayloadBuilder = mockSubmissionPayloadBuilder,
       submissionAuditBlockBuilder = mockSubmissionAuditBlockBuilder,
@@ -90,7 +92,8 @@ class SubmissionServiceSpec
       timeMachine = mockTimeMachine,
       emailService = mockEmailService,
       schemaValidationService = mockSchemaValidationService,
-      apiSchema = apiSchema,
+      ifsApiSchema = ifsApiSchema,
+      hipApiSchema = hipApiSchema,
       authConnector = mockAuthConnector
     )
   }
@@ -112,7 +115,7 @@ class SubmissionServiceSpec
         )
       )
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+      when(mockIfsVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.submitted))
@@ -208,7 +211,7 @@ class SubmissionServiceSpec
         )
       )
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+      when(mockIfsVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.submitted))
@@ -306,7 +309,7 @@ class SubmissionServiceSpec
         )
       )
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+      when(mockIfsVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.submitted))
@@ -384,7 +387,7 @@ class SubmissionServiceSpec
       when(
         mockRegistrationMongoRepository.updateSubmissionStatus(anyString(), anyString(), any[VatRegStatus.Value]())(ArgumentMatchers.any[Request[_]]))
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+      when(mockIfsVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Left(VatSubmissionFailure(BAD_REQUEST, ""))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.failed))
@@ -409,7 +412,7 @@ class SubmissionServiceSpec
         )
       )
         .thenReturn(Future.successful(Some(VatRegStatus.submitted)))
-      when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+      when(mockIfsVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
         .thenReturn(Future.successful(Left(VatSubmissionFailure(BAD_REQUEST, ""))))
       when(mockRegistrationMongoRepository.finishRegistrationSubmission(anyString(), any(), any()))
         .thenReturn(Future.successful(VatRegStatus.failed))
@@ -431,7 +434,7 @@ class SubmissionServiceSpec
       "return the success response in a 200" in new Setup {
         mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
 
-        when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+        when(mockIfsVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
           .thenReturn(Future.successful(Right(VatSubmissionSuccess(testFormBundleId))))
 
         await(service.submit(Right(vatSubmissionJson.as[JsObject]), testRegId, testCorrelationId)) mustBe Right(
@@ -463,7 +466,7 @@ class SubmissionServiceSpec
         mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
 
         private val connectorFailureResponse = VatSubmissionFailure(BAD_REQUEST, "API response message")
-        when(mockVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
+        when(mockIfsVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
           .thenReturn(Future.successful(Left(connectorFailureResponse)))
 
         await(service.submit(Right(vatSubmissionJson.as[JsObject]), testRegId, testCorrelationId)) mustBe Left(connectorFailureResponse)

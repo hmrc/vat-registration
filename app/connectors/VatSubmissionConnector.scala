@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,14 @@
 
 package connectors
 
-import config.BackendConfig
-import httpparsers.VatSubmissionHttpParser.{VatSubmissionHttpReads, VatSubmissionResponse}
+import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import play.api.libs.json.JsObject
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.HeaderCarrier
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-@Singleton
-class VatSubmissionConnector @Inject() (appConfig: BackendConfig, http: HttpClientV2)(implicit
-  executionContext: ExecutionContext
-) {
-
+trait VatSubmissionConnector {
   def submit(submissionData: JsObject, correlationId: String, credentialId: String)(implicit
     hc: HeaderCarrier
-  ): Future[VatSubmissionResponse] =
-    http
-      .post(url"${appConfig.vatSubmissionUrl}")
-      .withBody(submissionData)
-      .setHeader("Authorization" -> appConfig.urlHeaderAuthorization)
-      .setHeader("Environment" -> appConfig.urlHeaderEnvironment)
-      .setHeader("CorrelationId" -> correlationId)
-      .setHeader("Credential-Id" -> credentialId)
-      .setHeader("Content-Type" -> "application/json")
-      .setHeader(hc.headers(Seq("X-Session-ID")): _*)
-      .execute[VatSubmissionResponse](VatSubmissionHttpReads, executionContext)
-
+  ): Future[VatSubmissionResponse]
 }

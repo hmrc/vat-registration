@@ -18,12 +18,12 @@ package services.submission
 
 import cats.instances.FutureInstances
 import config.BackendConfig
-import connectors.{NonRepudiationConnector, VatSubmissionConnector}
+import connectors.{HipVatSubmissionConnector, IfsVatSubmissionConnector, NonRepudiationConnector}
 import enums.VatRegStatus
-import featureswitch.core.config.{FeatureSwitching, PostSubmissionDecoupling, PostSubmissionDecouplingConnector}
+import featureswitch.core.config.{FeatureSwitching, HipSubmissionConnector, PostSubmissionDecoupling, PostSubmissionDecouplingConnector}
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
-import models.api.schemas.API1364
+import models.api.schemas.{API1364, EPID1835}
 import models.api.vatapplication.Annual
 import models.api.{Attached, PersonalDetails, VatScheme}
 import models.monitoring.SubmissionFailureErrorsAuditModel
@@ -50,7 +50,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SubmissionService @Inject() (
     registrationRepository: VatSchemeRepository,
-    vatSubmissionConnector: VatSubmissionConnector,
+    ifsVatSubmissionConnector: IfsVatSubmissionConnector,
+    hipVatSubmissionConnector: HipVatSubmissionConnector,
     nonRepudiationService: NonRepudiationService,
     submissionPayloadBuilder: SubmissionPayloadBuilder,
     submissionAuditBlockBuilder: SubmissionAuditBlockBuilder,
@@ -63,13 +64,17 @@ class SubmissionService @Inject() (
     idGenerator: IdGenerator,
     emailService: EmailService,
     schemaValidationService: SchemaValidationService,
-    apiSchema: API1364,
+    ifsApiSchema: API1364,
+    hipApiSchema: EPID1835,
     val authConnector: AuthConnector
 )(implicit executionContext: ExecutionContext, val appConfig: BackendConfig)
     extends FutureInstances
     with AuthorisedFunctions
     with AlertLogging
     with FeatureSwitching {
+
+  private val vatSubmissionConnector = if (isEnabled(HipSubmissionConnector)) hipVatSubmissionConnector else ifsVatSubmissionConnector
+  private val apiSchema              = if (isEnabled(HipSubmissionConnector)) hipApiSchema else ifsApiSchema
 
   def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String], lang: String)(implicit
       hc: HeaderCarrier,
