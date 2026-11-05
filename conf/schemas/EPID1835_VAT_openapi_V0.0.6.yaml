@@ -1,0 +1,4132 @@
+---
+openapi: 3.0.3
+info:
+  description: "This API specification provides the ability for a Taxpayer (Business\
+    \ or Individual) subscription to theVAT tax regime.\n\nThe following resources\
+    \ are offered by these APIs:\n\n**Subscriptions**\n\nProvides ability to create\
+    \ and display of VAT Subscription.\n\n**Subscriptions for VAT Customer Information\
+    \ and Subscription**\n-  Subscription Create\n-  Subscription Display\n\n**EPID\
+    \ references:**\n\n-  EPID1835-HIP OAS: VAT Customer Information and Subscription\
+    \ (VAT)\n\n**Change Log**\n| Version | Date | Author | Description |\n|---|---|---|---|\n\
+    | 0.0.1 | 2026-06-30 | HIP OAS Agent | Initial HIP onboarding |\n| 0.0.2 | 2026-08-19\
+    \ | Rajkumar Pochammal | Updated the EPID numbers, summary descriptions, and correction\
+    \ ID descriptions. Updated the Get/Display Subscription path, changed idType and\
+    \ idValue to simple types, and updated the 422 ETMP error codes, messages, and\
+    \ examples.  | \n| 0.0.3 | 2026-09-09 | Rajkumar Pochammal | In the Create API,\
+    \ SessionID and CredentialID were added to the header, and the messageType enum\
+    \ values and 404 response were updated.In the Display API, missing data elements\
+    \ for zeroRatedExmpApplicationType were added, the 089 error message was updated\
+    \ to  Form Number , and the 404 response was updated. \n| 0.0.4 | 2026-09-28 |\
+    \ Rajkumar Pochammal | Create And Display APIs, Renamed the 422 Validation errors\
+    \ schema node from errors to error and updated the corresponding validation error\
+    \ examples. |\n| 0.0.5 | 2026-10-05 | Rajkumar Pochammal | Create And Display\
+    \ APIs - Updated patterns for the following fields as agreed during the 2 October\
+    \ discussion.\n||||BusinessName,OrganisationName,TradingName and AccountName (\
+    \ i.e 1,160)\n||||NameOfSupplier,PreviousOwnerName,ShortenedName ( i.e 1,105)\n\
+    ||||AddressLines ( i.e 1,35)\n||||Display API- Datatype updated from Boolean to\
+    \ String for the following fields: mandationStatus,commsPreference and returnPeriod\n\
+    ||||Display API example updated ||\n| 0.0.6 | 2026-10-09 | Rajkumar Pochammal\
+    \ | Create And Display APIs - Pattern updated to include the asterisk (*) character\
+    \ for BusinessName, OrganisationName, TradingName, AccountName, and AddressLines.\
+    \ \n||||The AccountName length updated to 1-60 characters. \n|||| The TradingName\
+    \ description updated. "
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  title: VAT Services
+  version: 0.0.6
+  x-integration-catalogue:
+    api-type: SIMPLE
+    backends:
+    - etmp
+    domain: "2"
+    platform: HIP
+    reviewed-date: 2026-10-22T07:34:41.171671629Z
+    short-description: VAT Services
+    status: BETA
+    sub-domain: "2.17"
+servers:
+- url: https://api.ipaas.prod.eis.ns2p.corp.hmrc.gov.uk/etmp
+  description: Corporate - Production
+- url: https://api.ipaas.preprod.eis.ns2p.corp.hmrc.gov.uk/etmp
+  description: Corporate – Pre-Production
+- url: https://api.ipaas.test.eis.ns2n.corp.hmrc.gov.uk/etmp
+  description: Corporate - Test
+- url: https://hip.ws.hmrc.gov.uk/etmp
+  description: MDTP - Production
+- url: https://hip.ws.ibt.hmrc.gov.uk/etmp
+  description: MDTP - QA
+tags:
+- description: Operations for Value Added Tax Scheme related to their VAT Subscription
+  name: subscriptions
+paths:
+  /RESTAdapter/vat/subscription:
+    post:
+      deprecated: false
+      description: |-
+        This API provides the ability for a taxpayer (Business or Individual) to subscribe the VAT service on ETMP.
+
+        The call is synchronous.
+
+        For the successful scenario the API will creates the necessary additional master data (storing the correspondence details) or updates the existing data, depending on the type of request .
+
+        For the unsuccessful scenario, the API will return error messages.
+
+        Legacy API#1364
+
+        EPID reference:
+
+        EPID1833
+      operationId: createVatSubscription
+      parameters:
+      - $ref: "#/components/parameters/correlationid"
+      - $ref: "#/components/parameters/Credential-Id"
+      - $ref: "#/components/parameters/X-Originating-System"
+      - $ref: "#/components/parameters/X-Receipt-Date"
+      - $ref: "#/components/parameters/X-Session-ID"
+      - $ref: "#/components/parameters/X-Transmitting-System"
+      requestBody:
+        content:
+          application/json:
+            examples:
+              CreateRequestExample:
+                $ref: "#/components/examples/CreateRequestExample"
+            schema:
+              $ref: "#/components/schemas/request"
+        description: ""
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              examples:
+                Response Example:
+                  $ref: "#/components/examples/201_CreateSubsResponseExample"
+              schema:
+                $ref: "#/components/schemas/CreateVatSubscriptionSuccessResponse"
+          description: Success
+          headers:
+            correlationid:
+              $ref: "#/components/headers/correlationid"
+        "400":
+          content:
+            application/json:
+              schema:
+                required:
+                - origin
+                type: object
+                properties:
+                  origin:
+                    $ref: "#/components/schemas/HIP-originEnum"
+                  response:
+                    oneOf:
+                    - $ref: "#/components/schemas/HIP-failureResponse"
+                    - $ref: "#/components/schemas/SystemErrorResponse"
+                additionalProperties: false
+              examples:
+                HIP-originResponse:
+                  description: HIP-originResponse
+                  value:
+                    origin: HIP
+                    response:
+                      failures:
+                      - type: Type of Failure
+                        reason: Reason for Failure
+          description: Bad Request
+          headers:
+            correlationid:
+              $ref: "#/components/headers/correlationid"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/notfound"
+        "422":
+          $ref: "#/components/responses/unprocessableEntityCreateVatSubscription"
+        "500":
+          content:
+            application/json:
+              examples:
+                "500 Error Example":
+                  value:
+                    origin: HoD
+                    response:
+                      error:
+                        code: "500"
+                        logID: D82EBAB67AC6D7565C0682CA91BDC577
+                        message: string
+                HIP-originResponse:
+                  description: HIP-originResponse
+                  value:
+                    origin: HIP
+                    response:
+                      failures:
+                      - type: Type of Failure
+                        reason: Reason for Failure
+              schema:
+                required:
+                - origin
+                type: object
+                properties:
+                  origin:
+                    $ref: "#/components/schemas/HIP-originEnum"
+                  response:
+                    oneOf:
+                    - $ref: "#/components/schemas/HIP-failureResponse"
+                    - $ref: "#/components/schemas/SystemErrorResponse"
+                additionalProperties: false
+          description: Internal Server Error
+          headers:
+            correlationid:
+              $ref: "#/components/headers/correlationid"
+        "503":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/HIP-originResponse"
+          description: Service Unavailable
+      summary: Create VAT subscription
+      tags:
+      - subscriptions
+  /RESTAdapter/vat/subscription/{idType}/{idValue}:
+    get:
+      deprecated: false
+      description: "This particular API provides the ability for a Taxpayer (Business\
+        \ or Individual) to display a subscription.\n\nThe call is synchronous.\n\n\
+        For the successful scenario the API retrieve the latest subscription details.\n\
+        \nFor the unsuccessful scenario, the API will return error messages.\n\n Legacy\
+        \ API#1363 \n\nEPID reference:\n\nEPID1834"
+      operationId: getVatCustomerInformation
+      parameters:
+      - $ref: "#/components/parameters/correlationid"
+      - $ref: "#/components/parameters/idType"
+      - $ref: "#/components/parameters/idValue"
+      - $ref: "#/components/parameters/X-Originating-System"
+      - $ref: "#/components/parameters/X-Receipt-Date"
+      - $ref: "#/components/parameters/X-Transmitting-System"
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                Response Example:
+                  $ref: "#/components/examples/200_GetSubsResponseExample"
+              schema:
+                $ref: "#/components/schemas/GetVatCustomerInformationSuccessResponse"
+          description: Success
+          headers:
+            correlationid:
+              $ref: "#/components/headers/correlationid"
+        "400":
+          content:
+            application/json:
+              schema:
+                required:
+                - origin
+                type: object
+                properties:
+                  origin:
+                    $ref: "#/components/schemas/HIP-originEnum"
+                  response:
+                    oneOf:
+                    - $ref: "#/components/schemas/HIP-failureResponse"
+                    - $ref: "#/components/schemas/SystemErrorResponse"
+                additionalProperties: false
+              examples:
+                HIP-originResponse:
+                  description: HIP-originResponse
+                  value:
+                    origin: HIP
+                    response:
+                      failures:
+                      - type: Type of Failure
+                        reason: Reason for Failure
+          description: Bad Request
+          headers:
+            correlationid:
+              $ref: "#/components/headers/correlationid"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+        "403":
+          $ref: "#/components/responses/forbidden"
+        "404":
+          $ref: "#/components/responses/notfound"
+        "422":
+          $ref: "#/components/responses/unprocessableEntityGetVatCustomerInformation"
+        "500":
+          content:
+            application/json:
+              examples:
+                "500 Error Example":
+                  value:
+                    origin: HoD
+                    response:
+                      error:
+                        code: "500"
+                        logID: D82EBAB67AC6D7565C0682CA91BDC577
+                        message: string
+                HIP-originResponse:
+                  description: HIP-originResponse
+                  value:
+                    origin: HIP
+                    response:
+                      failures:
+                      - type: Type of Failure
+                        reason: Reason for Failure
+              schema:
+                required:
+                - origin
+                type: object
+                properties:
+                  origin:
+                    $ref: "#/components/schemas/HIP-originEnum"
+                  response:
+                    oneOf:
+                    - $ref: "#/components/schemas/HIP-failureResponse"
+                    - $ref: "#/components/schemas/SystemErrorResponse"
+                additionalProperties: false
+          description: Internal Server Error
+          headers:
+            correlationid:
+              $ref: "#/components/headers/correlationid"
+        "503":
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: "#/components/schemas/HIP-originResponse"
+          description: Service Unavailable
+      summary: Get VAT customer information
+      tags:
+      - subscriptions
+components:
+  examples:
+    "200_GetSubsResponseExample":
+      summary: Success Resposne Example
+      value:
+        success:
+          approvedInformation:
+            PPOB:
+              RLS: "0001"
+              address:
+                countryCode: ES
+                line1: VAT ADDR 1
+                line2: VAT ADDR 2
+                line3: VAT ADDR 3
+                line4: VAT ADDR 4
+                line5: VAT ADDR 5
+                postCode: SW1A 2BQ
+              commsPreference: P01
+              contactDetails:
+                emailAddress: antiques@email.com
+                emailVerified: true
+                faxNumber: "1268712671"
+                mobileNumber: "07128126712"
+                primaryPhoneNumber: "01257162661"
+              websiteAddress: https://www.gov.uk/government/organisations/hm-revenue-customs
+            bankDetails:
+              BIC: a
+              IBAN: a
+              accountHolderName: Flintstone Quarry
+              bankAccountNumber: "00012345"
+              bankBuildSocietyName: a
+              buildingSocietyNumber: "12312345"
+              sortCode: "010103"
+            businessActivities:
+              mainCode2: "00000"
+              mainCode3: "00000"
+              mainCode4: "00000"
+              primaryMainCode: "00000"
+            correspondenceContactDetails:
+              RLS: "0001"
+              address:
+                countryCode: ES
+                line1: VAT ADDR 1
+                line2: VAT ADDR 2
+                line3: VAT ADDR 3
+                line4: VAT ADDR 4
+                line5: VAT ADDR 5
+                postCode: SW1A 2BQ
+            customerDetails:
+              businessStartDate: 2001-01-01
+              continueToTrade: true
+              customerMigratedToETMPDate: 2001-01-01
+              dataOrigin: "0002"
+              dateOfBirth: 2001-01-01
+              effectiveRegistrationDate: 2001-01-01
+              hybridToFullMigrationDate: 2001-01-01
+              individual:
+                firstName: Fred
+                lastName: Flintstone
+                middleName: M
+                title: "0001"
+              insolvencyDate: 2001-01-01
+              insolvencyType: "01"
+              isInsolvent: true
+              isPartialMigration: false
+              mandationStatus: "1"
+              nameIsReadOnly: false
+              optionToTax: true
+              organisationName: Ancient Antiques
+              overseasIndicator: false
+              partyType: "1"
+              registrationReason: "0001"
+              singleMarketIndicator: false
+              tradingName: a
+              welshIndicator: true
+            deregistration:
+              deregistrationReason: "0001"
+              effectDateOfCancellation: 2001-01-01
+              lastReturnDueDate: 2001-01-01
+            flatRateScheme:
+              FRSCategory: "001"
+              FRSPercentage: 134
+              endDate: 2004-09-10
+              limitedCostTrader: true
+              startDate: 2001-01-01
+            groupOrPartnerMbrs:
+            - SAP_Number: "123456789012345678901234567890123456789012"
+              individual:
+                firstName: abcdefghijklmno
+                lastName: abcdefghijk
+                middleName: abc
+                title: "0001"
+              nameIsReadOnly: true
+              organisationName: abcd
+              typeOfRelationship: "01"
+            returnPeriod:
+              firstNonNSTPPeriod:
+                periodDueDateOfFirstStandardPeriod: 2019-01-01
+                periodEndDateOfFirstStandardPeriod: 2019-04-05
+                periodKeyOfFirstStandardPeriod: 19A2
+                periodStartDateOfFirstStandardPeriod: 2018-04-04
+              nonStdTaxPeriods:
+              - periodDueDate: 2012-06-21
+                periodEndDate: 2012-04-11
+                periodKey: 00A0
+                periodStartDate: 2012-01-01
+              - periodDueDate: 2013-06-21
+                periodEndDate: 2013-04-01
+                periodKey: 00A1
+                periodStartDate: 2013-02-01
+              stdReturnPeriod: MA
+          inFlightInformation:
+            changeIndicators:
+              PPOBDetails: true
+              annualAccounting: true
+              bankDetails: true
+              businessActivities: true
+              commsPreference: "true"
+              correspondenceContactDetails: true
+              deregister: true
+              effectiveDateOfRegistration: false
+              flatRateScheme: true
+              mandationStatus: "true"
+              organisationDetails: true
+              returnPeriod: "true"
+            inFlightChanges:
+              PPOBDetails:
+                address:
+                  countryCode: ES
+                  line1: VAT ADDR 1
+                  line2: VAT ADDR 2
+                  line3: VAT ADDR 3
+                  line4: VAT ADDR 4
+                  line5: VAT ADDR 5
+                  postCode: SW1A 2BQ
+                contactDetails:
+                  emailAddress: antiques@email.com
+                  emailVerified: true
+                  faxNumber: "1268712671"
+                  mobileNumber: "7128126712"
+                  primaryPhoneNumber: "01257162661"
+                formInformation:
+                  dateReceived: 2001-01-01
+                  formBundle: "123456789012"
+                websiteAddress: https://www.gov.uk/government/organisations/hm-revenue-customs
+              annualAccounting:
+                formInformation:
+                  dateReceived: 2018-01-01
+                  formBundle: "000000000011"
+              bankDetails:
+                BIC: a
+                IBAN: a
+                accountHolderName: Flintstone Quarry
+                bankAccountNumber: "00012345"
+                bankBuildSocietyName: a
+                buildingSocietyNumber: "12312345"
+                formInformation:
+                  dateReceived: 2001-01-01
+                  formBundle: "123456789015"
+                sortCode: "010103"
+              businessActivities:
+                dataToRecordLandProperties: false
+                formInformation:
+                  dateReceived: 2001-01-01
+                  formBundle: "123456789015"
+                mainCode2: "00000"
+                mainCode3: "00000"
+                mainCode4: "00000"
+                primaryMainCode: "00000"
+              commsPreference:
+                commsPreference: ZEL
+                formInformation:
+                  dateReceived: 2013-01-01
+                  formBundle: "000000000000"
+              correspondenceContactDetails:
+                address:
+                  countryCode: ES
+                  line1: VAT ADDR 1
+                  line2: VAT ADDR 2
+                  line3: VAT ADDR 3
+                  line4: VAT ADDR 4
+                  line5: VAT ADDR 5
+                  postCode: SW1A 2BQ
+                formInformation:
+                  dateReceived: 2001-01-01
+                  formBundle: "123456789012"
+              deregister:
+                deregistrationDate: 2001-01-01
+                deregistrationDetails:
+                  OTTStocksAssetsValue: 3030.15
+                  additionalTaxInvoices: false
+                  cashAccountingScheme: false
+                  intendSellCapitalAssets: true
+                  optionTaxProperty: true
+                deregistrationLaterDate: 2002-02-02
+                deregistrationReason: "0012"
+                disbandingGroupDeregQuestions:
+                  groupDeregQ1: true
+                  groupDeregQ1Text: a
+                  groupDeregQ2: true
+                  groupDeregQ2Text: a
+                  groupDeregQ3: true
+                  groupDeregQ3Text: a
+                  groupDeregQ4: true
+                  groupDeregQ4Text: a
+                  groupDeregQ5: true
+                  groupDeregQ5Text: a
+                formInformation:
+                  dateReceived: 2001-01-01
+                  formBundle: "123456789012"
+                joinedAFRSDeregQuestionsType:
+                  AFRSFarmingTurnover: 0.02
+                  AFRSNonFarmingTurnover: 0.02
+                newOwnerDetails:
+                  VATGroupMember: true
+                  acceptVATConditions: false
+                  address:
+                    countryCode: ES
+                    line1: VAT ADDR 1
+                    line2: VAT ADDR 2
+                    line3: VAT ADDR 3
+                    line4: VAT ADDR 4
+                    line5: VAT ADDR 5
+                    postCode: SW1A 2BQ
+                  contactDetails:
+                    emailAddress: antiques@email.com
+                    faxNumber: "1268712671"
+                    mobileNumber: "7128126712"
+                    primaryPhoneNumber: "01257162661"
+                  individual:
+                    firstName: Paul
+                    lastName: Flintstone
+                    middleName: M
+                    title: "0001"
+                  newOwnerVRN: "12345678"
+                  organisationName: ABCD Ltd
+                  retainVATNumber: true
+                  stockAssetTransfer: false
+                  tradingName: b
+                  websiteAddress: https://www.gov.uk/government/organisations/abcd-ltd
+                turnoverBelowDeregistrationLimit:
+                  aboveBelowThreshold: true
+                  reason: Deceased
+                  taxableSuppliesValue: 1000
+                zeroRatedExmpApplication:
+                  estTotalTaxTurnover: 2020.1
+                  natureOfSupplies: Nature of Supplies
+                  repaymentSituation: false
+                  zeroRatedSuppliesValue: 1010.05
+              effectiveDateOfRegistration:
+                formInformation:
+                  dateReceived: 2012-01-01
+                  formBundle: "000000000000"
+                requestedNewEDR: 2012-04-01
+              flatRateScheme:
+                FRSCategory: "001"
+                FRSPercentage: 100
+                formInformation:
+                  dateReceived: 2001-01-01
+                  formBundle: "123456789015"
+                limitedCostTrader: true
+                startDate: 2001-01-01
+              mandationStatus:
+                formInformation:
+                  dateReceived: 2013-01-01
+                  formBundle: "000000000000"
+                mandationStatus: "1"
+              organisationDetails:
+                formInformation:
+                  dateReceived: 2001-01-01
+                  formBundle: "123456789012"
+                individual:
+                  firstName: Paul
+                  lastName: Flintstone
+                  middleName: M
+                  title: "0001"
+                organisationName: Ancient Antiques of the World
+                tradingName: b
+              returnPeriod:
+                changeReturnPeriod: false
+                formInformation:
+                  dateReceived: 2001-01-01
+                  formBundle: "123456789012"
+                returnPeriod: MA
+    "201_CreateSubsResponseExample":
+      summary: Success Response Example
+      value:
+        success:
+          formBundle: "123456789012"
+    CreateRequestExample:
+      summary: Create Request Example
+      value:
+        LnP:
+          plansForRentingLeasingLandOrProp:
+            TOGC: false
+            beneficialOwner: Beneficial owner
+            fullExplanation: Best deal
+            makeSuppliesOfLandOrProp: false
+            notifiedHMRC: "0"
+            notifiedSeller: true
+            optToTaxSupplies: false
+            other: true
+            reasonToRentLease: Tally accounts
+            registeredForVAT: true
+            rentLeaseCommProp: true
+            rentLeaseCommPropCivilWork: false
+            rentLeaseNewResPropLongTerm: true
+            rentLeaseNewResPropShortTerm: false
+            rentLeaseNonResPropLongTerm: false
+            rentLeaseResOrCharPropLongTerm: false
+            rentLeaseSubsReconstruct: false
+            resToThirdParty: true
+          plansToSellLandOrProp:
+            reasonToSell: Comp wanted to sell
+            rentingOrLeasing: true
+            sellCommPropCivilWork: false
+            sellCommPropCivilWork3YrsOld: false
+            sellCommPropCivilWorkLessThan3YrsOld: true
+            sellInterestInLandOrProp: false
+            sellLandOrProp: false
+            sellNewResProp: true
+            sellNonResProp: true
+            sellOther: true
+            sellResOrRelCharProp: false
+            sellSubsReconstruct: false
+          sellingLandOrProperty: true
+          typeOfProperty: "1"
+          workingAsGeneralBuilder: true
+        OTTs:
+        - address:
+            addressValidated: true
+            countryCode: GB
+            line1: 1 HighStreet
+            line2: Birmingham
+            line3: ASDFG
+            line4: QWERD
+            line5: CVBNM
+            postCode: HP137JP
+          connectedDetails: connected details check the length
+          connectedFinancier: true
+          currentExemptSupplies: true
+          effectiveDate: 2001-01-01
+          exemptSupplies: false
+          futureInputTax: 1.2345678912345612E14
+          futurePlans: Future plans are in progress
+          helpedDetails: helped for charity
+          helpedFundProp: false
+          landRegNum: "12345"
+          lastExemptDate: 2001-01-01
+          occupyingProp: false
+          optionToTax: false
+          prePaymentDetails: Bank details
+          prePaymentOfRent: false
+          propDetails: Property at worthing
+          recoverPreOption: true
+          schedule:
+          - VATAmount: 1.2345678912345612E14
+            VRN: "123456789"
+            dateOfInvoice: 2001-01-01
+            invoiceNumber: "123498765"
+            nameOfSupplier: Supplier Incorp
+            suppliesDescription: a
+            totalCost: 1.2345678912345612E14
+          specificCondition: "1"
+          submitPlan: false
+          taxDisapplyReason: Applied for the certificate
+          taxRelatedTo:
+            other: false
+            otherDetails: Others please check for 250 or 500
+            premiums: true
+            refurbishment: false
+            rent: false
+            surrenders: false
+          totalValueLandExempt: 1.2345678912345612E14
+        admin:
+          additionalInformation:
+            customerStatus: "2"
+            overseasTrader: false
+            welshLanguage: false
+          attachments:
+            EORIrequested: true
+            VAT2: "1"
+            VAT51: "1"
+            VAT5L: "1"
+            attachment1614a: "1"
+            attachment1614h: "1"
+            identityEvidence: "1"
+            landPropertyOtherDocs: "1"
+            letterOfAuthority: "1"
+            otherAttachments: "1"
+            taxAgentAuthorisation: "1"
+            taxRepresentativeAuthorisation: "1"
+        bankDetails:
+          UK:
+            accountName: Trading Limite
+            accountNumber: "12345678"
+            bankDetailsNotValid: false
+            buildSocietyRollNumber: "456"
+            reasonBankAccNotProvided: "1"
+            sortCode: "123456"
+          bankBuildSocietyName: abcde
+          overseas:
+            BIC: "3"
+            IBAN: "3333333"
+        compliance:
+          intermediaryArrangement: false
+          numOfWorkers: 10
+          numOfWorkersSupplied: 4
+          provisionOfLabour: false
+          supplyWorkers: true
+          tempWorkers: false
+        contact:
+          address:
+            addressValidated: false
+            countryCode: GB
+            line1: 1 HighStreet
+            line2: Birmingham
+            line3: ASDFG
+            line4: QWERD
+            line5: CVBNM
+            postCode: HP137JP
+          commDetails:
+            commsPreference: ZEL
+            email: ABCD@TEST.COM
+            emailVerified: true
+            faxNumber: +41(333)444-5555
+            mobileNumber: "4445556667"
+            telephone: "0101222444"
+            webAddress: abcd.com
+        controllingBody:
+          aboutBusiness:
+            SICCode: "12345"
+            totalExpectedAnnualTaxableTurnover: 1.2345678912345612E14
+            totalExpectedAnnualValueOfNonTaxableSupplies: 1.2345678912345612E14
+            totalExpectedAnnualValueOfTaxableSupplies: 1.2345678912345612E14
+            totalExpectedNonTaxableTurnover: 1.2345678912345612E14
+        customerIdentification:
+          customerID:
+          - IDsVerificationStatus: "1"
+            countryOfIncorporation: GB
+            date: 2000-08-13
+            idType: UTR
+            idValue: UT09919101
+            partyType: "01"
+            safeIDBPFound: "12345678901234567890"
+          dateOfBirth: 2000-08-13
+          name:
+            firstName: Automobile
+            lastName: PQRS
+            middleName: XYZ
+            title: "0001"
+          organisationName: Mark and Spencers
+          primeBPSafeID: "12345678901234567890"
+          shortOrgName: M and S
+          tradersPartyType: "50"
+          tradingName: ABCD LTD
+        declaration:
+          agentOrCapacitor:
+            address:
+              addressValidated: true
+              countryCode: GB
+              line1: 1 HighStreet
+              line2: Birmingham
+              line3: ASDFG
+              line4: QWERD
+              line5: CVBNM
+              postCode: HP137JP
+            clientIDThisTrader: 4A4S5S
+            commDetails:
+              email: WED@TEST3.COM
+              telephone: "7744112233"
+            identification:
+            - IDsFailedOnlineVerification: "1"
+              countryOfIncorporation: GB
+              date: 2001-01-01
+              idType: CRN
+              idValue: "1005807744"
+            individualName:
+              firstName: WXY
+              lastName: UJK
+              middleName: THG
+              title: "0001"
+            organisationName: abcdefghijklmn
+          applicantDetails:
+            commDetails:
+              email: LMN@TEST2.COM
+              faxNumber: +41(333)444-6666
+              mobileNumber: "9638527412"
+              telephone: "4561237415"
+            currAddress:
+              addressValidated: false
+              countryCode: GB
+              line1: 1 HighStreet
+              line2: Birmingham
+              line3: ASDFG
+              line4: QWERD
+              line5: CVBNM
+              postCode: HP137JP
+            dateOfBirth: 2001-01-01
+            identifiers:
+            - IDsVerificationStatus: "1"
+              countryOfIncorporation: GB
+              date: 2001-01-01
+              idType: CRN
+              idValue: "1155997744"
+            name:
+              firstName: RSP
+              lastName: LMN
+              middleName: FG
+              title: "0001"
+            otherRole: Nootherrole
+            prevAddress:
+              addressValidated: true
+              countryCode: GB
+              line1: 1 HighStreet
+              line2: Birmingham
+              line3: ASDFG
+              line4: QWERD
+              line5: CVBNM
+              postCode: HP137JP
+            prevName:
+              firstName: WXY
+              lastName: UJK
+              middleName: THG
+              nameChangeDate: 2001-01-01
+              title: "0001"
+            roleInBusiness: "01"
+          declarationSigning:
+            capacityOther: NO OTHER CAPACITY
+            confirmInformationDeclaration: false
+            declarationCapacity: "01"
+        entities:
+        - action: "1"
+          businessContactDetails:
+            address:
+              addressValidated: true
+              countryCode: GB
+              line1: 1 HighStreet
+              line2: Birmingham
+              line3: ASDFG
+              line4: QWERD
+              line5: CVBNM
+              postCode: HP137JP
+            commDetails:
+              commsPreference: P01
+              email: test@email.com
+              emailVerified: true
+              faxNumber: "9895334787"
+              mobileNumber: "9895332867"
+              telephone: "8884003456"
+              webAddress: www.cap.com
+          customerIdentification:
+            customerID:
+            - IDsVerificationStatus: "1"
+              countryOfIncorporation: GB
+              date: 2001-01-01
+              idType: CRN
+              idValue: 12345CR
+              partyType: "01"
+              safeIDBPFound: "12345678901234567890"
+            dateOfBirth: 2001-01-01
+            name:
+              firstName: Kelly
+              lastName: Newton
+              middleName: Sera
+              title: "0002"
+            organisationName: Mark and Spencers
+            primeBPSafeID: "12345678901234567890"
+            shortOrgName: M and  S
+          entityType: "1"
+          tradersPartyType: "50"
+          tradingName: Kelly traders
+        groupCompliance:
+          controlConditionDetails: detail of control conditions
+          detailsOfPartialExemption: details
+          isControllingBody: "1"
+          meetsControlConditions: false
+          partiallyExempt: false
+        joinAA:
+          customerRequest:
+            annualStagger: YA
+            estimatedTurnover: 1.234567891212E10
+            paymentFrequency: M
+            paymentMethod: "01"
+            reqStartDate: 2001-01-01
+          submissionType: "1"
+        messageType: SubscriptionCreate
+        periods:
+          NSTPRequested: false
+          customerPreferredPeriodicity: MA
+          nonStdTaxPeriods:
+          - periodEnd: 2001-01-01
+            stdPeriodEndDate: 2001-01-01
+        subscription:
+          businessActivities:
+            FHDDSWarehouseNumber: FP77788Q
+            SICCodes:
+              mainCode2: "91234"
+              mainCode3: "91234"
+              mainCode4: "91234"
+              primaryMainCode: "91234"
+            dataAboutLandOrProperties: true
+            description: firm
+            fulfilmentWarehouse: false
+            goodsToCustomerEU: true
+            goodsToOverseas: true
+            nameOfWarehouse: GOODSSTORAGE
+            storingGoodsForDispatch: GODOWN
+          corporateBodyRegistered:
+            companyRegistrationNumber: "456789123"
+            countryOfIncorporation: GB
+            dateOfIncorporation: 2001-01-01
+          exempt: false
+          otherBusinessActivities:
+          - businessName: ABC
+            idType: VRN
+            idValue: "1425367485"
+            stillTrading: true
+          reasonForSubscription:
+            exemptionOrException: "0"
+            registrationReason: "0001"
+            relevantDate: 2000-08-13
+            voluntaryOrEarlierDate: 1967-08-13
+          schemes:
+            FRSCategory: "001"
+            FRSPercentage: 13.12
+            limitedCostTrader: true
+            startDate: 2001-01-01
+          takingOver:
+            acceptTsAndCsForTOGCOrCOLE: false
+            keepPrevOwnerVATNo: false
+            prevOwnerName: JACK
+            prevOwnerVATNumber: "012345678"
+          yourTurnover:
+            VATRepaymentExpected: false
+            farmingTurnover: 123456.12
+            goodsFromOtherEU: 123456.12
+            goodsSoldToOtherEU: 913456.12
+            nonFarmingTurnover: 123456.12
+            turnoverNext12Months: 123456.12
+            zeroRatedSupplies: 123456.12
+  headers:
+    correlationid:
+      deprecated: false
+      description: Unique transaction identifier.
+      explode: false
+      required: false
+      schema:
+        pattern: "^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$"
+        type: string
+        example: d82ebab6-7ac6-d756-5c06-82ca91bdc577
+      style: simple
+  parameters:
+    Credential-Id:
+      deprecated: false
+      description: Credential Identifier (1 to 128 chars)
+      explode: false
+      in: header
+      name: Credential-Id
+      required: true
+      schema:
+        pattern: "^[A-Za-z0-9-:._]{1,128}$"
+        type: string
+      style: simple
+    X-Originating-System:
+      deprecated: false
+      description: Originating system identifier.
+      explode: false
+      in: header
+      name: X-Originating-System
+      required: true
+      schema:
+        enum:
+        - MDTP
+        type: string
+        example: MDTP
+      style: simple
+    X-Receipt-Date:
+      deprecated: false
+      description: Date and time the transaction was received.
+      explode: false
+      in: header
+      name: X-Receipt-Date
+      required: true
+      schema:
+        format: date-time
+        type: string
+        example: 2026-06-30T14:26:44Z
+      style: simple
+    X-Session-ID:
+      deprecated: false
+      description: Session Identifier  (1 to 128 chars)
+      explode: false
+      in: header
+      name: X-Session-ID
+      required: true
+      schema:
+        pattern: "^[A-Za-z0-9-:._]{1,128}$"
+        type: string
+      style: simple
+    X-Transmitting-System:
+      deprecated: false
+      description: Transmitting system identifier.
+      explode: false
+      in: header
+      name: X-Transmitting-System
+      required: true
+      schema:
+        enum:
+        - HIP
+        type: string
+        example: HIP
+      style: simple
+    correlationid:
+      deprecated: false
+      description: "Unique alphanumeric number used for correlation purposes, generated\
+        \ by the originating system and conforming to 36-character UUID (formatted)."
+      explode: false
+      in: header
+      name: correlationid
+      required: true
+      schema:
+        pattern: "^[0-9a-fA-F]{8}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{4}[-][0-9a-fA-F]{12}$"
+        type: string
+        example: d82ebab6-7ac6-d756-5c06-82ca91bdc577
+      style: simple
+    idType:
+      deprecated: false
+      description: Identifier type.
+      explode: false
+      in: path
+      name: idType
+      required: true
+      schema:
+        pattern: ^vrn$
+        type: string
+        example: vrn
+      style: simple
+    idValue:
+      deprecated: false
+      description: VAT registration number.
+      explode: false
+      in: path
+      name: idValue
+      required: true
+      schema:
+        pattern: "^[0-9]{9}$"
+        type: string
+        example: "123456789"
+      style: simple
+  responses:
+    forbidden:
+      description: Forbidden
+      headers:
+        correlationid:
+          $ref: "#/components/headers/correlationid"
+    notfound:
+      description: Not Found
+      headers:
+        correlationid:
+          $ref: "#/components/headers/correlationid"
+    unauthorized:
+      description: Unauthorized
+      headers:
+        correlationid:
+          $ref: "#/components/headers/correlationid"
+    unprocessableEntityCreateVatSubscription:
+      content:
+        application/json:
+          examples:
+            "422 Error Example ":
+              value:
+                error:
+                  code: "003"
+                  processingDate: 2026-03-09T12:34:46Z
+                  text: Request could not be processed
+          schema:
+            $ref: "#/components/schemas/CreateVatSubscriptionApplicationError"
+      description: |
+        Validation errors.
+
+        Errors of this kind indicate that data was successfully received without any technical issues, however it is unable to process the data further for the reason given by the code and text.
+
+        ```
+        [code | text]
+
+        003 | Request could not be processed
+        004 | Duplicate submission acknowledgment reference
+        089 | Applicant already has an in-flight submission, FB <Form Number>
+        105 | ID <ID Type><ID Number> already exist in current FB, form <Form Number>
+        999 | Technical System Error
+      headers:
+        correlationid:
+          $ref: "#/components/headers/correlationid"
+    unprocessableEntityGetVatCustomerInformation:
+      content:
+        application/json:
+          examples:
+            "422 Error Example ":
+              value:
+                error:
+                  code: "003"
+                  processingDate: 2026-03-09T12:34:46Z
+                  text: Request could not be processed
+            "422 Error Example2 ":
+              value:
+                error:
+                  code: "999"
+                  processingDate: 2026-06-30T14:26:44Z
+                  text: Technical System Error
+          schema:
+            $ref: "#/components/schemas/GetVatCustomerInformationApplicationError"
+      description: "Validation errors.\n\nErrors of this kind indicate that data was\
+        \ successfully received without any technical issues, however it is unable\
+        \ to process the data further for the reason given by the code and text.\n\
+        \n```\n[code | text]\n \n002 |  ID not found\n003 |  Request could not be\
+        \ processed\n046 |  Migration already in progress for this identification\
+        \ number\n999 |  Technical System Error"
+      headers:
+        correlationid:
+          $ref: "#/components/headers/correlationid"
+  schemas:
+    API1364_addressType:
+      type: object
+      properties:
+        addressValidated:
+          description: Address validated
+          type: boolean
+        countryCode:
+          $ref: "#/components/schemas/countryType"
+        line1:
+          description: Address Line 1
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,35}$"
+          type: string
+        line2:
+          description: Address Line 2
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,35}$"
+          type: string
+        line3:
+          description: Address Line 3
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,35}$"
+          type: string
+        line4:
+          description: Address Line 4
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,35}$"
+          type: string
+        line5:
+          description: Address Line 5
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,35}$"
+          type: string
+        postCode:
+          description: Post code or Zip code
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,10}$"
+          type: string
+      additionalProperties: false
+    API1364_bankDetailsType:
+      type: object
+      properties:
+        UK:
+          $ref: "#/components/schemas/UKBankDetailsType"
+        bankBuildSocietyName:
+          description: Bank or Building Society Name
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,40}$"
+          type: string
+        overseas:
+          $ref: "#/components/schemas/overseasBankDetailsType"
+      additionalProperties: false
+    API1364_businessActivitiesType:
+      type: object
+      properties:
+        FHDDSWarehouseNumber:
+          description: FHDDS warehouse number
+          pattern: "^[A-Za-z0-9]{1,30}$"
+          type: string
+        SICCodes:
+          $ref: "#/components/schemas/SICCodesType"
+        dataAboutLandOrProperties:
+          description: Data to record about my lands or properties
+          type: boolean
+        description:
+          description: Business activity description
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,250}$"
+          type: string
+        fulfilmentWarehouse:
+          description: Are you using a Fulfilment Warehouse to dispatch your goods
+            from the UK
+          type: boolean
+        goodsToCustomerEU:
+          description: Do you intend to send goods direct to customers from within
+            the EU
+          type: boolean
+        goodsToOverseas:
+          description: Do you solely intend to send goods direct to customers from
+            overseas
+          type: boolean
+        nameOfWarehouse:
+          description: Name of warehouse
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,250}$"
+          type: string
+        storingGoodsForDispatch:
+          description: Where are you storing your goods for dispatch
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,250}$"
+          type: string
+      additionalProperties: false
+    API1364_decimalType:
+      description: "Defines a decimal value (to 2 decimal places), between -999999999999999.99\
+        \ and 999999999999999.99 (17,2)"
+      multipleOf: 0.01
+      maximum: 1000000000000000
+      minimum: -1000000000000000
+      type: number
+    CreateVatSubscriptionApplicationError:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - processingDate
+          - text
+          type: object
+          properties:
+            code:
+              enum:
+              - "003"
+              - "004"
+              - "089"
+              - "105"
+              - "999"
+              type: string
+            processingDate:
+              format: date-time
+              type: string
+            text:
+              description: "003 Request could not be processed \r\n004  Duplicate\
+                \ submission acknowledgment reference\r\n089 Applicant already has\
+                \ an in-flight submission, FB <Form Number> \r\n 105 ID <ID Type><ID\
+                \ Number> already exist in current FB, form <Form Number> \r\n 999\
+                \ Technical System Error \r\n"
+              maxLength: 100
+              minLength: 1
+              type: string
+    CreateVatSubscriptionSuccessResponse:
+      required:
+      - success
+      type: object
+      properties:
+        success:
+          $ref: "#/components/schemas/response"
+      additionalProperties: false
+    FRSCategoryType:
+      description: "FRS Category: 001 Accountancy or book-keeping, 002 Advertising,\
+        \ 003 Agricultural services, 004 Any other activity not listed elsewhere,\
+        \ 005 Architect, civil and structural engineer or surveyor, 006 Boarding or\
+        \ care of animals, 007 Business services not listed elsewhere, 008 Catering\
+        \ services including restaurants and takeaways, 009 Computer and IT consultancy\
+        \ or data processing, 010 Computer repair services, 011 Entertainment or journalism,\
+        \ 012 Estate agency or property management services, 013 Farming or agriculture\
+        \ not listed elsewhere, 014 Film, radio, television or video production, 015\
+        \ Financial services, 016 Forestry or fishing, 017 General building or construction\
+        \ services, 018 Hairdressing or other beauty treatment services, 019 Hiring\
+        \ or renting goods, 020 Hotel or accommodation, 021 Investigation or security,\
+        \ 022 Labour-only building or construction services, 023 Laundry or dry-cleaning\
+        \ services, 024 Lawyer or legal services, 025 Library, archive, museum or\
+        \ other cultural activity, 026 Management consultancy, 027 Manufacturing fabricated\
+        \ metal products, 028 Manufacturing food, 029 Manufacturing not listed elsewhere,\
+        \ 030 Manufacturing yarn, textiles or clothing, 031 Membership organisation,\
+        \ 032 Mining or quarrying, 033 Packaging, 034 Photography, 035 Post offices,\
+        \ 036 Printing, 037 Publishing, 038 Pubs, 039 Real estate activity not listed\
+        \ elsewhere, 040 Repairing personal or household goods, 041 Repairing vehicles,\
+        \ 042 Retailing food, confectionery, tobacco, newspapers or children?s clothing,\
+        \ 043 Retailing pharmaceuticals, medical goods, cosmetics or toiletries, 044\
+        \ Retailing not listed elsewhere, 045 Retailing vehicles or fuel, 046 Secretarial\
+        \ services, 047 Social work, 048 Sport or recreation, 049 Transport or storage,\
+        \ including couriers, freight, removals and taxis, 050 Travel agency, 051\
+        \ Veterinary medicine, 052 Wholesaling agricultural products, 053 Wholesaling\
+        \ food, 054 Wholesaling not listed elsewhere, 055 Dealing in waste or scrap,\
+        \ 999 Data Migrated from VMF"
+      enum:
+      - "001"
+      - "002"
+      - "003"
+      - "004"
+      - "005"
+      - "006"
+      - "007"
+      - "008"
+      - "009"
+      - "010"
+      - "011"
+      - "012"
+      - "013"
+      - "014"
+      - "015"
+      - "016"
+      - "017"
+      - "018"
+      - "019"
+      - "020"
+      - "021"
+      - "022"
+      - "023"
+      - "024"
+      - "025"
+      - "026"
+      - "027"
+      - "028"
+      - "029"
+      - "030"
+      - "031"
+      - "032"
+      - "033"
+      - "034"
+      - "035"
+      - "036"
+      - "037"
+      - "038"
+      - "039"
+      - "040"
+      - "041"
+      - "042"
+      - "043"
+      - "044"
+      - "045"
+      - "046"
+      - "047"
+      - "048"
+      - "049"
+      - "050"
+      - "051"
+      - "052"
+      - "053"
+      - "054"
+      - "055"
+      - "999"
+      type: string
+    GetVatCustomerInformationApplicationError:
+      description: |-
+        Validation errors.
+
+        Errors of this kind indicate that data was successfully received without any technical issues, however it is unable to process the data further for the reason given by the code and text.
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - processingDate
+          - text
+          type: object
+          properties:
+            code:
+              enum:
+              - "002"
+              - "003"
+              - "046"
+              - "999"
+              type: string
+            processingDate:
+              format: date-time
+              type: string
+            text:
+              description: "002 ID not found\r\n003 Request could not be processed\r\
+                \n 046 Migration already in progress for this identification number\
+                \ \r\n 999 Technical System Error \r\n"
+              maxLength: 100
+              minLength: 1
+              type: string
+    GetVatCustomerInformationSuccessResponse:
+      required:
+      - success
+      type: object
+      properties:
+        success:
+          $ref: "#/components/schemas/successResponse"
+      additionalProperties: false
+    LnPType:
+      type: object
+      properties:
+        plansForRentingLeasingLandOrProp:
+          $ref: "#/components/schemas/plansForRentingLeasingLandOrPropType"
+        plansToSellLandOrProp:
+          $ref: "#/components/schemas/plansToSellLandOrPropType"
+        sellingLandOrProperty:
+          description: "Selling or planning to sell, all or part of land or property\
+            \ (inc. property you build)"
+          type: boolean
+        typeOfProperty:
+          description: "Type of property purchased, leased or rented (or planning\
+            \ to purchase?): 1. Land Only, 2. Residential property, 3. Commercial\
+            \ property, 4. Both residential and commercial property"
+          pattern: "^[0-9]$"
+          type: string
+        workingAsGeneralBuilder:
+          description: Working or planning to work as a General Builder?
+          type: boolean
+      additionalProperties: false
+    NonStdTaxPeriodsType:
+      type: object
+      properties:
+        periodEnd:
+          $ref: "#/components/schemas/dateString"
+        stdPeriodEndDate:
+          $ref: "#/components/schemas/dateString"
+      additionalProperties: false
+    OTTType:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/API1364_addressType"
+        connectedDetails:
+          description: If yes provide details
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        connectedFinancier:
+          description: "Is anyone who is connected to you or a financier, occupying,\
+            \ intending to or expecting to occupy any part of the property"
+          type: boolean
+        currentExemptSupplies:
+          description: 10 yr period) Is the land/building currently being used to
+            make exempt supplies
+          type: boolean
+        effectiveDate:
+          $ref: "#/components/schemas/dateString"
+        exemptSupplies:
+          description: Made any exempt supplies of the land or property you want to
+            opt within the 10 year period ending with the date from which you want
+            your option to be effective
+          type: boolean
+        futureInputTax:
+          $ref: "#/components/schemas/API1364_decimalType"
+        futurePlans:
+          description: "Please describe your future plans for the land/building, including\
+            \ the expected value of your taxable supplies, should we grant you permission"
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        helpedDetails:
+          description: If yes provide details
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        helpedFundProp:
+          description: "Is anyone who has helped fund the property (a financier) occupying,\
+            \ intending to or expecting to occupy any part of the property"
+          type: boolean
+        landRegNum:
+          description: Land Registry Number
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,60}$"
+          type: string
+        lastExemptDate:
+          $ref: "#/components/schemas/dateString"
+        occupyingProp:
+          description: "Are you occupying, intending to or expecting to occupy, any\
+            \ part of the property yourself"
+          type: boolean
+        optionToTax:
+          description: Are you likely to make any exempt supplies after your option
+            to tax takes effect
+          type: boolean
+        prePaymentDetails:
+          description: Details
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        prePaymentOfRent:
+          description: (10 yr period) Have you made any grants of the land for a premium
+            or pre-payment of rent
+          type: boolean
+        propDetails:
+          description: If yes provide details
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        recoverPreOption:
+          description: Do you want to recover any pre-option input tax
+          type: boolean
+        schedule:
+          description: Schedule 1
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/scheduleType"
+        specificCondition:
+          description: "Which specific condition is met: 1. Condition 1, 2. Condition\
+            \ 2, 3. Condition 3, 4. Condition 4, 5. Other"
+          pattern: "^[0-9]$"
+          type: string
+        submitPlan:
+          description: Submitting a plan with the application
+          type: boolean
+        taxDisapplyReason:
+          description: "Please provide details, for example, if the option to tax\
+            \ is to disapply for any reason"
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        taxRelatedTo:
+          $ref: "#/components/schemas/taxRelatedToType"
+        totalValueLandExempt:
+          $ref: "#/components/schemas/API1364_decimalType"
+      additionalProperties: false
+    PPOBType:
+      required:
+      - address
+      type: object
+      properties:
+        RLS:
+          $ref: "#/components/schemas/RLSType"
+        address:
+          $ref: "#/components/schemas/addressType"
+        commsPreference:
+          $ref: "#/components/schemas/commsPreferenceType"
+        contactDetails:
+          $ref: "#/components/schemas/contactDetailsTypePPOB"
+        websiteAddress:
+          $ref: "#/components/schemas/websiteAddressType"
+      additionalProperties: false
+    RLSType:
+      description: "RLS: 0001 - Receiver is not known, 0002 - Moved - New Address\
+        \ Not Known, 0003 - Incomplete Address, 0004 - Illegible Address, 0005 - No\
+        \ Letter Box, 0006 - PO Box Inexistent or Closed, 0007 - Not Accepted, 0008\
+        \ - Deceased, 0009 - Company wound-up"
+      enum:
+      - "0001"
+      - "0002"
+      - "0003"
+      - "0004"
+      - "0005"
+      - "0006"
+      - "0007"
+      - "0008"
+      - "0009"
+      - "0010"
+      - "0011"
+      - "0012"
+      type: string
+    SICCodesType:
+      type: object
+      properties:
+        mainCode2:
+          pattern: "^\\d{5}$"
+          type: string
+        mainCode3:
+          pattern: "^\\d{5}$"
+          type: string
+        mainCode4:
+          pattern: "^\\d{5}$"
+          type: string
+        primaryMainCode:
+          pattern: "^\\d{5}$"
+          type: string
+      additionalProperties: false
+    SystemErrorResponse:
+      required:
+      - error
+      type: object
+      properties:
+        error:
+          required:
+          - code
+          - logID
+          - message
+          type: object
+          properties:
+            code:
+              enum:
+              - "400"
+              - "500"
+              type: string
+            logID:
+              pattern: "^[A-F0-9]{32}$"
+              type: string
+            message:
+              maxLength: 160
+              minLength: 1
+              type: string
+    UKBankDetailsType:
+      type: object
+      properties:
+        accountName:
+          description: Account Holder Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,60}$"
+          type: string
+        accountNumber:
+          description: Bank Account Number
+          pattern: "^[0-9]{8}$"
+          type: string
+        bankDetailsNotValid:
+          description: "If ticked, then Bank Details not valid"
+          type: boolean
+        buildSocietyRollNumber:
+          description: Building Society Roll Number
+          pattern: "^[A-Za-z0-9]{1,20}$"
+          type: string
+        reasonBankAccNotProvided:
+          description: "Reason why a bank account was not provided: 1. My/The Business\
+            \ Bank Account is in the process of being setup or a Name Change in Process,\
+            \ 3. The Business has an Overseas Bank Account, 5. Sort Code/Account Number\
+            \ combination not accepted, 6. The Bank Account is not in my/the Business\
+            \ Name, 7. I Dont Want to Provide my/the Business Bank Account Details"
+          pattern: "^[0-9]$"
+          type: string
+        sortCode:
+          description: Sort Code
+          pattern: "^[0-9]{6}$"
+          type: string
+      additionalProperties: false
+    additionalInformationType:
+      type: object
+      properties:
+        customerStatus:
+          description: "Customer status: 1. MTDfb Exempt, 2. MTDfb, 3. Non MTDfb,\
+            \ 4. Non Digital"
+          pattern: "^[0-9]$"
+          type: string
+        overseasTrader:
+          description: Overseas Trader (Non-established taxable person (NETP))
+          type: boolean
+        welshLanguage:
+          description: Welsh language
+          type: boolean
+      additionalProperties: false
+    addressType:
+      required:
+      - countryCode
+      - line1
+      type: object
+      properties:
+        countryCode:
+          $ref: "#/components/schemas/countryCodeType"
+        line1:
+          description: Address Line 1
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,35}$"
+          type: string
+        line2:
+          description: Address Line 2
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,35}$"
+          type: string
+        line3:
+          description: Address Line 3
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,35}$"
+          type: string
+        line4:
+          description: Address Line 4
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,35}$"
+          type: string
+        line5:
+          description: Address Line 5
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,35}$"
+          type: string
+        postCode:
+          description: Post code or Zip code
+          pattern: "^[A-Za-z0-9 \\-,.&'\\/()!]{1,10}$"
+          type: string
+      additionalProperties: false
+    adminType:
+      type: object
+      properties:
+        additionalInformation:
+          $ref: "#/components/schemas/additionalInformationType"
+        attachments:
+          $ref: "#/components/schemas/attachmentsType"
+      additionalProperties: false
+    agentOrCapacitorType:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/API1364_addressType"
+        clientIDThisTrader:
+          description: Client ID This Trader
+          pattern: "^[A-Za-z0-9]{1,160}$"
+          type: string
+        commDetails:
+          type: object
+          properties:
+            email:
+              format: email
+              description: Email Address
+              maxLength: 132
+              minLength: 3
+              type: string
+            telephone:
+              description: Telephone Number
+              maxLength: 24
+              minLength: 1
+              pattern: "^[A-Z0-9 )/(*#+-]+$"
+              type: string
+          additionalProperties: false
+        identification:
+          description: Identifiers array
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            type: object
+            properties:
+              IDsFailedOnlineVerification:
+                description: "Identfiers verification status: 1. Verified, 2. Cannot\
+                  \ be verified, 3.Failed verification"
+                pattern: "^[0-9]$"
+                type: string
+              countryOfIncorporation:
+                $ref: "#/components/schemas/countryType"
+              date:
+                $ref: "#/components/schemas/dateString"
+              idType:
+                description: "Type of ID: UTR, NINO, TEMPNI, Other"
+                pattern: "^[a-zA-Z0-9]{1,6}$"
+                type: string
+              idValue:
+                description: id Value
+                pattern: "^[A-Za-z0-9]{1,60}$"
+                type: string
+            additionalProperties: false
+        individualName:
+          $ref: "#/components/schemas/nameType"
+        organisationName:
+          description: Organisation Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,160}$"
+          type: string
+      additionalProperties: false
+    applicantDetailsType:
+      type: object
+      properties:
+        commDetails:
+          $ref: "#/components/schemas/shortCommDetailsType"
+        currAddress:
+          $ref: "#/components/schemas/API1364_addressType"
+        dateOfBirth:
+          $ref: "#/components/schemas/dateString"
+        identifiers:
+          $ref: "#/components/schemas/identifiersType"
+        name:
+          $ref: "#/components/schemas/nameType"
+        otherRole:
+          description: If role is Other
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,100}$"
+          type: string
+        prevAddress:
+          $ref: "#/components/schemas/API1364_addressType"
+        prevName:
+          $ref: "#/components/schemas/prevNameType"
+        roleInBusiness:
+          description: "Applicant's role in the business: 01 Owner-Proprietor of the\
+            \ Business, 02 Partner, 03 Director, 04 Company Secretary, 05 Board Member,\
+            \ 06 Trustee, 07 Financial Controller, 08 Other"
+          pattern: "^[0-9]{2}$"
+          type: string
+      additionalProperties: false
+    approvedInformationType:
+      required:
+      - PPOB
+      - customerDetails
+      type: object
+      properties:
+        POAActiveUntil:
+          $ref: "#/components/schemas/dateString"
+        PPOB:
+          $ref: "#/components/schemas/PPOBType"
+        bankDetails:
+          $ref: "#/components/schemas/bankDetailsType"
+        businessActivities:
+          $ref: "#/components/schemas/businessActivitiesType"
+        correspondenceContactDetails:
+          $ref: "#/components/schemas/correspondenceContactDetailsType"
+        customerDetails:
+          $ref: "#/components/schemas/customerDetailsType"
+        deregistration:
+          $ref: "#/components/schemas/deregistrationType"
+        flatRateScheme:
+          $ref: "#/components/schemas/flatRateSchemeType"
+        groupOrPartnerMbrs:
+          description: Group or Partner array
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/groupOrPartnerType"
+        returnPeriod:
+          $ref: "#/components/schemas/periodType"
+      additionalProperties: false
+    attachmentOptionsType:
+      description: "Possible values: 1. N/A, 2. Attached, 3. In Post"
+      pattern: "^[0-9]$"
+      type: string
+    attachmentsType:
+      type: object
+      properties:
+        EORIrequested:
+          description: EORIrequested object
+          type: boolean
+        VAT2:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        VAT51:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        VAT5L:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        attachment1614a:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        attachment1614h:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        identityEvidence:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        landPropertyOtherDocs:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        letterOfAuthority:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        otherAttachments:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        taxAgentAuthorisation:
+          $ref: "#/components/schemas/attachmentOptionsType"
+        taxRepresentativeAuthorisation:
+          $ref: "#/components/schemas/attachmentOptionsType"
+      additionalProperties: false
+    bankDetailsType:
+      type: object
+      properties:
+        BIC:
+          description: Bank Identifier Code
+          maxLength: 11
+          minLength: 1
+          type: string
+        IBAN:
+          description: International Bank Account Number
+          maxLength: 34
+          minLength: 1
+          type: string
+        accountHolderName:
+          description: Account Holder Name
+          maxLength: 60
+          minLength: 1
+          type: string
+        bankAccountNumber:
+          description: Bank Account Number
+          maxLength: 8
+          minLength: 1
+          type: string
+        bankBuildSocietyName:
+          description: Bank or Building Society Name
+          maxLength: 40
+          minLength: 1
+          type: string
+        buildingSocietyNumber:
+          description: Building Society Number. If Building Society number is populated
+            then Sort Code and Bank Account Number must be populated
+          maxLength: 20
+          minLength: 1
+          type: string
+        sortCode:
+          description: Sort Code
+          maxLength: 6
+          minLength: 1
+          type: string
+      additionalProperties: false
+    businessActivitiesType:
+      required:
+      - primaryMainCode
+      type: object
+      properties:
+        mainCode2:
+          $ref: "#/components/schemas/mainCodeType"
+        mainCode3:
+          $ref: "#/components/schemas/mainCodeType"
+        mainCode4:
+          $ref: "#/components/schemas/mainCodeType"
+        primaryMainCode:
+          $ref: "#/components/schemas/mainCodeType"
+      additionalProperties: false
+    changeIndicatorsType:
+      required:
+      - PPOBDetails
+      - annualAccounting
+      - bankDetails
+      - businessActivities
+      - commsPreference
+      - correspondenceContactDetails
+      - deregister
+      - effectiveDateOfRegistration
+      - flatRateScheme
+      - mandationStatus
+      - organisationDetails
+      - returnPeriod
+      type: object
+      properties:
+        PPOBDetails:
+          description: PPOBD details indicator
+          type: boolean
+        annualAccounting:
+          type: boolean
+        bankDetails:
+          description: Bank Details indicator
+          type: boolean
+        businessActivities:
+          description: Business Activities indicator
+          type: boolean
+        commsPreference:
+          description: Updated to string
+          enum:
+          - "true"
+          - "false"
+          type: string
+        correspondenceContactDetails:
+          description: Correspondence Contact details indicator
+          type: boolean
+        deregister:
+          description: Deregister indicator
+          type: boolean
+        effectiveDateOfRegistration:
+          type: boolean
+        flatRateScheme:
+          description: Flat Rate Schema indicator
+          type: boolean
+        mandationStatus:
+          description: Updated to string
+          enum:
+          - "true"
+          - "false"
+          type: string
+        organisationDetails:
+          description: Organisation details indicator
+          type: boolean
+        returnPeriod:
+          description: "Return Period indicator, updated to string"
+          enum:
+          - "true"
+          - "false"
+          type: string
+      additionalProperties: false
+    commDetailsType:
+      type: object
+      properties:
+        commsPreference:
+          $ref: "#/components/schemas/commsPreferenceType"
+        email:
+          format: email
+          description: Email Address
+          maxLength: 132
+          minLength: 3
+          type: string
+        emailVerified:
+          description: Email Verified
+          type: boolean
+        faxNumber:
+          description: Fax Number
+          maxLength: 24
+          minLength: 1
+          pattern: "^[A-Z0-9 )/(*#+-]+$"
+          type: string
+        mobileNumber:
+          description: Mobile Number
+          maxLength: 24
+          minLength: 1
+          pattern: "^[A-Z0-9 )/(*#+-]+$"
+          type: string
+        telephone:
+          description: Telephone Number
+          maxLength: 24
+          minLength: 1
+          pattern: "^[A-Z0-9 )/(*#+-]+$"
+          type: string
+        webAddress:
+          description: Webaddress
+          pattern: "^(((HTTP|http)(S|s)?\\:\\/\\/((WWW|www)\\.)?)|((WWW|www)\\.))?[a-zA-Z0-9\\\
+            [_~\\:\\/?#\\]@!&'()*+,-;=% ]+\\.[a-zA-Z]{2,5}(\\.[a-zA-Z]{2,5})?(\\:[0-9]{1,5})?(\\\
+            /[a-zA-Z0-9_-]+(\\/)?)*$"
+          type: string
+      additionalProperties: false
+    commsPreferenceType:
+      description: "Communications Preference: P01 - PAPER, ZEL - ELECTRONIC"
+      maxLength: 3
+      minLength: 1
+      type: string
+    complianceType:
+      type: object
+      properties:
+        intermediaryArrangement:
+          description: Are you an intermediary arranging the supply of workers
+          type: boolean
+        numOfWorkers:
+          description: How many workers does the business provide at any one time
+          multipleOf: 1
+          maximum: 9999999999
+          type: number
+        numOfWorkersSupplied:
+          description: How many to you supply
+          multipleOf: 1
+          maximum: 9999999999
+          type: number
+        provisionOfLabour:
+          description: Does the business supply a provision of labour
+          type: boolean
+        supplyWorkers:
+          description: Do you supply workers to provide a service to another business
+          type: boolean
+        tempWorkers:
+          description: Does the business provide workers on temporary contracts
+          type: boolean
+      additionalProperties: false
+    contactDetailsTypePPOB:
+      type: object
+      properties:
+        emailAddress:
+          format: email
+          description: Email Address
+          maxLength: 132
+          minLength: 3
+          type: string
+        emailVerified:
+          description: Email Verified
+          type: boolean
+        faxNumber:
+          description: Fax Number
+          maxLength: 24
+          minLength: 1
+          type: string
+        mobileNumber:
+          description: Mobile Number
+          maxLength: 24
+          minLength: 1
+          type: string
+        primaryPhoneNumber:
+          description: Telephone Number
+          maxLength: 24
+          minLength: 1
+          type: string
+      additionalProperties: false
+    contactType:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/API1364_addressType"
+        commDetails:
+          $ref: "#/components/schemas/commDetailsType"
+      additionalProperties: false
+    controllingBodyIdentifiersType:
+      description: Identifiers array
+      minItems: 1
+      uniqueItems: true
+      type: array
+      items:
+        type: object
+        properties:
+          countryOfIncorporation:
+            $ref: "#/components/schemas/countryType"
+          date:
+            $ref: "#/components/schemas/dateString"
+          idType:
+            description: "Type of ID: CRN,UTR, NINO, TEMPNI,CHRN,VRN,Other"
+            pattern: "^[a-zA-Z0-9]{1,6}$"
+            type: string
+          idValue:
+            description: id Value
+            pattern: "^[A-Za-z0-9]{1,60}$"
+            type: string
+        additionalProperties: false
+    controllingBodyType:
+      type: object
+      properties:
+        aboutBusiness:
+          type: object
+          properties:
+            SICCode:
+              description: SIC Code
+              pattern: "^\\d{5}$"
+              type: string
+            totalExpectedAnnualTaxableTurnover:
+              $ref: "#/components/schemas/API1364_decimalType"
+            totalExpectedAnnualValueOfNonTaxableSupplies:
+              $ref: "#/components/schemas/API1364_decimalType"
+            totalExpectedAnnualValueOfTaxableSupplies:
+              $ref: "#/components/schemas/API1364_decimalType"
+            totalExpectedNonTaxableTurnover:
+              $ref: "#/components/schemas/API1364_decimalType"
+        businessContactDetails:
+          type: object
+          properties:
+            address:
+              $ref: "#/components/schemas/API1364_addressType"
+            commDetails:
+              type: object
+              properties:
+                email:
+                  format: email
+                  description: Email Address
+                  maxLength: 132
+                  minLength: 3
+                  type: string
+                faxNumber:
+                  description: Fax Number
+                  maxLength: 24
+                  minLength: 1
+                  pattern: "^[A-Z0-9 )/(*#+-]+$"
+                  type: string
+                mobileNumber:
+                  description: Mobile Number
+                  maxLength: 24
+                  minLength: 1
+                  pattern: "^[A-Z0-9 )/(*#+-]+$"
+                  type: string
+                telephone:
+                  description: Telephone Number
+                  maxLength: 24
+                  minLength: 1
+                  pattern: "^[A-Z0-9 )/(*#+-]+$"
+                  type: string
+                webAddress:
+                  description: Webaddress
+                  pattern: "^(((HTTP|http)(S|s)?\\:\\/\\/((WWW|www)\\.)?)|((WWW|www)\\\
+                    .))?[a-zA-Z0-9\\[_~\\:\\/?#\\]@!&'()*+,;=% ]+\\.[a-zA-Z]{2,5}(\\\
+                    .[a-zA-Z]{2,5})?(\\:[0-9]{1,5})?(\\/[a-zA-Z0-9_-]+(\\/)?)*$"
+                  type: string
+        customerIdentification:
+          type: object
+          properties:
+            dateOfBirth:
+              $ref: "#/components/schemas/dateString"
+            identifiers:
+              $ref: "#/components/schemas/controllingBodyIdentifiersType"
+            name:
+              $ref: "#/components/schemas/nameType"
+            organisationName:
+              description: Organisation Name
+              pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,160}$"
+              type: string
+            partyType:
+              $ref: "#/components/schemas/partyTypeType"
+      additionalProperties: false
+    corporateBodyRegisteredType:
+      type: object
+      properties:
+        companyRegistrationNumber:
+          description: Company Registration Number
+          pattern: "^[A-Za-z0-9]{1,9}$"
+          type: string
+        countryOfIncorporation:
+          $ref: "#/components/schemas/countryType"
+        dateOfIncorporation:
+          $ref: "#/components/schemas/dateString"
+      additionalProperties: false
+    correspondenceContactDetailsType:
+      required:
+      - address
+      type: object
+      properties:
+        RLS:
+          $ref: "#/components/schemas/RLSType"
+        address:
+          $ref: "#/components/schemas/addressType"
+      additionalProperties: false
+    countryCodeType:
+      description: 2-digit ISO code for the country
+      enum:
+      - AD
+      - AE
+      - AF
+      - AG
+      - AI
+      - AL
+      - AM
+      - AN
+      - AO
+      - AQ
+      - AR
+      - AS
+      - AT
+      - AU
+      - AW
+      - AX
+      - AZ
+      - BA
+      - BB
+      - BD
+      - BE
+      - BF
+      - BG
+      - BH
+      - BI
+      - BJ
+      - BM
+      - BN
+      - BO
+      - BQ
+      - BR
+      - BS
+      - BT
+      - BV
+      - BW
+      - BY
+      - BZ
+      - CA
+      - CC
+      - CD
+      - CF
+      - CG
+      - CH
+      - CI
+      - CK
+      - CL
+      - CM
+      - CN
+      - CO
+      - CR
+      - CS
+      - CU
+      - CV
+      - CW
+      - CX
+      - CY
+      - CZ
+      - DE
+      - DJ
+      - DK
+      - DM
+      - DO
+      - DZ
+      - EC
+      - EE
+      - EG
+      - EH
+      - ER
+      - ES
+      - ET
+      - EU
+      - FI
+      - FJ
+      - FK
+      - FM
+      - FO
+      - FR
+      - GA
+      - GB
+      - GD
+      - GE
+      - GF
+      - GG
+      - GH
+      - GI
+      - GL
+      - GM
+      - GN
+      - GP
+      - GQ
+      - GR
+      - GS
+      - GT
+      - GU
+      - GW
+      - GY
+      - HK
+      - HM
+      - HN
+      - HR
+      - HT
+      - HU
+      - ID
+      - IE
+      - IL
+      - IM
+      - IN
+      - IO
+      - IQ
+      - IR
+      - IS
+      - IT
+      - JE
+      - JM
+      - JO
+      - JP
+      - KE
+      - KG
+      - KH
+      - KI
+      - KM
+      - KN
+      - KP
+      - KR
+      - KW
+      - KY
+      - KZ
+      - LA
+      - LB
+      - LC
+      - LI
+      - LK
+      - LR
+      - LS
+      - LT
+      - LU
+      - LV
+      - LY
+      - MA
+      - MC
+      - MD
+      - ME
+      - MF
+      - MG
+      - MH
+      - MK
+      - ML
+      - MM
+      - MN
+      - MO
+      - MP
+      - MQ
+      - MR
+      - MS
+      - MT
+      - MU
+      - MV
+      - MW
+      - MX
+      - MY
+      - MZ
+      - NA
+      - NC
+      - NE
+      - NF
+      - NG
+      - NI
+      - NL
+      - "NO"
+      - NP
+      - NR
+      - NT
+      - NU
+      - NZ
+      - OM
+      - PA
+      - PE
+      - PF
+      - PG
+      - PH
+      - PK
+      - PL
+      - PM
+      - PN
+      - PR
+      - PS
+      - PT
+      - PW
+      - PY
+      - QA
+      - RE
+      - RO
+      - RS
+      - RU
+      - RW
+      - SA
+      - SB
+      - SC
+      - SD
+      - SE
+      - SG
+      - SH
+      - SI
+      - SJ
+      - SK
+      - SL
+      - SM
+      - SN
+      - SO
+      - SR
+      - SS
+      - ST
+      - SV
+      - SX
+      - SY
+      - SZ
+      - TC
+      - TD
+      - TF
+      - TG
+      - TH
+      - TJ
+      - TK
+      - TL
+      - TM
+      - TN
+      - TO
+      - TP
+      - TR
+      - TT
+      - TV
+      - TW
+      - TZ
+      - UA
+      - UG
+      - UM
+      - UN
+      - US
+      - UY
+      - UZ
+      - VA
+      - VC
+      - VE
+      - VG
+      - VI
+      - VN
+      - VU
+      - WF
+      - WS
+      - YE
+      - YT
+      - ZA
+      - ZM
+      - ZW
+      type: string
+    countryType:
+      description: 2 Letter ISO Country Code
+      pattern: "^[A-Z]{2}$"
+      type: string
+    customerDetailsType:
+      required:
+      - dataOrigin
+      - isInsolvent
+      - isPartialMigration
+      - mandationStatus
+      - overseasIndicator
+      type: object
+      properties:
+        businessStartDate:
+          $ref: "#/components/schemas/dateString"
+        continueToTrade:
+          description: Continue To Trade
+          type: boolean
+        customerMigratedToETMPDate:
+          $ref: "#/components/schemas/dateString"
+        dataOrigin:
+          description: "0001 Frameworks, 0002 Manual creation, 0003 Interface, 0004\
+            \ CRM, 0005 ETMP registration (details not from DDC), 0006 Economic Operator\
+            \ System, 0007 NPS"
+          enum:
+          - "0001"
+          - "0002"
+          - "0003"
+          - "0004"
+          - "0005"
+          - "0006"
+          - "0007"
+          type: string
+        dateOfBirth:
+          $ref: "#/components/schemas/dateString"
+        effectiveRegistrationDate:
+          $ref: "#/components/schemas/dateString"
+        hybridToFullMigrationDate:
+          $ref: "#/components/schemas/dateString"
+        individual:
+          $ref: "#/components/schemas/individualNameType"
+        insolvencyDate:
+          $ref: "#/components/schemas/dateString"
+        insolvencyType:
+          description: "Insolvency Type: 01-Bankruptcy, 02-Company Administration,\
+            \ 03-Voluntary Administration, 04-Company Struck Off, 05-Debt Relief Order,\
+            \ 06-Sequestration, 07-Company Voluntary Arrangement, 08-Compulsory Winding\
+            \ Up, 09-Creditors Voluntary Liquidation, 10-Administration, 11-Receivership,\
+            \ 12-Partnership Voluntary Arrangement, 13-Scottish Trust Deed, 14-Individual\
+            \ Voluntary Arrangement, 15-Members Voluntary Liquidation"
+          pattern: "^[0-9]{2}$"
+          type: string
+        isInsolvent:
+          type: boolean
+        isPartialMigration:
+          description: "True: Partial Migration, False: Full Migration"
+          type: boolean
+        mandationStatus:
+          description: "Mandation Status: 1 - MTDfB Exempt, 2 - MTDfB, 3 - Non MTD,\
+            \ 4 - Non Digital"
+          enum:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          type: string
+        nameIsReadOnly:
+          description: Name is read only
+          type: boolean
+        optionToTax:
+          description: Option to tax
+          type: boolean
+        organisationName:
+          $ref: "#/components/schemas/organisationNameType"
+        overseasIndicator:
+          description: "true - Customer is overseas, false - Customer is not overseas"
+          type: boolean
+        partyType:
+          description: "1 - Sole Trader, 2 - LLP, 3 - Partnership, 4 - Incorp Body,\
+            \ 5 - Unincorp Body, 6 - Trust, 7 - Company, 8 - CIO, 9 - Non-UK Charity,\
+            \ 10 - IPS, 11 - Orgn, 12 - Lloyds Syndicat, 50 - UK Company, 51 - Non-UK\
+            \ Company with UK Establishment, 52 - Limited Liability Partnership, 53\
+            \ - Charitable Incorporated Organisation, 54 - Registered Society, 55\
+            \ - Non-UK Company no UK Establishment, 56 - Government Organisation,\
+            \ 57 - Corporation Sole, 58 - Scottish Partnership, 59 - Scottish Limited\
+            \ Partnership, 60 - Trust, 61 - Ordinary Partnership, 62 - Limited Partnership,\
+            \ 63 - Unincorporated Association, 65 - Administrative Division, Z1 -\
+            \ Individual, Z2 - VAT Group"
+          enum:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+          - "6"
+          - "7"
+          - "8"
+          - "9"
+          - "10"
+          - "11"
+          - "12"
+          - "50"
+          - "51"
+          - "52"
+          - "53"
+          - "54"
+          - "55"
+          - "56"
+          - "57"
+          - "58"
+          - "59"
+          - "60"
+          - "61"
+          - "62"
+          - "63"
+          - "65"
+          - Z1
+          - Z2
+          type: string
+        registrationReason:
+          description: "Registration Reason: 0001 - VAT ICR, 0002 - Acquisitions,\
+            \ 0003 - Distance Sales, 0004 - Non-UK, 0005 - Government Department,\
+            \ 0006 - Prescribed Body, 0007 - Debt to Crown, 0008 - Exemption, 0009\
+            \ - Exception, 0010 - LNLL, 0011 - MOSS, 0012 - Disposal of assets, 0013\
+            \ - AFRS, 0014 - Group Registration, 0015 - Division Registration"
+          enum:
+          - "0001"
+          - "0002"
+          - "0003"
+          - "0004"
+          - "0005"
+          - "0006"
+          - "0007"
+          - "0008"
+          - "0009"
+          - "0010"
+          - "0011"
+          - "0012"
+          - "0013"
+          - "0014"
+          - "0015"
+          type: string
+        singleMarketIndicator:
+          type: boolean
+        tradingName:
+          $ref: "#/components/schemas/tradingNameType"
+        welshIndicator:
+          description: Welsh Indicator
+          type: boolean
+      additionalProperties: false
+    customerIdentificationType:
+      type: object
+      properties:
+        customerID:
+          description: Customer ID array
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            type: object
+            properties:
+              IDsVerificationStatus:
+                description: "Identfiers verification status: 1. Verified, 2. Cannot\
+                  \ be verified, 3.Failed verification, 4 - Passed Validation/Insufficient\
+                  \ information to challenge"
+                pattern: "^[0-9]$"
+                type: string
+              countryOfIncorporation:
+                $ref: "#/components/schemas/countryType"
+              date:
+                $ref: "#/components/schemas/dateString"
+              idType:
+                description: "Type of ID: CRN, UTR, NINO, TEMPNI, CHRN, Other"
+                pattern: "^[a-zA-Z0-9]{1,6}$"
+                type: string
+              idValue:
+                description: id Value
+                pattern: "^[A-Za-z0-9]{1,60}$"
+                type: string
+              partyType:
+                $ref: "#/components/schemas/partyTypeType"
+              safeIDBPFound:
+                $ref: "#/components/schemas/safeIDType"
+            additionalProperties: false
+        dateOfBirth:
+          $ref: "#/components/schemas/dateString"
+        name:
+          $ref: "#/components/schemas/nameType"
+        organisationName:
+          description: Organisation Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,160}$"
+          type: string
+        primeBPSafeID:
+          $ref: "#/components/schemas/safeIDType"
+        shortOrgName:
+          description: Shortened Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\\\+=%#*&€£_\\-@¥.,:;]{1,105}$"
+          type: string
+        tradersPartyType:
+          $ref: "#/components/schemas/partyTypeType"
+        tradingName:
+          description: Trading Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,160}$"
+          type: string
+      additionalProperties: false
+    customerRequestType:
+      type: object
+      properties:
+        annualStagger:
+          description: "Annual Stagger YA - Annual, Jan to Dec YB - Annual, Feb to\
+            \ Jan YC - Annual, Mar to Feb YD - Annual, Apr to Mar YE - Annual, May\
+            \ to Apr YF - Annual, Jun to May YG - Annual, Jul to Jun YH - Annual,\
+            \ Aug to Jul YI - Annual, Sep to Aug YJ - Annual, Oct to Sep YK - Annual,\
+            \ Nov to Oct YL - Annual, Dec to Nov"
+          pattern: "^[A-Z]{2}$"
+          type: string
+        estimatedTurnover:
+          $ref: "#/components/schemas/decimalType13"
+        paymentFrequency:
+          description: "Payment Frequency: M. Monthly, Q. Quarterly"
+          pattern: "^[A-Z]$"
+          type: string
+        paymentMethod:
+          description: "Payment Method: 01. Standing Order, 02. Bank GIRO, 03. BACS,\
+            \ 04. CHAPS"
+          pattern: "^[0-9]{2}$"
+          type: string
+        reqStartDate:
+          $ref: "#/components/schemas/dateString"
+      additionalProperties: false
+    dateString:
+      description: Format YYYY-MM-DD
+      pattern: "^\\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$"
+      type: string
+    decimalType:
+      description: "Defines a decimal value (to 2 decimal places), between -9999999999999.99\
+        \ and 9999999999999.99"
+      multipleOf: 0.01
+      maximum: 9999999999999.99
+      minimum: -9999999999999.99
+      type: number
+    decimalType13:
+      description: "Defines a decimal value (to 2 decimal places), between -99999999999.99\
+        \ and 99999999999.99 (13,2)"
+      multipleOf: 0.01
+      maximum: 99999999999.99
+      minimum: -99999999999.99
+      type: number
+    declarationType:
+      type: object
+      properties:
+        agentOrCapacitor:
+          $ref: "#/components/schemas/agentOrCapacitorType"
+        applicantDetails:
+          $ref: "#/components/schemas/applicantDetailsType"
+        declarationSigning:
+          $ref: "#/components/schemas/signingType"
+      additionalProperties: false
+    deregistrationDetailsType:
+      type: object
+      properties:
+        OTTStocksAssetsValue:
+          $ref: "#/components/schemas/decimalType"
+        additionalTaxInvoices:
+          description: Additional Tax Invoices
+          type: boolean
+        cashAccountingScheme:
+          description: Cash accounting scheme
+          type: boolean
+        intendSellCapitalAssets:
+          description: Intend to sell Capital Assets
+          type: boolean
+        optionTaxProperty:
+          description: Option to tax on property
+          type: boolean
+      additionalProperties: false
+    deregistrationReasonType:
+      description: "Deregistration Reason: 0001-Cancelled-Insolvent, 0002-Cancelled-Missing\
+        \ Trader, 0003-Ceased Trading, 0004-Ceased Trading(TOGC), 0005-Duplicated\
+        \ Registration, 0006-Registration Exemption Granted, 0007-Taken into Group\
+        \ Registration, 0008-Disbanding Group, 0009-Invalid Registration, 0010-Reduced\
+        \ Turnover, 0011-Joined AFRS, 0012-Deceased, 0013-Ceased Divisional Trading,\
+        \ 0014-Making only Exempt Supplies, 0015-Ceased Trading (TOGC)  - Reallocated"
+      enum:
+      - "0001"
+      - "0002"
+      - "0003"
+      - "0004"
+      - "0005"
+      - "0006"
+      - "0007"
+      - "0008"
+      - "0009"
+      - "0010"
+      - "0011"
+      - "0012"
+      - "0013"
+      - "0014"
+      - "0015"
+      type: string
+    deregistrationType:
+      type: object
+      properties:
+        deregistrationReason:
+          $ref: "#/components/schemas/deregistrationReasonType"
+        effectDateOfCancellation:
+          $ref: "#/components/schemas/dateString"
+        lastReturnDueDate:
+          $ref: "#/components/schemas/dateString"
+      additionalProperties: false
+    entityCustomerIdentificationType:
+      type: object
+      properties:
+        customerID:
+          description: Customer ID array
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            type: object
+            properties:
+              IDsVerificationStatus:
+                description: "Identfiers verification status: 1. Verified, 2. Cannot\
+                  \ be verified, 3.Failed verification"
+                pattern: "^[0-9]$"
+                type: string
+              countryOfIncorporation:
+                $ref: "#/components/schemas/countryType"
+              date:
+                $ref: "#/components/schemas/dateString"
+              idType:
+                description: "Type of ID: CRN, UTR, NINO, TEMPNI, CHRN, VRN, Other"
+                pattern: "^[a-zA-Z0-9]{1,6}$"
+                type: string
+              idValue:
+                description: id Value
+                pattern: "^[A-Za-z0-9]{1,60}$"
+                type: string
+              partyType:
+                $ref: "#/components/schemas/partyTypeType"
+              safeIDBPFound:
+                $ref: "#/components/schemas/safeIDType"
+            additionalProperties: false
+        dateOfBirth:
+          $ref: "#/components/schemas/dateString"
+        name:
+          $ref: "#/components/schemas/nameType"
+        organisationName:
+          description: Organisation Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,160}$"
+          type: string
+        primeBPSafeID:
+          $ref: "#/components/schemas/safeIDType"
+        shortOrgName:
+          description: Shortened Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\\\+=%#*&€£_\\-@¥.,:;]{1,105}$"
+          type: string
+      additionalProperties: false
+    entityType:
+      required:
+      - action
+      type: object
+      properties:
+        action:
+          description: "Action: 1. Add"
+          pattern: "^[0-9]$"
+          type: string
+        businessContactDetails:
+          $ref: "#/components/schemas/contactType"
+        customerIdentification:
+          $ref: "#/components/schemas/entityCustomerIdentificationType"
+        entityType:
+          description: "Type of Entity: 1. Group Member, 2. Group Representative Member,\
+            \ 3. Partner"
+          pattern: "^[0-9]$"
+          type: string
+        groupRelevant:
+          $ref: "#/components/schemas/groupRelevantType"
+        tradersPartyType:
+          $ref: "#/components/schemas/partyTypeType"
+        tradingName:
+          description: Trading Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,160}$"
+          type: string
+      additionalProperties: false
+    flatRateSchemeType:
+      required:
+      - limitedCostTrader
+      type: object
+      properties:
+        FRSCategory:
+          $ref: "#/components/schemas/FRSCategoryType"
+        FRSPercentage:
+          $ref: "#/components/schemas/percent"
+        endDate:
+          $ref: "#/components/schemas/dateString"
+        limitedCostTrader:
+          description: Are you a limited cost trader
+          type: boolean
+        startDate:
+          $ref: "#/components/schemas/dateString"
+      additionalProperties: false
+    formInformationType:
+      required:
+      - dateReceived
+      - formBundle
+      type: object
+      properties:
+        dateReceived:
+          $ref: "#/components/schemas/dateString"
+        formBundle:
+          description: Form Bundle Number
+          pattern: "^[0-9]{12}$"
+          type: string
+      additionalProperties: false
+    groupComplianceType:
+      required:
+      - isControllingBody
+      type: object
+      properties:
+        controlConditionDetails:
+          description: State for which proposed members these conditions are not satisfied
+            and explain how they are controlled
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        detailsOfPartialExemption:
+          description: Details of partial exemption
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        isControllingBody:
+          description: "Is the Controlling Body a Group Representative or Group Member\
+            \ in the application? 1 -Group Member, 2 - Group Representative Member,3\
+            \ - Neither"
+          pattern: "^[1-9]{1}$"
+          type: string
+        meetsControlConditions:
+          description: The group rep states that every member meets control conditions
+          type: boolean
+        partiallyExempt:
+          description: The group stated they are partially exempt
+          type: boolean
+      additionalProperties: false
+    groupOrPartnerType:
+      required:
+      - SAP_Number
+      - nameIsReadOnly
+      - typeOfRelationship
+      type: object
+      properties:
+        SAP_Number:
+          description: SAP Number
+          pattern: "^[0-9]{42}$"
+          type: string
+        individual:
+          $ref: "#/components/schemas/individualNameType"
+        nameIsReadOnly:
+          description: Name is read only
+          type: boolean
+        organisationName:
+          $ref: "#/components/schemas/organisationNameType"
+        typeOfRelationship:
+          description: "Type of relationship: 01 - Group Member, 02 - Group Representative\
+            \ Member, 03 - Controlling Body , 04 - Partner"
+          enum:
+          - "01"
+          - "02"
+          - "03"
+          - "04"
+          type: string
+      additionalProperties: false
+    groupRelevantType:
+      type: object
+      properties:
+        ACKReferenceIfInTheProcessOfRegisteringForVAT:
+          description: Acknowledge reference if in process of registering
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,16}$"
+          type: string
+        SICCode:
+          description: SIC Code
+          pattern: "^\\d{5}$"
+          type: string
+        arePartiallyExempt:
+          description: "Does this proposed member have fully or partially exempt true-ticked\
+            \ or Yes, false not ticked or No"
+          type: boolean
+        capitalAssetsDetails:
+          description: Provide details of the capital assets and to which other member
+            they will be leased or otherwise used
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        capitalGoodsSchemeDetails:
+          description: Provide details of the capital asses which will the subject
+            to the captial goods scheme
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        exemptionLevelDetails:
+          description: Provide details of the level of exemption
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        haveAPartiallyExemptionSpecialMethod:
+          description: "Does this proposed member have a partial exemption special\
+            \ method which has been either approved, or directed, by HM Revenue and\
+            \ Customs? true-ticked or Yes, false -not ticked or No"
+          type: boolean
+        landOrBuildingWithVATBearing:
+          description: "Will this proposed member have land or buildings on which\
+            \ VAT bearing expenditure has been incurred and is not capital item failing\
+            \ within the Capital Goods Scheme true-ticked or Yes, false-not ticked\
+            \ or No"
+          type: boolean
+        landOrBuildingWithVATBearingDetails:
+          description: Provide details of the land or buildings on which VAT bearing
+            has been incurred
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        prePaymentsDetails:
+          description: Provide details of any pre-payment or down payment under the
+            circumstances above
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        specialExemptionLevelDetails:
+          description: Provide details of the approved or directed partial exemption
+            special method and when it took effect
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        specifiedCapitalAssetsWithin3Years:
+          description: "Within the last 3 years, has the proposed member of the group\
+            \ pruchased, acquired or imported capital assets which are, or will be,leased\
+            \ to, or otherwise used in the business of, any of the other existing\
+            \ or prospective group members true-ticked or Yes, false-not ticked or\
+            \ No"
+          type: boolean
+        specifiedCapitalGoodsScheme:
+          description: "Does this proposed member own any capital assets which will\
+            \ be the subject of Capital Goods Scheme on the date on which the application\
+            \ is to take effect true-ticked or Yes, false-not ticked or No"
+          type: boolean
+        specifiedPrePayments:
+          description: "Will this proposed member have made or received any pre-payment\
+            \ or down-payment in respect of any supply, part or all of which is to\
+            \ be delivered after it has joined the group true-ticked or Yes, false\
+            \ -not ticked or No"
+          type: boolean
+        totalExpectedAnnualTaxableTurnover:
+          $ref: "#/components/schemas/API1364_decimalType"
+        totalExpectedAnnualValueOfNonTaxableSupplies:
+          $ref: "#/components/schemas/API1364_decimalType"
+        totalExpectedAnnualValueOfTaxableSupplies:
+          $ref: "#/components/schemas/API1364_decimalType"
+        totalExpectedNonTaxableTurnover:
+          $ref: "#/components/schemas/API1364_decimalType"
+      additionalProperties: false
+    identifiersType:
+      description: Identifiers array
+      minItems: 1
+      uniqueItems: true
+      type: array
+      items:
+        type: object
+        properties:
+          IDsVerificationStatus:
+            description: "Identfiers verification status: 1. Verified, 2. Cannot be\
+              \ verified, 3.Failed verification"
+            pattern: "^[0-9]$"
+            type: string
+          countryOfIncorporation:
+            $ref: "#/components/schemas/countryType"
+          date:
+            $ref: "#/components/schemas/dateString"
+          idType:
+            description: "Type of ID: CRN,UTR, NINO, TEMPNI,CHRN,VRN,Other"
+            pattern: "^[a-zA-Z0-9]{1,6}$"
+            type: string
+          idValue:
+            description: id Value
+            pattern: "^[A-Za-z0-9]{1,60}$"
+            type: string
+        additionalProperties: false
+    inFlightBankDetailsType:
+      required:
+      - formInformation
+      type: object
+      properties:
+        BIC:
+          description: BIC
+          maxLength: 11
+          minLength: 1
+          type: string
+        IBAN:
+          description: IBAN
+          maxLength: 34
+          minLength: 1
+          type: string
+        accountHolderName:
+          description: Account Holder Name
+          maxLength: 60
+          minLength: 1
+          type: string
+        bankAccountNumber:
+          description: Bank Account Number
+          maxLength: 8
+          minLength: 1
+          type: string
+        bankBuildSocietyName:
+          description: Bank or Building Society Name
+          maxLength: 40
+          minLength: 1
+          type: string
+        buildingSocietyNumber:
+          description: Building Society Number. If Building Society number is populated
+            then Sort Code and Bank Account Number must be populated
+          maxLength: 20
+          minLength: 1
+          type: string
+        formInformation:
+          $ref: "#/components/schemas/formInformationType"
+        sortCode:
+          description: Sort Code
+          maxLength: 6
+          minLength: 1
+          type: string
+      additionalProperties: false
+    inFlightBusinessActivitiesType:
+      required:
+      - dataToRecordLandProperties
+      - formInformation
+      - primaryMainCode
+      type: object
+      properties:
+        dataToRecordLandProperties:
+          type: boolean
+        formInformation:
+          $ref: "#/components/schemas/formInformationType"
+        mainCode2:
+          $ref: "#/components/schemas/mainCodeType"
+        mainCode3:
+          $ref: "#/components/schemas/mainCodeType"
+        mainCode4:
+          $ref: "#/components/schemas/mainCodeType"
+        primaryMainCode:
+          $ref: "#/components/schemas/mainCodeType"
+      additionalProperties: false
+    inFlightCorrespondenceContactDetailsType:
+      required:
+      - formInformation
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/addressType"
+        formInformation:
+          $ref: "#/components/schemas/formInformationType"
+      additionalProperties: false
+    inFlightDeregisterType:
+      required:
+      - formInformation
+      type: object
+      properties:
+        deregistrationDate:
+          $ref: "#/components/schemas/dateString"
+        deregistrationDetails:
+          $ref: "#/components/schemas/deregistrationDetailsType"
+        deregistrationLaterDate:
+          $ref: "#/components/schemas/dateString"
+        deregistrationReason:
+          $ref: "#/components/schemas/deregistrationReasonType"
+        disbandingGroupDeregQuestions:
+          type: object
+          properties:
+            groupDeregQ1:
+              description: "Question relates to whether any company leaving the group\
+                \ owns capital assets which are subject to the Capital Goods Scheme\
+                \ on Disbanding date. Possible values:Y - Yes, N - No. (blank) or\
+                \ no field - Question not answered"
+              type: boolean
+            groupDeregQ1Text:
+              description: Mandatory when Question 1 answer is 'Y'
+              maxLength: 500
+              minLength: 1
+              type: string
+            groupDeregQ2:
+              description: "Question follows on from Q1 and whether any company leaving\
+                \ the group would be partly exempt on Disbanding. Possible values:\
+                \ Y - Yes, N - No. (blank) or no field - Question not answered"
+              type: boolean
+            groupDeregQ2Text:
+              description: Mandatory when Question 2 answer is 'Y'
+              maxLength: 500
+              minLength: 1
+              type: string
+            groupDeregQ3:
+              description: "Question relates to whether any company has made or received\
+                \ any payments in respect to any supply, part/all of which will be\
+                \ delivered after leaving the group. Possible values:Y - Yes, N -\
+                \ No. (blank) or no field - Question not answered."
+              type: boolean
+            groupDeregQ3Text:
+              description: Mandatory when Question 3 answer is 'Y'
+              maxLength: 500
+              minLength: 1
+              type: string
+            groupDeregQ4:
+              description: "whether a company leaving the group expects to incur input\
+                \ tax, after having left the group, related to any supply made whilst\
+                \ a member of the group. Possible values:Y - Yes, N - No. (blank)\
+                \ or no field - Question not answered."
+              type: boolean
+            groupDeregQ4Text:
+              description: Mandatory when Question 4 answer is 'Y'
+              maxLength: 500
+              minLength: 1
+              type: string
+            groupDeregQ5:
+              description: "whether a company leaving the group has an interest as\
+                \ a relevant associate in any opted land or buildings. Possible values:Y\
+                \ - Yes, N - No. (blank) or no field - Question not answered."
+              type: boolean
+            groupDeregQ5Text:
+              description: Mandatory when Question 5 answer is 'Y'
+              maxLength: 500
+              minLength: 1
+              type: string
+          additionalProperties: false
+        formInformation:
+          $ref: "#/components/schemas/formInformationType"
+        joinedAFRSDeregQuestionsType:
+          type: object
+          properties:
+            AFRSFarmingTurnover:
+              description: AFRS Farming Turnover
+              multipleOf: 0.01
+              maximum: 1000000000000000
+              minimum: 0
+              type: number
+            AFRSNonFarmingTurnover:
+              description: AFRS Non-Farming Turnover
+              multipleOf: 0.01
+              maximum: 1000000000000000
+              minimum: 0
+              type: number
+          additionalProperties: false
+        newOwnerDetails:
+          $ref: "#/components/schemas/newOwnerDetailsType"
+        turnoverBelowDeregistrationLimit:
+          $ref: "#/components/schemas/turnoverBelowDeregistrationLimitType"
+        zeroRatedExmpApplication:
+          $ref: "#/components/schemas/zeroRatedExmpApplicationType"
+      additionalProperties: false
+    inFlightFlatRateSchemeType:
+      required:
+      - formInformation
+      - limitedCostTrader
+      type: object
+      properties:
+        FRSCategory:
+          $ref: "#/components/schemas/FRSCategoryType"
+        FRSPercentage:
+          $ref: "#/components/schemas/percent"
+        endDate:
+          $ref: "#/components/schemas/dateString"
+        formInformation:
+          $ref: "#/components/schemas/formInformationType"
+        limitedCostTrader:
+          description: Are you a limited cost trader
+          type: boolean
+        startDate:
+          $ref: "#/components/schemas/dateString"
+      additionalProperties: false
+    inFlightInformationType:
+      required:
+      - changeIndicators
+      - inFlightChanges
+      type: object
+      properties:
+        changeIndicators:
+          $ref: "#/components/schemas/changeIndicatorsType"
+        inFlightChanges:
+          $ref: "#/components/schemas/inflightChangesType"
+      additionalProperties: false
+    inFlightOrganisationDetailsType:
+      required:
+      - formInformation
+      type: object
+      properties:
+        formInformation:
+          $ref: "#/components/schemas/formInformationType"
+        individual:
+          $ref: "#/components/schemas/individualNameType"
+        organisationName:
+          $ref: "#/components/schemas/organisationNameType"
+        tradingName:
+          $ref: "#/components/schemas/tradingNameType"
+      additionalProperties: false
+    inFlightPPOBDetailsType:
+      required:
+      - formInformation
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/addressType"
+        contactDetails:
+          $ref: "#/components/schemas/contactDetailsTypePPOB"
+        formInformation:
+          $ref: "#/components/schemas/formInformationType"
+        websiteAddress:
+          $ref: "#/components/schemas/websiteAddressType"
+      additionalProperties: false
+    inFlightReturnPeriod:
+      required:
+      - formInformation
+      type: object
+      properties:
+        changeReturnPeriod:
+          description: Change Return Period
+          type: boolean
+        formInformation:
+          $ref: "#/components/schemas/formInformationType"
+        returnPeriod:
+          $ref: "#/components/schemas/stdReturnPeriodType"
+      additionalProperties: false
+    individualNameType:
+      type: object
+      properties:
+        firstName:
+          description: First Name
+          maxLength: 35
+          minLength: 1
+          type: string
+        lastName:
+          description: Last Name
+          maxLength: 35
+          minLength: 1
+          type: string
+        middleName:
+          description: Middle Name
+          maxLength: 35
+          minLength: 1
+          type: string
+        title:
+          description: "Title: 0001 - Mr, 0002 - Mrs, 0003 - Miss, 0004 - Ms, 0005\
+            \ - Dr, 0006 - Sir, 0007 - Rev, 0008 - Personal Representative of, 0009\
+            \ - Professor, 0010 - Lord, 0011 - Lady, 0012 - Dame"
+          enum:
+          - "0001"
+          - "0002"
+          - "0003"
+          - "0004"
+          - "0005"
+          - "0006"
+          - "0007"
+          - "0008"
+          - "0009"
+          - "0010"
+          - "0011"
+          - "0012"
+          type: string
+      additionalProperties: false
+    inflightChangesType:
+      type: object
+      properties:
+        PPOBDetails:
+          $ref: "#/components/schemas/inFlightPPOBDetailsType"
+        annualAccounting:
+          required:
+          - formInformation
+          type: object
+          properties:
+            formInformation:
+              required:
+              - dateReceived
+              - formBundle
+              type: object
+              properties:
+                dateReceived:
+                  $ref: "#/components/schemas/dateString"
+                formBundle:
+                  pattern: "^[0-9]{12}$"
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+        bankDetails:
+          $ref: "#/components/schemas/inFlightBankDetailsType"
+        businessActivities:
+          $ref: "#/components/schemas/inFlightBusinessActivitiesType"
+        commsPreference:
+          required:
+          - formInformation
+          type: object
+          properties:
+            commsPreference:
+              $ref: "#/components/schemas/commsPreferenceType"
+            formInformation:
+              required:
+              - dateReceived
+              - formBundle
+              type: object
+              properties:
+                dateReceived:
+                  $ref: "#/components/schemas/dateString"
+                formBundle:
+                  pattern: "^[0-9]{12}$"
+                  type: string
+              additionalProperties: false
+          additionalProperties: false
+        correspondenceContactDetails:
+          $ref: "#/components/schemas/inFlightCorrespondenceContactDetailsType"
+        deregister:
+          $ref: "#/components/schemas/inFlightDeregisterType"
+        effectiveDateOfRegistration:
+          required:
+          - formInformation
+          type: object
+          properties:
+            formInformation:
+              required:
+              - dateReceived
+              - formBundle
+              type: object
+              properties:
+                dateReceived:
+                  $ref: "#/components/schemas/dateString"
+                formBundle:
+                  pattern: "^[0-9]{12}$"
+                  type: string
+              additionalProperties: false
+            requestedNewEDR:
+              $ref: "#/components/schemas/dateString"
+          additionalProperties: false
+        flatRateScheme:
+          $ref: "#/components/schemas/inFlightFlatRateSchemeType"
+        mandationStatus:
+          required:
+          - formInformation
+          type: object
+          properties:
+            formInformation:
+              required:
+              - dateReceived
+              - formBundle
+              type: object
+              properties:
+                dateReceived:
+                  $ref: "#/components/schemas/dateString"
+                formBundle:
+                  pattern: "^[0-9]{12}$"
+                  type: string
+              additionalProperties: false
+            mandationStatus:
+              description: "Only sent if change to this is requested. Possible values\
+                \ and (meaning): 1. MTDfB Exempt, 2. MTDfB, 3. Non MTD, 4. Non Digital"
+              enum:
+              - "1"
+              - "2"
+              - "3"
+              - "4"
+              type: string
+          additionalProperties: false
+        organisationDetails:
+          $ref: "#/components/schemas/inFlightOrganisationDetailsType"
+        returnPeriod:
+          $ref: "#/components/schemas/inFlightReturnPeriod"
+      additionalProperties: false
+    joinAAType:
+      required:
+      - submissionType
+      type: object
+      properties:
+        customerRequest:
+          $ref: "#/components/schemas/customerRequestType"
+        submissionType:
+          description: "Submission Type: 1. Always Join"
+          pattern: "^[0-9]$"
+          type: string
+      additionalProperties: false
+    mainCodeType:
+      description: Main Code
+      pattern: "^[0-9]{5}$"
+      type: string
+    nameType:
+      type: object
+      properties:
+        firstName:
+          description: First Name
+          pattern: "^[A-Za-z0-9 ,.&'\\/-]{1,35}$"
+          type: string
+        lastName:
+          description: Last Name
+          pattern: "^[A-Za-z0-9 ,.&'\\/-]{1,35}$"
+          type: string
+        middleName:
+          description: Middle Name
+          pattern: "^[A-Za-z0-9 ,.&'\\/-]{1,35}$"
+          type: string
+        title:
+          description: "4-digit code representing the Title: 0001 Mr, 0002 Mrs, 0003\
+            \ Miss, 0004 Ms, 0005 Dr, 0006 Sir, 0007 Rev, 0008 Personal Representative\
+            \ of, 0009 Professor, 0010 Lord, 0011 Lady, 0012 Dame"
+          pattern: "^[0-9]{4}$"
+          type: string
+      additionalProperties: false
+    newOwnerDetailsType:
+      type: object
+      properties:
+        VATGroupMember:
+          description: Is the new owner already a VAT Group Member
+          type: boolean
+        acceptVATConditions:
+          description: Accept VAT conditions for TOGC - COLE
+          type: boolean
+        address:
+          $ref: "#/components/schemas/addressType"
+        contactDetails:
+          $ref: "#/components/schemas/contactDetailsTypePPOB"
+        individual:
+          $ref: "#/components/schemas/individualNameType"
+        newOwnerVRN:
+          description: New owner's VRN
+          maxLength: 9
+          minLength: 1
+          type: string
+        organisationName:
+          $ref: "#/components/schemas/organisationNameType"
+        retainVATNumber:
+          description: TOCG-COLE Retain VAT number
+          type: boolean
+        stockAssetTransfer:
+          description: Stock Asset Transfer
+          type: boolean
+        tradingName:
+          $ref: "#/components/schemas/tradingNameType"
+        websiteAddress:
+          $ref: "#/components/schemas/websiteAddressType"
+      additionalProperties: false
+    nonStdTaxPeriodsType:
+      minItems: 0
+      type: array
+      items:
+        required:
+        - periodDueDate
+        - periodEndDate
+        - periodKey
+        - periodStartDate
+        type: object
+        properties:
+          periodDueDate:
+            $ref: "#/components/schemas/dateString"
+          periodEndDate:
+            $ref: "#/components/schemas/dateString"
+          periodKey:
+            description: "A 4 character string identifier, format nnAA or nnAn or\
+              \ #nnn or nnnn e.g. 17GH, 17B2, #001, 0918 (VMF Period Key, added for\
+              \ VAT Hybrid"
+            pattern: "(^[0-9]{2}[A-Z][A-Z0-9]$)|(^#[0-9]{3}$)|(^[0-9]{4}$)"
+            type: string
+          periodStartDate:
+            $ref: "#/components/schemas/dateString"
+        additionalProperties: false
+    organisationNameType:
+      description: Organisation Name
+      maxLength: 105
+      minLength: 1
+      type: string
+    otherBusinessActivitiesType:
+      type: object
+      properties:
+        businessName:
+          description: Business Name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\+=%#*&€£_\\-@¥.,:;]{1,160}$"
+          type: string
+        idType:
+          description: "Type of ID: CRN, UTR, NINO, TEMPNI, CHRN, VRN, EMPREF Other"
+          pattern: "^[a-zA-Z0-9]{1,6}$"
+          type: string
+        idValue:
+          description: id Value
+          pattern: "^[A-Za-z0-9]{1,60}$"
+          type: string
+        stillTrading:
+          description: Still Trading
+          type: boolean
+      additionalProperties: false
+    overseasBankDetailsType:
+      type: object
+      properties:
+        BIC:
+          description: BIC
+          pattern: "^[A-Za-z0-9]{1,11}$"
+          type: string
+        IBAN:
+          description: IBAN
+          pattern: "^[A-Za-z0-9]{1,34}$"
+          type: string
+      additionalProperties: false
+    partyTypeType:
+      description: "Trader's Party Type: 50. UK Company, 51. NonUKCoW/UKEst, 52. LTD\
+        \ Liab Ptnshp, 53. Charit Inc Org, 54. Reg. Society, 55. NonUKCoNoUKEs, 56.\
+        \ Government Org, 57. Corp Sole, 58. Scot Partnershp, 59. Scot LTDPrtnshp,\
+        \ 60. Trust, 61. Ord Partnership, 62. Ltd Partnership, 63. Unincorp Assoc,\
+        \ 64. Tax Groups, 65. Admin Division, Z1. Individual"
+      pattern: "^[A-Z0-9]{2}$"
+      type: string
+    percent:
+      description: "Defines a percentage rate (to 2 decimal places), between 0.00\
+        \ and 999.99"
+      multipleOf: 0.01
+      maximum: 999.99
+      minimum: 0
+      type: number
+    percentType:
+      description: "Defines a percentage rate (to 2 decimal places), between 0.00\
+        \ and 999.99"
+      multipleOf: 0.01
+      maximum: 999.99
+      minimum: 0
+      type: number
+    periodType:
+      type: object
+      properties:
+        firstNonNSTPPeriod:
+          required:
+          - periodDueDateOfFirstStandardPeriod
+          - periodEndDateOfFirstStandardPeriod
+          - periodKeyOfFirstStandardPeriod
+          - periodStartDateOfFirstStandardPeriod
+          type: object
+          properties:
+            periodDueDateOfFirstStandardPeriod:
+              $ref: "#/components/schemas/dateString"
+            periodEndDateOfFirstStandardPeriod:
+              $ref: "#/components/schemas/dateString"
+            periodKeyOfFirstStandardPeriod:
+              type: string
+            periodStartDateOfFirstStandardPeriod:
+              $ref: "#/components/schemas/dateString"
+          additionalProperties: false
+        nonStdTaxPeriods:
+          $ref: "#/components/schemas/nonStdTaxPeriodsType"
+        stdReturnPeriod:
+          $ref: "#/components/schemas/stdReturnPeriodType"
+      additionalProperties: false
+    periodsType:
+      type: object
+      properties:
+        NSTPRequested:
+          description: Non Standard Tax Period also requested
+          type: boolean
+        customerPreferredPeriodicity:
+          description: "Customer Prefered Periodicity: MA - Quaterly, the last day\
+            \ of Jan, Apr, Jul and Oct, MB - Quaterly, the last day of Feb, May, Aug\
+            \ and Nov, MC - Quaterly, the last day of Mar, Jun, Sep and Dec, MM -\
+            \ Monthly Returns, YA - Annual, Jan to Dec, YB - Annual, Feb to Jan, YC\
+            \ - Annual, Mar to Feb, YD - Annual, Apr to Mar, YE - Annual, May to Apr,\
+            \ YF - Annual, Jun to May, YG - Annual, Jul to Jun, YH - Annual, Aug to\
+            \ Jul, YI - Annual, Sep to Aug, YJ - Annual, Oct to Sep, YK - Annual,\
+            \ Nov to Oct, YL - Annual, Dec to Nov"
+          pattern: "^[A-Z]{2}$"
+          type: string
+        nonStdTaxPeriods:
+          description: NSTP Details
+          maxItems: 24
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/NonStdTaxPeriodsType"
+      additionalProperties: false
+    plansForRentingLeasingLandOrPropType:
+      type: object
+      properties:
+        TOGC:
+          description: Does the transfer of a going concern involve land or buildings
+            that would be standard-rated if they were supplied to you separate to
+            a TOGC
+          type: boolean
+        beneficialOwner:
+          description: Who is (or who will be) the beneficial owner of the land or
+            property
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,255}$"
+          type: string
+        fullExplanation:
+          description: Please provide a full explanation
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        makeSuppliesOfLandOrProp:
+          description: Making or intending to make supplies of the land or property
+            that would be exempt without an option to tax
+          type: boolean
+        notifiedHMRC:
+          description: "Have you already notified HMRC of an option to tax in respect\
+            \ of the land and property, effective from the date of transfer: 0. No,\
+            \ 1. Yes, 2.Included"
+          pattern: "^[0-9]$"
+          type: string
+        notifiedSeller:
+          description: Have you notified the seller (by the date of transfer) that
+            the option will not be disapplied under the anti-avoidance provisions
+          type: boolean
+        optToTaxSupplies:
+          description: Do you want to opt to tax those supplies
+          type: boolean
+        other:
+          description: Other
+          type: boolean
+        reasonToRentLease:
+          description: "If you are renting or leasing the property and your plans\
+            \ are not fully covered by the options, please give details"
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        registeredForVAT:
+          description: Is the person being registered for VAT the beneficial owner
+          type: boolean
+        rentLeaseCommProp:
+          description: To develop new commercial property for rental or lease
+          type: boolean
+        rentLeaseCommPropCivilWork:
+          description: To lease or rent out land or commercial property or civil engineering
+            work in its current state or following refurbishment
+          type: boolean
+        rentLeaseNewResPropLongTerm:
+          description: To develop new residential property for long lease
+          type: boolean
+        rentLeaseNewResPropShortTerm:
+          description: To develop new residential property for short lease or short
+            term rental
+          type: boolean
+        rentLeaseNonResPropLongTerm:
+          description: To long lease a non residential property that you have converted
+            to residential use
+          type: boolean
+        rentLeaseResOrCharPropLongTerm:
+          description: To develop new relevant residential or relevant charitable
+            property for long lease
+          type: boolean
+        rentLeaseSubsReconstruct:
+          description: "Following substantial reconstruction, to grant a long lease\
+            \ in a listed building that is (or will become) a dwelling, or that is\
+            \ used solely for a relevant residential or relevant charitable purpose"
+          type: boolean
+        resToThirdParty:
+          description: Will you be providing residential property to an unconnected
+            3rd party at open market value
+          type: boolean
+      additionalProperties: false
+    plansToSellLandOrPropType:
+      type: object
+      properties:
+        reasonToSell:
+          description: "If you are selling the property and your plans are not fully\
+            \ covered by the options, please give details"
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        rentingOrLeasing:
+          description: "Renting-leasing, or planning to rent or lease, all or part\
+            \ of the land or property"
+          type: boolean
+        sellCommPropCivilWork:
+          description: To develop new commercial property or civil engineering work
+            for sale
+          type: boolean
+        sellCommPropCivilWork3YrsOld:
+          description: To sell commercial property or civil engineering work over
+            3 years old
+          type: boolean
+        sellCommPropCivilWorkLessThan3YrsOld:
+          description: To sell commercial property or civil engineering work that
+            is less than 3 years old or only partly constructed
+          type: boolean
+        sellInterestInLandOrProp:
+          description: To sell an interest in land or property in which you have an
+            option to purchase
+          type: boolean
+        sellLandOrProp:
+          description: To sell land or property in its current state or following
+            refurbishment
+          type: boolean
+        sellNewResProp:
+          description: To develop new residential property for sale
+          type: boolean
+        sellNonResProp:
+          description: To sell a non residential property that you have converted
+            to residential use
+          type: boolean
+        sellOther:
+          description: Other
+          type: boolean
+        sellResOrRelCharProp:
+          description: To develop new relevant residential or relevant charitable
+            property for sale
+          type: boolean
+        sellSubsReconstruct:
+          description: "To sell, following substantial reconstruction, a listed building\
+            \ that is (or will become) a dwelling, or that is used solely for a relevant\
+            \ residential or relevant charitable purpose"
+          type: boolean
+      additionalProperties: false
+    prevNameType:
+      type: object
+      properties:
+        firstName:
+          description: First Name
+          pattern: "^[A-Za-z0-9 ,.&'\\/-]{1,35}$"
+          type: string
+        lastName:
+          description: Last Name
+          pattern: "^[A-Za-z0-9 ,.&'\\/-]{1,35}$"
+          type: string
+        middleName:
+          description: Middle Name
+          pattern: "^[A-Za-z0-9 ,.&'\\/-]{1,35}$"
+          type: string
+        nameChangeDate:
+          $ref: "#/components/schemas/dateString"
+        title:
+          description: "4-digit code representing the Title: 0001 Mr, 0002 Mrs, 0003\
+            \ Miss, 0004 Ms, 0005 Dr, 0006 Sir, 0007 Rev, 0008 Personal Representative\
+            \ of, 0009 Professor, 0010 Lord, 0011 Lady, 0012 Dame"
+          pattern: "^[0-9]{4}$"
+          type: string
+      additionalProperties: false
+    reasonforSubscriptionType:
+      type: object
+      properties:
+        exemptionOrException:
+          description: "Registration Reason: 0. No, 1. Exemption, 2.Exception"
+          pattern: "^[0-9]$"
+          type: string
+        registrationReason:
+          description: "Registration Reason: 0001 Acquisitions, 0002 Distance Sales,\
+            \ 0003 Non-UK, 0004 Government Department, 0005 Prescribed Body, 0006\
+            \ Debt to the Crown, 0007 LNLL, 0008 MOSS, 0009 Disposal of Assets, 0010\
+            \ AFRS, 0011 Group Registration, 0012 Division Registration, 0013 Intending\
+            \ Trader, 0014 TOGC, 0015 Backward Look, 0016 Forward Look (UK), 0017\
+            \ Supplies outside the UK, 0018 Voluntary"
+          pattern: "^[0-9]{4}$"
+          type: string
+        relevantDate:
+          $ref: "#/components/schemas/dateString"
+        voluntaryOrEarlierDate:
+          $ref: "#/components/schemas/dateString"
+      additionalProperties: false
+    request:
+      required:
+      - messageType
+      type: object
+      properties:
+        LnP:
+          $ref: "#/components/schemas/LnPType"
+        OTTs:
+          description: OTTs array
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/OTTType"
+        admin:
+          $ref: "#/components/schemas/adminType"
+        bankDetails:
+          $ref: "#/components/schemas/API1364_bankDetailsType"
+        compliance:
+          $ref: "#/components/schemas/complianceType"
+        contact:
+          $ref: "#/components/schemas/contactType"
+        controllingBody:
+          $ref: "#/components/schemas/controllingBodyType"
+        customerIdentification:
+          $ref: "#/components/schemas/customerIdentificationType"
+        declaration:
+          $ref: "#/components/schemas/declarationType"
+        entities:
+          description: Entities array
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/entityType"
+        groupCompliance:
+          $ref: "#/components/schemas/groupComplianceType"
+        joinAA:
+          $ref: "#/components/schemas/joinAAType"
+        messageType:
+          description: "Type of message. Possible Values: SubscriptionCreate"
+          pattern: "^[A-Za-z0-9]{1,30}$"
+          enum:
+          - SubscriptionCreate
+          type: string
+        periods:
+          $ref: "#/components/schemas/periodsType"
+        subscription:
+          $ref: "#/components/schemas/subscriptionType"
+    response:
+      type: object
+      properties:
+        formBundle:
+          description: Form Bundle Number that uniquely identifies the bundle of forms
+            saved within the backend
+          pattern: "^[0-9]{12}$"
+          type: string
+    safeIDType:
+      description: SAFE ID
+      pattern: "^[A-Za-z0-9]{1,20}$"
+      type: string
+    scheduleType:
+      type: object
+      properties:
+        VATAmount:
+          $ref: "#/components/schemas/API1364_decimalType"
+        VRN:
+          description: VAT registration number
+          pattern: "^[0-9]{9}$"
+          type: string
+        dateOfInvoice:
+          $ref: "#/components/schemas/dateString"
+        invoiceNumber:
+          description: Invoice Number
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,30}$"
+          type: string
+        nameOfSupplier:
+          description: Name of supplier
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\\\+=%#*&€£_\\-@¥.,:;]{1,105}$"
+          type: string
+        suppliesDescription:
+          description: Description of goods or services supplied
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        totalCost:
+          $ref: "#/components/schemas/API1364_decimalType"
+      additionalProperties: false
+    schemesType:
+      type: object
+      properties:
+        FRSCategory:
+          description: "Possible values: 001 Accountancy or book-keeping, 002 Advertising,\
+            \ 003 Agricultural services, 004 Any other activity not listed elsewhere,\
+            \ 005 Architect, civil and structural engineer or surveyor, 006 Boarding\
+            \ or care of animals, 007 Business services not listed elsewhere, 008\
+            \ Catering services including restaurants and takeaways, 009 Computer\
+            \ and IT consultancy or data processing, 010 Computer repair services,\
+            \ 011 Entertainment or journalism, 012 Estate agency or property management\
+            \ services, 013 Farming or agriculture not listed elsewhere, 014 Film,\
+            \ radio, television or video production, 015 Financial services, 016 Forestry\
+            \ or fishing, 017 General building or construction services, 018 Hairdressing\
+            \ or other beauty treatment services, 019 Hiring or renting goods, 020\
+            \ Hotel or accommodation, 021 Investigation or security, 022 Labour-only\
+            \ building or construction services, 023 Laundry or dry-cleaning services,\
+            \ 024 Lawyer or legal services, 025 Library, archive, museum or other\
+            \ cultural activity, 026 Management consultancy, 027 Manufacturing fabricated\
+            \ metal products, 028 Manufacturing food, 029 Manufacturing not listed\
+            \ elsewhere, 030 Manufacturing yarn, textiles or clothing, 031 Membership\
+            \ organisation, 032 Mining or quarrying, 033 Packaging, 034 Photography,\
+            \ 035 Post offices, 036 Printing, 037 Publishing, 038 Pubs, 039 Real estate\
+            \ activity not listed elsewhere, 040 Repairing personal or household goods,\
+            \ 041 Repairing vehicles, 042 Retailing food, confectionery, tobacco,\
+            \ newspapers or children?s clothing, 043 Retailing pharmaceuticals, medical\
+            \ goods, cosmetics or toiletries, 044 Retailing not listed elsewhere,\
+            \ 045 Retailing vehicles or fuel, 046 Secretarial services, 047 Social\
+            \ work, 048 Sport or recreation, 049 Transport or storage, including couriers,\
+            \ freight, removals and taxis, 050 Travel agency, 051 Veterinary medicine,\
+            \ 052 Wholesaling agricultural products, 053 Wholesaling food, 054 Wholesaling\
+            \ not listed elsewhere, 055 Dealing in waste or scrap"
+          pattern: "^[0-9]{3}$"
+          type: string
+        FRSPercentage:
+          $ref: "#/components/schemas/percentType"
+        limitedCostTrader:
+          description: Are you a limited cost trader
+          type: boolean
+        startDate:
+          $ref: "#/components/schemas/dateString"
+      additionalProperties: false
+    shortCommDetailsType:
+      type: object
+      properties:
+        email:
+          format: email
+          description: Email Address
+          maxLength: 132
+          minLength: 3
+          type: string
+        faxNumber:
+          description: Fax Number
+          maxLength: 24
+          minLength: 1
+          pattern: "^[A-Z0-9 )/(*#+-]+$"
+          type: string
+        mobileNumber:
+          description: Mobile Number
+          maxLength: 24
+          minLength: 1
+          pattern: "^[A-Z0-9 )/(*#+-]+$"
+          type: string
+        telephone:
+          description: Telephone Number
+          maxLength: 24
+          minLength: 1
+          pattern: "^[A-Z0-9 )/(*#+-]+$"
+          type: string
+      additionalProperties: false
+    signingType:
+      type: object
+      properties:
+        capacityOther:
+          description: Capacity Other
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,100}$"
+          type: string
+        confirmInformationDeclaration:
+          description: I hereby confirm my declaration is accurate and complete
+          type: boolean
+        declarationCapacity:
+          description: "Declaration Capacity: 01 Owner-Proprietor of the Business,\
+            \ 02 Partner, 03 Director,  04 Company Secretary, 05 Trustee, 06 Board\
+            \ Member, 07 Accountant-Agent, 08 Appointed representative, 09 Employee\
+            \ authorised to complete the application, 10 Other, 11 HMRC Officer (internal\
+            \ ETMP view only)"
+          pattern: "^[0-9]{2}$"
+          type: string
+      additionalProperties: false
+    stdReturnPeriodType:
+      description: "MM - Monthly, MA - Quarterly-The last day of Jan, April, July\
+        \ and Oct, MB - Quarterly-The last day of Feb, May, Aug and Nov, MC - Quarterly-The\
+        \ last day of Mar, June, Sep and Dec, YA - Annual - January to December, YB\
+        \ - Annual - February to January, YC - Annual - March to February, YD - Annual\
+        \ - April to March, YE - Annual - May to April, YF - Annual - June to May,\
+        \ YG - Annual - July to June, YH - Annual - August to July, YI - Annual -\
+        \ September to August, YJ - Annual - October to September, YK - Annual - November\
+        \ to October, YL - Annual - December to November"
+      enum:
+      - MM
+      - MA
+      - MB
+      - MC
+      - YA
+      - YB
+      - YC
+      - YD
+      - YE
+      - YF
+      - YG
+      - YH
+      - YI
+      - YJ
+      - YK
+      - YL
+      type: string
+    subscriptionType:
+      type: object
+      properties:
+        businessActivities:
+          $ref: "#/components/schemas/API1364_businessActivitiesType"
+        corporateBodyRegistered:
+          $ref: "#/components/schemas/corporateBodyRegisteredType"
+        exempt:
+          description: Exempt supplies
+          type: boolean
+        otherBusinessActivities:
+          description: Other Business Activities object array
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            $ref: "#/components/schemas/otherBusinessActivitiesType"
+        reasonForSubscription:
+          $ref: "#/components/schemas/reasonforSubscriptionType"
+        schemes:
+          $ref: "#/components/schemas/schemesType"
+        takingOver:
+          $ref: "#/components/schemas/takingOverType"
+        yourTurnover:
+          $ref: "#/components/schemas/yourTurnoverType"
+      additionalProperties: false
+    successResponse:
+      type: object
+      properties:
+        approvedInformation:
+          $ref: "#/components/schemas/approvedInformationType"
+        inFlightInformation:
+          $ref: "#/components/schemas/inFlightInformationType"
+      additionalProperties: false
+    takingOverType:
+      type: object
+      properties:
+        acceptTsAndCsForTOGCOrCOLE:
+          description: Accept TOGC COLE terms and conditions
+          type: boolean
+        keepPrevOwnerVATNo:
+          description: Keep the previous owner?s VAT number
+          type: boolean
+        prevOwnerName:
+          description: Previous owner name
+          pattern: "^[A-Za-z0-9 '’‘()\\[\\]{}<>!«»\"ʺ˝ˮ?\\\\+=%#*&€£_\\-@¥.,:;]{1,105}$"
+          type: string
+        prevOwnerVATNumber:
+          description: Previous owner VAT number
+          pattern: "^[0-9]{1,9}$"
+          type: string
+      additionalProperties: false
+    taxRelatedToType:
+      type: object
+      properties:
+        other:
+          description: Other
+          type: boolean
+        otherDetails:
+          description: "If Other, please provide details"
+          pattern: "^[0-9a-zA-Z &`\\-\\'\\.^]{1,500}$"
+          type: string
+        premiums:
+          description: Premiums
+          type: boolean
+        refurbishment:
+          description: Refurbisment
+          type: boolean
+        rent:
+          description: Rent
+          type: boolean
+        surrenders:
+          description: Surrenders
+          type: boolean
+      additionalProperties: false
+    tradingNameType:
+      description: Trading Name
+      maxLength: 160
+      minLength: 1
+      type: string
+    turnoverBelowDeregistrationLimitType:
+      type: object
+      properties:
+        aboveBelowThreshold:
+          description: "Indicates whether above or below the Threshold (True: Above,\
+            \ False: Below)"
+          type: boolean
+        reason:
+          maxLength: 255
+          minLength: 1
+          type: string
+        taxableSuppliesValue:
+          $ref: "#/components/schemas/decimalType"
+      additionalProperties: false
+    websiteAddressType:
+      description: Website Address
+      maxLength: 132
+      minLength: 1
+      type: string
+    yourTurnoverType:
+      type: object
+      properties:
+        VATRepaymentExpected:
+          description: VAT repayment expected
+          type: boolean
+        farmingTurnover:
+          $ref: "#/components/schemas/API1364_decimalType"
+        goodsFromOtherEU:
+          $ref: "#/components/schemas/API1364_decimalType"
+        goodsSoldToOtherEU:
+          $ref: "#/components/schemas/API1364_decimalType"
+        nonFarmingTurnover:
+          $ref: "#/components/schemas/API1364_decimalType"
+        turnoverNext12Months:
+          $ref: "#/components/schemas/API1364_decimalType"
+        zeroRatedSupplies:
+          $ref: "#/components/schemas/API1364_decimalType"
+      additionalProperties: false
+    zeroRatedExmpApplicationType:
+      type: object
+      properties:
+        estTotalTaxTurnover:
+          $ref: "#/components/schemas/decimalType"
+        natureOfSupplies:
+          description: Nature of Supplies
+          maxLength: 255
+          minLength: 1
+          type: string
+        repaymentSituation:
+          description: Repayment Situation
+          type: boolean
+        zeroRatedSuppliesValue:
+          $ref: "#/components/schemas/decimalType"
+      additionalProperties: false
+    HIP-originEnum:
+      enum:
+      - HIP
+      - HoD
+      type: string
+    HIP-failureResponse:
+      required:
+      - failures
+      type: object
+      properties:
+        failures:
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            required:
+            - type
+            - reason
+            type: object
+            properties:
+              type:
+                type: string
+              reason:
+                type: string
+            additionalProperties: false
+    HIP-originResponse:
+      required:
+      - origin
+      type: object
+      properties:
+        origin:
+          $ref: "#/components/schemas/HIP-originEnum"
+        response:
+          $ref: "#/components/schemas/HIP-failureResponse"
+      additionalProperties: false
+  securitySchemes:
+    oAuth2:
+      description: OAuth2 Client Credentials Flow
+      flows:
+        clientCredentials:
+          scopes:
+            read:vat-subscription-data: VAT Subscription Data Display
+            write:vat-subscription-data: VAT Subscription Data Create
+          tokenUrl: /tokenUrl/not-required
+      type: oauth2
+security:
+- oAuth2:
+  - read:vat-subscription-data
+  - write:vat-subscription-data

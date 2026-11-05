@@ -16,11 +16,12 @@
 
 package config
 
-import featureswitch.core.config.{FeatureSwitching, StubSubmission}
+import featureswitch.core.config.{FeatureSwitching, HipSubmissionConnector, StubSubmission}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import utils.Retrying
 
+import java.util.Base64
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
@@ -32,19 +33,38 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
 
   def loadConfig(key: String): String = servicesConfig.getString(key)
 
-  lazy val vatRegistrationUrl: String          = servicesConfig.baseUrl("vat-registration")
-  lazy val integrationFrameworkBaseUrl: String =
+  lazy val ifsVatRegistrationUrl: String          = servicesConfig.baseUrl("vat-registration")
+  lazy val hipVatRegistrationUrl: String          = servicesConfig.baseUrl("hip")
+  lazy val integrationFrameworkBaseUrl: String = {
     servicesConfig.getString("microservice.services.integration-framework.url")
+  }
 
-  def vatSubmissionUrl: String = {
+  def ifsVatSubmissionUrl: String = {
     val submissionEndpointUri = "/vat/subscription"
 
     if (isEnabled(StubSubmission)) {
-      s"$vatRegistrationUrl/vatreg/test-only$submissionEndpointUri"
+      s"$ifsVatRegistrationUrl/vatreg/test-only$submissionEndpointUri"
     } else {
       integrationFrameworkBaseUrl + submissionEndpointUri
     }
   }
+
+  def hipVatSubmissionUrl: String = {
+    val submissionEndpointUri = "/etmp/RESTAdapter/vat/subscription"
+
+    if (isEnabled(StubSubmission) && isEnabled(HipSubmissionConnector)) {
+      s"$hipVatRegistrationUrl/vatreg/test-only$submissionEndpointUri"
+    } else {
+      hipVatRegistrationUrl + submissionEndpointUri
+    }
+  }
+
+  private val hipClientId: String = servicesConfig.getString("microservice.services.hip.clientId")
+  private val hipSecret: String = servicesConfig.getString("microservice.services.hip.secret")
+
+  lazy val hipAuthorizationToken: String =
+    Base64.getEncoder.encodeToString(s"$hipClientId:$hipSecret".getBytes("UTF-8"))
+
 
   lazy val urlHeaderEnvironment: String   =
     servicesConfig.getString("microservice.services.integration-framework.environment")
@@ -69,7 +89,7 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
     val endpoint = "/submission"
 
     if (isEnabled(StubSubmission)) {
-      s"$vatRegistrationUrl/vatreg/test-only$endpoint"
+      s"$ifsVatRegistrationUrl/vatreg/test-only$endpoint"
     } else {
       nonRepudiationUrl + endpoint
     }
@@ -79,7 +99,7 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
     val endpoint = "/attachment"
 
     if (isEnabled(StubSubmission)) {
-      s"$vatRegistrationUrl/vatreg/test-only$endpoint"
+      s"$ifsVatRegistrationUrl/vatreg/test-only$endpoint"
     } else {
       nonRepudiationUrl + endpoint
     }
@@ -95,7 +115,7 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
     val endpoint = "/notification/fileready"
 
     if (isEnabled(StubSubmission)) {
-      s"$vatRegistrationUrl/vatreg/test-only$endpoint"
+      s"$ifsVatRegistrationUrl/vatreg/test-only$endpoint"
     } else {
       sdesUrl + endpoint
     }

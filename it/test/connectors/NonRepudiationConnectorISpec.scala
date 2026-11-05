@@ -19,6 +19,7 @@ package connectors
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMatching, verify}
 import connectors.stubs.AuditStub.{stubAudit, stubMergedAudit}
 import connectors.stubs.NonRepudiationStub._
+import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import itutil.IntegrationStubbing
 import models.nonrepudiation.{NonRepudiationAttachment, NonRepudiationAttachmentAccepted, NonRepudiationMetadata, NonRepudiationSubmissionAccepted}
 import play.api.libs.json.{JsObject, Json}
@@ -26,9 +27,14 @@ import play.api.mvc.Request
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-class NonRepudiationConnectorISpec extends IntegrationStubbing {
+class NonRepudiationConnectorISpec extends IntegrationStubbing with FeatureSwitching {
   val testNonRepudiationApiKey = "testNonRepudiationApiKey"
   override lazy val additionalConfig = Map("microservice.services.non-repudiation.api-key" -> testNonRepudiationApiKey)
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    disable(StubSubmission)
+  }
 
   implicit val request: Request[_] = FakeRequest()
 

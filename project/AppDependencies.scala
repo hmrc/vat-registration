@@ -25,9 +25,9 @@ object AppDependencies {
 
 object CompileDependencies {
   val domainVersion = "11.0.0"
-  val bootstrapVersion = "10.1.0"
-  val hmrcMongoVersion = "2.7.0"
-  val catsVersion = "2.8.0"
+  val bootstrapVersion = "10.8.0"
+  val hmrcMongoVersion = "2.14.0"
+  val catsVersion = "2.13.0"
   val flexmarkVersion = "0.36.8"
 
   val compile: Seq[ModuleID] = Seq(
@@ -52,18 +52,18 @@ object UnitTestDependencies extends CommonTestDependencies {
     "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % "test",
     "com.github.pjfanning" %% "pekko-mock-scheduler" % "0.6.0" % scope,
     "com.vladsch.flexmark" % "flexmark-all" % flexmarkVersion % scope,
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.14.0" % scope,
-    "uk.gov.hmrc" %% "bootstrap-test-play-30" % "10.1.0" % scope
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.22.4" % scope,
+    "uk.gov.hmrc" %% "bootstrap-test-play-30" % "10.8.0" % scope
   )
 
   def apply(): Seq[ModuleID] = test
 }
 
 trait CommonTestDependencies {
-  val scalaTestPlusVersion = "7.0.1"
-  val scoverageVersion = "2.1.0"
-  val flexmarkVersion = "0.36.8"
-  val mockitoVersion = "4.8.1"
+  val scalaTestPlusVersion = "7.0.2"
+  val scoverageVersion = "2.5.2"
+  val flexmarkVersion = "0.64.8"
+  val mockitoVersion = "5.24.0"
   val scope: Configuration
   val test: Seq[ModuleID]
 }

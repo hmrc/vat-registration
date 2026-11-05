@@ -38,7 +38,7 @@ class StubSdesController @Inject() (cc: ControllerComponents, httpClient: HttpCl
     with HttpReadsHttpResponse {
 
   def notificationStub: Action[SdesNotification] = Action.async(parse.json[SdesNotification]) { implicit request =>
-    val url     = config.vatRegistrationUrl + controllers.routes.SdesController.sdesCallback.url
+    val url     = config.ifsVatRegistrationUrl + controllers.routes.SdesController.sdesCallback.url
     val payload = SdesCallback(
       notification = "FileReceived",
       filename = request.body.file.name,
