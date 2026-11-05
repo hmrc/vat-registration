@@ -30,4 +30,12 @@ object VatSubmissionStub {
       )
     )
 
+  def stubHipVatSubmission(status: Int)(body: JsObject = Json.obj()): StubMapping =
+    stubFor(post(urlMatching(s".*/etmp/RESTAdapter/vat/subscription"))
+      .willReturn(aResponse()
+        .withStatus(status)
+        .withBody(body.toString())
+      )
+    )
+
 }
