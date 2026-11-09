@@ -52,8 +52,8 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
   def hipVatSubmissionUrl: String = {
     val submissionEndpointUri = "/etmp/RESTAdapter/vat/subscription"
 
-    if (isEnabled(StubSubmission) && isEnabled(HipSubmissionConnector)) {
-      s"$hipBaseUrl/vatreg/test-only$submissionEndpointUri"
+    if (isEnabled(StubSubmission)) {
+      s"$vatRegistrationBaseUrl/vatreg/test-only$submissionEndpointUri"
     } else {
       hipBaseUrl + submissionEndpointUri
     }
