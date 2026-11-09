@@ -54,7 +54,7 @@ case object PostSubmissionDecouplingConnector extends FeatureSwitch {
   override val displayName: String = "Enable connector calls for decoupled SDES and NRS integrations"
 }
 
-case object HipSubmissionConnector extends FeatureSwitch {
+case object HipSubmission extends FeatureSwitch {
   override val configName: String  = "feature-switch.hip-submission"
   override val displayName: String = "Enable connector calls to HIP"
 }

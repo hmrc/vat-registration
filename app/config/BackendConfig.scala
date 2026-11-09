@@ -16,7 +16,7 @@
 
 package config
 
-import featureswitch.core.config.{FeatureSwitching, HipSubmissionConnector, StubSubmission}
+import featureswitch.core.config.{FeatureSwitching, StubSubmission}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import utils.Retrying

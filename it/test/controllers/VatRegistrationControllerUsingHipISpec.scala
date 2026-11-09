@@ -19,7 +19,7 @@ package controllers
 import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlMatching, verify}
 import connectors.stubs.NonRepudiationStub.stubNonRepudiationSubmission
 import connectors.stubs.SdesNotifyStub.stubSdesNotification
-import featureswitch.core.config.{FeatureSwitching, HipSubmissionConnector, StubSubmission}
+import featureswitch.core.config.{FeatureSwitching, HipSubmission, StubSubmission}
 import itutil.{FakeTimeMachine, ITVatSubmissionFixture, IntegrationStubbing}
 import models.api._
 import models.nonrepudiation.NonRepudiationMetadata
@@ -164,7 +164,7 @@ class VatRegistrationControllerUsingHipISpec extends IntegrationStubbing with Fe
   "PUT /:regID/submit-registration" when {
     "using HIP connector" when {
       disable(StubSubmission)
-      enable(HipSubmissionConnector)
+      enable(HipSubmission)
       "the user is a Sole Trader" should {
         "return OK if the submission is successful where the submission is a sole trader and UTR and NINO are provided" in new Setup {
           given.user.isAuthorised

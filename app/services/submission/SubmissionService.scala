@@ -20,7 +20,7 @@ import cats.instances.FutureInstances
 import config.BackendConfig
 import connectors.{HipVatSubmissionConnector, IfsVatSubmissionConnector, NonRepudiationConnector}
 import enums.VatRegStatus
-import featureswitch.core.config.{FeatureSwitching, HipSubmissionConnector, PostSubmissionDecoupling, PostSubmissionDecouplingConnector}
+import featureswitch.core.config.{FeatureSwitching, HipSubmission, PostSubmissionDecoupling, PostSubmissionDecouplingConnector}
 import httpparsers.VatSubmissionHttpParser.VatSubmissionResponse
 import httpparsers.{VatSubmissionFailure, VatSubmissionSuccess}
 import models.api.schemas.{API1364, EPID1835}
@@ -73,8 +73,8 @@ class SubmissionService @Inject() (
     with AlertLogging
     with FeatureSwitching {
 
-  private val vatSubmissionConnector = if (isEnabled(HipSubmissionConnector)) hipVatSubmissionConnector else ifsVatSubmissionConnector
-  private val apiSchema              = if (isEnabled(HipSubmissionConnector)) hipApiSchema else ifsApiSchema
+  private val vatSubmissionConnector = if (isEnabled(HipSubmission)) hipVatSubmissionConnector else ifsVatSubmissionConnector
+  private val apiSchema              = if (isEnabled(HipSubmission)) hipApiSchema else ifsApiSchema
 
   def submitVatRegistration(internalId: String, regId: String, userHeaders: Map[String, String], lang: String)(implicit
       hc: HeaderCarrier,

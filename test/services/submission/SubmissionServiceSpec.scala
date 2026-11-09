@@ -22,7 +22,7 @@ import connectors.EmailSent
 import enums.VatRegStatus
 import featureswitch.core.config.{
   FeatureSwitching,
-  HipSubmissionConnector,
+  HipSubmission,
   PostSubmissionDecoupling,
   PostSubmissionDecouplingConnector,
   PostSubmissionNonDecoupling
@@ -116,7 +116,7 @@ class SubmissionServiceSpec
   "the IFS submission connector is enabled" when {
     "submitVatRegistration" when {
       "successfully submit and return an acknowledgment reference and send attachments to NRS" in new Setup {
-        disable(HipSubmissionConnector)
+        disable(HipSubmission)
         enable(PostSubmissionDecoupling)
         enable(PostSubmissionDecouplingConnector)
         disable(PostSubmissionNonDecoupling)
@@ -213,7 +213,7 @@ class SubmissionServiceSpec
       }
 
       "successfully submit and return an acknowledgment reference and failed to send attachments to NRS" in new Setup {
-        disable(HipSubmissionConnector)
+        disable(HipSubmission)
         enable(PostSubmissionDecoupling)
         enable(PostSubmissionDecouplingConnector)
         disable(PostSubmissionNonDecoupling)
@@ -313,7 +313,7 @@ class SubmissionServiceSpec
       }
 
       "successfully submit and return an acknowledgment reference" in new Setup {
-        disable(HipSubmissionConnector)
+        disable(HipSubmission)
         disable(PostSubmissionDecoupling)
         enable(PostSubmissionNonDecoupling)
         when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
@@ -397,7 +397,7 @@ class SubmissionServiceSpec
       }
 
       "fail the submission on BAD_REQUEST and validate the failures" in new Setup {
-        disable(HipSubmissionConnector)
+        disable(HipSubmission)
         when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
           .thenReturn(Future.successful(Some(testFullVatScheme)))
         when(
@@ -422,7 +422,7 @@ class SubmissionServiceSpec
       }
 
       "throw a bad request exception BAD_REQUEST if the schema validator returns an unknown error" in new Setup {
-        disable(HipSubmissionConnector)
+        disable(HipSubmission)
         when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
           .thenReturn(Future.successful(Some(testFullVatScheme)))
         when(
@@ -451,7 +451,7 @@ class SubmissionServiceSpec
     "submit" when {
       "the user is authorised and the call from the connector succeeds" should {
         "return the success response in a 200" in new Setup {
-          disable(HipSubmissionConnector)
+          disable(HipSubmission)
           mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
 
           when(mockIfsVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
@@ -467,7 +467,7 @@ class SubmissionServiceSpec
 
       "a BuildFailure is passed in instead of the submission body" should {
         "return a 400 response with the failure reason" in new Setup {
-          disable(HipSubmissionConnector)
+          disable(HipSubmission)
 
           await(service.submit(Left(BuildFailure("Reason for build failure")), testRegId, testCorrelationId)) mustBe Left(
             VatSubmissionFailure(BAD_REQUEST, "Reason for build failure")
@@ -477,7 +477,7 @@ class SubmissionServiceSpec
 
       "no auth credentials are returned for the user" should {
         "return an error response" in new Setup {
-          disable(HipSubmissionConnector)
+          disable(HipSubmission)
           mockAuthorise(Retrievals.credentials)(Future.successful(None))
 
           await(service.submit(Right(vatSubmissionJson.as[JsObject]), testRegId, testCorrelationId)) mustBe
@@ -487,7 +487,7 @@ class SubmissionServiceSpec
 
       "the user is authorised but the call from the connector returns an error response" should {
         "return the error response from downstream when the connector call returns an error response" in new Setup {
-          disable(HipSubmissionConnector)
+          disable(HipSubmission)
           mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
 
           private val connectorFailureResponse = VatSubmissionFailure(BAD_REQUEST, "API response message")
@@ -503,7 +503,7 @@ class SubmissionServiceSpec
   "the HIP submission connector is enabled" when {
     "submitVatRegistration" when {
       "fail the submission on BAD_REQUEST and validate the failures against the HIP schema" in new Setup {
-        enable(HipSubmissionConnector)
+        enable(HipSubmission)
         when(mockRegistrationMongoRepository.getRegistration(anyString(), anyString()))
           .thenReturn(Future.successful(Some(testFullVatScheme)))
         when(
@@ -535,7 +535,7 @@ class SubmissionServiceSpec
     "submit" when {
       "the user is authorised and the call from the connector succeeds" should {
         "return the success response from the HIP connector" in new Setup {
-          enable(HipSubmissionConnector)
+          enable(HipSubmission)
           mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
 
           when(mockHipVatSubmissionConnector.submit(any[JsObject], anyString(), anyString())(any()))
@@ -551,7 +551,7 @@ class SubmissionServiceSpec
 
       "the user is authorised but the call from the connector returns an error response" should {
         "return the error response from the HIP connector unchanged" in new Setup {
-          enable(HipSubmissionConnector)
+          enable(HipSubmission)
           mockAuthorise(Retrievals.credentials)(Future.successful(Some(testCredentials)))
 
           private val connectorFailureResponse =
