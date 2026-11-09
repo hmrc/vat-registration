@@ -33,9 +33,9 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
 
   def loadConfig(key: String): String = servicesConfig.getString(key)
 
-  lazy val ifsVatRegistrationUrl: String          = servicesConfig.baseUrl("vat-registration")
-  lazy val hipVatRegistrationUrl: String          = servicesConfig.baseUrl("hip")
-  lazy val integrationFrameworkBaseUrl: String = {
+  lazy val vatRegistrationBaseUrl: String          = servicesConfig.baseUrl("vat-registration")
+  private lazy val hipBaseUrl: String          = servicesConfig.baseUrl("hip")
+  private lazy val integrationFrameworkBaseUrl: String = {
     servicesConfig.getString("microservice.services.integration-framework.url")
   }
 
@@ -43,7 +43,7 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
     val submissionEndpointUri = "/vat/subscription"
 
     if (isEnabled(StubSubmission)) {
-      s"$ifsVatRegistrationUrl/vatreg/test-only$submissionEndpointUri"
+      s"$vatRegistrationBaseUrl/vatreg/test-only$submissionEndpointUri"
     } else {
       integrationFrameworkBaseUrl + submissionEndpointUri
     }
@@ -53,9 +53,9 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
     val submissionEndpointUri = "/etmp/RESTAdapter/vat/subscription"
 
     if (isEnabled(StubSubmission) && isEnabled(HipSubmissionConnector)) {
-      s"$hipVatRegistrationUrl/vatreg/test-only$submissionEndpointUri"
+      s"$hipBaseUrl/vatreg/test-only$submissionEndpointUri"
     } else {
-      hipVatRegistrationUrl + submissionEndpointUri
+      hipBaseUrl + submissionEndpointUri
     }
   }
 
@@ -89,7 +89,7 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
     val endpoint = "/submission"
 
     if (isEnabled(StubSubmission)) {
-      s"$ifsVatRegistrationUrl/vatreg/test-only$endpoint"
+      s"$vatRegistrationBaseUrl/vatreg/test-only$endpoint"
     } else {
       nonRepudiationUrl + endpoint
     }
@@ -99,7 +99,7 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
     val endpoint = "/attachment"
 
     if (isEnabled(StubSubmission)) {
-      s"$ifsVatRegistrationUrl/vatreg/test-only$endpoint"
+      s"$vatRegistrationBaseUrl/vatreg/test-only$endpoint"
     } else {
       nonRepudiationUrl + endpoint
     }
@@ -115,7 +115,7 @@ class BackendConfig @Inject() (val servicesConfig: ServicesConfig, val runModeCo
     val endpoint = "/notification/fileready"
 
     if (isEnabled(StubSubmission)) {
-      s"$ifsVatRegistrationUrl/vatreg/test-only$endpoint"
+      s"$vatRegistrationBaseUrl/vatreg/test-only$endpoint"
     } else {
       sdesUrl + endpoint
     }
