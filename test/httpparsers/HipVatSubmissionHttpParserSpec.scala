@@ -62,9 +62,6 @@ class HipVatSubmissionHttpParserSpec extends PlaySpec {
 
         read(CREATED, Json.stringify(body)) mustBe Right(VatSubmissionSuccess(testFormBundleId))
       }
-    }
-
-    "the response is BAD_REQUEST" should {
 
       "fail when the response doesn't contain a success wrapper" in {
         val body = Json.obj("formBundle" -> testFormBundleId)
@@ -73,6 +70,17 @@ class HipVatSubmissionHttpParserSpec extends PlaySpec {
           VatSubmissionFailure(CREATED, "VAT submission API - no form bundle ID in response")
         )
       }
+
+      "fail when the response doesn't contain a formBundle" in {
+        val body = Json.obj("success" -> Json.obj("" -> ""))
+
+        read(CREATED, Json.stringify(body)) mustBe Left(
+          VatSubmissionFailure(CREATED, "VAT submission API - no form bundle ID in response")
+        )
+      }
+    }
+
+    "the response is BAD_REQUEST" should {
 
       "describe a HIP failures envelope" in {
         read(BAD_REQUEST, hipEnvelope("Type of Failure" -> "Reason for Failure", "Other Type" -> "Other Reason")) mustBe
