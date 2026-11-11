@@ -36,7 +36,7 @@ class HipVatSubmissionConnector @Inject() (appConfig: BackendConfig, http: HttpC
 ) extends VatSubmissionConnector {
 
 
-  def hipHeaders(correlationId: String, credentialId: String): Seq[(String, String)] =
+  private def hipHeaders(correlationId: String, credentialId: String): Seq[(String, String)] =
     Seq[(String, String)](
       HeaderNames.ACCEPT      -> MimeTypes.JSON,
       "correlationid"         -> correlationId,
