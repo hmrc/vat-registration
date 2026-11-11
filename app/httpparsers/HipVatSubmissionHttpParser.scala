@@ -27,9 +27,9 @@ import scala.util.Try
 
 object HipVatSubmissionHttpParser {
 
-  val inFlightSubmissionCode         = "089"
-  val duplicateAcknowledgementRefCode = "004"
-  val serviceUnavailableCodes        = Set("003", "105", "999")
+  private val inFlightSubmissionCode         = "089"
+  private val duplicateAcknowledgementRefCode = "004"
+  private val serviceUnavailableCodes        = Set("003", "105", "999")
 
   implicit object HipVatSubmissionHttpReads extends HttpReads[VatSubmissionResponse] {
     override def read(method: String, url: String, response: HttpResponse): VatSubmissionResponse =
@@ -46,19 +46,23 @@ object HipVatSubmissionHttpParser {
         case INTERNAL_SERVER_ERROR | SERVICE_UNAVAILABLE =>
           envelopeFailure(response, SERVICE_UNAVAILABLE)
         case UNPROCESSABLE_ENTITY                        =>
-          parseJson(response).flatMap(_.asOpt[Hip422Error]) match {
-            case Some(Hip422Error(HipInner422Err(`inFlightSubmissionCode`, _, _)))                         =>
-              Left(VatSubmissionFailure(CONFLICT, "VAT Submission API - application already in progress"))
-            case Some(Hip422Error(HipInner422Err(code @ `duplicateAcknowledgementRefCode`, _, text)))      =>
-              Left(VatSubmissionFailure(INTERNAL_SERVER_ERROR, s"VAT Submission API - errors: $code: $text"))
-            case Some(Hip422Error(HipInner422Err(code, _, text))) if serviceUnavailableCodes.contains(code) =>
-              Left(VatSubmissionFailure(SERVICE_UNAVAILABLE, s"VAT Submission API - errors: $code: $text"))
-            case _                                                                                         =>
-              unexpected(response)
-          }
+          handle422Response(response)
         case _                                           =>
           unexpected(response)
       }
+
+    private def handle422Response(response: HttpResponse): VatSubmissionResponse = {
+      parseJson(response).flatMap(_.asOpt[Hip422Error]) match {
+        case Some(Hip422Error(HipInner422Err(`inFlightSubmissionCode`, _, _))) =>
+          Left(VatSubmissionFailure(CONFLICT, "VAT Submission API - application already in progress"))
+        case Some(Hip422Error(HipInner422Err(code@`duplicateAcknowledgementRefCode`, _, text))) =>
+          Left(VatSubmissionFailure(INTERNAL_SERVER_ERROR, s"VAT Submission API - errors: $code: $text"))
+        case Some(Hip422Error(HipInner422Err(code, _, text))) if serviceUnavailableCodes.contains(code) =>
+          Left(VatSubmissionFailure(SERVICE_UNAVAILABLE, s"VAT Submission API - errors: $code: $text"))
+        case _ =>
+          unexpected(response)
+      }
+    }
 
     private def envelopeFailure(response: HttpResponse, status: Int): VatSubmissionResponse =
       parseHipErrorEnvelope(response) match {
