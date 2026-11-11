@@ -67,7 +67,7 @@ class HipVatSubmissionHttpParserSpec extends PlaySpec {
         val body = Json.obj("formBundle" -> testFormBundleId)
 
         read(CREATED, Json.stringify(body)) mustBe Left(
-          VatSubmissionFailure(CREATED, "VAT submission API - no form bundle ID in response")
+          VatSubmissionFailure(CREATED, "VAT submission API - unexpected success response format: missing 'success.formBundle'")
         )
       }
 
@@ -75,7 +75,7 @@ class HipVatSubmissionHttpParserSpec extends PlaySpec {
         val body = Json.obj("success" -> Json.obj("" -> ""))
 
         read(CREATED, Json.stringify(body)) mustBe Left(
-          VatSubmissionFailure(CREATED, "VAT submission API - no form bundle ID in response")
+          VatSubmissionFailure(CREATED, "VAT submission API - unexpected success response format: missing 'success.formBundle'")
         )
       }
     }
