@@ -40,7 +40,8 @@ object HipVatSubmissionHttpParser {
               Right(VatSubmissionSuccess(formBundle))
             case None                                                      =>
               // This returns a Left because the form bundle ID is needed later in the journey to be sent to NRS. It
-              // will error making it easier to debug but also to show that the request has been processed by ETMP.
+              // will error making it easier to debug but still contain status OK to show that the request has been
+              // processed by ETMP.
               Left(VatSubmissionFailure(CREATED, "VAT submission API - unexpected success response format: missing 'success.formBundle'"))
           }
         case BAD_REQUEST                                 =>
