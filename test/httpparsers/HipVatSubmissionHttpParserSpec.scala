@@ -18,7 +18,7 @@ package httpparsers
 
 import httpparsers.HipVatSubmissionHttpParser._
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import uk.gov.hmrc.http._
 

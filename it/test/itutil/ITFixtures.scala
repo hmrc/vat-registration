@@ -23,7 +23,7 @@ import models.api.vatapplication._
 import models.sdes.PropertyExtractor._
 import models.sdes._
 import models.submission._
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -707,6 +707,446 @@ trait ITFixtures {
   val testFormBundleId = "123412341234"
   val testNonRepudiationSubmissionId = "testNonRepudiationSubmissionId"
   val testCorrelationid = "testCorrelationid"
+  val testCredentialId = "testCredentialId"
+  val testSessionId = "testSessionId"
+
+  val testVatSubmissionRequest: JsObject = Json.parse(
+    """
+      |{
+      |  "LnP": {
+      |    "plansForRentingLeasingLandOrProp": {
+      |      "TOGC": false,
+      |      "beneficialOwner": "Beneficial owner",
+      |      "fullExplanation": "Best deal",
+      |      "makeSuppliesOfLandOrProp": false,
+      |      "notifiedHMRC": "0",
+      |      "notifiedSeller": true,
+      |      "optToTaxSupplies": false,
+      |      "other": true,
+      |      "reasonToRentLease": "Tally accounts",
+      |      "registeredForVAT": true,
+      |      "rentLeaseCommProp": true,
+      |      "rentLeaseCommPropCivilWork": false,
+      |      "rentLeaseNewResPropLongTerm": true,
+      |      "rentLeaseNewResPropShortTerm": false,
+      |      "rentLeaseNonResPropLongTerm": false,
+      |      "rentLeaseResOrCharPropLongTerm": false,
+      |      "rentLeaseSubsReconstruct": false,
+      |      "resToThirdParty": true
+      |    },
+      |    "plansToSellLandOrProp": {
+      |      "reasonToSell": "Comp wanted to sell",
+      |      "rentingOrLeasing": true,
+      |      "sellCommPropCivilWork": false,
+      |      "sellCommPropCivilWork3YrsOld": false,
+      |      "sellCommPropCivilWorkLessThan3YrsOld": true,
+      |      "sellInterestInLandOrProp": false,
+      |      "sellLandOrProp": false,
+      |      "sellNewResProp": true,
+      |      "sellNonResProp": true,
+      |      "sellOther": true,
+      |      "sellResOrRelCharProp": false,
+      |      "sellSubsReconstruct": false
+      |    },
+      |    "sellingLandOrProperty": true,
+      |    "typeOfProperty": "1",
+      |    "workingAsGeneralBuilder": true
+      |  },
+      |  "OTTs": [
+      |    {
+      |      "address": {
+      |        "addressValidated": true,
+      |        "countryCode": "GB",
+      |        "line1": "1 HighStreet",
+      |        "line2": "Birmingham",
+      |        "line3": "ASDFG",
+      |        "line4": "QWERD",
+      |        "line5": "CVBNM",
+      |        "postCode": "HP137JP"
+      |      },
+      |      "connectedDetails": "connected details check the length",
+      |      "connectedFinancier": true,
+      |      "currentExemptSupplies": true,
+      |      "effectiveDate": "2001-01-01",
+      |      "exemptSupplies": false,
+      |      "futureInputTax": 123456789123456.12,
+      |      "futurePlans": "Future plans are in progress",
+      |      "helpedDetails": "helped for charity",
+      |      "helpedFundProp": false,
+      |      "landRegNum": "12345",
+      |      "lastExemptDate": "2001-01-01",
+      |      "occupyingProp": false,
+      |      "optionToTax": false,
+      |      "prePaymentDetails": "Bank details",
+      |      "prePaymentOfRent": false,
+      |      "propDetails": "Property at worthing",
+      |      "recoverPreOption": true,
+      |      "schedule": [
+      |        {
+      |          "VATAmount": 123456789123456.12,
+      |          "VRN": "123456789",
+      |          "dateOfInvoice": "2001-01-01",
+      |          "invoiceNumber": "123498765",
+      |          "nameOfSupplier": "Supplier Incorp",
+      |          "suppliesDescription": "a",
+      |          "totalCost": 123456789123456.12
+      |        }
+      |      ],
+      |      "specificCondition": "1",
+      |      "submitPlan": false,
+      |      "taxDisapplyReason": "Applied for the certificate",
+      |      "taxRelatedTo": {
+      |        "other": false,
+      |        "otherDetails": "Others please check for 250 or 500",
+      |        "premiums": true,
+      |        "refurbishment": false,
+      |        "rent": false,
+      |        "surrenders": false
+      |      },
+      |      "totalValueLandExempt": 123456789123456.12
+      |    }
+      |  ],
+      |  "admin": {
+      |    "additionalInformation": {
+      |      "customerStatus": "2",
+      |      "overseasTrader": false,
+      |      "welshLanguage": false
+      |    },
+      |    "attachments": {
+      |      "EORIrequested": true,
+      |      "VAT2": "1",
+      |      "VAT51": "1",
+      |      "VAT5L": "1",
+      |      "attachment1614a": "1",
+      |      "attachment1614h": "1",
+      |      "identityEvidence": "1",
+      |      "landPropertyOtherDocs": "1",
+      |      "letterOfAuthority": "1",
+      |      "otherAttachments": "1",
+      |      "taxAgentAuthorisation": "1",
+      |      "taxRepresentativeAuthorisation": "1"
+      |    }
+      |  },
+      |  "bankDetails": {
+      |    "UK": {
+      |      "accountName": "Trading Limite",
+      |      "accountNumber": "12345678",
+      |      "bankDetailsNotValid": false,
+      |      "buildSocietyRollNumber": "456",
+      |      "reasonBankAccNotProvided": "1",
+      |      "sortCode": "123456"
+      |    },
+      |    "bankBuildSocietyName": "abcde",
+      |    "overseas": {
+      |      "BIC": "3",
+      |      "IBAN": "3333333"
+      |    }
+      |  },
+      |  "compliance": {
+      |    "intermediaryArrangement": false,
+      |    "numOfWorkers": 10,
+      |    "numOfWorkersSupplied": 4,
+      |    "provisionOfLabour": false,
+      |    "supplyWorkers": true,
+      |    "tempWorkers": false
+      |  },
+      |  "contact": {
+      |    "address": {
+      |      "addressValidated": false,
+      |      "countryCode": "GB",
+      |      "line1": "1 HighStreet",
+      |      "line2": "Birmingham",
+      |      "line3": "ASDFG",
+      |      "line4": "QWERD",
+      |      "line5": "CVBNM",
+      |      "postCode": "HP137JP"
+      |    },
+      |    "commDetails": {
+      |      "commsPreference": "ZEL",
+      |      "email": "ABCD@TEST.COM",
+      |      "emailVerified": true,
+      |      "faxNumber": "+41(333)444-5555",
+      |      "mobileNumber": "4445556667",
+      |      "telephone": "0101222444",
+      |      "webAddress": "abcd.com"
+      |    }
+      |  },
+      |  "controllingBody": {
+      |    "aboutBusiness": {
+      |      "SICCode": "12345",
+      |      "totalExpectedAnnualTaxableTurnover": 123456789123456.12,
+      |      "totalExpectedAnnualValueOfNonTaxableSupplies": 123456789123456.12,
+      |      "totalExpectedAnnualValueOfTaxableSupplies": 123456789123456.12,
+      |      "totalExpectedNonTaxableTurnover": 123456789123456.12
+      |    }
+      |  },
+      |  "customerIdentification": {
+      |    "customerID": [
+      |      {
+      |        "IDsVerificationStatus": "1",
+      |        "countryOfIncorporation": "GB",
+      |        "date": "2000-08-13",
+      |        "idType": "UTR",
+      |        "idValue": "UT09919101",
+      |        "partyType": "01",
+      |        "safeIDBPFound": "12345678901234567890"
+      |      }
+      |    ],
+      |    "dateOfBirth": "2000-08-13",
+      |    "name": {
+      |      "firstName": "Automobile",
+      |      "lastName": "PQRS",
+      |      "middleName": "XYZ",
+      |      "title": "0001"
+      |    },
+      |    "organisationName": "Mark and Spencers",
+      |    "primeBPSafeID": "12345678901234567890",
+      |    "shortOrgName": "M and S",
+      |    "tradersPartyType": "50",
+      |    "tradingName": "ABCD LTD"
+      |  },
+      |  "declaration": {
+      |    "agentOrCapacitor": {
+      |      "address": {
+      |        "addressValidated": true,
+      |        "countryCode": "GB",
+      |        "line1": "1 HighStreet",
+      |        "line2": "Birmingham",
+      |        "line3": "ASDFG",
+      |        "line4": "QWERD",
+      |        "line5": "CVBNM",
+      |        "postCode": "HP137JP"
+      |      },
+      |      "clientIDThisTrader": "4A4S5S",
+      |      "commDetails": {
+      |        "email": "WED@TEST3.COM",
+      |        "telephone": "7744112233"
+      |      },
+      |      "identification": [
+      |        {
+      |          "IDsFailedOnlineVerification": "1",
+      |          "countryOfIncorporation": "GB",
+      |          "date": "2001-01-01",
+      |          "idType": "CRN",
+      |          "idValue": "1005807744"
+      |        }
+      |      ],
+      |      "individualName": {
+      |        "firstName": "WXY",
+      |        "lastName": "UJK",
+      |        "middleName": "THG",
+      |        "title": "0001"
+      |      },
+      |      "organisationName": "abcdefghijklmn"
+      |    },
+      |    "applicantDetails": {
+      |      "commDetails": {
+      |        "email": "LMN@TEST2.COM",
+      |        "faxNumber": "+41(333)444-6666",
+      |        "mobileNumber": "9638527412",
+      |        "telephone": "4561237415"
+      |      },
+      |      "currAddress": {
+      |        "addressValidated": false,
+      |        "countryCode": "GB",
+      |        "line1": "1 HighStreet",
+      |        "line2": "Birmingham",
+      |        "line3": "ASDFG",
+      |        "line4": "QWERD",
+      |        "line5": "CVBNM",
+      |        "postCode": "HP137JP"
+      |      },
+      |      "dateOfBirth": "2001-01-01",
+      |      "identifiers": [
+      |        {
+      |          "IDsVerificationStatus": "1",
+      |          "countryOfIncorporation": "GB",
+      |          "date": "2001-01-01",
+      |          "idType": "CRN",
+      |          "idValue": "1155997744"
+      |        }
+      |      ],
+      |      "name": {
+      |        "firstName": "RSP",
+      |        "lastName": "LMN",
+      |        "middleName": "FG",
+      |        "title": "0001"
+      |      },
+      |      "otherRole": "Nootherrole",
+      |      "prevAddress": {
+      |        "addressValidated": true,
+      |        "countryCode": "GB",
+      |        "line1": "1 HighStreet",
+      |        "line2": "Birmingham",
+      |        "line3": "ASDFG",
+      |        "line4": "QWERD",
+      |        "line5": "CVBNM",
+      |        "postCode": "HP137JP"
+      |      },
+      |      "prevName": {
+      |        "firstName": "WXY",
+      |        "lastName": "UJK",
+      |        "middleName": "THG",
+      |        "nameChangeDate": "2001-01-01",
+      |        "title": "0001"
+      |      },
+      |      "roleInBusiness": "01"
+      |    },
+      |    "declarationSigning": {
+      |      "capacityOther": "NO OTHER CAPACITY",
+      |      "confirmInformationDeclaration": false,
+      |      "declarationCapacity": "01"
+      |    }
+      |  },
+      |  "entities": [
+      |    {
+      |      "action": "1",
+      |      "businessContactDetails": {
+      |        "address": {
+      |          "addressValidated": true,
+      |          "countryCode": "GB",
+      |          "line1": "1 HighStreet",
+      |          "line2": "Birmingham",
+      |          "line3": "ASDFG",
+      |          "line4": "QWERD",
+      |          "line5": "CVBNM",
+      |          "postCode": "HP137JP"
+      |        },
+      |        "commDetails": {
+      |          "commsPreference": "P01",
+      |          "email": "test@email.com",
+      |          "emailVerified": true,
+      |          "faxNumber": "9895334787",
+      |          "mobileNumber": "9895332867",
+      |          "telephone": "8884003456",
+      |          "webAddress": "www.cap.com"
+      |        }
+      |      },
+      |      "customerIdentification": {
+      |        "customerID": [
+      |          {
+      |            "IDsVerificationStatus": "1",
+      |            "countryOfIncorporation": "GB",
+      |            "date": "2001-01-01",
+      |            "idType": "CRN",
+      |            "idValue": "12345CR",
+      |            "partyType": "01",
+      |            "safeIDBPFound": "12345678901234567890"
+      |          }
+      |        ],
+      |        "dateOfBirth": "2001-01-01",
+      |        "name": {
+      |          "firstName": "Kelly",
+      |          "lastName": "Newton",
+      |          "middleName": "Sera",
+      |          "title": "0002"
+      |        },
+      |        "organisationName": "Mark and Spencers",
+      |        "primeBPSafeID": "12345678901234567890",
+      |        "shortOrgName": "M and  S"
+      |      },
+      |      "entityType": "1",
+      |      "tradersPartyType": "50",
+      |      "tradingName": "Kelly traders"
+      |    }
+      |  ],
+      |  "groupCompliance": {
+      |    "controlConditionDetails": "detail of control conditions",
+      |    "detailsOfPartialExemption": "details",
+      |    "isControllingBody": "1",
+      |    "meetsControlConditions": false,
+      |    "partiallyExempt": false
+      |  },
+      |  "joinAA": {
+      |    "customerRequest": {
+      |      "annualStagger": "YA",
+      |      "estimatedTurnover": 12345678912.12,
+      |      "paymentFrequency": "M",
+      |      "paymentMethod": "01",
+      |      "reqStartDate": "2001-01-01"
+      |    },
+      |    "submissionType": "1"
+      |  },
+      |  "messageType": "SubscriptionCreate",
+      |  "periods": {
+      |    "NSTPRequested": false,
+      |    "customerPreferredPeriodicity": "MA",
+      |    "nonStdTaxPeriods": [
+      |      {
+      |        "periodEnd": "2001-01-01",
+      |        "stdPeriodEndDate": "2001-01-01"
+      |      }
+      |    ]
+      |  },
+      |  "subscription": {
+      |    "businessActivities": {
+      |      "FHDDSWarehouseNumber": "FP77788Q",
+      |      "SICCodes": {
+      |        "mainCode2": "91234",
+      |        "mainCode3": "91234",
+      |        "mainCode4": "91234",
+      |        "primaryMainCode": "91234"
+      |      },
+      |      "dataAboutLandOrProperties": true,
+      |      "description": "firm",
+      |      "fulfilmentWarehouse": false,
+      |      "goodsToCustomerEU": true,
+      |      "goodsToOverseas": true,
+      |      "nameOfWarehouse": "GOODSSTORAGE",
+      |      "storingGoodsForDispatch": "GODOWN"
+      |    },
+      |    "corporateBodyRegistered": {
+      |      "companyRegistrationNumber": "456789123",
+      |      "countryOfIncorporation": "GB",
+      |      "dateOfIncorporation": "2001-01-01"
+      |    },
+      |    "exempt": false,
+      |    "otherBusinessActivities": [
+      |      {
+      |        "businessName": "ABC",
+      |        "idType": "VRN",
+      |        "idValue": "1425367485",
+      |        "stillTrading": true
+      |      }
+      |    ],
+      |    "reasonForSubscription": {
+      |      "exemptionOrException": "0",
+      |      "registrationReason": "0001",
+      |      "relevantDate": "2000-08-13",
+      |      "voluntaryOrEarlierDate": "1967-08-13"
+      |    },
+      |    "schemes": {
+      |      "FRSCategory": "001",
+      |      "FRSPercentage": 13.12,
+      |      "limitedCostTrader": true,
+      |      "startDate": "2001-01-01"
+      |    },
+      |    "takingOver": {
+      |      "acceptTsAndCsForTOGCOrCOLE": false,
+      |      "keepPrevOwnerVATNo": false,
+      |      "prevOwnerName": "JACK",
+      |      "prevOwnerVATNumber": "012345678"
+      |    },
+      |    "yourTurnover": {
+      |      "VATRepaymentExpected": false,
+      |      "farmingTurnover": 123456.12,
+      |      "goodsFromOtherEU": 123456.12,
+      |      "goodsSoldToOtherEU": 913456.12,
+      |      "nonFarmingTurnover": 123456.12,
+      |      "turnoverNext12Months": 123456.12,
+      |      "zeroRatedSupplies": 123456.12
+      |    }
+      |  }
+      |}
+      |""".stripMargin
+  ).as[JsObject]
+
+  val testHipSuccessResponse: JsObject = Json.obj(
+    "success" ->
+      Json.obj(
+        "formBundle" -> testFormBundleId,
+      )
+  )
 
   def testSdesPayload(attachmentReference: String): SdesNotification = SdesNotification(
     informationType = "1655996667080",
