@@ -16,7 +16,7 @@
 
 package controllers.test
 
-import models.api.schemas.API1364
+import models.api.schemas.EPID1835
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import services.SchemaValidationService
@@ -27,24 +27,24 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 @Singleton
-class StubVatSubmissionController @Inject() (
+class StubHipVatSubmissionController @Inject()(
   schemaValidationService: SchemaValidationService,
-  apiSchema: API1364,
+  apiSchema: EPID1835,
   cc: ControllerComponents
 ) extends BackendController(cc)
     with LoggingUtils {
 
   val processSubmission: Action[JsValue] = Action.async(parse.json) { implicit request =>
-    infoLog(s"[StubVatSubmissionController][processSubmission] Received submission: ${Json.prettyPrint(request.body)}")
+    infoLog(s"[StubHipVatSubmissionController][processSubmission] Received submission: ${Json.prettyPrint(request.body)}")
 
     schemaValidationService.validate(apiSchema, request.body.toString()) match {
       case map if map.isEmpty =>
-        Future.successful(Ok(Json.stringify(Json.obj("formBundle" -> "123412341234"))))
+        Future.successful(Created(Json.stringify(Json.obj("success" -> Json.obj("formBundle" -> "123412341234")))))
       case errorMap           =>
         errorLog(
-          s"[StubVatSubmissionController][processSubmission] Bad request errors:\n ${Json.prettyPrint(Json.toJson(errorMap))}"
+          s"[StubHipVatSubmissionController][processSubmission] Bad request errors:\n ${Json.prettyPrint(Json.toJson(errorMap))}"
         )
-        Future.successful(BadRequest(Json.obj("failures" -> Json.arr(Json.obj("code" -> "INVALID_PAYLOAD")))))
+        Future.successful(BadRequest(Json.obj("error" -> Json.arr(Json.obj("code" -> "400", "message" -> "INVALID_PAYLOAD", "logID" -> "91278HB9BF0327BF29HF8293HF09HB82")))))
     }
   }
 }

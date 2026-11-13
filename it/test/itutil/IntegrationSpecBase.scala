@@ -60,6 +60,8 @@ trait IntegrationSpecBase extends PlaySpec
     "microservice.services.vat-registration.port" -> mockPort,
     "microservice.services.non-repudiation.host" -> mockHost,
     "microservice.services.non-repudiation.port" -> mockPort,
+    "microservice.services.hip.host" -> mockHost,
+    "microservice.services.hip.port" -> mockPort,
     "microservice.services.sdes.host" -> mockHost,
     "microservice.services.sdes.port" -> mockPort,
     "microservice.services.email.host" -> mockHost,
